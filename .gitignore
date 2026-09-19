@@ -18,6 +18,7 @@
 
 # Build/test logs and generated artifacts
 *.log
+*.zip
 TestResults/
 **/TestResults/
 artifacts/

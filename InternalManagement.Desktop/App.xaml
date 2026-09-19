@@ -1063,9 +1063,9 @@
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="12.5" />
             <Setter Property="Foreground" Value="#334155" />
-            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Background" Value="#F8FAFC" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="Height" Value="36" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
             <Setter Property="ItemContainerStyle">
@@ -1104,14 +1104,17 @@
                             <ToggleButton x:Name="ToggleButton"
                                           Focusable="False"
                                           ClickMode="Press"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
                                           IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="ToggleButton">
                                         <Border x:Name="Border"
-                                                Background="#FFFFFF"
+                                                Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="6">
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -1129,9 +1132,11 @@
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8" />
+                                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF" />
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#4F46E5" />
+                                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

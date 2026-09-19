@@ -963,9 +963,9 @@
                         </Grid.RowDefinitions>
 
                         <!-- 4 STATS METRICS -->
-                        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,24">
+                        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,14">
                             <!-- Metric 1: Courses -->
-                            <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,14,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -977,23 +977,23 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="KHÓA HỌC EDTECH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="🎓" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="KHÓA HỌC EDTECH" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="🎓" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
 
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCoursesCount" Text="—" FontSize="30" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,10,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCoursesCount" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                     
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                            <TextBlock Text="● Đang hoạt động" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
+                                        <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                            <TextBlock Text="● Đang hoạt động" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 2: Questions -->
-                            <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,14,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1005,23 +1005,23 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="NGÂN HÀNG CÂU HỎI" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="❓" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="NGÂN HÀNG CÂU HỎI" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="❓" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
 
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricQuestionsCount" Text="—" FontSize="30" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,10,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricQuestionsCount" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                     
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#EEF2FF" CornerRadius="10" Padding="8,2" BorderBrush="#C7D2FE" BorderThickness="1">
-                                            <TextBlock Text="Phiên bản đã lưu trữ" FontSize="11" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                        <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                            <TextBlock Text="Phiên bản đã lưu trữ" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 3: Customers -->
-                            <Border Background="White" CornerRadius="12" Padding="20,18" Margin="0,0,14,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1033,23 +1033,23 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="HỌC VIÊN ĐỒNG BỘ" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="👥" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="HỌC VIÊN ĐỒNG BỘ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
 
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCustomersCount" Text="—" FontSize="30" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,10,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCustomersCount" Text="—" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                     
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" BorderBrush="#FCD34D" BorderThickness="1">
-                                            <TextBlock Text="Từ Website EdTech" FontSize="11" FontWeight="SemiBold" Foreground="#D97706" />
+                                        <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                            <TextBlock Text="Từ Website EdTech" FontSize="10" FontWeight="SemiBold" Foreground="#D97706" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 4: Sync Status -->
-                            <Border Background="White" CornerRadius="12" Padding="20,18" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1061,14 +1061,14 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="HẠ TẦNG ĐỒNG BỘ" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="⚡" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="HẠ TẦNG ĐỒNG BỘ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="⚡" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
 
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="SyncHealthSummaryText" Text="Đang kiểm tra..." FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,10,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="SyncHealthSummaryText" Text="Đang kiểm tra..." FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,4,0,3" />
                                     
-                                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" x:Name="DeadLetterSummaryText" Text="Dead-Letters: đang kiểm tra..." FontSize="12" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" x:Name="DeadLetterSummaryText" Text="Dead-Letters: đang kiểm tra..." FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
                                 </Grid>
                             </Border>
                         </UniformGrid>
@@ -1150,26 +1150,28 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
 
-                                    <!-- TOOLBAR -->
-                                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBox x:Name="CourseSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Margin="0,0,12,0" TextChanged="CourseSearch_TextChanged" />
-                                                <TextBlock Text="🔍 Tìm theo tên khóa học..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-270,0,0,0" VerticalAlignment="Center" x:Name="CourseSearchPlaceholder" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <Button Content="🔄 Tải Lại" Click="RefreshCourses_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                                <Button Content="▦ Xem Lớp Của Khóa" Click="ViewCourseClasses_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                                <Button Content="✎ Sửa Khóa Học" Click="EditCourseDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                                <Button Content="🗑️ Xóa Khóa Học" Click="DeleteCourse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0" />
-                                                <Button Content="+ Tạo Khóa Học Mới" Click="CreateCourseDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="16,0" />
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                     <!-- TOOLBAR -->
+                                     <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                         <DockPanel LastChildFill="False">
+                                             <!-- VÙNG TÌM KIẾM (BÊN TRÁI) -->
+                                             <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                                                 <Grid Width="240" Height="36" Margin="0,2,8,2">
+                                                     <TextBox x:Name="CourseSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CourseSearch_TextChanged" />
+                                                     <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                                     <TextBlock x:Name="CourseSearchPlaceholder" Text="Tìm theo tên khóa học..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                                                 </Grid>
+                                             </WrapPanel>
+
+                                             <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
+                                             <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                 <Button Content="🔄 Tải lại" Click="RefreshCourses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách khóa học" />
+                                                 <Button Content="▦ Xem các lớp" Click="ViewCourseClasses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xem danh sách lớp của khóa học đã chọn" />
+                                                 <Button Content="✎ Sửa" Click="EditCourseDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin khóa học" />
+                                                 <Button Content="🗑️ Xóa" Click="DeleteCourse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xóa khóa học đã chọn" />
+                                                 <Button Content="+ Tạo khóa học mới" Click="CreateCourseDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
+                                             </WrapPanel>
+                                         </DockPanel>
+                                     </Border>
 
                                     <!-- COURSES DATAGRID -->
                                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
@@ -1217,9 +1219,9 @@
                                     </Border>
 
                                     <!-- METRICS STATS BAR (SaaS Modern KPI Cards) -->
-                                    <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,16">
+                                    <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,12">
                                         <!-- Card 1: Số lớp CSCA -->
-                                        <Border Background="White" CornerRadius="12" Padding="14,12" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1230,17 +1232,17 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ LỚP CSCA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="8" Width="28" Height="28" HorizontalAlignment="Right">
-                                                    <TextBlock Text="🏫" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ LỚP CSCA" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                                    <TextBlock Text="🏫" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaClassCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,4,0,0" />
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đang vận hành" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaClassCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đang vận hành" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 2: Tổng học viên -->
-                                        <Border Background="White" CornerRadius="12" Padding="14,12" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1251,17 +1253,17 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG HỌC VIÊN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="8" Width="28" Height="28" HorizontalAlignment="Right">
-                                                    <TextBlock Text="👥" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG HỌC VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                                    <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0" />
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Ghi danh các lớp" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Ghi danh các lớp" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 3: Doanh thu đã thu -->
-                                        <Border Background="White" CornerRadius="12" Padding="14,12" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1272,17 +1274,17 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="8" Width="28" Height="28" HorizontalAlignment="Right">
-                                                    <TextBlock Text="💰" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                                    <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaRevenue" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,4,0,0" />
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaRevenue" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 4: Số tiền còn nợ -->
-                                        <Border Background="White" CornerRadius="12" Padding="14,12" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1293,17 +1295,17 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ TIỀN CÒN NỢ" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" CornerRadius="8" Width="28" Height="28" HorizontalAlignment="Right">
-                                                    <TextBlock Text="⏳" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ TIỀN CÒN NỢ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                                    <TextBlock Text="⏳" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaDebt" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,4,0,0" />
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Cần đối soát công nợ" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaDebt" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,1" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Cần đối soát công nợ" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 5: Lợi nhuận ròng -->
-                                        <Border Background="White" CornerRadius="12" Padding="14,12" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1314,36 +1316,40 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN RÒNG (NET)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="8" Width="28" Height="28" HorizontalAlignment="Right">
-                                                    <TextBlock Text="📈" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN RÒNG (NET)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                                    <TextBlock Text="📈" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaNetProfit" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#4F46E5" Margin="0,4,0,0" />
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Doanh thu trừ thù lao" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaNetProfit" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#4F46E5" Margin="0,3,0,1" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Doanh thu trừ thù lao" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
                                             </Grid>
                                         </Border>
                                     </UniformGrid>
 
                                     <!-- TOOLBAR -->
-                                    <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBox x:Name="CscaSearchBox" Width="220" Height="36" Style="{StaticResource ModernTextBox}" Margin="0,0,10,0" TextChanged="CscaSearch_TextChanged" />
-                                                <TextBlock Text="🔍 Tìm mã lớp, tên lớp..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-210,0,0,0" VerticalAlignment="Center" x:Name="CscaSearchPlaceholder" />
-                                                <ComboBox x:Name="CscaCourseFilterComboBox" Width="220" Height="36" Margin="8,0,0,0" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <Button Content="🔄 Tải Lại" Click="RefreshCsca_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,6,0" />
-                                                <Button Content="✎ Sửa Lớp" Click="EditCscaClass_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,6,0" />
-                                                <Button Content="🗑️ Xóa Lớp" Click="DeleteCscaClass_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,6,0" />
-                                                <Button Content="▣ Chi Tiết Lớp" Click="ViewCscaClassDetails_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,6,0" />
-                                                <Button Content="+ Tạo Lớp Học Mới" Click="CreateCscaClassDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" />
-                                            </StackPanel>
-                                        </Grid>
+                                    <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                        <DockPanel LastChildFill="False">
+                                            <!-- VÙNG TÌM KIẾM & BỘ LỌC (BÊN TRÁI) -->
+                                            <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Search Box -->
+                                                <Grid Width="200" Height="36" Margin="0,2,8,2">
+                                                    <TextBox x:Name="CscaSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CscaSearch_TextChanged" />
+                                                    <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                                    <TextBlock x:Name="CscaSearchPlaceholder" Text="Tìm mã lớp, tên lớp..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                                                </Grid>
+                                                <!-- Course Filter ComboBox -->
+                                                <ComboBox x:Name="CscaCourseFilterComboBox" Width="175" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
+                                            </WrapPanel>
+
+                                            <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
+                                            <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <Button Content="🔄 Tải lại" Click="RefreshCsca_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách lớp" />
+                                                <Button Content="✎ Sửa" Click="EditCscaClass_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin lớp đã chọn" />
+                                                <Button Content="🗑️ Xóa" Click="DeleteCscaClass_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xóa lớp đã chọn" />
+                                                <Button Content="▣ Chi tiết" Click="ViewCscaClassDetails_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xem chi tiết lớp học" />
+                                                <Button Content="+ Tạo lớp mới" Click="CreateCscaClassDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
+                                            </WrapPanel>
+                                        </DockPanel>
                                     </Border>
 
                                     <!-- CSCA CLASSES DATAGRID -->
@@ -1668,9 +1674,9 @@
                         </Border>
 
                         <!-- METRICS STATS BAR (SaaS Modern KPI Cards) -->
-                        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16">
+                        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,12">
                             <!-- Card 1: Tổng số ứng viên -->
-                            <Border Background="White" CornerRadius="12" Padding="16,14" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1681,17 +1687,17 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ ỨNG VIÊN" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                                        <TextBlock Text="👥" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ ỨNG VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                        <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewCustomerCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,4,0,0" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Khách hàng đăng ký" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewCustomerCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Khách hàng đăng ký" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
 
                             <!-- Card 2: Tổng số buổi phỏng vấn -->
-                            <Border Background="White" CornerRadius="12" Padding="16,14" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1702,17 +1708,17 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ BUỔI PHỎNG VẤN" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                                        <TextBlock Text="📅" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ BUỔI PHỎNG VẤN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                        <TextBlock Text="📅" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewSessionCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Lịch mock phỏng vấn" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewSessionCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Lịch mock phỏng vấn" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
 
                             <!-- Card 3: Doanh thu đã thu -->
-                            <Border Background="White" CornerRadius="12" Padding="16,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -1723,12 +1729,12 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                                        <TextBlock Text="💰" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                        <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewRevenue" Text="0 đ" FontSize="22" FontWeight="Bold" Foreground="#059669" Margin="0,4,0,0" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricInterviewRevenue" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
                         </UniformGrid>
@@ -1787,9 +1793,9 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- KPI SUMMARY CARDS -->
-                                    <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,16">
+                                    <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
                                         <!-- Card 1: Total -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1800,21 +1806,21 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG NHÂN SỰ" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="👥" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG NHÂN SỰ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricTotalEmployees" Text="0" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,8,0,6" />
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricTotalEmployees" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#EEF2FF" CornerRadius="10" Padding="8,2" BorderBrush="#C7D2FE" BorderThickness="1">
-                                                        <TextBlock Text="Toàn bộ hồ sơ nhân sự" FontSize="11" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                                    <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                                        <TextBlock Text="Toàn bộ hồ sơ nhân sự" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 2: Active -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1825,21 +1831,21 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐANG LÀM VIỆC" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="💼" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐANG LÀM VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="💼" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricActiveEmployees" Text="0" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,8,0,6" />
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricActiveEmployees" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                                        <TextBlock Text="Chính thức · Thử việc" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
+                                                    <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                                        <TextBlock Text="Chính thức · Thử việc" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 3: Resigned -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1850,21 +1856,21 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÃ NGHỈ VIỆC" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="🚪" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÃ NGHỈ VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="🚪" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricResignedEmployees" Text="0" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,8,0,6" />
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricResignedEmployees" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" BorderBrush="#FCD34D" BorderThickness="1">
-                                                        <TextBlock Text="Đã hoàn tất thủ tục" FontSize="11" FontWeight="SemiBold" Foreground="#B45309" />
+                                                    <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                                        <TextBlock Text="Đã hoàn tất thủ tục" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
 
                                         <!-- Card 4: Blacklist -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -1875,14 +1881,14 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BLACKLIST" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="🚫" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BLACKLIST" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="🚫" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricBlacklistedEmployees" Text="0" FontSize="28" FontWeight="Bold" Foreground="#DC2626" Margin="0,8,0,6" />
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricBlacklistedEmployees" Text="0" FontSize="20" FontWeight="Bold" Foreground="#DC2626" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#FEE2E2" CornerRadius="10" Padding="8,2" BorderBrush="#FECACA" BorderThickness="1">
-                                                        <TextBlock Text="Vi phạm kỷ luật / Cấm tái tuyển" FontSize="11" FontWeight="SemiBold" Foreground="#B91C1C" />
+                                                    <Border Background="#FEE2E2" CornerRadius="6" Padding="6,1.5" BorderBrush="#FECACA" BorderThickness="1">
+                                                        <TextBlock Text="Vi phạm kỷ luật / Cấm tái tuyển" FontSize="10" FontWeight="SemiBold" Foreground="#B91C1C" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
@@ -2129,9 +2135,9 @@
                         </Grid.RowDefinitions>
 
                         <!-- SUMMARY KPI CARDS -->
-                        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,16">
+                        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
                             <!-- Metric 1: Total -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -2142,21 +2148,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG LƯỢT CHẤM CÔNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="📋" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG LƯỢT CHẤM CÔNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="📋" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceTotal" Text="0" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#EEF2FF" CornerRadius="10" Padding="8,2" BorderBrush="#C7D2FE" BorderThickness="1">
-                                            <TextBlock Text="Bản ghi chấm công" FontSize="11" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                        <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                            <TextBlock Text="Bản ghi chấm công" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 2: Present -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -2167,21 +2173,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÚNG GIỜ (PRESENT)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="✅" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÚNG GIỜ (PRESENT)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="✅" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendancePresent" Text="0" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendancePresent" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                            <TextBlock Text="Đúng giờ làm việc" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
+                                        <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                            <TextBlock Text="Đúng giờ làm việc" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 3: Late -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -2192,21 +2198,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐI MUỘN (LATE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="⏰" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐI MUỘN (LATE)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="⏰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceLate" Text="0" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceLate" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" BorderBrush="#FCD34D" BorderThickness="1">
-                                            <TextBlock Text="Check-in sau 08:30" FontSize="11" FontWeight="SemiBold" Foreground="#B45309" />
+                                        <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                            <TextBlock Text="Check-in sau 08:30" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Metric 4: Work Hours -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -2217,14 +2223,14 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG GIỜ LÀM VIỆC" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="⏱️" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG GIỜ LÀM VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="⏱️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceWorkHours" Text="0 h" FontSize="28" FontWeight="Bold" Foreground="#0284C7" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceWorkHours" Text="0 h" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#EFF6FF" CornerRadius="10" Padding="8,2" BorderBrush="#BFDBFE" BorderThickness="1">
-                                            <TextBlock Text="Tổng giờ công tích lũy" FontSize="11" FontWeight="SemiBold" Foreground="#0369A1" />
+                                        <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                            <TextBlock Text="Tổng giờ công tích lũy" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
@@ -2450,7 +2456,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="Quyền học CSCA LMS" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" />
+                                    <TextBlock Text="Quy chế cấp quyền học &amp; Đồng bộ CSCA LMS" FontSize="15" FontWeight="Bold" Foreground="#1E3A8A" />
                                     <TextBlock Text="Chỉ mapping đã xác nhận mới cấp LMS cho học viên đã đóng đủ. Không hiển thị mật khẩu hoặc payload học viên." Margin="0,3,0,0" FontSize="11.5" Foreground="#475569" />
                                 </StackPanel>
                                 <Button Grid.Column="1" Content="🔄 Tải trạng thái LMS" Click="RefreshLmsIntegration_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" />
@@ -2554,8 +2560,8 @@
                         <!-- MAPPING & OUTBOX SPLIT VIEW -->
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.25*" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1.35*" MinWidth="480" />
+                                <ColumnDefinition Width="1*" MinWidth="380" />
                             </Grid.ColumnDefinitions>
 
                             <!-- Left: Course Mapping -->
@@ -2570,40 +2576,66 @@
                                         <TextBlock Text="Mapping khóa học → CSCA Course LMS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
                                         <TextBlock Text="Chọn một khóa học, xác nhận đích LMS rồi bật cấp quyền. Mapping Pending không thể cấp quyền học." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
                                     </StackPanel>
-                                    <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#E2E8F0" BorderThickness="1">
+                                    <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="14,12" Margin="0,0,0,12" BorderBrush="#E2E8F0" BorderThickness="1">
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.4*" />
-                                                <ColumnDefinition Width="1*" />
-                                                <ColumnDefinition Width=".75*" />
-                                                <ColumnDefinition Width="1*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                                <TextBlock x:Name="LmsSelectedCourseText" Text="Chọn khóa học bên dưới" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" TextTrimming="CharacterEllipsis" />
-                                                <TextBox x:Name="LmsExternalCourseIdBox" Height="32" Margin="0,5,0,0" Style="{StaticResource ModernTextBox}" ToolTip="External Course ID" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                                <TextBlock Text="LMS course slug" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
-                                                <TextBox x:Name="LmsCourseSlugBox" Height="32" Margin="0,5,0,0" Style="{StaticResource ModernTextBox}" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                                                <TextBlock Text="LMS course ID" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
-                                                <TextBox x:Name="LmsCourseIdBox" Height="32" Margin="0,5,0,0" Style="{StaticResource ModernTextBox}" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="3" VerticalAlignment="Bottom" Margin="0,0,8,0">
-                                                <CheckBox x:Name="LmsEnableAccessCheckBox" Content="Bật cấp quyền" FontSize="11" FontWeight="SemiBold" />
-                                            </StackPanel>
-                                            <Button x:Name="SaveLmsMappingButton" Grid.Column="4" Content="Lưu mapping" Click="SaveLmsMapping_Click" Style="{StaticResource PrimaryGradientButton}" Height="32" Padding="14,0" VerticalAlignment="Bottom" />
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Row 0: Selected Course Info Banner -->
+                                            <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,10">
+                                                <DockPanel LastChildFill="True">
+                                                    <TextBlock Text="ĐANG CHỌN:" FontSize="10.5" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center" Margin="0,0,8,0" DockPanel.Dock="Left" />
+                                                    <TextBlock x:Name="LmsSelectedCourseText" Text="Chọn khóa học bên dưới" FontSize="12" FontWeight="SemiBold" Foreground="#1E3A8A" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                </DockPanel>
+                                            </Border>
+
+                                            <!-- Row 1: Form Inputs with matching labels and aligned action button -->
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1.2*" MinWidth="110" />
+                                                    <ColumnDefinition Width="1.1*" MinWidth="100" />
+                                                    <ColumnDefinition Width="0.9*" MinWidth="85" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Field 1: Source / External ID -->
+                                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                                    <TextBlock Text="EXTERNAL ID" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
+                                                    <TextBox x:Name="LmsExternalCourseIdBox" Height="32" Style="{StaticResource ModernTextBox}" ToolTip="External Course ID" />
+                                                </StackPanel>
+
+                                                <!-- Field 2: LMS Slug -->
+                                                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                                    <TextBlock Text="LMS COURSE SLUG" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
+                                                    <TextBox x:Name="LmsCourseSlugBox" Height="32" Style="{StaticResource ModernTextBox}" />
+                                                </StackPanel>
+
+                                                <!-- Field 3: LMS ID -->
+                                                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                                    <TextBlock Text="LMS COURSE ID" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4" />
+                                                    <TextBox x:Name="LmsCourseIdBox" Height="32" Style="{StaticResource ModernTextBox}" />
+                                                </StackPanel>
+
+                                                <!-- Field 4: Checkbox -->
+                                                <StackPanel Grid.Column="3" Margin="4,0,10,0" VerticalAlignment="Bottom" Height="32">
+                                                    <CheckBox x:Name="LmsEnableAccessCheckBox" Content="Bật cấp quyền" FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,8,0,0" />
+                                                </StackPanel>
+
+                                                <!-- Field 5: Save Button -->
+                                                <Button x:Name="SaveLmsMappingButton" Grid.Column="4" Content="Lưu mapping" Click="SaveLmsMapping_Click" Style="{StaticResource PrimaryGradientButton}" Height="32" Padding="14,0" VerticalAlignment="Bottom" />
+                                            </Grid>
                                         </Grid>
                                     </Border>
                                     <DataGrid Grid.Row="2" x:Name="LmsCourseMappingsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="LmsCourseMappingsDataGrid_SelectionChanged" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="40">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.45*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
-                                            <DataGridTextColumn Header="SOURCE ID" Binding="{Binding CourseSourceId}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="LMS SLUG" Binding="{Binding LmsCourseSlug}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="LMS ID" Binding="{Binding LmsCourseId}" Width=".7*" />
-                                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width=".8*" />
+                                            <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.5*" MinWidth="130" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                            <DataGridTextColumn Header="SOURCE ID" Binding="{Binding CourseSourceId}" Width="1.1*" MinWidth="100" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="LMS SLUG" Binding="{Binding LmsCourseSlug}" Width="1*" MinWidth="90" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="LMS ID" Binding="{Binding LmsCourseId}" Width="80" MinWidth="70" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="110" MinWidth="90" ElementStyle="{StaticResource DataGridTextCellStyle}" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </Grid>
@@ -2621,9 +2653,9 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel>
+                                        <StackPanel Margin="0,0,10,0">
                                             <TextBlock Text="LMS Outbox" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                                            <TextBlock Text="Retry trả lệnh về hàng chờ; dispatch gọi LMS và xác nhận." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                            <TextBlock Text="Retry trả lệnh về hàng chờ; dispatch gọi LMS và xác nhận." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                             <Button x:Name="RetryLmsOutboxButton" Content="↻ Retry" Click="RetryLmsOutbox_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="10,0" Margin="0,0,6,0" />
@@ -2632,11 +2664,11 @@
                                     </Grid>
                                     <DataGrid Grid.Row="1" x:Name="LmsOutboxDataGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="38">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="SỰ KIỆN" Binding="{Binding EventType}" Width="1.3*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width=".85*" />
-                                            <DataGridTextColumn Header="THỬ" Binding="{Binding AttemptCount}" Width=".45*" />
-                                            <DataGridTextColumn Header="LỖI GẦN NHẤT" Binding="{Binding LastError}" Width="1.8*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="TẠO LÚC" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" Width=".85*" />
+                                            <DataGridTextColumn Header="SỰ KIỆN" Binding="{Binding EventType}" Width="1.2*" MinWidth="110" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="100" MinWidth="90" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                            <DataGridTextColumn Header="LẦN THỬ" Binding="{Binding AttemptCount}" Width="80" MinWidth="75" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                            <DataGridTextColumn Header="LỖI GẦN NHẤT" Binding="{Binding LastError}" Width="1.6*" MinWidth="130" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="TẠO LÚC" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" Width="95" MinWidth="90" ElementStyle="{StaticResource DataGridTextCellStyle}" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </Grid>
@@ -3120,14 +3152,14 @@
                                     </StackPanel>
 
                                     <UniformGrid Grid.Row="2" Columns="3" Margin="0,0,0,12">
-                                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="SỐ PHIẾU CẦN XEM" FontSize="10" FontWeight="Bold" Foreground="#1E40AF" /><TextBlock x:Name="PayrollReviewPayslipCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0" /></StackPanel>
+                                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="SỐ PHIẾU CẦN XEM" FontSize="10" FontWeight="Bold" Foreground="#1E40AF" /><TextBlock x:Name="PayrollReviewPayslipCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,0" /></StackPanel>
                                         </Border>
-                                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="KHOẢN ĐIỀU CHỈNH" FontSize="10" FontWeight="Bold" Foreground="#92400E" /><TextBlock x:Name="PayrollReviewAdjustmentCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,4,0,0" /></StackPanel>
+                                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="KHOẢN ĐIỀU CHỈNH" FontSize="10" FontWeight="Bold" Foreground="#92400E" /><TextBlock x:Name="PayrollReviewAdjustmentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,0" /></StackPanel>
                                         </Border>
-                                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="12" Padding="12">
-                                            <StackPanel><TextBlock Text="TỔNG THỰC LĨNH" FontSize="10" FontWeight="Bold" Foreground="#166534" /><TextBlock x:Name="PayrollReviewNetText" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,4,0,0" /></StackPanel>
+                                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <StackPanel><TextBlock Text="TỔNG THỰC LĨNH" FontSize="10" FontWeight="Bold" Foreground="#166534" /><TextBlock x:Name="PayrollReviewNetText" Text="0 đ" FontSize="18" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,0" /></StackPanel>
                                         </Border>
                                     </UniformGrid>
 
@@ -3177,20 +3209,20 @@
                                     </WrapPanel>
 
                                     <UniformGrid Grid.Row="2" Columns="5" VerticalAlignment="Top">
-                                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="01" FontSize="20" FontWeight="Bold" Foreground="#2563EB" /><TextBlock Text="Tính lương" FontWeight="SemiBold" Foreground="#1E3A8A" /><TextBlock Text="Chấm công + thu nhập" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="01" FontSize="18" FontWeight="Bold" Foreground="#2563EB" /><TextBlock Text="Tính lương" FontWeight="SemiBold" FontSize="12" Foreground="#1E3A8A" /><TextBlock Text="Chấm công + thu nhập" FontSize="10.5" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
                                         </Border>
-                                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="02" FontSize="20" FontWeight="Bold" Foreground="#D97706" /><TextBlock Text="Trình duyệt" FontWeight="SemiBold" Foreground="#92400E" /><TextBlock Text="Khóa điều chỉnh" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="02" FontSize="18" FontWeight="Bold" Foreground="#D97706" /><TextBlock Text="Trình duyệt" FontWeight="SemiBold" FontSize="12" Foreground="#92400E" /><TextBlock Text="Khóa điều chỉnh" FontSize="10.5" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
                                         </Border>
-                                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="03" FontSize="20" FontWeight="Bold" Foreground="#16A34A" /><TextBlock Text="Phê duyệt" FontWeight="SemiBold" Foreground="#166534" /><TextBlock Text="Chốt ngân sách" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                                        <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="03" FontSize="18" FontWeight="Bold" Foreground="#16A34A" /><TextBlock Text="Phê duyệt" FontWeight="SemiBold" FontSize="12" Foreground="#166534" /><TextBlock Text="Chốt ngân sách" FontSize="10.5" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
                                         </Border>
-                                        <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,8,0">
-                                            <StackPanel><TextBlock Text="04" FontSize="20" FontWeight="Bold" Foreground="#4F46E5" /><TextBlock Text="Chi lương" FontWeight="SemiBold" Foreground="#3730A3" /><TextBlock Text="Xác nhận giải ngân" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                                        <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                            <StackPanel><TextBlock Text="04" FontSize="18" FontWeight="Bold" Foreground="#4F46E5" /><TextBlock Text="Chi lương" FontWeight="SemiBold" FontSize="12" Foreground="#3730A3" /><TextBlock Text="Xác nhận giải ngân" FontSize="10.5" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
                                         </Border>
-                                        <Border Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="12" Padding="14,12">
-                                            <StackPanel><TextBlock Text="05" FontSize="20" FontWeight="Bold" Foreground="#9333EA" /><TextBlock Text="Phát hành" FontWeight="SemiBold" Foreground="#6B21A8" /><TextBlock Text="Gửi phiếu lương" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                                        <Border Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                                            <StackPanel><TextBlock Text="05" FontSize="18" FontWeight="Bold" Foreground="#9333EA" /><TextBlock Text="Phát hành" FontWeight="SemiBold" FontSize="12" Foreground="#6B21A8" /><TextBlock Text="Gửi phiếu lương" FontSize="10.5" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
                                         </Border>
                                     </UniformGrid>
                                 </Grid>
@@ -3223,108 +3255,108 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
 
-                                    <!-- 4 KPI SUMMARY CARDS (Chỉ hiển thị ở tab Sản phẩm) -->
-                                    <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,16">
-                                        <!-- Card 1: Total Products -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SẢN PHẨM" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="👗" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionProductsCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,8,0,6" />
-                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#EEF2FF" CornerRadius="10" Padding="8,2" BorderBrush="#C7D2FE" BorderThickness="1">
-                                                        <TextBlock Text="Sản phẩm thời trang MOLY" FontSize="11" FontWeight="SemiBold" Foreground="#4F46E5" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
+                                     <!-- 4 KPI SUMMARY CARDS (Chỉ hiển thị ở tab Sản phẩm) -->
+                                     <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
+                                         <!-- Card 1: Total Products -->
+                                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                             <Grid>
+                                                 <Grid.RowDefinitions>
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                 </Grid.RowDefinitions>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*" />
+                                                     <ColumnDefinition Width="Auto" />
+                                                 </Grid.ColumnDefinitions>
+                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SẢN PHẨM" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                 <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                     <TextBlock Text="👗" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                 </Border>
+                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionProductsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
+                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                     <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                                         <TextBlock Text="Sản phẩm thời trang MOLY" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                                     </Border>
+                                                 </StackPanel>
+                                             </Grid>
+                                         </Border>
 
-                                        <!-- Card 2: Variants -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ BIẾN THỂ" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="🏷️" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionVariantsCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,8,0,6" />
-                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                                        <TextBlock Text="Kích cỡ &amp; màu sắc quản lý" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
+                                         <!-- Card 2: Variants -->
+                                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                             <Grid>
+                                                 <Grid.RowDefinitions>
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                 </Grid.RowDefinitions>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*" />
+                                                     <ColumnDefinition Width="Auto" />
+                                                 </Grid.ColumnDefinitions>
+                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ BIẾN THỂ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                 <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                     <TextBlock Text="🏷️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                 </Border>
+                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionVariantsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
+                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                     <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                                         <TextBlock Text="Kích cỡ &amp; màu sắc quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
+                                                     </Border>
+                                                 </StackPanel>
+                                             </Grid>
+                                         </Border>
 
-                                        <!-- Card 3: Total On Hand -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG TỒN KHO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="📦" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionTotalOnHand" Text="0" FontSize="28" FontWeight="Bold" Foreground="#0284C7" Margin="0,8,0,6" />
-                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#EFF6FF" CornerRadius="10" Padding="8,2" BorderBrush="#BFDBFE" BorderThickness="1">
-                                                        <TextBlock Text="Số lượng sản phẩm trong kho" FontSize="11" FontWeight="SemiBold" Foreground="#0369A1" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
+                                         <!-- Card 3: Total On Hand -->
+                                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                             <Grid>
+                                                 <Grid.RowDefinitions>
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                 </Grid.RowDefinitions>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*" />
+                                                     <ColumnDefinition Width="Auto" />
+                                                 </Grid.ColumnDefinitions>
+                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG TỒN KHO" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                 <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                     <TextBlock Text="📦" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                 </Border>
+                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionTotalOnHand" Text="0" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
+                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                     <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                                         <TextBlock Text="Số lượng sản phẩm trong kho" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
+                                                     </Border>
+                                                 </StackPanel>
+                                             </Grid>
+                                         </Border>
 
-                                        <!-- Card 4: Suppliers -->
-                                        <Border Background="White" CornerRadius="12" Padding="18,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="NHÀ CUNG CẤP &amp; PHIẾU NHẬP" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                    <TextBlock Text="🏭" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionSuppliersCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="#D97706" Margin="0,8,0,6" />
-                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#FEF3C7" CornerRadius="10" Padding="8,2" BorderBrush="#FCD34D" BorderThickness="1">
-                                                        <TextBlock Text="Nhà cung ứng đối tác" FontSize="11" FontWeight="SemiBold" Foreground="#B45309" />
-                                                    </Border>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </UniformGrid>
+                                         <!-- Card 4: Suppliers -->
+                                         <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                             <Grid>
+                                                 <Grid.RowDefinitions>
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                     <RowDefinition Height="Auto" />
+                                                 </Grid.RowDefinitions>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*" />
+                                                     <ColumnDefinition Width="Auto" />
+                                                 </Grid.ColumnDefinitions>
+                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="NHÀ CUNG CẤP &amp; PHIẾU NHẬP" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                 <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                     <TextBlock Text="🏭" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                 </Border>
+                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionSuppliersCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
+                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                     <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                                         <TextBlock Text="Nhà cung ứng đối tác" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
+                                                     </Border>
+                                                 </StackPanel>
+                                             </Grid>
+                                         </Border>
+                                     </UniformGrid>
 
                                     <!-- TOOLBAR -->
                                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
@@ -3645,9 +3677,9 @@
                                                             <TextBlock Text="1. Nhập và theo dõi nguyên vật liệu  ➔  2. Kiểm tra định mức BOM theo sản phẩm/size  ➔  3. Theo dõi tiến độ lệnh may  ➔  4. Dùng giá vốn thực tế mô phỏng giá bán và tạo đơn hàng." TextWrapping="Wrap" FontSize="12.5" Foreground="#4338CA" Margin="0,6,0,0" />
                                                         </StackPanel>
                                                     </Border>
-                                                    <UniformGrid Columns="3" Margin="0,0,0,16">
+                                                    <UniformGrid Columns="3" Margin="0,0,0,12">
                                                         <!-- NVL metric -->
-                                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                                             <Grid>
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition Height="Auto" />
@@ -3658,20 +3690,20 @@
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="NGUYÊN VẬT LIỆU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                                    <TextBlock Text="🧵" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="NGUYÊN VẬT LIỆU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                                    <TextBlock Text="🧵" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
-                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingMaterialsCountText" Text="—" FontSize="28" FontWeight="Bold" Foreground="#0284C7" Margin="0,8,0,6" />
+                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingMaterialsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                                    <Border Background="#EFF6FF" CornerRadius="10" Padding="8,2" BorderBrush="#BFDBFE" BorderThickness="1">
-                                                                        <TextBlock Text="Mã NVL đang quản lý" FontSize="11" FontWeight="SemiBold" Foreground="#0369A1" />
+                                                                    <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                                                        <TextBlock Text="Mã NVL đang quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
                                                                     </Border>
                                                                 </StackPanel>
                                                             </Grid>
                                                         </Border>
                                                         <!-- BOM metric -->
-                                                        <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                                             <Grid>
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition Height="Auto" />
@@ -3682,20 +3714,20 @@
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BOM ĐANG DÙNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                                <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                                    <TextBlock Text="📐" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BOM ĐANG DÙNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                                <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                                    <TextBlock Text="📐" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
-                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingBomsCountText" Text="—" FontSize="28" FontWeight="Bold" Foreground="#7C3AED" Margin="0,8,0,6" />
+                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingBomsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#7C3AED" Margin="0,3,0,3" />
                                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                                    <Border Background="#F5F3FF" CornerRadius="10" Padding="8,2" BorderBrush="#DDD6FE" BorderThickness="1">
-                                                                        <TextBlock Text="Định mức sản xuất duyệt" FontSize="11" FontWeight="SemiBold" Foreground="#6D28D9" />
+                                                                    <Border Background="#F5F3FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#DDD6FE" BorderThickness="1">
+                                                                        <TextBlock Text="Định mức sản xuất duyệt" FontSize="10" FontWeight="SemiBold" Foreground="#6D28D9" />
                                                                     </Border>
                                                                 </StackPanel>
                                                             </Grid>
                                                         </Border>
                                                         <!-- Orders metric -->
-                                                        <Border Background="White" CornerRadius="12" Padding="18,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                                             <Grid>
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition Height="Auto" />
@@ -3706,14 +3738,14 @@
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỆNH SẢN XUẤT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                                                    <TextBlock Text="✂️" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỆNH SẢN XUẤT" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                                    <TextBlock Text="✂️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
-                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingOrdersCountText" Text="—" FontSize="28" FontWeight="Bold" Foreground="#059669" Margin="0,8,0,6" />
+                                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingOrdersCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                                    <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                                                        <TextBlock Text="Lệnh sản xuất đã lập" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
+                                                                    <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                                                        <TextBlock Text="Lệnh sản xuất đã lập" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                                                     </Border>
                                                                 </StackPanel>
                                                             </Grid>
@@ -4025,9 +4057,9 @@
                         </Border>
 
                         <!-- 4 SAAS KPI SUMMARY CARDS -->
-                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
                             <!-- Card 1: Total Income -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -4038,21 +4070,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG THU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="💰" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyIncome" Text="0 đ" FontSize="26" FontWeight="Bold" Foreground="#059669" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyIncome" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#ECFDF5" CornerRadius="10" Padding="8,2" BorderBrush="#A7F3D0" BorderThickness="1">
-                                            <TextBlock Text="Doanh thu ghi nhận" FontSize="11" FontWeight="SemiBold" Foreground="#059669" />
+                                        <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                            <TextBlock Text="Doanh thu ghi nhận" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Card 2: Total Expense -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -4063,21 +4095,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG CHI" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="📉" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG CHI" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="📉" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyExpense" Text="0 đ" FontSize="26" FontWeight="Bold" Foreground="#DC2626" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyExpense" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#DC2626" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#FEF2F2" CornerRadius="10" Padding="8,2" BorderBrush="#FECACA" BorderThickness="1">
-                                            <TextBlock Text="Chi phí hoạt động" FontSize="11" FontWeight="SemiBold" Foreground="#DC2626" />
+                                        <Border Background="#FEF2F2" CornerRadius="6" Padding="6,1.5" BorderBrush="#FECACA" BorderThickness="1">
+                                            <TextBlock Text="Chi phí hoạt động" FontSize="10" FontWeight="SemiBold" Foreground="#DC2626" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Card 3: Net Cash Flow -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" Margin="0,0,12,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -4088,21 +4120,21 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DÒNG TIỀN RÒNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="💳" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DÒNG TIỀN RÒNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="💳" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyNetCash" Text="0 đ" FontSize="26" FontWeight="Bold" Foreground="#2563EB" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyNetCash" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#EFF6FF" CornerRadius="10" Padding="8,2" BorderBrush="#BFDBFE" BorderThickness="1">
-                                            <TextBlock Text="Thực thu trừ thực chi" FontSize="11" FontWeight="SemiBold" Foreground="#0284C7" />
+                                        <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                            <TextBlock Text="Thực thu trừ thực chi" FontSize="10" FontWeight="SemiBold" Foreground="#0284C7" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
                             <!-- Card 4: Operating Profit -->
-                            <Border Background="White" CornerRadius="12" Padding="18,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -4113,14 +4145,14 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN HOẠT ĐỘNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="8" Width="32" Height="32">
-                                        <TextBlock Text="📈" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN HOẠT ĐỘNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Grid.Column="1" Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                        <TextBlock Text="📈" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyProfit" Text="0 đ" FontSize="26" FontWeight="Bold" Foreground="#7C3AED" Margin="0,8,0,6" />
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricCompanyProfit" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#7C3AED" Margin="0,3,0,3" />
                                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                        <Border Background="#FAF5FF" CornerRadius="10" Padding="8,2" BorderBrush="#E9D5FF" BorderThickness="1">
-                                            <TextBlock Text="Hiệu quả kinh doanh" FontSize="11" FontWeight="SemiBold" Foreground="#7C3AED" />
+                                        <Border Background="#FAF5FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#E9D5FF" BorderThickness="1">
+                                            <TextBlock Text="Hiệu quả kinh doanh" FontSize="10" FontWeight="SemiBold" Foreground="#7C3AED" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
