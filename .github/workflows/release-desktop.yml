@@ -1,0 +1,80 @@
+name: Release MOLY Desktop
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release-desktop:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read release version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME
+          if (-not $version.StartsWith('v')) {
+            throw "Release tags must use the vX.Y.Z format."
+          }
+
+          $version = $version.Substring(1)
+          if ($version -notmatch '^\d+\.\d+\.\d+([-.+].*)?$') {
+            throw "Invalid semantic version: $version"
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish WPF application
+        run: >-
+          dotnet publish InternalManagement.Desktop/InternalManagement.Desktop.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output publish/desktop
+
+      - name: Install Velopack CLI
+        shell: pwsh
+        run: dotnet tool install --global vpk --version 1.2.0
+
+      - name: Download previous Velopack release metadata
+        shell: pwsh
+        run: >-
+          vpk download github
+          --repoUrl "https://github.com/${{ github.repository }}"
+          --token "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Pack Velopack release
+        shell: pwsh
+        run: >-
+          vpk pack
+          --packId "MOLY.InternalManagement"
+          --packVersion "${{ steps.version.outputs.version }}"
+          --packDir "publish/desktop"
+          --mainExe "InternalManagement.Desktop.exe"
+          --packTitle "MOLY Internal Management"
+          --packAuthors "MOLY Studio"
+          --icon "InternalManagement.Desktop/Assets/app-icon.ico"
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        run: >-
+          vpk upload github
+          --repoUrl "https://github.com/${{ github.repository }}"
+          --token "${{ secrets.GITHUB_TOKEN }}"
+          --publish
+          --releaseName "MOLY Internal Management v${{ steps.version.outputs.version }}"
+          --tag "v${{ steps.version.outputs.version }}"
+          --targetCommitish "${{ github.sha }}"

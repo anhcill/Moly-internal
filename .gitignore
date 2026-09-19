@@ -49,6 +49,8 @@ appsettings.Local.json
 **/appsettings.Local.json
 appsettings.Production.json
 **/appsettings.Production.json
+# The Desktop production file only contains the public API/update endpoints.
+!InternalManagement.Desktop/appsettings.production.json
 
 # OS metadata
 Thumbs.db
