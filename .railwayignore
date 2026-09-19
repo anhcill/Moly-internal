@@ -1,0 +1,32 @@
+# The production API image only copies Directory.Build.props and src/ from the
+# repository. Keep desktop installers, previous audit workspaces and build
+# artifacts out of Railway's upload context.
+.git/
+.vs/
+**/bin/
+**/obj/
+.tmp*/
+**/.tmp*/
+.audit-build/
+artifacts/
+TestResults/
+*.log
+*.zip
+*.exe
+*.user
+*.suo
+InternalManagement.Desktop/
+tests/
+docs/
+installer/
+backups/
+*.dump
+*.bak
+.env
+**/.env
+.env.*
+**/.env.*
+appsettings.Local.json
+**/appsettings.Local.json
+appsettings.Production.json
+**/appsettings.Production.json

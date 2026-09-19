@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>13.0</LangVersion>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CA1707;CA1711;CA1716;CA1000;CA1848;CA1869;CA1805;CA1861;CA1310;CA1311;CA1304;CA1862;CA1873;CA1822</NoWarn>
+    <!-- Keep isolated local build artifacts out of SDK wildcard item discovery. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/.tmp-*/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

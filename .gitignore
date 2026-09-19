@@ -1,0 +1,55 @@
+# .NET build output
+**/bin/
+**/obj/
+.vs/
+**/.vs/
+
+# Local IDE/user state
+*.user
+*.suo
+
+# Temporary audit, verification, and build worktrees
+.tmp*/
+**/.tmp*/
+.audit-build/
+**/.audit-build/
+.tmp-*
+**/.tmp-*
+
+# Build/test logs and generated artifacts
+*.log
+TestResults/
+**/TestResults/
+artifacts/
+**/artifacts/
+publish/
+**/publish/
+
+# Local database backups and dumps
+backups/
+**/backups/
+*.dump
+*.bak
+
+# Local secrets and environment files
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+!.env.*.example
+!**/.env.*.example
+*.pfx
+*.pem
+*.key
+
+# Local application settings containing secrets
+appsettings.Local.json
+**/appsettings.Local.json
+appsettings.Production.json
+**/appsettings.Production.json
+
+# OS metadata
+Thumbs.db
+Desktop.ini

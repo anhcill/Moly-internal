@@ -1,0 +1,89 @@
+name: moli-internal-production
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: moli-internal-management-api:${API_IMAGE_TAG:-local}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      DatabaseStartup__ApplyMigrationsOnStartup: "true"
+      DatabaseStartup__RequireConnectionOnStartup: "true"
+      DatabaseSeed__EnableDemoData: "false"
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Pooling=true
+      JwtSettings__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      JwtSettings__Issuer: ${JWT_ISSUER:-MoliBackendApi}
+      JwtSettings__Audience: ${JWT_AUDIENCE:-MoliClients}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0:?CORS_ALLOWED_ORIGIN_0 is required}
+      Cors__AllowedOrigins__1: ${CORS_ALLOWED_ORIGIN_1:-}
+      Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME:-}
+      Cloudinary__ApiKey: ${CLOUDINARY_API_KEY:-}
+      Cloudinary__ApiSecret: ${CLOUDINARY_API_SECRET:-}
+      Cloudinary__Folder: ${CLOUDINARY_FOLDER:-moli/attachments}
+      Cloudinary__MaxFileSizeBytes: ${CLOUDINARY_MAX_FILE_SIZE_BYTES:-15728640}
+      Integrations__CscaMoliStudio__BearerToken: ${CSCA_MOLI_STUDIO_BEARER_TOKEN:-}
+      Integrations__CscaMoliStudio__IntegrationKey: ${CSCA_MOLI_STUDIO_INTEGRATION_KEY:-}
+      Integrations__CscaInterview__BearerToken: ${WEBSITE_INTERVIEW_BEARER_TOKEN:-}
+      Integrations__CscaInterview__IntegrationKey: ${WEBSITE_INTERVIEW_INTEGRATION_KEY:-}
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+      - edge
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?API_DOMAIN is required}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL is required}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    networks:
+      - edge
+
+volumes:
+  postgres_data:
+    name: moli_internal_postgres_data
+  caddy_data:
+    name: moli_internal_caddy_data
+  caddy_config:
+    name: moli_internal_caddy_config
+
+networks:
+  app:
+    internal: true
+  edge:

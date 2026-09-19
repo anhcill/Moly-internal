@@ -1,0 +1,12 @@
+MOLY INTERNAL MANAGEMENT
+ĐIỀU KHOẢN SỬ DỤNG NỘI BỘ
+
+Phần mềm này được cung cấp cho mục đích quản trị và điều hành nội bộ của MOLY.
+
+1. Chỉ nhân sự được MOLY phân quyền mới được cài đặt và sử dụng phần mềm.
+2. Tài khoản, mật khẩu và dữ liệu truy cập phải được bảo mật; không chia sẻ cho người không có thẩm quyền.
+3. Phần mềm kết nối tới máy chủ dữ liệu của MOLY qua Internet. Người sử dụng cần bảo đảm thiết bị có kết nối mạng an toàn.
+4. Không tự ý sao chép, chỉnh sửa, dịch ngược hoặc phân phối phần mềm ra bên ngoài tổ chức.
+5. MOLY có thể cập nhật phần mềm, thay đổi quyền truy cập hoặc thu hồi quyền sử dụng khi cần thiết.
+
+Bằng việc tiếp tục cài đặt, bạn xác nhận đã đọc và đồng ý với các điều khoản trên.

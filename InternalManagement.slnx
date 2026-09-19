@@ -1,0 +1,13 @@
+<Solution>
+  <Project Path="InternalManagement.Desktop/InternalManagement.Desktop.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/InternalManagement.Domain/InternalManagement.Domain.csproj" />
+    <Project Path="src/InternalManagement.Application/InternalManagement.Application.csproj" />
+    <Project Path="src/InternalManagement.Infrastructure/InternalManagement.Infrastructure.csproj" />
+    <Project Path="src/InternalManagement.Api/InternalManagement.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/InternalManagement.UnitTests/InternalManagement.UnitTests.csproj" />
+    <Project Path="tests/InternalManagement.IntegrationTests/InternalManagement.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
