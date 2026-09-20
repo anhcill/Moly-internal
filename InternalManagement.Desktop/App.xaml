@@ -773,10 +773,10 @@
         <!-- Compact sidebar section label -->
         <Style x:Key="SidebarSectionLabel" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
-            <Setter Property="FontSize" Value="9" />
+            <Setter Property="FontSize" Value="9.5" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="#6475A8" />
-            <Setter Property="Margin" Value="9,13,0,4" />
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Margin" Value="8,12,0,4" />
         </Style>
 
         <!-- Segment selector used to reveal only one business-area menu at a time. -->
@@ -816,6 +816,78 @@
             </Setter>
         </Style>
 
+        <!-- Modern Segment Pill Radio Button for business unit switching -->
+        <Style x:Key="SegmentPillRadioButton" TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="pillBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="pillBorder" Property="Background" Value="#1E293B" />
+                                <Setter Property="Foreground" Value="#F1F5F9" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="pillBorder" Property="Background" Value="#312E81" />
+                                <Setter TargetName="pillBorder" Property="BorderBrush" Value="#6366F1" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Sidebar Toggle Button -->
+        <Style x:Key="SidebarToggleButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Background" Value="#1E293B" />
+            <Setter Property="BorderBrush" Value="#334155" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="toggleBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="toggleBorder" Property="Background" Value="#334155" />
+                                <Setter TargetName="toggleBorder" Property="BorderBrush" Value="#6366F1" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Sidebar Navigation Radio Button -->
         <Style x:Key="NavRadioButton" TargetType="RadioButton">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
@@ -823,31 +895,35 @@
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="#94A3B8" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Height" Value="32" />
-            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Margin" Value="0,1.5" />
             <Setter Property="Padding" Value="11,0" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="navBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="navBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Rectangle x:Name="activeIndicator" Width="3" Height="16" Fill="#818CF8" RadiusX="2" RadiusY="2" Visibility="Collapsed" HorizontalAlignment="Left" Margin="-8,0,0,0"/>
-                                <ContentPresenter Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" />
+                                <Rectangle x:Name="activeIndicator" Width="3" Height="16" Fill="#818CF8" RadiusX="1.5" RadiusY="1.5" Visibility="Collapsed" HorizontalAlignment="Left" Margin="2,0,0,0"/>
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" />
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="navBorder" Property="Background" Value="#2E2A72" />
+                                <Setter TargetName="navBorder" Property="Background" Value="#1E293B" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="navBorder" Property="Background" Value="#3730A3" />
+                                <Setter TargetName="navBorder" Property="BorderBrush" Value="#6366F1" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                                 <Setter TargetName="activeIndicator" Property="Visibility" Value="Visible" />

@@ -730,7 +730,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ── LEFT SIDEBAR ── -->
-            <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="13,16,12,14">
+            <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="13,16,12,14" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -739,73 +739,60 @@
                     </Grid.RowDefinitions>
 
                     <!-- BRAND & BU SELECTOR -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                        <Grid x:Name="SidebarBrandHeader" VerticalAlignment="Center" Margin="3,0,0,9">
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <Grid x:Name="SidebarBrandHeader" VerticalAlignment="Center" Margin="2,0,0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                <Border Background="{StaticResource PrimaryGradient}" CornerRadius="7" Width="28" Height="28" Margin="0,0,8,0">
-                                    <TextBlock Text="M" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                                <StackPanel x:Name="SidebarBrandDetails" VerticalAlignment="Center">
-                                    <TextBlock Text="MOLY" FontSize="15" FontWeight="Bold" Foreground="White" />
-                                    <TextBlock Text="INTERNAL MANAGEMENT" FontSize="8" FontWeight="SemiBold" Foreground="#93C5FD" Margin="0,-1,0,0" />
+                            <StackPanel x:Name="SidebarBrandContainer" Orientation="Horizontal" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
+                                <Image x:Name="SidebarBrandLogo" Source="Assets/app-icon.png" Width="34" Height="34" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                <StackPanel x:Name="SidebarBrandDetails" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <TextBlock Text="MOLY" FontSize="15" FontWeight="Bold" Foreground="#FFFFFF" />
+                                    <TextBlock Text="INTERNAL MANAGEMENT" FontSize="8.5" FontWeight="SemiBold" Foreground="#818CF8" Margin="0,1,0,0" />
                                 </StackPanel>
                             </StackPanel>
-                            <Button x:Name="SidebarToggleButton" Grid.Column="1" Content="‹" Width="28" Height="28" Padding="0" Margin="8,0,0,0" FontSize="21" FontWeight="SemiBold" Foreground="#CBD5E1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" Cursor="Hand" ToolTip="Thu gọn thanh chức năng" Click="SidebarToggleButton_Click" />
+                            <Button x:Name="SidebarToggleButton" Grid.Row="0" Grid.Column="1" Content="‹" Style="{StaticResource SidebarToggleButtonStyle}" Margin="8,0,0,0" ToolTip="Thu gọn thanh chức năng" Click="SidebarToggleButton_Click" />
                         </Grid>
 
-                        <Border x:Name="ActiveSegmentCard" Background="#18235A" CornerRadius="7" Padding="8,6" BorderBrush="#303D78" BorderThickness="1">
+                        <Border x:Name="ActiveSegmentCard" Background="#0F172A" CornerRadius="8" Padding="10,6" BorderBrush="#1E293B" BorderThickness="1" Margin="0,0,0,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Ellipse Width="6" Height="6" Fill="#34D399" VerticalAlignment="Center" Margin="0,0,7,0" />
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="MẢNG DỮ LIỆU ĐANG XEM" FontSize="8" Foreground="#93A4D6" />
-                                    <TextBlock x:Name="ActiveSegmentText" Text="TỔNG HỢP TOÀN CÔNG TY" FontSize="10" FontWeight="SemiBold" Foreground="#DDE4FF" />
+                                <Border Width="7" Height="7" CornerRadius="3.5" Background="#10B981" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="MẢNG ĐANG XEM" FontSize="8" FontWeight="SemiBold" Foreground="#64748B" />
+                                    <TextBlock x:Name="ActiveSegmentText" Text="TỔNG HỢP TOÀN CÔNG TY" FontSize="10" FontWeight="SemiBold" Foreground="#E2E8F0" TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <TextBlock Grid.Column="2" Text="●" FontSize="9" Foreground="#34D399" VerticalAlignment="Center" Margin="6,0,0,0" />
                             </Grid>
                         </Border>
 
-                        <StackPanel x:Name="SegmentSwitcher" Margin="0,11,0,0">
-                            <TextBlock Text="CHỌN PHÂN HỆ" Style="{StaticResource SidebarSectionLabel}" Margin="8,0,0,4" />
-                            <RadioButton x:Name="SegmentTechnologyButton" GroupName="SegmentSwitcher" Style="{StaticResource SegmentSelectorRadioButton}" Tag="cong-nghe-giao-duc" Checked="SegmentSelector_Checked">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="30" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#164E63" CornerRadius="7" Width="30" Height="30">
-                                        <TextBlock Text="🎓" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="Công nghệ - Giáo dục" FontSize="11" FontWeight="SemiBold" Foreground="#E0F2FE" />
-                                        <TextBlock Text="EdTech · học viên · lớp học" FontSize="9" Foreground="#7DD3FC" Margin="0,1,0,0" />
+                        <Border x:Name="SegmentSwitcher" Background="#0B1120" CornerRadius="8" Padding="3" BorderBrush="#1E293B" BorderThickness="1" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <RadioButton x:Name="SegmentTechnologyButton" Grid.Column="0" GroupName="SegmentSwitcher" Style="{StaticResource SegmentPillRadioButton}" Tag="cong-nghe-giao-duc" Checked="SegmentSelector_Checked" ToolTip="Phân hệ Công nghệ - Giáo dục" Margin="0,0,2,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="🎓" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Công nghệ" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                     </StackPanel>
-                                </Grid>
-                            </RadioButton>
-                            <RadioButton x:Name="SegmentFashionButton" GroupName="SegmentSwitcher" Style="{StaticResource SegmentSelectorRadioButton}" Tag="thoi-trang" Checked="SegmentSelector_Checked">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="30" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#831843" CornerRadius="7" Width="30" Height="30">
-                                        <TextBlock Text="👗" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="Thời trang" FontSize="11" FontWeight="SemiBold" Foreground="#FCE7F3" />
-                                        <TextBlock Text="Sản phẩm · kho · sản xuất" FontSize="9" Foreground="#F9A8D4" Margin="0,1,0,0" />
+                                </RadioButton>
+                                <RadioButton x:Name="SegmentFashionButton" Grid.Column="1" GroupName="SegmentSwitcher" Style="{StaticResource SegmentPillRadioButton}" Tag="thoi-trang" Checked="SegmentSelector_Checked" ToolTip="Phân hệ Thời trang" Margin="2,0,0,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="👗" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Thời trang" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                     </StackPanel>
-                                </Grid>
-                            </RadioButton>
-                        </StackPanel>
+                                </RadioButton>
+                            </Grid>
+                        </Border>
                     </StackPanel>
 
                     <!-- GROUPED NAVIGATION: chỉ hiện chức năng của phân hệ đang chọn -->
@@ -887,23 +874,27 @@
                     </ScrollViewer>
 
                     <!-- USER PROFILE & LOGOUT FOOTER -->
-                    <Border x:Name="UserProfileCard" Grid.Row="2" Background="#1E293B" CornerRadius="10" Padding="12" BorderBrush="#334155" BorderThickness="1">
+                    <Border x:Name="UserProfileCard" Grid.Row="2" Background="#131C31" CornerRadius="10" Padding="12" BorderBrush="#1E293B" BorderThickness="1">
                         <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="UserAvatarBadge" Grid.Column="0" Background="{StaticResource PrimaryBrush}" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
-                                <TextBlock x:Name="UserAvatarText" Text="AD" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border x:Name="UserAvatarBadge" Grid.Row="0" Grid.Column="0" Background="{StaticResource PrimaryBrush}" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
+                                <TextBlock x:Name="UserAvatarText" Text="AD" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <StackPanel x:Name="UserProfileDetails" Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock x:Name="UserFullNameText" Text="Admin Tổng MOLY" FontSize="13" FontWeight="SemiBold" Foreground="White" TextTrimming="CharacterEllipsis" />
+                            <StackPanel x:Name="UserProfileDetails" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="UserFullNameText" Text="Admin Tổng MOLY" FontSize="12.5" FontWeight="SemiBold" Foreground="White" TextTrimming="CharacterEllipsis" />
                                 <Border Background="#312E81" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="0,2,0,0">
-                                    <TextBlock x:Name="UserRoleBadge" Text="SystemAdmin" FontSize="10" FontWeight="Bold" Foreground="#C7D2FE" />
+                                    <TextBlock x:Name="UserRoleBadge" Text="SystemAdmin" FontSize="9.5" FontWeight="Bold" Foreground="#C7D2FE" />
                                 </Border>
                             </StackPanel>
-                            <Button x:Name="LogoutButton" Grid.Column="2" Content="🚪" ToolTip="Đăng xuất" Click="LogoutButton_Click" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="16" Cursor="Hand" Padding="6" />
+                            <Button x:Name="LogoutButton" Grid.Row="0" Grid.Column="2" Content="🚪" ToolTip="Đăng xuất" Click="LogoutButton_Click" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="16" Cursor="Hand" Padding="6" />
                         </Grid>
                     </Border>
                 </Grid>

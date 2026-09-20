@@ -846,18 +846,63 @@ public partial class MainWindow : Window, IDisposable
         _isSidebarCollapsed = isCollapsed;
         SidebarColumn.Width = new GridLength(isCollapsed ? 86 : 270);
         SidebarPanel.Padding = isCollapsed ? new Thickness(9, 16, 9, 14) : new Thickness(13, 16, 12, 14);
-        SidebarBrandHeader.Margin = isCollapsed ? new Thickness(0, 0, 0, 9) : new Thickness(3, 0, 0, 9);
-        SidebarBrandDetails.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        SidebarBrandHeader.Margin = isCollapsed ? new Thickness(0, 0, 0, 10) : new Thickness(2, 0, 0, 10);
+
+        if (isCollapsed)
+        {
+            SidebarBrandDetails.Visibility = Visibility.Collapsed;
+            SidebarBrandContainer.HorizontalAlignment = HorizontalAlignment.Center;
+            SidebarBrandLogo.HorizontalAlignment = HorizontalAlignment.Center;
+            Grid.SetRow(SidebarToggleButton, 1);
+            Grid.SetColumn(SidebarToggleButton, 0);
+            Grid.SetColumnSpan(SidebarToggleButton, 2);
+            SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Center;
+            SidebarToggleButton.Margin = new Thickness(0, 8, 0, 0);
+            SidebarToggleButton.Content = "›";
+            SidebarToggleButton.ToolTip = "Mở rộng thanh chức năng";
+
+            UserProfileDetails.Visibility = Visibility.Collapsed;
+            UserProfileCard.Padding = new Thickness(8, 10, 8, 10);
+            UserAvatarBadge.HorizontalAlignment = HorizontalAlignment.Center;
+            UserAvatarBadge.Margin = new Thickness(0);
+            Grid.SetRow(LogoutButton, 1);
+            Grid.SetColumn(LogoutButton, 0);
+            Grid.SetColumnSpan(LogoutButton, 3);
+            LogoutButton.HorizontalAlignment = HorizontalAlignment.Center;
+            LogoutButton.Margin = new Thickness(0, 8, 0, 0);
+            LogoutButton.Width = 32;
+            LogoutButton.Height = 32;
+            LogoutButton.Padding = new Thickness(0);
+        }
+        else
+        {
+            SidebarBrandDetails.Visibility = Visibility.Visible;
+            SidebarBrandContainer.HorizontalAlignment = HorizontalAlignment.Left;
+            SidebarBrandLogo.HorizontalAlignment = HorizontalAlignment.Left;
+            Grid.SetRow(SidebarToggleButton, 0);
+            Grid.SetColumn(SidebarToggleButton, 1);
+            Grid.SetColumnSpan(SidebarToggleButton, 1);
+            SidebarToggleButton.HorizontalAlignment = HorizontalAlignment.Right;
+            SidebarToggleButton.Margin = new Thickness(8, 0, 0, 0);
+            SidebarToggleButton.Content = "‹";
+            SidebarToggleButton.ToolTip = "Thu gọn thanh chức năng";
+
+            UserProfileDetails.Visibility = Visibility.Visible;
+            UserProfileCard.Padding = new Thickness(12);
+            UserAvatarBadge.HorizontalAlignment = HorizontalAlignment.Left;
+            UserAvatarBadge.Margin = new Thickness(0, 0, 10, 0);
+            Grid.SetRow(LogoutButton, 0);
+            Grid.SetColumn(LogoutButton, 2);
+            Grid.SetColumnSpan(LogoutButton, 1);
+            LogoutButton.HorizontalAlignment = HorizontalAlignment.Right;
+            LogoutButton.Margin = new Thickness(0);
+            LogoutButton.Width = double.NaN;
+            LogoutButton.Height = double.NaN;
+            LogoutButton.Padding = new Thickness(6);
+        }
+
         ActiveSegmentCard.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         SegmentSwitcher.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        UserProfileDetails.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        UserProfileCard.Padding = isCollapsed ? new Thickness(6) : new Thickness(12);
-        UserAvatarBadge.Margin = isCollapsed ? new Thickness(0) : new Thickness(0, 0, 10, 0);
-        LogoutButton.Width = isCollapsed ? 18 : double.NaN;
-        LogoutButton.Padding = isCollapsed ? new Thickness(0) : new Thickness(6);
-        SidebarToggleButton.Content = isCollapsed ? "›" : "‹";
-        SidebarToggleButton.Margin = isCollapsed ? new Thickness(0) : new Thickness(8, 0, 0, 0);
-        SidebarToggleButton.ToolTip = isCollapsed ? "Mở rộng thanh chức năng" : "Thu gọn thanh chức năng";
 
         CompanyNavigationLabel.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         TechnologyNavigationLabel.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
@@ -965,6 +1010,7 @@ public partial class MainWindow : Window, IDisposable
             navigationItem.Item.ToolTip = isCollapsed ? navigationItem.Expanded.Trim() : null;
             navigationItem.Item.HorizontalContentAlignment = isCollapsed ? HorizontalAlignment.Center : HorizontalAlignment.Left;
             navigationItem.Item.Padding = isCollapsed ? new Thickness(0) : new Thickness(11, 0, 11, 0);
+            navigationItem.Item.FontSize = isCollapsed ? 14 : 12;
         }
     }
 
