@@ -903,6 +903,12 @@ public partial class CscaClassDetailWindow : Window
 
     private void SetBusy(bool isBusy, string message)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => SetBusy(isBusy, message));
+            return;
+        }
+
         LoadingText.Text = message;
         DetailTabs.IsEnabled = !isBusy;
         if (CscaBusyOverlay != null)

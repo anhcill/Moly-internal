@@ -21,6 +21,7 @@ public partial class CscaClassroomWindow : Window
 
     private async Task LoadClassroomsAsync()
     {
+        SetBusy(true, "Đang tải danh mục phòng học...");
         StatusText.Text = "Đang tải danh mục phòng học...";
         try
         {
@@ -38,6 +39,10 @@ public partial class CscaClassroomWindow : Window
         {
             StatusText.Text = $"Không tải được dữ liệu: {ex.Message}";
         }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
     private async void AddClassroom_Click(object sender, RoutedEventArgs e)
@@ -45,14 +50,22 @@ public partial class CscaClassroomWindow : Window
         if (!PromptDialog.TryShow(this, "Thêm phòng học", ClassroomFields(), out var values)) return;
         if (!TryCapacity(values["capacity"], out var capacity)) return;
 
-        if (!await _apiClient.CreateCscaClassroomAsync(values["code"], values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
+        SetBusy(true, "Đang tạo phòng học mới...");
+        try
         {
-            ShowInvalid("Không thể tạo phòng. Kiểm tra lại mã phòng hoặc quyền quản lý lớp.");
-            return;
-        }
+            if (!await _apiClient.CreateCscaClassroomAsync(values["code"], values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
+            {
+                ShowInvalid("Không thể tạo phòng. Kiểm tra lại mã phòng hoặc quyền quản lý lớp.");
+                return;
+            }
 
-        await LoadClassroomsAsync();
-        StatusText.Text = "Đã tạo phòng học.";
+            await LoadClassroomsAsync();
+            StatusText.Text = "Đã tạo phòng học.";
+        }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
     private async void EditClassroom_Click(object sender, RoutedEventArgs e)
@@ -66,14 +79,22 @@ public partial class CscaClassroomWindow : Window
         if (!PromptDialog.TryShow(this, $"Sửa phòng {classroom.Code}", ClassroomFields(classroom), out var values)) return;
         if (!TryCapacity(values["capacity"], out var capacity)) return;
 
-        if (!await _apiClient.UpdateCscaClassroomAsync(classroom.Id, values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
+        SetBusy(true, $"Đang cập nhật phòng {classroom.Code}...");
+        try
         {
-            ShowInvalid("Không thể cập nhật phòng học.");
-            return;
-        }
+            if (!await _apiClient.UpdateCscaClassroomAsync(classroom.Id, values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
+            {
+                ShowInvalid("Không thể cập nhật phòng học.");
+                return;
+            }
 
-        await LoadClassroomsAsync();
-        StatusText.Text = "Đã cập nhật phòng học.";
+            await LoadClassroomsAsync();
+            StatusText.Text = "Đã cập nhật phòng học.";
+        }
+        finally
+        {
+            SetBusy(false);
+        }
     }
 
     private async void RemoveClassroom_Click(object sender, RoutedEventArgs e)
@@ -86,14 +107,41 @@ public partial class CscaClassroomWindow : Window
         if (MessageBox.Show(this, $"Xóa phòng '{classroom.Code} — {classroom.Name}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
 
-        if (!await _apiClient.RemoveCscaClassroomAsync(classroom.Id))
+        SetBusy(true, $"Đang xóa phòng {classroom.Code}...");
+        try
         {
-            ShowInvalid("Không thể xóa phòng đang được dùng. Hãy sửa và chuyển trạng thái thành Ngừng dùng.");
+            if (!await _apiClient.RemoveCscaClassroomAsync(classroom.Id))
+            {
+                ShowInvalid("Không thể xóa phòng đang được dùng. Hãy sửa và chuyển trạng thái thành Ngừng dùng.");
+                return;
+            }
+
+            await LoadClassroomsAsync();
+            StatusText.Text = "Đã xóa phòng học.";
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    private void SetBusy(bool isBusy, string? message = null)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => SetBusy(isBusy, message));
             return;
         }
 
-        await LoadClassroomsAsync();
-        StatusText.Text = "Đã xóa phòng học.";
+        if (ClassroomBusyOverlay != null)
+        {
+            ClassroomBusyOverlay.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+            if (ClassroomBusyText != null)
+            {
+                ClassroomBusyText.Text = string.IsNullOrWhiteSpace(message) ? "Đang xử lý dữ liệu..." : message;
+            }
+        }
+        Mouse.OverrideCursor = isBusy ? Cursors.Wait : null;
     }
 
     private void ClassroomsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

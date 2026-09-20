@@ -410,6 +410,12 @@ public partial class MainWindow : Window, IDisposable
 
     private void SetLoginBusy(bool isBusy, string? title = null, string? subText = null)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => SetLoginBusy(isBusy, title, subText));
+            return;
+        }
+
         if (LoginBusyOverlay != null)
         {
             LoginBusyOverlay.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
@@ -674,6 +680,12 @@ public partial class MainWindow : Window, IDisposable
 
     private void SetBusy(bool isBusy, string? message = null, string? subMessage = null)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => SetBusy(isBusy, message, subMessage));
+            return;
+        }
+
         if (isBusy)
         {
             Interlocked.Increment(ref _busyOperationCount);
@@ -1663,9 +1675,9 @@ public partial class MainWindow : Window, IDisposable
         _ = DebounceSearchAsync("customers", "Đang tìm học viên...", () => LoadCustomersAsync(CustomerSearchBox.Text));
     }
 
-    private void RefreshCourses_Click(object sender, RoutedEventArgs e) => _ = LoadCoursesAsync(CourseSearchBox.Text);
-    private void RefreshQuestions_Click(object sender, RoutedEventArgs e) => _ = LoadQuestionsAsync(QuestionSearchBox.Text);
-    private void RefreshCustomers_Click(object sender, RoutedEventArgs e) => _ = LoadCustomersAsync(CustomerSearchBox.Text);
+    private void RefreshCourses_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải danh sách khóa học...", () => LoadCoursesAsync(CourseSearchBox.Text));
+    private void RefreshQuestions_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải ngân hàng câu hỏi...", () => LoadQuestionsAsync(QuestionSearchBox.Text));
+    private void RefreshCustomers_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải danh sách học viên & khách hàng...", () => LoadCustomersAsync(CustomerSearchBox.Text));
     private void RefreshSyncRuns_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải lịch sử đồng bộ và Dead-Letter...", () => LoadSyncRunsAsync());
     private void RefreshDeadLetters_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải Dead-Letter Queue...", LoadDeadLettersAsync);
     private void RefreshLmsIntegration_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải trạng thái CSCA LMS...", LoadLmsIntegrationAsync);
@@ -1916,17 +1928,20 @@ public partial class MainWindow : Window, IDisposable
         }
 
         var newTitle = values["title"];
-        var success = await _apiClient.CreateCourseAsync(newTitle, price, values["description"]);
-        if (success)
+        await RunWithBusyAsync("Đang tạo khóa học mới...", async () =>
         {
-            MessageBox.Show($"Tạo thành công khóa học: '{newTitle}'!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCoursesAsync();
-            await LoadDashboardMetricsAsync();
-        }
-        else
-        {
-            MessageBox.Show("Tạo khóa học thất bại. Bạn có quyền Courses.Manage không?", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.CreateCourseAsync(newTitle, price, values["description"]);
+            if (success)
+            {
+                MessageBox.Show($"Tạo thành công khóa học: '{newTitle}'!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCoursesAsync();
+                await LoadDashboardMetricsAsync();
+            }
+            else
+            {
+                MessageBox.Show("Tạo khóa học thất bại. Bạn có quyền Courses.Manage không?", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private async void EditCourseDialog_Click(object sender, RoutedEventArgs e)
@@ -1957,17 +1972,20 @@ public partial class MainWindow : Window, IDisposable
             return;
         }
 
-        var success = await _apiClient.UpdateCourseAsync(course.Id, values["title"], price, values["description"], values["status"], values["slug"]);
-        if (success)
+        await RunWithBusyAsync("Đang cập nhật khóa học...", async () =>
         {
-            MessageBox.Show($"Cập nhật thành công khóa học: '{values["title"]}'!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCoursesAsync();
-            await LoadDashboardMetricsAsync();
-        }
-        else
-        {
-            MessageBox.Show("Cập nhật khóa học thất bại. Vui lòng kiểm tra kết nối hoặc quyền hạn.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.UpdateCourseAsync(course.Id, values["title"], price, values["description"], values["status"], values["slug"]);
+            if (success)
+            {
+                MessageBox.Show($"Cập nhật thành công khóa học: '{values["title"]}'!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCoursesAsync();
+                await LoadDashboardMetricsAsync();
+            }
+            else
+            {
+                MessageBox.Show("Cập nhật khóa học thất bại. Vui lòng kiểm tra kết nối hoặc quyền hạn.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private async void DeleteCourse_Click(object sender, RoutedEventArgs e)
@@ -1986,17 +2004,20 @@ public partial class MainWindow : Window, IDisposable
 
         if (confirmation != MessageBoxResult.Yes) return;
 
-        var success = await _apiClient.DeleteCourseAsync(course.Id);
-        if (success)
+        await RunWithBusyAsync("Đang xóa khóa học...", async () =>
         {
-            MessageBox.Show($"Đã xóa khóa học: '{course.Title}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCoursesAsync();
-            await LoadDashboardMetricsAsync();
-        }
-        else
-        {
-            MessageBox.Show("Không thể xóa khóa học. Khóa học có thể đang chứa lớp học hoạt động hoặc bạn không có quyền Courses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.DeleteCourseAsync(course.Id);
+            if (success)
+            {
+                MessageBox.Show($"Đã xóa khóa học: '{course.Title}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCoursesAsync();
+                await LoadDashboardMetricsAsync();
+            }
+            else
+            {
+                MessageBox.Show("Không thể xóa khóa học. Khóa học có thể đang chứa lớp học hoạt động hoặc bạn không có quyền Courses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private void CoursesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -2184,17 +2205,20 @@ public partial class MainWindow : Window, IDisposable
             return;
         }
 
-        var success = await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId);
-        if (success)
+        await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
-            MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCscaClassesAsync();
-            await LoadCoursesAsync();
-        }
-        else
-        {
-            MessageBox.Show("Tạo lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId);
+            if (success)
+            {
+                MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCscaClassesAsync();
+                await LoadCoursesAsync();
+            }
+            else
+            {
+                MessageBox.Show("Tạo lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private async void EditCscaClass_Click(object sender, RoutedEventArgs e)
@@ -2224,16 +2248,19 @@ public partial class MainWindow : Window, IDisposable
             return;
         }
 
-        var success = await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"]);
-        if (success)
+        await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
-            MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCscaClassesAsync();
-        }
-        else
-        {
-            MessageBox.Show("Cập nhật lớp thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"]);
+            if (success)
+            {
+                MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCscaClassesAsync();
+            }
+            else
+            {
+                MessageBox.Show("Cập nhật lớp thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private async void DeleteCscaClass_Click(object sender, RoutedEventArgs e)
@@ -2252,17 +2279,20 @@ public partial class MainWindow : Window, IDisposable
 
         if (confirmation != MessageBoxResult.Yes) return;
 
-        var success = await _apiClient.DeleteCscaClassAsync(cls.Id);
-        if (success)
+        await RunWithBusyAsync("Đang xóa lớp học...", async () =>
         {
-            MessageBox.Show($"Đã xóa thành công lớp học: '{cls.Code}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-            await LoadCscaClassesAsync();
-            await LoadCoursesAsync();
-        }
-        else
-        {
-            MessageBox.Show("Xóa lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            var success = await _apiClient.DeleteCscaClassAsync(cls.Id);
+            if (success)
+            {
+                MessageBox.Show($"Đã xóa thành công lớp học: '{cls.Code}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadCscaClassesAsync();
+                await LoadCoursesAsync();
+            }
+            else
+            {
+                MessageBox.Show("Xóa lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        });
     }
 
     private void InterviewSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -2272,7 +2302,7 @@ public partial class MainWindow : Window, IDisposable
         _ = DebounceSearchAsync("interview", "Đang tìm khách hàng phỏng vấn...", () => LoadInterviewCustomersAsync(InterviewSearchBox.Text));
     }
 
-    private void RefreshInterview_Click(object sender, RoutedEventArgs e) => _ = LoadInterviewCustomersAsync(InterviewSearchBox.Text);
+    private void RefreshInterview_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải danh sách Mock Interview...", () => LoadInterviewCustomersAsync(InterviewSearchBox.Text));
 
     private async void SyncInterviewFromWebsite_Click(object sender, RoutedEventArgs e)
     {
@@ -2498,7 +2528,7 @@ public partial class MainWindow : Window, IDisposable
     {
         if (_isUiReady) _ = DebounceSearchAsync(SegmentViewKey("employees-filter"), "Đang lọc nhân sự...", LoadEmployeesAsync);
     }
-    private void RefreshEmployees_Click(object sender, RoutedEventArgs e) => _ = LoadEmployeesAsync();
+    private void RefreshEmployees_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải danh sách nhân sự...", () => LoadEmployeesAsync());
 
     private async void EmployeesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
@@ -2555,8 +2585,8 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
-    private void FilterAttendance_Click(object sender, RoutedEventArgs e) => _ = LoadAttendanceAsync();
-    private void RefreshAttendance_Click(object sender, RoutedEventArgs e) => _ = LoadAttendanceAsync();
+    private void FilterAttendance_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang lọc dữ liệu chấm công...", () => LoadAttendanceAsync());
+    private void RefreshAttendance_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải dữ liệu chấm công...", () => LoadAttendanceAsync());
 
     private async void DownloadAttendanceTemplate_Click(object sender, RoutedEventArgs e)
     {
@@ -2824,8 +2854,8 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
-    private async void RefreshPayrollMonthlySummary_Click(object sender, RoutedEventArgs e)
-        => await LoadPayrollMonthlySummaryAsync();
+    private void RefreshPayrollMonthlySummary_Click(object sender, RoutedEventArgs e)
+        => _ = RunWithBusyAsync("Đang tải tổng hợp kỳ lương...", LoadPayrollMonthlySummaryAsync);
 
     private async Task LoadPayrollMonthlySummaryAsync()
     {
@@ -3786,9 +3816,9 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
-    private async void RefreshPayroll_Click(object sender, RoutedEventArgs e)
+    private void RefreshPayroll_Click(object sender, RoutedEventArgs e)
     {
-        await LoadPayrollPeriodsAsync();
+        _ = RunWithBusyAsync("Đang tải bảng tính lương...", () => LoadPayrollPeriodsAsync());
     }
 
     // ── Dữ liệu nội bộ tách mảng & bảng tổng tài chính ──
@@ -4052,20 +4082,23 @@ public partial class MainWindow : Window, IDisposable
         departments.AddRange(_cachedDepartments.Select(d => new EmployeeDialogOption(d.Id, $"{d.Code} - {d.Name}")));
         if (!EmployeeDialog.TryShow(this, ActiveSegmentName, units, departments, out var value, employee) || value is null) return;
 
-        ApiClient.EmployeeItem? saved;
-        if (employee is null)
+        await RunWithBusyAsync(employee is null ? "Đang tạo hồ sơ nhân sự..." : "Đang cập nhật hồ sơ nhân sự...", async () =>
         {
-            var model = new ApiClient.CreateEmployeeModel(value.EmployeeCode, value.FullName, value.Email, value.Phone, value.Position, value.BaseSalary, value.DepartmentId, value.BusinessUnitId, value.JoinedDate, value.Status, value.EmploymentType, value.PartTimeCalculationMethod, value.PartTimeUnitRate, value.CvUrlOrPath, value.ProfessionalSummary, value.Skills, value.Experience);
-            saved = await _apiClient.CreateEmployeeAsync(model);
-        }
-        else
-        {
-            var model = new ApiClient.UpdateEmployeeModel(value.FullName, value.Email, value.Phone, value.Position, value.BaseSalary, value.DepartmentId, value.BusinessUnitId, value.JoinedDate, value.Status, value.EmploymentType, value.PartTimeCalculationMethod, value.PartTimeUnitRate, value.CvUrlOrPath, value.ProfessionalSummary, value.Skills, value.Experience);
-            saved = await _apiClient.UpdateEmployeeAsync(employee.Id, model);
-        }
-        if (saved is null) { ShowToast("Không lưu được hồ sơ nhân sự. Vui lòng kiểm tra dữ liệu và quyền quản lý.", true); return; }
-        ShowToast(employee is null ? "Đã tạo hồ sơ nhân sự." : "Đã cập nhật hồ sơ nhân sự.");
-        await LoadEmployeesAsync();
+            ApiClient.EmployeeItem? saved;
+            if (employee is null)
+            {
+                var model = new ApiClient.CreateEmployeeModel(value.EmployeeCode, value.FullName, value.Email, value.Phone, value.Position, value.BaseSalary, value.DepartmentId, value.BusinessUnitId, value.JoinedDate, value.Status, value.EmploymentType, value.PartTimeCalculationMethod, value.PartTimeUnitRate, value.CvUrlOrPath, value.ProfessionalSummary, value.Skills, value.Experience);
+                saved = await _apiClient.CreateEmployeeAsync(model);
+            }
+            else
+            {
+                var model = new ApiClient.UpdateEmployeeModel(value.FullName, value.Email, value.Phone, value.Position, value.BaseSalary, value.DepartmentId, value.BusinessUnitId, value.JoinedDate, value.Status, value.EmploymentType, value.PartTimeCalculationMethod, value.PartTimeUnitRate, value.CvUrlOrPath, value.ProfessionalSummary, value.Skills, value.Experience);
+                saved = await _apiClient.UpdateEmployeeAsync(employee.Id, model);
+            }
+            if (saved is null) { ShowToast("Không lưu được hồ sơ nhân sự. Vui lòng kiểm tra dữ liệu và quyền quản lý.", true); return; }
+            ShowToast(employee is null ? "Đã tạo hồ sơ nhân sự." : "Đã cập nhật hồ sơ nhân sự.");
+            await LoadEmployeesAsync();
+        });
     }
 
     private List<EmployeeDialogOption> GetSegmentBusinessUnitOptions(ApiClient.EmployeeItem? employee)
@@ -4099,9 +4132,12 @@ public partial class MainWindow : Window, IDisposable
         var employee = GetSelectedEmployee();
         if (employee is null) { ShowToast("Hãy chọn nhân sự cần xóa."); return; }
         if (MessageBox.Show(this, $"Xóa hồ sơ nhân sự “{employee.FullName}”?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-        if (!await _apiClient.DeleteEmployeeAsync(employee.Id)) { ShowToast("Xóa nhân sự thất bại. Vui lòng kiểm tra ràng buộc dữ liệu và quyền quản lý.", true); return; }
-        ShowToast("Đã xóa hồ sơ nhân sự.");
-        await LoadEmployeesAsync();
+        await RunWithBusyAsync("Đang xóa hồ sơ nhân sự...", async () =>
+        {
+            if (!await _apiClient.DeleteEmployeeAsync(employee.Id)) { ShowToast("Xóa nhân sự thất bại. Vui lòng kiểm tra ràng buộc dữ liệu và quyền quản lý.", true); return; }
+            ShowToast("Đã xóa hồ sơ nhân sự.");
+            await LoadEmployeesAsync();
+        });
     }
 
     private void OpenEmployeeCv_Click(object sender, RoutedEventArgs e)
