@@ -1,6 +1,10 @@
+using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
 using InternalManagement.Infrastructure.Persistence;
@@ -103,5 +107,66 @@ public class WebhookProcessorTests
 
         // Assert
         processed.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Ingest_CscaLmsAttendance_ShouldCreateAndThenUpdateManagementAttendance()
+    {
+        // Arrange
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        var studentId = Guid.NewGuid();
+        const string secret = "test-webhook-secret";
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-01", Name = "CSCA 01", IsDeleted = false });
+        db.CscaClassStudents.Add(new CscaClassStudent { Id = studentId, ClassId = classId, StudentName = "Học viên thử" });
+        db.IntegrationSources.Add(new IntegrationSource
+        {
+            CompanyId = Guid.NewGuid(),
+            Code = "CSCA_COURSE_LMS",
+            Name = "CSCA Course LMS",
+            BaseUrl = "https://lms.example.test",
+            AuthType = "HMAC",
+            CredentialReference = secret,
+            IsActive = true
+        });
+        await db.SaveChangesAsync();
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+
+        var firstPayload = AttendancePayload(classId, studentId, "present");
+
+        // Act
+        var (accepted, message) = await processor.IngestAsync(
+            "CSCA_COURSE_LMS", "attendance-evt-1", "lms.attendance.recorded",
+            firstPayload, Sign(firstPayload, secret), CancellationToken.None);
+
+        // Assert
+        accepted.Should().BeTrue();
+        message.Should().Contain("lưu trực tiếp");
+        var session = await db.CscaLessonSessions.SingleAsync();
+        session.ExternalSource.Should().Be("CSCA_COURSE_LMS");
+        session.ExternalSessionId.Should().Be("lms-session-101");
+        var attendance = await db.CscaLessonAttendances.SingleAsync();
+        attendance.StudentId.Should().Be(studentId);
+        attendance.Status.Should().Be("Present");
+
+        // A later teacher correction for the same LMS session updates, rather
+        // than duplicating, the Management lesson attendance.
+        var correctedPayload = AttendancePayload(classId, studentId, "absent");
+        var corrected = await processor.IngestAsync(
+            "CSCA_COURSE_LMS", "attendance-evt-2", "lms.attendance.recorded",
+            correctedPayload, Sign(correctedPayload, secret), CancellationToken.None);
+
+        corrected.Accepted.Should().BeTrue();
+        (await db.CscaLessonSessions.CountAsync()).Should().Be(1);
+        (await db.CscaLessonAttendances.SingleAsync()).Status.Should().Be("Absent");
+    }
+
+    private static string AttendancePayload(Guid classId, Guid studentId, string status) =>
+        $$"""{"schemaVersion":1,"managementClassId":"{{classId}}","lmsSession":{"id":"lms-session-101","title":"Buổi 1","startTime":"2026-09-21T09:00:00.000Z","endTime":"2026-09-21T10:30:00.000Z","status":"scheduled"},"attendance":[{"managementStudentId":"{{studentId}}","status":"{{status}}","checkedAt":"2026-09-21T09:05:00.000Z","note":""}]}""";
+
+    private static string Sign(string payload, string secret)
+    {
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+        return $"sha256={Convert.ToHexStringLower(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)))}";
     }
 }

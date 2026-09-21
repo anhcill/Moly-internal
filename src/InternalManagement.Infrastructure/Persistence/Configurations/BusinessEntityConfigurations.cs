@@ -233,7 +233,11 @@ public class BusinessEntityConfigurations :
         builder.Property(session => session.Status).HasMaxLength(30).IsRequired();
         builder.Property(session => session.MeetingUrl).HasMaxLength(1000);
         builder.Property(session => session.Notes).HasMaxLength(1000);
+        builder.Property(session => session.ExternalSource).HasMaxLength(100);
+        builder.Property(session => session.ExternalSessionId).HasMaxLength(128);
         builder.HasIndex(session => new { session.ClassId, session.LessonDate, session.StartTime, session.EndTime }).IsUnique();
+        builder.HasIndex(session => new { session.ExternalSource, session.ExternalSessionId }).IsUnique()
+            .HasFilter("external_source IS NOT NULL AND external_session_id IS NOT NULL");
         builder.HasIndex(session => new { session.ClassroomId, session.LessonDate, session.StartTime, session.EndTime });
         builder.HasOne(session => session.Class).WithMany(cls => cls.LessonSessions).HasForeignKey(session => session.ClassId)
             .OnDelete(DeleteBehavior.Cascade);

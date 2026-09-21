@@ -49,6 +49,10 @@ public class WebhooksController : BaseApiController
 
         if (!accepted)
         {
+            if (message.StartsWith("DEPENDENCY_PENDING:", StringComparison.Ordinal))
+            {
+                return Conflict(ApiResponse<WebhookIngestResponse>.Fail(message));
+            }
             return BadRequest(ApiResponse<WebhookIngestResponse>.Fail(message));
         }
 

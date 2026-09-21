@@ -101,6 +101,12 @@ public class CscaLessonSession : BaseEntity, IAuditableEntity
     public string? MeetingUrl { get; set; }
     public string? Notes { get; set; }
 
+    // Immutable source reference when a session is created or linked by an
+    // external teaching system. This keeps repeated attendance updates tied to
+    // one Management lesson even if its time is later edited in the LMS.
+    public string? ExternalSource { get; set; }
+    public string? ExternalSessionId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? CreatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
