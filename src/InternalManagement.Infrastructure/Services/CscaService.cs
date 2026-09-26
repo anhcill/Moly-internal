@@ -10,6 +10,7 @@ using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Application.Features.MasterData.Services;
 using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.Documents;
+using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Entities.MasterData;
 using InternalManagement.Domain.Enums;
 
@@ -872,6 +873,8 @@ public sealed class CscaService : ICscaService
             (!businessUnitId.HasValue || c.BusinessUnitId == businessUnitId), ct);
         if (cls == null)
             return Result<CscaScheduleDto>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await HasLmsCalendarProjectionAsync(classId, ct))
+            return Result<CscaScheduleDto>.Failure("Lịch của lớp này được quản lý trên LMS. Hãy tạo hoặc chỉnh sửa lịch tại LMS.");
         var validation = ValidateSchedule(request.DayOfWeek, request.StartTime, request.EndTime)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
@@ -908,6 +911,8 @@ public sealed class CscaService : ICscaService
                 s.Class.CompanyId == companyId && (!businessUnitId.HasValue || s.Class.BusinessUnitId == businessUnitId), ct);
         if (schedule == null)
             return Result<CscaScheduleDto>.Failure("Không tìm thấy lịch học.");
+        if (IsLmsCalendarProjection(schedule.ExternalSource))
+            return Result<CscaScheduleDto>.Failure("Lịch này được quản lý trên LMS. Hãy chỉnh sửa tại LMS.");
         var validation = ValidateSchedule(request.DayOfWeek, request.StartTime, request.EndTime)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
@@ -944,6 +949,8 @@ public sealed class CscaService : ICscaService
                 s.Class.CompanyId == companyId && (!businessUnitId.HasValue || s.Class.BusinessUnitId == businessUnitId), ct);
         if (schedule == null)
             return Result<bool>.Failure("Không tìm thấy lịch học.");
+        if (IsLmsCalendarProjection(schedule.ExternalSource))
+            return Result<bool>.Failure("Lịch này được quản lý trên LMS. Hãy ngừng lịch tại LMS.");
         _db.CscaClassSchedules.Remove(schedule);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
@@ -1080,6 +1087,8 @@ public sealed class CscaService : ICscaService
             (!businessUnitId.HasValue || item.BusinessUnitId == businessUnitId), ct);
         if (cls == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await HasLmsCalendarProjectionAsync(classId, ct))
+            return Result<CscaLessonSessionDto>.Failure("Buổi học của lớp này được quản lý trên LMS. Hãy tạo buổi tại LMS.");
         var validation = ValidateLessonSession(request.LessonDate, request.StartTime, request.EndTime, request.Status)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
@@ -1123,6 +1132,8 @@ public sealed class CscaService : ICscaService
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
+        if (IsLmsCalendarProjection(session.ExternalSource))
+            return Result<CscaLessonSessionDto>.Failure("Buổi học này được quản lý trên LMS. Hãy chỉnh sửa tại LMS.");
         var validation = ValidateLessonSession(request.LessonDate, request.StartTime, request.EndTime, request.Status)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
@@ -1155,6 +1166,8 @@ public sealed class CscaService : ICscaService
         var session = await _db.CscaLessonSessions.FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<bool>.Failure("Không tìm thấy buổi học.");
+        if (IsLmsCalendarProjection(session.ExternalSource))
+            return Result<bool>.Failure("Buổi học này được quản lý trên LMS. Hãy hủy buổi tại LMS.");
 
         _db.CscaLessonSessions.Remove(session);
         await _db.SaveChangesAsync(ct);
@@ -1169,6 +1182,8 @@ public sealed class CscaService : ICscaService
             return Result<int>.Failure("Chỉ được tạo buổi học tối đa trong 366 ngày cho một lần thao tác.");
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<int>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await HasLmsCalendarProjectionAsync(classId, ct))
+            return Result<int>.Failure("Lớp này được LMS tự sinh buổi học theo lịch cố định. Không thể sinh thêm từ Management.");
 
         var schedules = await _db.CscaClassSchedules.AsNoTracking()
             .Where(schedule => schedule.ClassId == classId)
@@ -1386,6 +1401,13 @@ public sealed class CscaService : ICscaService
 
     private static bool IsValidAttendanceStatus(string? status) => new[] { "Present", "Late", "Absent", "Excused" }
         .Contains(status?.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    private static bool IsLmsCalendarProjection(string? sourceSystem) =>
+        string.Equals(sourceSystem, LmsIntegrationSourceSystems.CscaCourseLms, StringComparison.Ordinal);
+
+    private Task<bool> HasLmsCalendarProjectionAsync(Guid classId, CancellationToken ct) =>
+        _db.CscaClassSchedules.AnyAsync(schedule => schedule.ClassId == classId &&
+            schedule.ExternalSource == LmsIntegrationSourceSystems.CscaCourseLms, ct);
 
     private async Task<Result<CscaClassroom?>> ResolveClassroomAsync(
         Guid? classroomId, Guid companyId, Guid? businessUnitId, CancellationToken ct)

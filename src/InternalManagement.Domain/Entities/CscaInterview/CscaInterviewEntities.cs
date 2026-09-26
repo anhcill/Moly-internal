@@ -77,6 +77,17 @@ public class CscaClassSchedule : BaseEntity, IAuditableEntity
     public string? MeetingUrl { get; set; }
     public string? Notes { get; set; }
 
+    // A schedule imported from the LMS is a read-model projection. It must
+    // never be edited back into the LMS by Management CRUD screens.
+    public string? ExternalSource { get; set; }
+    public string? ExternalScheduleId { get; set; }
+    public string? Title { get; set; }
+    public string Timezone { get; set; } = "Asia/Ho_Chi_Minh";
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public string Status { get; set; } = "Active"; // Active, Archived
+    public int ExternalVersion { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? CreatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -106,6 +117,7 @@ public class CscaLessonSession : BaseEntity, IAuditableEntity
     // one Management lesson even if its time is later edited in the LMS.
     public string? ExternalSource { get; set; }
     public string? ExternalSessionId { get; set; }
+    public int ExternalVersion { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? CreatedBy { get; set; }

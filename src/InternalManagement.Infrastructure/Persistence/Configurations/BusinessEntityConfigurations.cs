@@ -206,7 +206,14 @@ public class BusinessEntityConfigurations :
         builder.Property(s => s.Room).HasMaxLength(200);
         builder.Property(s => s.MeetingUrl).HasMaxLength(1000);
         builder.Property(s => s.Notes).HasMaxLength(1000);
+        builder.Property(s => s.ExternalSource).HasMaxLength(100);
+        builder.Property(s => s.ExternalScheduleId).HasMaxLength(128);
+        builder.Property(s => s.Title).HasMaxLength(255);
+        builder.Property(s => s.Timezone).HasMaxLength(64).IsRequired();
+        builder.Property(s => s.Status).HasMaxLength(30).IsRequired();
         builder.HasIndex(s => new { s.ClassId, s.DayOfWeek, s.StartTime, s.EndTime }).IsUnique();
+        builder.HasIndex(s => new { s.ExternalSource, s.ExternalScheduleId }).IsUnique()
+            .HasFilter("external_source IS NOT NULL AND external_schedule_id IS NOT NULL");
         builder.HasOne(s => s.Class).WithMany(c => c.Schedules).HasForeignKey(s => s.ClassId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(s => s.Classroom).WithMany(c => c.Schedules).HasForeignKey(s => s.ClassroomId)

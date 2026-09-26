@@ -6,6 +6,7 @@ using InternalManagement.Domain.Entities.MasterData;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace InternalManagement.UnitTests.Integration;
@@ -17,11 +18,15 @@ public sealed class LmsIntegrationPersistenceTests
     {
         using var db = CreateInMemoryDb();
 
-        var accountLink = db.Model.FindEntityType(typeof(LmsAccountLink))!;
-        var courseLink = db.Model.FindEntityType(typeof(LmsCourseLink))!;
-        var grant = db.Model.FindEntityType(typeof(LmsAccessGrant))!;
-        var outbox = db.Model.FindEntityType(typeof(IntegrationOutbox))!;
-        var syncStatus = db.Model.FindEntityType(typeof(LmsSyncStatus))!;
+        // EF Core 10 keeps relational metadata such as check constraints out
+        // of the runtime-optimized model. The design-time model remains the
+        // canonical source for persistence-contract assertions.
+        var model = db.GetService<IDesignTimeModel>().Model;
+        var accountLink = model.FindEntityType(typeof(LmsAccountLink))!;
+        var courseLink = model.FindEntityType(typeof(LmsCourseLink))!;
+        var grant = model.FindEntityType(typeof(LmsAccessGrant))!;
+        var outbox = model.FindEntityType(typeof(IntegrationOutbox))!;
+        var syncStatus = model.FindEntityType(typeof(LmsSyncStatus))!;
 
         accountLink.GetCheckConstraints()
             .Should().Contain(x => x.Name == "ck_lms_account_links_identity");
