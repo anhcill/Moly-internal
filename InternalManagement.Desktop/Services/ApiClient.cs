@@ -1681,13 +1681,19 @@ public sealed class ApiClient : IDisposable
     {
         public string StatusLabel => Status switch
         {
-            "Success" => "Sẵn sàng",
-            "Pending" => "Chưa bật",
-            "Processing" => "Đang xử lý",
-            "Failed" => "Lỗi",
-            "DeadLetter" => "Cần rà soát",
-            _ => "Chưa mapping"
+            "Success" => "🟢 Sẵn sàng cấp quyền",
+            "Pending" => "🟡 Đã liên kết (chưa bật)",
+            "Processing" => "🔄 Đang xử lý",
+            "Failed" => "🔴 Lỗi đồng bộ",
+            "DeadLetter" => "⚠️ Cần rà soát",
+            _ => "⚪ Chưa liên kết Web"
         };
+
+        public string DisplaySlug => !string.IsNullOrWhiteSpace(LmsCourseSlug)
+            ? LmsCourseSlug
+            : (!string.IsNullOrWhiteSpace(CourseSlug) ? CourseSlug : "—");
+
+        public string DisplayLmsId => LmsCourseId.HasValue ? $"#{LmsCourseId.Value}" : "—";
     }
 
     public sealed record LmsCourseMappingRequest(
@@ -1710,15 +1716,37 @@ public sealed class ApiClient : IDisposable
         string? CorrelationId,
         string? LastError)
     {
+        public string EventDisplayName => EventType switch
+        {
+            "lms.student.provision.requested" or "student.provisioned" => "👤 Cấp tài khoản học viên",
+            "course.upserted" => "📚 Đồng bộ khóa học",
+            "class.upserted" => "🏫 Đồng bộ lớp học",
+            "class.teacher.assigned" => "👨‍🏫 Phân công giảng viên",
+            "teacher.upserted" => "👨‍🏫 Đồng bộ giảng viên",
+            "entitlement.changed" => "🔑 Cập nhật quyền học",
+            "payment.refunded" => "↩️ Hoàn tiền / Khóa quyền",
+            _ => EventType
+        };
+
         public string StatusLabel => Status switch
         {
-            "Pending" => "Chờ gửi",
-            "Processing" => "Đang gửi",
-            "Success" => "Đã gửi",
-            "Failed" => "Sẽ thử lại",
-            "DeadLetter" => "Cần rà soát",
+            "Pending" => "⏳ Chờ gửi",
+            "Processing" => "🔄 Đang gửi...",
+            "Success" => "🟢 Thành công",
+            "Failed" => "🔴 Thử lại sau",
+            "DeadLetter" => "⚠️ Cần rà soát",
             _ => Status
         };
+
+        public string DisplayAttempt => $"{AttemptCount} lần";
+
+        public string ResultSummary => !string.IsNullOrWhiteSpace(LastError)
+            ? LastError
+            : (string.Equals(Status, "Success", StringComparison.OrdinalIgnoreCase)
+                ? "Đã đồng bộ sang Web Course"
+                : (string.Equals(Status, "Pending", StringComparison.OrdinalIgnoreCase)
+                    ? "Đang chờ gửi theo lịch"
+                    : "Đang xử lý"));
     }
 
     public sealed record LmsOutboxDispatchResultItem(int Processed, int Succeeded, int Retrying, int DeadLettered);

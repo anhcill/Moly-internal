@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -957,7 +958,7 @@ public partial class MainWindow : Window, IDisposable
             (Item: NavCustomers, Expanded: "♧   Học viên & khách hàng", Compact: "♧"),
             (Item: NavCourses, Expanded: "▤   Khóa học & lớp học", Compact: "▤"),
             (Item: NavCsca, Expanded: "▦   Lớp học CSCA", Compact: "▦"),
-            (Item: NavLms, Expanded: "◈   Quyền học CSCA LMS", Compact: "◈"),
+            (Item: NavLms, Expanded: "◈   Đồng bộ Web CSCA", Compact: "◈"),
             (Item: NavInterview, Expanded: "◉   Mock Interview", Compact: "◉"),
             (Item: NavQuestions, Expanded: "☷   Ngân hàng đề & câu hỏi", Compact: "☷"),
             (Item: NavTechResources, Expanded: "▤   Kho đề & tài liệu", Compact: "▤"),
@@ -1302,9 +1303,9 @@ public partial class MainWindow : Window, IDisposable
         {
             SetActiveArea(TechnologySegment);
             ViewLmsContainer.Visibility = Visibility.Visible;
-            ViewHeaderTitle.Text = "Quyền học CSCA LMS";
-            ViewHeaderSubtitle.Text = "Mapping khóa học, cấp quyền sau khi đóng đủ và vận hành hàng chờ LMS";
-            _ = LoadViewOnceAsync("csca-lms", "Đang tải trạng thái CSCA LMS...", LoadLmsIntegrationAsync, "Đối chiếu mapping, quyền học và các lệnh chờ gửi");
+            ViewHeaderTitle.Text = "Đồng bộ Web CSCA Course";
+            ViewHeaderSubtitle.Text = "Liên kết khóa học, tự động kích hoạt tài khoản học viên khi đóng học phí và theo dõi tiến trình gửi Web";
+            _ = LoadViewOnceAsync("csca-lms", "Đang tải trạng thái đồng bộ Web CSCA...", LoadLmsIntegrationAsync, "Kiểm tra liên kết khóa học và tài khoản học viên Web");
         }
         else if (IsPayrollNavigationItem(sender))
         {
@@ -1726,13 +1727,16 @@ public partial class MainWindow : Window, IDisposable
     private void RefreshCustomers_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải danh sách học viên & khách hàng...", () => LoadCustomersAsync(CustomerSearchBox.Text));
     private void RefreshSyncRuns_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải lịch sử đồng bộ và Dead-Letter...", () => LoadSyncRunsAsync());
     private void RefreshDeadLetters_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải Dead-Letter Queue...", LoadDeadLettersAsync);
-    private void RefreshLmsIntegration_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải trạng thái CSCA LMS...", LoadLmsIntegrationAsync);
+    private void RefreshLmsIntegration_Click(object sender, RoutedEventArgs e) => _ = RunWithBusyAsync("Đang tải dữ liệu đồng bộ Web CSCA...", LoadLmsIntegrationAsync);
 
     private void LmsCourseMappingsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (LmsCourseMappingsDataGrid.SelectedItem is not ApiClient.LmsCourseMappingItem mapping)
         {
-            LmsSelectedCourseText.Text = "Chọn khóa học bên dưới";
+            LmsSelectedCourseText.Text = "Chọn một khóa học từ bảng bên dưới";
+            LmsSelectedCourseStatusBadge.Text = "⚪ Chưa chọn khóa học";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
             LmsExternalCourseIdBox.Text = string.Empty;
             LmsCourseSlugBox.Text = string.Empty;
             LmsCourseIdBox.Text = string.Empty;
@@ -1740,18 +1744,78 @@ public partial class MainWindow : Window, IDisposable
             return;
         }
 
-        LmsSelectedCourseText.Text = $"{mapping.CourseTitle} · {mapping.CourseSourceId}";
+        LmsSelectedCourseText.Text = mapping.CourseTitle;
         LmsExternalCourseIdBox.Text = mapping.ExternalCourseId ?? mapping.CourseSourceId;
-        LmsCourseSlugBox.Text = mapping.LmsCourseSlug ?? string.Empty;
+
+        var existingSlug = mapping.LmsCourseSlug ?? mapping.CourseSlug;
+        LmsCourseSlugBox.Text = !string.IsNullOrWhiteSpace(existingSlug) ? existingSlug : GenerateSlug(mapping.CourseTitle);
         LmsCourseIdBox.Text = mapping.LmsCourseId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
-        LmsEnableAccessCheckBox.IsChecked = string.Equals(mapping.Status, "Success", StringComparison.OrdinalIgnoreCase);
+
+        var isActive = string.Equals(mapping.Status, "Success", StringComparison.OrdinalIgnoreCase);
+        LmsEnableAccessCheckBox.IsChecked = isActive;
+
+        if (isActive)
+        {
+            LmsSelectedCourseStatusBadge.Text = "🟢 ĐÃ KÍCH HOẠT CẤP QUYỀN";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
+        }
+        else if (string.Equals(mapping.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+        {
+            LmsSelectedCourseStatusBadge.Text = "🟡 ĐÃ LIÊN KẾT (CHƯA BẬT)";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(254, 243, 199));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(146, 64, 14));
+        }
+        else
+        {
+            LmsSelectedCourseStatusBadge.Text = "⚪ CHƯA LIÊN KẾT WEB";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+        }
+    }
+
+    private void AutoGenerateSlug_Click(object sender, RoutedEventArgs e)
+    {
+        if (LmsCourseMappingsDataGrid.SelectedItem is ApiClient.LmsCourseMappingItem mapping && !string.IsNullOrWhiteSpace(mapping.CourseTitle))
+        {
+            LmsCourseSlugBox.Text = GenerateSlug(mapping.CourseTitle);
+            ShowToast("Đã tự động tạo đường dẫn slug chuẩn từ tên khóa học.");
+        }
+        else if (!string.IsNullOrWhiteSpace(LmsSelectedCourseText.Text) && LmsSelectedCourseText.Text != "Chọn một khóa học từ bảng bên dưới")
+        {
+            LmsCourseSlugBox.Text = GenerateSlug(LmsSelectedCourseText.Text);
+            ShowToast("Đã tự động tạo đường dẫn slug chuẩn.");
+        }
+        else
+        {
+            ShowToast("Vui lòng click chọn một khóa học trong bảng trước khi tạo slug.");
+        }
+    }
+
+    private static string GenerateSlug(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var normalized = text.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+        foreach (var c in normalized)
+        {
+            var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (uc != UnicodeCategory.NonSpacingMark)
+            {
+                if (c == 'đ' || c == 'Đ') sb.Append('d');
+                else sb.Append(c);
+            }
+        }
+        var cleaned = Regex.Replace(sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant(), @"[^a-z0-9\s-]", "");
+        cleaned = Regex.Replace(cleaned, @"\s+", "-").Trim('-');
+        return cleaned;
     }
 
     private async void SaveLmsMapping_Click(object sender, RoutedEventArgs e)
     {
         if (LmsCourseMappingsDataGrid.SelectedItem is not ApiClient.LmsCourseMappingItem mapping)
         {
-            ShowToast("Chọn một khóa học trước khi lưu mapping LMS.");
+            ShowToast("Vui lòng chọn một khóa học từ danh sách trước khi lưu.", isError: true);
             return;
         }
 
@@ -1761,37 +1825,46 @@ public partial class MainWindow : Window, IDisposable
         {
             if (!long.TryParse(rawLmsCourseId, out var parsedLmsCourseId) || parsedLmsCourseId <= 0)
             {
-                ShowToast("LMS course ID phải là số nguyên dương.", isError: true);
+                ShowToast("Mã số Web (LMS course ID) phải là số nguyên dương.", isError: true);
                 return;
             }
 
             lmsCourseId = parsedLmsCourseId;
         }
 
+        var slug = LmsCourseSlugBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            slug = GenerateSlug(mapping.CourseTitle);
+            LmsCourseSlugBox.Text = slug;
+        }
+
         var enableAccess = LmsEnableAccessCheckBox.IsChecked == true;
         if (enableAccess)
         {
             var confirmation = MessageBox.Show(
-                $"Bật cấp quyền LMS cho khóa '{mapping.CourseTitle}'? Chỉ học viên đã đóng đủ mới được cấp quyền, nhưng mapping này sẽ được dùng cho các lần xử lý tiếp theo.",
-                "Xác nhận bật cấp quyền LMS",
+                $"Kích hoạt đồng bộ sang Web CSCA Course cho khóa '{mapping.CourseTitle}'?\n\nSau khi kích hoạt, bất kỳ học viên nào hoàn thành học phí của khóa này sẽ được tự động cấp quyền vào học trên Web Course ngay lập tức.",
+                "Xác nhận kích hoạt cấp quyền Web Course",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Question);
             if (confirmation != MessageBoxResult.Yes) return;
         }
 
-        await RunWithBusyAsync("Đang lưu mapping khóa học LMS...", async () =>
+        await RunWithBusyAsync("Đang lưu cấu hình đồng bộ Web CSCA...", async () =>
         {
             var saved = await _apiClient.UpsertLmsCourseMappingAsync(
                 mapping.CourseId,
                 new ApiClient.LmsCourseMappingRequest(
                     string.IsNullOrWhiteSpace(LmsExternalCourseIdBox.Text) ? null : LmsExternalCourseIdBox.Text.Trim(),
                     lmsCourseId,
-                    string.IsNullOrWhiteSpace(LmsCourseSlugBox.Text) ? null : LmsCourseSlugBox.Text.Trim(),
+                    string.IsNullOrWhiteSpace(slug) ? null : slug,
                     enableAccess));
             if (saved is null)
-                throw new InvalidOperationException("Không lưu được mapping LMS. Kiểm tra quyền thao tác và dữ liệu course ID/slug.");
+                throw new InvalidOperationException("Không lưu được cấu hình liên kết Web. Vui lòng kiểm tra quyền thao tác hoặc thông tin mã/slug.");
 
-            ShowToast(enableAccess ? "Đã bật mapping cấp quyền LMS." : "Đã lưu mapping ở trạng thái chưa bật.");
+            ShowToast(enableAccess
+                ? "Đã kích hoạt tự động cấp quyền Web CSCA Course thành công!"
+                : "Đã lưu cấu hình liên kết (đang ở trạng thái tạm dừng cấp quyền).");
             await LoadLmsIntegrationAsync();
         });
     }
@@ -1800,29 +1873,29 @@ public partial class MainWindow : Window, IDisposable
     {
         if (LmsOutboxDataGrid.SelectedItem is not ApiClient.LmsOutboxItem item)
         {
-            ShowToast("Chọn một lệnh LMS outbox trước khi retry.");
+            ShowToast("Vui lòng chọn một dòng lệnh trong danh sách để thử lại.");
             return;
         }
 
         if (string.Equals(item.Status, "Success", StringComparison.OrdinalIgnoreCase))
         {
-            ShowToast("Lệnh này đã gửi thành công, không cần retry.");
+            ShowToast("Lệnh này đã được đồng bộ thành công sang Web, không cần thử lại.");
             return;
         }
 
         var confirmation = MessageBox.Show(
-            $"Đưa lệnh '{item.EventType}' về hàng chờ để gửi lại LMS? Nội dung học viên không hiển thị trên màn hình này.",
-            "Xác nhận retry LMS outbox",
+            $"Thử lại lệnh '{item.EventDisplayName}' sang Web CSCA Course?\n\nHệ thống sẽ đưa lệnh này trở lại hàng chờ để gửi sang Web.",
+            "Xác nhận thử lại đồng bộ",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (confirmation != MessageBoxResult.Yes) return;
 
-        await RunWithBusyAsync("Đang đưa lệnh LMS về hàng chờ...", async () =>
+        await RunWithBusyAsync("Đang đưa lệnh về hàng chờ gửi lại...", async () =>
         {
             if (!await _apiClient.RetryLmsOutboxAsync(item.Id))
-                throw new InvalidOperationException("Không thể retry lệnh LMS outbox.");
+                throw new InvalidOperationException("Không thể đưa lệnh LMS về hàng chờ.");
 
-            ShowToast("Đã đưa lệnh LMS về hàng chờ.");
+            ShowToast("Đã đưa lệnh về hàng chờ để gửi lại sang Web.");
             await LoadLmsIntegrationAsync();
         });
     }
@@ -1830,19 +1903,19 @@ public partial class MainWindow : Window, IDisposable
     private async void DispatchLmsOutbox_Click(object sender, RoutedEventArgs e)
     {
         var confirmation = MessageBox.Show(
-            "Gửi tối đa 20 lệnh đã commit sang CSCA Course LMS ngay bây giờ? Hành động này gọi API LMS bằng HMAC; chỉ dùng khi secrets và mapping đã được cấu hình đúng.",
-            "Xác nhận gửi hàng chờ LMS",
+            "Đồng bộ ngay các lệnh đang chờ sang Web CSCA Course?\n\nHệ thống sẽ gửi tài khoản và quyền truy cập của học viên đã đóng học phí sang Web Course để học viên có thể đăng nhập học ngay.",
+            "Xác nhận đồng bộ sang Web Course",
             MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            MessageBoxImage.Question);
         if (confirmation != MessageBoxResult.Yes) return;
 
-        await RunWithBusyAsync("Đang gửi hàng chờ sang CSCA LMS...", async () =>
+        await RunWithBusyAsync("Đang gửi dữ liệu sang Web CSCA Course...", async () =>
         {
             var result = await _apiClient.DispatchLmsOutboxAsync();
             if (result is null)
-                throw new InvalidOperationException("Không gửi được hàng chờ LMS. Kiểm tra secrets, endpoint và mapping.");
+                throw new InvalidOperationException("Không gửi được dữ liệu sang Web Course. Vui lòng kiểm tra kết nối mạng và khóa bảo mật.");
 
-            ShowToast($"LMS outbox: {result.Succeeded} thành công, {result.Retrying} sẽ thử lại, {result.DeadLettered} cần rà soát.");
+            ShowToast($"Đồng bộ Web Course hoàn tất: {result.Succeeded} thành công, {result.Retrying} đang thử lại, {result.DeadLettered} cần kiểm tra.");
             await LoadLmsIntegrationAsync();
         });
     }
