@@ -364,6 +364,7 @@ public sealed class CscaService : ICscaService
             return Result<CscaStudentDto>.Failure("Không tìm thấy lớp học CSCA.");
         var cls = await _db.CscaClasses
             .Include(c => c.Students)
+            .Include(c => c.Staff)
             .Include(c => c.Course)
             .FirstOrDefaultAsync(c => c.Id == classId && !c.IsDeleted, ct);
 
@@ -688,6 +689,8 @@ public sealed class CscaService : ICscaService
                 Id = s.Id,
                 ClassId = s.ClassId,
                 StudentName = s.StudentName,
+                Age = s.Age,
+                Hometown = s.Hometown,
                 Email = s.Email,
                 PhoneNumber = s.PhoneNumber,
                 CourseTitle = s.Class.Course.Title,
@@ -1603,7 +1606,7 @@ public sealed class CscaService : ICscaService
             .FirstOrDefaultAsync(p => p.ReferenceType == "CscaClass" && p.ReferenceId == cls.Id, ct);
 
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
-        var totalStaffExpense = cls.Staff.Sum(st => st.CompensationRate);
+        var totalStaffExpense = cls.Staff?.Sum(st => st.CompensationRate) ?? 0;
 
         if (allocation == null)
         {

@@ -303,4 +303,37 @@ public class CscaServiceTests
         updated.Value.CompensationRate.Should().Be(1_200_000m);
         (await db.CscaClassStaffs.CountAsync()).Should().Be(1);
     }
+
+    [Fact]
+    public async Task EnrollStudent_SameStudentInSecondClass_WithPartyResolver_ShouldSucceed()
+    {
+        using var db = CreateInMemoryDb();
+        db.Companies.Add(new Company { Code = "MOLI", Name = "Moli Group" });
+        await db.SaveChangesAsync();
+        var currentUser = new CurrentUserService(null!);
+        var partyResolver = new PartyResolver(db);
+        var documentRegistry = new BusinessDocumentRegistry(db);
+        var service = new CscaService(db, currentUser, NullLogger<CscaService>.Instance, partyResolver, documentRegistry);
+
+        var class1 = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-C01", "Lớp 1", "Batch 1", string.Empty, 3_000_000m), CancellationToken.None);
+        var class2 = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-C02", "Lớp 2", "Batch 1", string.Empty, 3_000_000m), CancellationToken.None);
+
+        var enroll1 = await service.EnrollStudentAsync(class1.Value!.Id, new EnrollStudentRequest(
+            "Học Viên Trùng", "trung@test.com", "0912345678", 3_000_000m, PaymentStatus.Paid,
+            DiscountAmount: 0), CancellationToken.None);
+        enroll1.Succeeded.Should().BeTrue();
+
+        var enroll2 = await service.EnrollStudentAsync(class2.Value!.Id, new EnrollStudentRequest(
+            "Học Viên Trùng", "trung@test.com", "0912345678", 3_000_000m, PaymentStatus.Paid,
+            DiscountAmount: 100_000m), CancellationToken.None);
+
+        enroll2.Succeeded.Should().BeTrue();
+        enroll2.Value.Should().NotBeNull();
+        enroll2.Value!.StudentName.Should().Be("Học Viên Trùng");
+        (await db.CscaClassStudents.CountAsync()).Should().Be(2);
+        (await db.Parties.CountAsync()).Should().Be(1);
+        (await db.PartyExternalIdentities.CountAsync()).Should().Be(2);
+    }
 }

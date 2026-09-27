@@ -183,7 +183,8 @@ public partial class CscaClassDetailWindow : Window
             _detail.Code,
             _detail.Name,
             _detail.TuitionFee,
-            out var res) || res is null) return;
+            out var res,
+            apiClient: _apiClient) || res is null) return;
 
         await SaveAsync(
             () => _apiClient.EnrollCscaStudentAsync(
@@ -224,7 +225,8 @@ public partial class CscaClassDetailWindow : Window
             _detail.Name,
             _detail.TuitionFee,
             out var res,
-            studentItem) || res is null) return;
+            student: studentItem,
+            apiClient: _apiClient) || res is null) return;
 
         await SaveAsync(
             () => _apiClient.UpdateCscaStudentAsync(
@@ -639,7 +641,7 @@ public partial class CscaClassDetailWindow : Window
         {
             if (!await action())
             {
-                MessageBox.Show(this, "Lưu dữ liệu thất bại. Tài khoản hiện tại có thể chưa có quyền quản lý lớp.", "Không thể lưu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(this, "Lưu dữ liệu thất bại. Vui lòng kiểm tra lại thông tin nhập hoặc quyền tài khoản.", "Không thể lưu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

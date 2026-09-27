@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -104,9 +106,16 @@ public static class PromptDialog
             }
             else
             {
+                var isMoney = IsMoneyField(field);
+                var initial = field.InitialValue ?? string.Empty;
+                if (isMoney && decimal.TryParse(initial, NumberStyles.Number, CultureInfo.InvariantCulture, out var initNum))
+                {
+                    initial = string.Format(new CultureInfo("vi-VN"), "{0:N0}", initNum);
+                }
+
                 var textBox = new TextBox
                 {
-                    Text = field.InitialValue ?? string.Empty,
+                    Text = initial,
                     Height = field.IsMultiline ? 78 : 34,
                     Padding = new Thickness(8, 5, 8, 5),
                     Margin = new Thickness(0, 0, 0, 9),
@@ -115,6 +124,12 @@ public static class PromptDialog
                     TextWrapping = field.IsMultiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
                     VerticalScrollBarVisibility = field.IsMultiline ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden
                 };
+
+                if (isMoney && !field.IsMultiline)
+                {
+                    AttachCurrencyFormatting(textBox);
+                }
+
                 control = textBox;
             }
 
@@ -155,6 +170,8 @@ public static class PromptDialog
             {
                 var value = controls[field.Key] switch
                 {
+                    TextBox textBox when IsMoneyField(field) && !field.IsMultiline =>
+                        new string(textBox.Text.Where(char.IsDigit).ToArray()),
                     TextBox textBox => textBox.Text.Trim(),
                     ComboBox combo => (combo.SelectedValue as string) ?? string.Empty,
                     _ => string.Empty
@@ -186,5 +203,61 @@ public static class PromptDialog
         var accepted = dialog.ShowDialog() == true;
         values = submittedValues;
         return accepted;
+    }
+
+    private static bool IsMoneyField(PromptField field)
+    {
+        var key = field.Key.ToLowerInvariant();
+        var label = field.Label.ToLowerInvariant();
+        return key.Contains("fee") || key.Contains("amount") || key.Contains("price") || key.Contains("salary") || key.Contains("cost")
+            || label.Contains("học phí") || label.Contains("tiền") || label.Contains("giá") || label.Contains("lương") || label.Contains("chi phí");
+    }
+
+    private static void AttachCurrencyFormatting(TextBox box)
+    {
+        var isFormatting = false;
+        box.TextChanged += (_, _) =>
+        {
+            if (isFormatting) return;
+            isFormatting = true;
+            try
+            {
+                var rawText = box.Text;
+                var caretIndex = box.CaretIndex;
+                var digitsBeforeCaret = 0;
+                for (int i = 0; i < Math.Min(caretIndex, rawText.Length); i++)
+                {
+                    if (char.IsDigit(rawText[i])) digitsBeforeCaret++;
+                }
+
+                var onlyDigits = new string(rawText.Where(char.IsDigit).ToArray());
+                if (string.IsNullOrEmpty(onlyDigits))
+                {
+                    box.Text = "0";
+                    box.CaretIndex = 1;
+                }
+                else
+                {
+                    if (decimal.TryParse(onlyDigits, NumberStyles.Number, CultureInfo.InvariantCulture, out var num))
+                    {
+                        var formatted = string.Format(new CultureInfo("vi-VN"), "{0:N0}", num);
+                        box.Text = formatted;
+
+                        var newCaret = 0;
+                        var countedDigits = 0;
+                        for (int i = 0; i < formatted.Length; i++)
+                        {
+                            if (char.IsDigit(formatted[i])) countedDigits++;
+                            if (countedDigits <= digitsBeforeCaret) newCaret = i + 1;
+                        }
+                        box.CaretIndex = Math.Min(newCaret, formatted.Length);
+                    }
+                }
+            }
+            finally
+            {
+                isFormatting = false;
+            }
+        };
     }
 }

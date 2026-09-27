@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace InternalManagement.Desktop.Services;
@@ -18,6 +23,18 @@ public sealed record CscaStudentDialogResult(
     DateTime? DebtDueDate,
     string? Notes);
 
+public sealed record ExistingStudentCandidate(
+    string Name,
+    int? Age,
+    string? Hometown,
+    string? Email,
+    string? PhoneNumber,
+    string SourceDescription)
+{
+    public string DisplayText =>
+        $"{Name}{(string.IsNullOrWhiteSpace(PhoneNumber) ? "" : $" — {PhoneNumber}")}{(string.IsNullOrWhiteSpace(Email) ? "" : $" — {Email}")}{(string.IsNullOrWhiteSpace(Hometown) ? "" : $" ({Hometown})")}";
+}
+
 public static class CscaStudentDialog
 {
     public static bool TryShow(
@@ -26,7 +43,8 @@ public static class CscaStudentDialog
         string className,
         decimal classTuitionFee,
         out CscaStudentDialogResult? result,
-        ApiClient.CscaStudentItem? student = null)
+        ApiClient.CscaStudentItem? student = null,
+        ApiClient? apiClient = null)
     {
         result = null;
         CscaStudentDialogResult? submitted = null;
@@ -36,18 +54,18 @@ public static class CscaStudentDialog
         {
             Owner = owner,
             Title = isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : $"Thêm học viên vào lớp {classCode}",
-            Width = 660,
-            Height = 690,
-            MinWidth = 600,
-            MinHeight = 620,
-            MaxHeight = 760,
+            Width = 680,
+            Height = 740,
+            MinWidth = 620,
+            MinHeight = 650,
+            MaxHeight = 820,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             ResizeMode = ResizeMode.NoResize,
             Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
             ShowInTaskbar = false
         };
 
-        var rootGrid = new Grid { Margin = new Thickness(22, 18, 22, 18) };
+        var rootGrid = new Grid { Margin = new Thickness(22, 16, 22, 16) };
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Form content
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Footer buttons
@@ -60,7 +78,7 @@ public static class CscaStudentDialog
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(16, 12, 16, 12),
-            Margin = new Thickness(0, 0, 0, 14)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         var headerGrid = new Grid();
         headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -120,9 +138,29 @@ public static class CscaStudentDialog
         var scrollViewer = new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Margin = new Thickness(0, 0, 0, 12)
+            Margin = new Thickness(0, 0, 0, 10)
         };
         var formPanel = new StackPanel();
+
+        // ── 2.0 AUTO-FILL LOOKUP FROM EXISTING STUDENTS/CUSTOMERS ──
+        var existingCandidates = new List<ExistingStudentCandidate>();
+        var autoFillSuccessBanner = new Border
+        {
+            Background = new SolidColorBrush(Color.FromRgb(236, 253, 245)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12, 8, 12, 8),
+            Margin = new Thickness(0, 0, 0, 10),
+            Visibility = Visibility.Collapsed
+        };
+        var autoFillSuccessText = new TextBlock
+        {
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = new SolidColorBrush(Color.FromRgb(6, 95, 70))
+        };
+        autoFillSuccessBanner.Child = autoFillSuccessText;
 
         // Row 1: Họ tên + Tuổi
         var row1 = CreateTwoColumnGrid();
@@ -130,7 +168,6 @@ public static class CscaStudentDialog
         var ageBox = CreateTextBox(student?.Age?.ToString(CultureInfo.InvariantCulture));
         AddFormField(row1.Left, "Họ và tên *", nameBox);
         AddFormField(row1.Right, "Tuổi", ageBox);
-        formPanel.Children.Add(row1.Grid);
 
         // Row 2: Số điện thoại + Email
         var row2 = CreateTwoColumnGrid();
@@ -138,12 +175,153 @@ public static class CscaStudentDialog
         var emailBox = CreateTextBox(student?.Email);
         AddFormField(row2.Left, "Số điện thoại", phoneBox);
         AddFormField(row2.Right, "Email", emailBox);
-        formPanel.Children.Add(row2.Grid);
 
         // Row 3: Quê quán
         var hometownBox = CreateTextBox(student?.Hometown);
         var hometownPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
         AddFormField(hometownPanel, "Quê quán", hometownBox);
+
+        void ApplyCandidate(ExistingStudentCandidate candidate)
+        {
+            nameBox.Text = candidate.Name;
+            if (candidate.Age.HasValue) ageBox.Text = candidate.Age.Value.ToString(CultureInfo.InvariantCulture);
+            if (!string.IsNullOrWhiteSpace(candidate.Hometown)) hometownBox.Text = candidate.Hometown;
+            if (!string.IsNullOrWhiteSpace(candidate.PhoneNumber)) phoneBox.Text = candidate.PhoneNumber;
+            if (!string.IsNullOrWhiteSpace(candidate.Email)) emailBox.Text = candidate.Email;
+
+            autoFillSuccessText.Text = $"✓ Đã tự động điền thông tin của: {candidate.Name} ({candidate.SourceDescription})";
+            autoFillSuccessBanner.Visibility = Visibility.Visible;
+        }
+
+        if (!isEditing)
+        {
+            var lookupCard = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(240, 249, 255)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(14, 10, 14, 10),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            var lookupContent = new StackPanel();
+
+            var lookupHeader = new TextBlock
+            {
+                Text = "⚡ TÌM & TỰ ĐỘNG ĐIỀN TỪ HỌC VIÊN / KHÁCH HÀNG CŨ",
+                FontSize = 11.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161)),
+                Margin = new Thickness(0, 0, 0, 4)
+            };
+            var lookupSub = new TextBlock
+            {
+                Text = "Nếu học viên đã từng học hoặc có trong hệ thống, hãy gõ tìm kiếm để tự điền form ngay.",
+                FontSize = 11,
+                Foreground = new SolidColorBrush(Color.FromRgb(14, 116, 144)),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+            lookupContent.Children.Add(lookupHeader);
+            lookupContent.Children.Add(lookupSub);
+
+            var searchGrid = new Grid();
+            searchGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            searchGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var searchBox = new TextBox
+            {
+                Height = 34,
+                Padding = new Thickness(10, 6, 10, 6),
+                FontSize = 12.5,
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                BorderThickness = new Thickness(1),
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+            searchBox.ToolTip = "Gõ tên, số điện thoại hoặc email để tìm kiếm...";
+            Grid.SetColumn(searchBox, 0);
+            searchGrid.Children.Add(searchBox);
+
+            var clearBtn = new Button
+            {
+                Content = "Xóa tìm",
+                Width = 65,
+                Height = 34,
+                Margin = new Thickness(6, 0, 0, 0),
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                BorderThickness = new Thickness(1),
+                Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                FontSize = 11,
+                Cursor = Cursors.Hand
+            };
+            Grid.SetColumn(clearBtn, 1);
+            searchGrid.Children.Add(clearBtn);
+            lookupContent.Children.Add(searchGrid);
+
+            var suggestionList = new ListBox
+            {
+                MaxHeight = 160,
+                Margin = new Thickness(0, 6, 0, 0),
+                Visibility = Visibility.Collapsed,
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                BorderThickness = new Thickness(1)
+            };
+            lookupContent.Children.Add(suggestionList);
+            lookupCard.Child = lookupContent;
+            formPanel.Children.Add(lookupCard);
+            formPanel.Children.Add(autoFillSuccessBanner);
+
+            searchBox.TextChanged += (_, _) =>
+            {
+                var term = searchBox.Text.Trim();
+                if (term.Length < 1 || existingCandidates.Count == 0)
+                {
+                    suggestionList.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                var matches = existingCandidates
+                    .Where(c => c.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                        || (c.PhoneNumber != null && c.PhoneNumber.Contains(term, StringComparison.OrdinalIgnoreCase))
+                        || (c.Email != null && c.Email.Contains(term, StringComparison.OrdinalIgnoreCase)))
+                    .Take(8)
+                    .ToList();
+
+                if (matches.Count == 0)
+                {
+                    suggestionList.ItemsSource = new[] { "Không tìm thấy học viên phù hợp trong hệ thống." };
+                    suggestionList.IsEnabled = false;
+                    suggestionList.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                suggestionList.IsEnabled = true;
+                suggestionList.ItemsSource = matches;
+                suggestionList.DisplayMemberPath = nameof(ExistingStudentCandidate.DisplayText);
+                suggestionList.Visibility = Visibility.Visible;
+            };
+
+            suggestionList.SelectionChanged += (_, _) =>
+            {
+                if (suggestionList.SelectedItem is ExistingStudentCandidate selected)
+                {
+                    ApplyCandidate(selected);
+                    suggestionList.Visibility = Visibility.Collapsed;
+                    searchBox.Text = string.Empty;
+                }
+            };
+
+            clearBtn.Click += (_, _) =>
+            {
+                searchBox.Text = string.Empty;
+                suggestionList.Visibility = Visibility.Collapsed;
+            };
+        }
+
+        formPanel.Children.Add(row1.Grid);
+        formPanel.Children.Add(row2.Grid);
         formPanel.Children.Add(hometownPanel);
 
         // ── TUITION & DEBT CALCULATION BOX ──
@@ -188,31 +366,24 @@ public static class CscaStudentDialog
             SelectedValue = student?.PaymentStatus ?? 0,
             Margin = new Thickness(0, 0, 0, 6)
         };
+
         var initialPaid = student?.PaidAmount ?? 0;
-        var paidAmountBox = CreateTextBox(initialPaid.ToString("0", CultureInfo.InvariantCulture));
-        paidAmountBox.ToolTip = "Nhập số tiền học sinh đã thanh toán";
+        var paidAmountBox = CreateTextBox(FormatMoneyInput(initialPaid));
+        paidAmountBox.ToolTip = "Nhập số tiền học sinh đã thanh toán (tự thêm dấu chấm phân cách hàng nghìn)";
 
         AddFormField(payRow.Left, "Trạng thái học phí *", statusCombo);
         AddFormField(payRow.Right, "Số tiền đã đóng (VNĐ) *", paidAmountBox);
         financeContent.Children.Add(payRow.Grid);
 
-        // Discount is recorded on this enrollment only. The class tuition stays unchanged.
+        // Discount
         var discountRow = CreateTwoColumnGrid();
         var initialDiscount = student?.DiscountAmount ?? 0;
-        var discountBox = CreateTextBox(initialDiscount.ToString("0", CultureInfo.InvariantCulture));
-        discountBox.ToolTip = "Giảm giá riêng cho học viên học nhiều khóa (VNĐ)";
+        var discountBox = CreateTextBox(FormatMoneyInput(initialDiscount));
+        discountBox.ToolTip = "Giảm giá riêng cho học viên học nhiều khóa (VNĐ, tự thêm dấu chấm)";
         var discountNoteBox = CreateTextBox(student?.DiscountNote);
         AddFormField(discountRow.Left, "Giảm giá học nhiều khóa (VNĐ)", discountBox);
         AddFormField(discountRow.Right, "Lý do giảm giá", discountNoteBox);
         financeContent.Children.Add(discountRow.Grid);
-
-        decimal ReadDiscount()
-        {
-            var rawDiscount = discountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-            return decimal.TryParse(rawDiscount, NumberStyles.Number, CultureInfo.InvariantCulture, out var discount) && discount > 0
-                ? discount
-                : 0;
-        }
 
         // Quick Preset Buttons
         var presetPanel = new StackPanel
@@ -222,12 +393,14 @@ public static class CscaStudentDialog
         };
         var btnFull = CreatePresetButton("Đóng đủ 100%", () =>
         {
-            paidAmountBox.Text = Math.Max(0, classTuitionFee - ReadDiscount()).ToString("0", CultureInfo.InvariantCulture);
+            var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+            paidAmountBox.Text = FormatMoneyInput(payable);
             statusCombo.SelectedValue = 2;
         });
         var btnHalf = CreatePresetButton("Đóng 50%", () =>
         {
-            paidAmountBox.Text = Math.Round(Math.Max(0, classTuitionFee - ReadDiscount()) / 2).ToString("0", CultureInfo.InvariantCulture);
+            var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+            paidAmountBox.Text = FormatMoneyInput(Math.Round(payable / 2));
             statusCombo.SelectedValue = 1;
         });
         var btnZero = CreatePresetButton("Chưa đóng (0đ)", () =>
@@ -311,11 +484,8 @@ public static class CscaStudentDialog
 
         void UpdateDebtCalculation()
         {
-            var rawPaid = paidAmountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-            _ = decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var paid);
-            if (paid < 0) paid = 0;
-
-            var discount = ReadDiscount();
+            var paid = ParseMoney(paidAmountBox.Text);
+            var discount = ParseMoney(discountBox.Text);
             var payable = Math.Max(0, classTuitionFee - discount);
             var debt = Math.Max(0, payable - paid);
             debtCalcFormulaText.Text = $"Học phí {classTuitionFee:N0} đ - Giảm {discount:N0} đ - Đã đóng {paid:N0} đ";
@@ -339,7 +509,7 @@ public static class CscaStudentDialog
                 isUpdatingInternally = true;
                 try
                 {
-                    if (paid >= payable)
+                    if (paid >= payable && payable > 0)
                     {
                         statusCombo.SelectedValue = 2; // Paid
                     }
@@ -359,8 +529,9 @@ public static class CscaStudentDialog
             }
         }
 
-        paidAmountBox.TextChanged += (_, _) => UpdateDebtCalculation();
-        discountBox.TextChanged += (_, _) => UpdateDebtCalculation();
+        // Attach Real-Time Dot Formatting for currency boxes
+        AttachCurrencyFormatting(paidAmountBox, UpdateDebtCalculation);
+        AttachCurrencyFormatting(discountBox, UpdateDebtCalculation);
 
         statusCombo.SelectionChanged += (_, _) =>
         {
@@ -372,7 +543,7 @@ public static class CscaStudentDialog
                 {
                     if (statusVal == 2) // Paid
                     {
-                        paidAmountBox.Text = Math.Max(0, classTuitionFee - ReadDiscount()).ToString("0", CultureInfo.InvariantCulture);
+                        paidAmountBox.Text = FormatMoneyInput(Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text)));
                     }
                     else if (statusVal == 0) // Pending
                     {
@@ -380,11 +551,11 @@ public static class CscaStudentDialog
                     }
                     else if (statusVal == 1) // Partial
                     {
-                        var rawPaid = paidAmountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-                        var payable = Math.Max(0, classTuitionFee - ReadDiscount());
-                        if (!decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var currentPaid) || currentPaid <= 0 || currentPaid >= payable)
+                        var currentPaid = ParseMoney(paidAmountBox.Text);
+                        var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+                        if (currentPaid <= 0 || currentPaid >= payable)
                         {
-                            paidAmountBox.Text = Math.Round(payable / 2).ToString("0", CultureInfo.InvariantCulture);
+                            paidAmountBox.Text = FormatMoneyInput(Math.Round(payable / 2));
                         }
                     }
                 }
@@ -412,7 +583,7 @@ public static class CscaStudentDialog
             Width = 95,
             Height = 36,
             Margin = new Thickness(0, 0, 10, 0),
-            Cursor = System.Windows.Input.Cursors.Hand,
+            Cursor = Cursors.Hand,
             Background = Brushes.White,
             BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
             BorderThickness = new Thickness(1),
@@ -426,7 +597,7 @@ public static class CscaStudentDialog
             Content = isEditing ? "Lưu thay đổi" : "Thêm học viên",
             Width = 140,
             Height = 36,
-            Cursor = System.Windows.Input.Cursors.Hand,
+            Cursor = Cursors.Hand,
             Background = new SolidColorBrush(Color.FromRgb(79, 70, 229)),
             BorderBrush = new SolidColorBrush(Color.FromRgb(79, 70, 229)),
             BorderThickness = new Thickness(1),
@@ -455,16 +626,16 @@ public static class CscaStudentDialog
                 age = parsedAge;
             }
 
-            var rawDiscount = discountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-            if (!decimal.TryParse(rawDiscount, NumberStyles.Number, CultureInfo.InvariantCulture, out var discountAmount) || discountAmount < 0 || discountAmount > classTuitionFee)
+            var discountAmount = ParseMoney(discountBox.Text);
+            if (discountAmount < 0 || discountAmount > classTuitionFee)
             {
                 MessageBox.Show(dialog, $"Giảm giá phải là số từ 0 đến {classTuitionFee:N0} đ.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
                 discountBox.Focus();
                 return;
             }
 
-            var rawPaid = paidAmountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-            if (!decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var paidAmount) || paidAmount < 0)
+            var paidAmount = ParseMoney(paidAmountBox.Text);
+            if (paidAmount < 0)
             {
                 MessageBox.Show(dialog, "Số tiền đã đóng phải là số không âm.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
                 paidAmountBox.Focus();
@@ -506,10 +677,131 @@ public static class CscaStudentDialog
         Grid.SetRow(buttonsPanel, 2);
         rootGrid.Children.Add(buttonsPanel);
 
+        // ── 5. ASYNC BACKGROUND DATA PREFETCH FOR AUTO-FILL ──
+        if (!isEditing && apiClient != null)
+        {
+            dialog.Loaded += async (_, _) =>
+            {
+                try
+                {
+                    var studentsTask = apiClient.GetCscaStudentDirectoryAsync();
+                    var customersTask = apiClient.GetCustomersAsync();
+                    await Task.WhenAll(studentsTask, customersTask);
+
+                    var candidates = new List<ExistingStudentCandidate>();
+                    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    var students = await studentsTask;
+                    if (students != null)
+                    {
+                        foreach (var s in students)
+                        {
+                            var key = $"{s.StudentName}|{s.PhoneNumber}|{s.Email}";
+                            if (seen.Add(key))
+                            {
+                                candidates.Add(new ExistingStudentCandidate(
+                                    s.StudentName,
+                                    s.Age,
+                                    s.Hometown,
+                                    s.Email,
+                                    s.PhoneNumber,
+                                    $"Lớp {s.ClassCode}"));
+                            }
+                        }
+                    }
+
+                    var customers = await customersTask;
+                    if (customers?.Items != null)
+                    {
+                        foreach (var c in customers.Items)
+                        {
+                            var key = $"{c.FullName}|{c.PhoneNumber}|{c.Email}";
+                            if (seen.Add(key))
+                            {
+                                candidates.Add(new ExistingStudentCandidate(
+                                    c.FullName,
+                                    null,
+                                    null,
+                                    c.Email,
+                                    c.PhoneNumber,
+                                    "Khách hàng hệ thống"));
+                            }
+                        }
+                    }
+
+                    existingCandidates.Clear();
+                    existingCandidates.AddRange(candidates);
+                }
+                catch
+                {
+                    // Ignore background load failures
+                }
+            };
+        }
+
         dialog.Content = rootGrid;
         var accepted = dialog.ShowDialog() == true;
         result = submitted;
         return accepted;
+    }
+
+    private static string FormatMoneyInput(decimal value) =>
+        string.Format(new CultureInfo("vi-VN"), "{0:N0}", value);
+
+    private static decimal ParseMoney(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return 0;
+        var raw = new string(text.Where(char.IsDigit).ToArray());
+        return decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var val) ? val : 0;
+    }
+
+    private static void AttachCurrencyFormatting(TextBox box, Action? onValueChanged = null)
+    {
+        var isFormatting = false;
+        box.TextChanged += (_, _) =>
+        {
+            if (isFormatting) return;
+            isFormatting = true;
+            try
+            {
+                var rawText = box.Text;
+                var caretIndex = box.CaretIndex;
+                var digitsBeforeCaret = 0;
+                for (int i = 0; i < Math.Min(caretIndex, rawText.Length); i++)
+                {
+                    if (char.IsDigit(rawText[i])) digitsBeforeCaret++;
+                }
+
+                var onlyDigits = new string(rawText.Where(char.IsDigit).ToArray());
+                if (string.IsNullOrEmpty(onlyDigits))
+                {
+                    box.Text = "0";
+                    box.CaretIndex = 1;
+                }
+                else
+                {
+                    if (decimal.TryParse(onlyDigits, NumberStyles.Number, CultureInfo.InvariantCulture, out var num))
+                    {
+                        var formatted = string.Format(new CultureInfo("vi-VN"), "{0:N0}", num);
+                        box.Text = formatted;
+
+                        var newCaret = 0;
+                        var countedDigits = 0;
+                        for (int i = 0; i < formatted.Length; i++)
+                        {
+                            if (char.IsDigit(formatted[i])) countedDigits++;
+                            if (countedDigits <= digitsBeforeCaret) newCaret = i + 1;
+                        }
+                        box.CaretIndex = Math.Min(newCaret, formatted.Length);
+                    }
+                }
+            }
+            finally
+            {
+                isFormatting = false;
+                onValueChanged?.Invoke();
+            }
+        };
     }
 
     private static (Grid Grid, StackPanel Left, StackPanel Right) CreateTwoColumnGrid()
@@ -562,7 +854,7 @@ public static class CscaStudentDialog
             Margin = new Thickness(0, 0, 8, 0),
             Height = 28,
             FontSize = 11,
-            Cursor = System.Windows.Input.Cursors.Hand,
+            Cursor = Cursors.Hand,
             Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
             BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
             BorderThickness = new Thickness(1),

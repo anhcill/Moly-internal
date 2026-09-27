@@ -462,6 +462,49 @@ public sealed class ApiClient : IDisposable
         return res.IsSuccessStatusCode;
     }
 
+    private async Task<string?> TryExtractErrorMessageAsync(HttpResponseMessage response, CancellationToken ct = default)
+    {
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            if (string.IsNullOrWhiteSpace(body)) return null;
+
+            using var doc = System.Text.Json.JsonDocument.Parse(body);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("message", out var msgElem) && msgElem.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                var msg = msgElem.GetString();
+                if (!string.IsNullOrWhiteSpace(msg)) return msg;
+            }
+            if (root.TryGetProperty("Message", out var msgElemCap) && msgElemCap.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                var msg = msgElemCap.GetString();
+                if (!string.IsNullOrWhiteSpace(msg)) return msg;
+            }
+            if (root.TryGetProperty("errors", out var errElem) || root.TryGetProperty("Errors", out errElem))
+            {
+                if (errElem.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    var list = errElem.EnumerateArray().Select(x => x.GetString()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                    if (list.Count > 0) return string.Join("\n", list);
+                }
+                else if (errElem.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    var list = errElem.EnumerateObject().SelectMany(p => p.Value.EnumerateArray().Select(v => v.GetString())).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                    if (list.Count > 0) return string.Join("\n", list);
+                }
+            }
+            if (root.TryGetProperty("title", out var titleElem) && titleElem.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                return titleElem.GetString();
+            }
+        }
+        catch
+        {
+        }
+        return null;
+    }
+
     public async Task<bool> EnrollCscaStudentAsync(
         Guid classId, string studentName, string email, string phone, int? age,
         string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null,
@@ -482,7 +525,12 @@ public sealed class ApiClient : IDisposable
             DebtDueDate = debtDueDate
         };
         var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/csca/classes/{classId}/students", req, _jsonOptions, ct), ct);
-        return res.IsSuccessStatusCode;
+        if (!res.IsSuccessStatusCode)
+        {
+            var msg = await TryExtractErrorMessageAsync(res, ct);
+            throw new InvalidOperationException(msg ?? $"Thêm học viên thất bại (Mã lỗi {(int)res.StatusCode}: {res.ReasonPhrase})");
+        }
+        return true;
     }
 
     public async Task<bool> UpdateCscaClassAsync(
@@ -520,13 +568,23 @@ public sealed class ApiClient : IDisposable
             DebtDueDate = debtDueDate
         };
         var res = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync($"api/v1/csca/classes/{classId}/students/{studentId}/payment", req, _jsonOptions, ct), ct);
-        return res.IsSuccessStatusCode;
+        if (!res.IsSuccessStatusCode)
+        {
+            var msg = await TryExtractErrorMessageAsync(res, ct);
+            throw new InvalidOperationException(msg ?? $"Cập nhật học viên thất bại (Mã lỗi {(int)res.StatusCode}: {res.ReasonPhrase})");
+        }
+        return true;
     }
 
     public async Task<bool> RemoveCscaStudentAsync(Guid classId, Guid studentId, CancellationToken ct = default)
     {
         var res = await SendWithRefreshAsync(() => _httpClient.DeleteAsync($"api/v1/csca/classes/{classId}/students/{studentId}", ct), ct);
-        return res.IsSuccessStatusCode;
+        if (!res.IsSuccessStatusCode)
+        {
+            var msg = await TryExtractErrorMessageAsync(res, ct);
+            throw new InvalidOperationException(msg ?? $"Xóa học viên thất bại (Mã lỗi {(int)res.StatusCode}: {res.ReasonPhrase})");
+        }
+        return true;
     }
 
     public async Task<bool> RemoveCscaStaffAsync(Guid classId, Guid staffId, CancellationToken ct = default)
@@ -1788,7 +1846,9 @@ public sealed class ApiClient : IDisposable
         string? Notes,
         decimal DiscountAmount = 0,
         string? DiscountNote = null,
-        decimal PayableAmount = 0);
+        decimal PayableAmount = 0,
+        int? Age = null,
+        string? Hometown = null);
 
     public sealed record CscaStaffItem(
         Guid Id,

@@ -73,13 +73,17 @@ public sealed class PartyResolver(IApplicationDbContext db) : IPartyResolver
 
             if (!hasIdentity)
             {
-                party.ExternalIdentities.Add(new PartyExternalIdentity
+                var identity = new PartyExternalIdentity
                 {
                     CompanyId = request.CompanyId,
                     BusinessUnitId = request.BusinessUnitId,
+                    PartyId = party.Id,
+                    Party = party,
                     SourceSystem = sourceSystem,
                     SourceId = sourceId
-                });
+                };
+                party.ExternalIdentities.Add(identity);
+                db.PartyExternalIdentities.Add(identity);
             }
         }
 
@@ -123,12 +127,16 @@ public sealed class PartyResolver(IApplicationDbContext db) : IPartyResolver
 
         if (!existsInMemory && !existsInStore)
         {
-            party.BusinessProfiles.Add(new PartyBusinessProfile
+            var profile = new PartyBusinessProfile
             {
                 CompanyId = request.CompanyId,
                 BusinessUnitId = request.BusinessUnitId,
+                PartyId = party.Id,
+                Party = party,
                 Role = request.Role
-            });
+            };
+            party.BusinessProfiles.Add(profile);
+            db.PartyBusinessProfiles.Add(profile);
         }
     }
 
@@ -149,13 +157,17 @@ public sealed class PartyResolver(IApplicationDbContext db) : IPartyResolver
             var hasContactOfSameType = party.Contacts.Any(x => x.Type == type)
                 || (party.Id != Guid.Empty && await db.PartyContacts.AnyAsync(
                     x => x.PartyId == party.Id && x.Type == type, ct));
-            party.Contacts.Add(new PartyContact
+            var contact = new PartyContact
             {
+                PartyId = party.Id,
+                Party = party,
                 Type = type,
                 Value = rawValue!.Trim(),
                 NormalizedValue = normalizedValue,
                 IsPrimary = !hasContactOfSameType
-            });
+            };
+            party.Contacts.Add(contact);
+            db.PartyContacts.Add(contact);
         }
     }
 

@@ -236,6 +236,8 @@ public sealed record CscaStudentDirectoryDto
     public Guid Id { get; init; }
     public Guid ClassId { get; init; }
     public string StudentName { get; init; } = string.Empty;
+    public int? Age { get; init; }
+    public string? Hometown { get; init; }
     public string? Email { get; init; }
     public string? PhoneNumber { get; init; }
     public string CourseTitle { get; init; } = string.Empty;
