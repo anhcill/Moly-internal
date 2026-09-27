@@ -188,7 +188,8 @@ public partial class CscaClassDetailWindow : Window
         await SaveAsync(
             () => _apiClient.EnrollCscaStudentAsync(
                 _classId, res.StudentName, res.Email, res.PhoneNumber, res.Age,
-                res.Hometown, res.PaidAmount, res.PaymentStatus, res.Notes, res.DebtDueDate),
+                res.Hometown, res.PaidAmount, res.PaymentStatus, res.Notes, res.DebtDueDate,
+                res.DiscountAmount, res.DiscountNote),
             "Đã thêm học viên vào lớp.");
     }
 
@@ -212,7 +213,10 @@ public partial class CscaClassDetailWindow : Window
             student.PaymentStatusValue,
             student.JoinedAt,
             student.Notes,
-            student.DebtDueDate);
+            student.DebtDueDate,
+            student.DiscountAmount,
+            student.DiscountNote,
+            student.PayableAmount);
 
         if (!CscaStudentDialog.TryShow(
             this,
@@ -225,7 +229,8 @@ public partial class CscaClassDetailWindow : Window
         await SaveAsync(
             () => _apiClient.UpdateCscaStudentAsync(
                 _classId, student.Id, res.StudentName, res.Email, res.PhoneNumber, res.Age,
-                res.Hometown, res.PaidAmount, res.PaymentStatus, res.Notes, res.DebtDueDate),
+                res.Hometown, res.PaidAmount, res.PaymentStatus, res.Notes, res.DebtDueDate,
+                res.DiscountAmount, res.DiscountNote),
             "Đã cập nhật thông tin học viên và công nợ.");
     }
 
@@ -660,6 +665,8 @@ public partial class CscaClassDetailWindow : Window
             new PromptField("hometown", "Quê quán", student?.Hometown, IsRequired: false),
             new PromptField("email", "Email", student?.Email, IsRequired: false),
             new PromptField("phone", "Số điện thoại", student?.PhoneNumber, IsRequired: false),
+            new PromptField("discountAmount", "Giảm giá học nhiều khóa", student?.DiscountAmount.ToString("0", CultureInfo.InvariantCulture) ?? "0", IsRequired: false),
+            new PromptField("discountNote", "Lý do giảm giá", student?.DiscountNote, IsRequired: false),
             new PromptField("paidAmount", "Số tiền đã đóng", student?.PaidAmount.ToString("0", CultureInfo.InvariantCulture) ?? "0"),
             new PromptField("debtDueDate", "Ngày hẹn trả nợ (yyyy-MM-dd)", student?.DebtDueDate?.ToString("yyyy-MM-dd"), IsRequired: false),
             new PromptField("paymentStatus", "Trạng thái học phí", GetPaymentStatusValue(student?.PaymentStatusValue), Options: PaymentStatusOptions()),
@@ -949,8 +956,11 @@ public partial class CscaClassDetailWindow : Window
         public string? Email { get; init; }
         public string? PhoneNumber { get; init; }
         public decimal TuitionFee { get; init; }
+        public decimal DiscountAmount { get; init; }
+        public string? DiscountNote { get; init; }
+        public decimal PayableAmount => Math.Max(0, TuitionFee - DiscountAmount);
         public decimal PaidAmount { get; init; }
-        public decimal DebtAmount => Math.Max(0, TuitionFee - PaidAmount);
+        public decimal DebtAmount => Math.Max(0, PayableAmount - PaidAmount);
         public DateTime? DebtDueDate { get; init; }
         public int PaymentStatusValue { get; init; }
         public string PaymentStatusLabel => CscaClassDetailWindow.PaymentStatusLabel(PaymentStatusValue);
@@ -966,6 +976,8 @@ public partial class CscaClassDetailWindow : Window
             Email = student.Email,
             PhoneNumber = student.PhoneNumber,
             TuitionFee = tuitionFee,
+            DiscountAmount = student.DiscountAmount,
+            DiscountNote = student.DiscountNote,
             PaidAmount = student.PaidAmount,
             DebtDueDate = student.DebtDueDate,
             PaymentStatusValue = student.PaymentStatus,

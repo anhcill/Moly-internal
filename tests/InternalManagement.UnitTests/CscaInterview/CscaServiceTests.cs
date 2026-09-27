@@ -100,6 +100,41 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task EnrollStudent_WithMultiCourseDiscount_ShouldCalculatePayableTuitionAndDebt()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var classResult = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-DISCOUNT", "Lớp có ưu đãi", "Batch 1", "T2-T4", 4_000_000m),
+            CancellationToken.None);
+
+        var enrolled = await service.EnrollStudentAsync(
+            classResult.Value!.Id,
+            new EnrollStudentRequest(
+                "Học viên học nhiều khóa", "discount@test.com", "0900000000",
+                PaidAmount: 3_000_000m,
+                PaymentStatus: PaymentStatus.Paid,
+                DiscountAmount: 1_000_000m,
+                DiscountNote: "Ưu đãi đăng ký nhiều khóa"),
+            CancellationToken.None);
+
+        enrolled.Succeeded.Should().BeTrue();
+        enrolled.Value!.DiscountAmount.Should().Be(1_000_000m);
+        enrolled.Value.PayableAmount.Should().Be(3_000_000m);
+        enrolled.Value.DebtAmount.Should().Be(0);
+
+        var summary = await service.GetClassFinancialSummaryAsync(classResult.Value.Id, CancellationToken.None);
+        summary.Value!.ExpectedRevenue.Should().Be(3_000_000m);
+        summary.Value.ActualRevenue.Should().Be(3_000_000m);
+
+        var directory = await service.GetStudentDirectoryAsync("discount@test.com", CancellationToken.None);
+        directory.Should().ContainSingle();
+        directory[0].DiscountAmount.Should().Be(1_000_000m);
+        directory[0].PayableAmount.Should().Be(3_000_000m);
+        directory[0].DebtAmount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task EnrollStudent_WithSharedDataServices_ShouldCreatePartyEnrollmentDocumentAndIncomePosting()
     {
         using var db = CreateInMemoryDb();

@@ -19,10 +19,12 @@ public sealed record CscaClassDto
     public string Status { get; init; } = "Active";
     public int StudentCount { get; init; }
     public int StaffCount { get; init; }
+    public decimal ExpectedRevenue { get; init; }
+    public decimal TotalDiscountAmount { get; init; }
     public decimal TotalRevenue { get; init; }
     public decimal TotalStaffExpense { get; init; }
     public decimal NetProfit => TotalRevenue - TotalStaffExpense;
-    public decimal DebtAmount => Math.Max(0, (StudentCount * TuitionFee) - TotalRevenue);
+    public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
     public DateTime CreatedAt { get; init; }
 }
 
@@ -192,6 +194,10 @@ public sealed record CscaStudentDto
     public string? Hometown { get; init; }
     public string? Email { get; init; }
     public string? PhoneNumber { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? DiscountNote { get; init; }
+    public decimal PayableAmount { get; init; }
+    public decimal DebtAmount => Math.Max(0, PayableAmount - PaidAmount);
     public decimal PaidAmount { get; init; }
     public PaymentStatus PaymentStatus { get; init; } = PaymentStatus.Pending;
     public DateTime? DebtDueDate { get; init; }
@@ -208,7 +214,9 @@ public sealed record EnrollStudentRequest(
     string? Notes = null,
     int? Age = null,
     string? Hometown = null,
-    DateTime? DebtDueDate = null);
+    DateTime? DebtDueDate = null,
+    decimal DiscountAmount = 0,
+    string? DiscountNote = null);
 
 public sealed record UpdateStudentPaymentRequest(
     decimal PaidAmount,
@@ -219,7 +227,9 @@ public sealed record UpdateStudentPaymentRequest(
     string? PhoneNumber = null,
     int? Age = null,
     string? Hometown = null,
-    DateTime? DebtDueDate = null);
+    DateTime? DebtDueDate = null,
+    decimal DiscountAmount = 0,
+    string? DiscountNote = null);
 
 public sealed record CscaStudentDirectoryDto
 {
@@ -232,6 +242,9 @@ public sealed record CscaStudentDirectoryDto
     public string ClassCode { get; init; } = string.Empty;
     public string ClassName { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
+    public decimal DiscountAmount { get; init; }
+    public string? DiscountNote { get; init; }
+    public decimal PayableAmount { get; init; }
     public decimal PaidAmount { get; init; }
     public decimal DebtAmount { get; init; }
     public DateTime? DebtDueDate { get; init; }

@@ -181,6 +181,8 @@ public class BusinessEntityConfigurations :
         builder.HasKey(s => s.Id);
         builder.Property(s => s.StudentName).HasMaxLength(200).IsRequired();
         builder.Property(s => s.Hometown).HasMaxLength(200);
+        builder.Property(s => s.DiscountAmount).HasPrecision(18, 2);
+        builder.Property(s => s.DiscountNote).HasMaxLength(500);
         builder.Property(s => s.PaidAmount).HasPrecision(18, 2);
         builder.Property(s => s.DebtDueDate);
         builder.Property(s => s.PaymentStatus).HasConversion<string>();

@@ -281,6 +281,16 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("debt_due_date");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("discount_amount");
+
+                    b.Property<string>("DiscountNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("discount_note");
+
                     b.Property<string>("Email")
                         .HasColumnType("text")
                         .HasColumnName("email");

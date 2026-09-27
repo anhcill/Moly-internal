@@ -2309,7 +2309,9 @@
                                                 <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                                 <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                                 <DataGridTextColumn Header="LỚP" Binding="{Binding ClassCode}" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="HỌC PHÍ" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="120" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="120" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" Width="105" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" Width="120" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                                 <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" Width="120" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                                 <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" Width="120" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapAmberTextCellStyle}" />
                                                 <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />

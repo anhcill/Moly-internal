@@ -158,6 +158,13 @@ public class CscaClassStudent : BaseEntity, IAuditableEntity
     public string? Hometown { get; set; }
     public string? Email { get; set; }
     public string? PhoneNumber { get; set; }
+    /// <summary>
+    /// Khoản ưu đãi áp dụng riêng cho lần ghi danh này. Học phí niêm yết vẫn
+    /// được lấy từ lớp/khóa học, vì vậy một học viên đăng ký nhiều khóa không
+    /// làm thay đổi học phí chung của các học viên khác.
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+    public string? DiscountNote { get; set; }
     public decimal PaidAmount { get; set; }
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
     public DateTime? DebtDueDate { get; set; }

@@ -464,7 +464,8 @@ public sealed class ApiClient : IDisposable
 
     public async Task<bool> EnrollCscaStudentAsync(
         Guid classId, string studentName, string email, string phone, int? age,
-        string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null, CancellationToken ct = default)
+        string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null,
+        decimal discountAmount = 0, string? discountNote = null, CancellationToken ct = default)
     {
         var req = new
         {
@@ -475,6 +476,8 @@ public sealed class ApiClient : IDisposable
             Hometown = hometown,
             PaidAmount = paidAmount,
             PaymentStatus = paymentStatus,
+            DiscountAmount = discountAmount,
+            DiscountNote = discountNote,
             Notes = notes,
             DebtDueDate = debtDueDate
         };
@@ -499,7 +502,8 @@ public sealed class ApiClient : IDisposable
 
     public async Task<bool> UpdateCscaStudentAsync(
         Guid classId, Guid studentId, string studentName, string email, string phone,
-        int? age, string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null, CancellationToken ct = default)
+        int? age, string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null,
+        decimal discountAmount = 0, string? discountNote = null, CancellationToken ct = default)
     {
         var req = new
         {
@@ -510,6 +514,8 @@ public sealed class ApiClient : IDisposable
             Hometown = hometown,
             PaidAmount = paidAmount,
             PaymentStatus = paymentStatus,
+            DiscountAmount = discountAmount,
+            DiscountNote = discountNote,
             Notes = notes,
             DebtDueDate = debtDueDate
         };
@@ -1722,9 +1728,11 @@ public sealed class ApiClient : IDisposable
         decimal NetProfit,
         DateTime CreatedAt,
         Guid CourseId,
-        string CourseTitle)
+        string CourseTitle,
+        decimal ExpectedRevenue = 0,
+        decimal TotalDiscountAmount = 0)
     {
-        public decimal DebtAmount => Math.Max(0, (StudentCount * TuitionFee) - TotalRevenue);
+        public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
     }
 
     public sealed record CscaClassDetailItem(
@@ -1757,7 +1765,10 @@ public sealed class ApiClient : IDisposable
         int PaymentStatus,
         DateTime JoinedAt,
         string? Notes,
-        DateTime? DebtDueDate);
+        DateTime? DebtDueDate,
+        decimal DiscountAmount = 0,
+        string? DiscountNote = null,
+        decimal PayableAmount = 0);
 
     public sealed record CscaStudentDirectoryItem(
         Guid Id,
@@ -1774,7 +1785,10 @@ public sealed class ApiClient : IDisposable
         DateTime? DebtDueDate,
         int PaymentStatus,
         DateTime JoinedAt,
-        string? Notes);
+        string? Notes,
+        decimal DiscountAmount = 0,
+        string? DiscountNote = null,
+        decimal PayableAmount = 0);
 
     public sealed record CscaStaffItem(
         Guid Id,

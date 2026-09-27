@@ -106,6 +106,8 @@ public sealed class CscaService : ICscaService
                 Status = c.Status,
                 StudentCount = c.Students.Count,
                 StaffCount = c.Staff.Count,
+                TotalDiscountAmount = c.Students.Sum(s => s.DiscountAmount),
+                ExpectedRevenue = (c.Students.Count * c.TuitionFee) - c.Students.Sum(s => s.DiscountAmount),
                 TotalRevenue = c.Students.Sum(s => s.PaidAmount),
                 TotalStaffExpense = c.Staff.Sum(st => st.CompensationRate),
                 CreatedAt = c.CreatedAt
@@ -137,7 +139,7 @@ public sealed class CscaService : ICscaService
         var totalStudents = cls.Students.Count;
         var paidStudents = cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
-        var expectedRevenue = totalStudents * cls.TuitionFee;
+        var expectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
         var totalStaffExpense = cls.Staff.Sum(st => st.CompensationRate);
 
         var detail = new CscaClassDetailDto
@@ -163,6 +165,9 @@ public sealed class CscaService : ICscaService
                 Hometown = s.Hometown,
                 Email = s.Email,
                 PhoneNumber = s.PhoneNumber,
+                DiscountAmount = s.DiscountAmount,
+                DiscountNote = s.DiscountNote,
+                PayableAmount = GetPayableTuition(cls.TuitionFee, s.DiscountAmount),
                 PaidAmount = s.PaidAmount,
                 PaymentStatus = s.PaymentStatus,
                 DebtDueDate = s.DebtDueDate,
@@ -255,6 +260,8 @@ public sealed class CscaService : ICscaService
             Status = cls.Status,
             StudentCount = 0,
             StaffCount = 0,
+            ExpectedRevenue = 0,
+            TotalDiscountAmount = 0,
             TotalRevenue = 0,
             TotalStaffExpense = 0,
             CreatedAt = cls.CreatedAt
@@ -278,6 +285,11 @@ public sealed class CscaService : ICscaService
         {
             return Result<CscaClassDto>.Failure("Không tìm thấy lớp học CSCA cần cập nhật.");
         }
+
+        if (request.TuitionFee < 0)
+            return Result<CscaClassDto>.Failure("Học phí phải là số không âm.");
+        if (cls.Students.Any(student => student.DiscountAmount > request.TuitionFee))
+            return Result<CscaClassDto>.Failure("Học phí mới không được thấp hơn mức giảm giá đã áp dụng cho học viên.");
 
         if (request.CourseId.HasValue && request.CourseId.Value != cls.CourseId)
         {
@@ -318,6 +330,8 @@ public sealed class CscaService : ICscaService
             Status = cls.Status,
             StudentCount = cls.Students.Count,
             StaffCount = cls.Staff.Count,
+            TotalDiscountAmount = cls.Students.Sum(s => s.DiscountAmount),
+            ExpectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount)),
             TotalRevenue = cls.Students.Sum(s => s.PaidAmount),
             TotalStaffExpense = cls.Staff.Sum(st => st.CompensationRate),
             CreatedAt = cls.CreatedAt
@@ -366,6 +380,10 @@ public sealed class CscaService : ICscaService
         {
             return Result<CscaStudentDto>.Failure("Số tiền đã thanh toán không được âm.");
         }
+        if (request.DiscountAmount < 0 || request.DiscountAmount > cls.TuitionFee)
+        {
+            return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {cls.TuitionFee:N0} đ.");
+        }
 
         var student = new CscaClassStudent
         {
@@ -375,6 +393,8 @@ public sealed class CscaService : ICscaService
             Hometown = request.Hometown?.Trim(),
             Email = request.Email?.Trim(),
             PhoneNumber = request.PhoneNumber?.Trim(),
+            DiscountAmount = request.DiscountAmount,
+            DiscountNote = request.DiscountNote?.Trim(),
             PaidAmount = request.PaidAmount,
             PaymentStatus = request.PaymentStatus,
             DebtDueDate = request.DebtDueDate,
@@ -406,6 +426,9 @@ public sealed class CscaService : ICscaService
             Hometown = student.Hometown,
             Email = student.Email,
             PhoneNumber = student.PhoneNumber,
+            DiscountAmount = student.DiscountAmount,
+            DiscountNote = student.DiscountNote,
+            PayableAmount = GetPayableTuition(cls.TuitionFee, student.DiscountAmount),
             PaidAmount = student.PaidAmount,
             PaymentStatus = student.PaymentStatus,
             DebtDueDate = student.DebtDueDate,
@@ -438,9 +461,15 @@ public sealed class CscaService : ICscaService
         {
             return Result<CscaStudentDto>.Failure("Số tiền đã thanh toán không được âm.");
         }
+        if (request.DiscountAmount < 0 || request.DiscountAmount > student.Class.TuitionFee)
+        {
+            return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {student.Class.TuitionFee:N0} đ.");
+        }
 
         student.PaidAmount = request.PaidAmount;
         student.PaymentStatus = request.PaymentStatus;
+        student.DiscountAmount = request.DiscountAmount;
+        student.DiscountNote = request.DiscountNote?.Trim();
         student.DebtDueDate = request.DebtDueDate;
         if (request.StudentName != null)
         {
@@ -485,6 +514,9 @@ public sealed class CscaService : ICscaService
             Hometown = student.Hometown,
             Email = student.Email,
             PhoneNumber = student.PhoneNumber,
+            DiscountAmount = student.DiscountAmount,
+            DiscountNote = student.DiscountNote,
+            PayableAmount = GetPayableTuition(student.Class!.TuitionFee, student.DiscountAmount),
             PaidAmount = student.PaidAmount,
             PaymentStatus = student.PaymentStatus,
             DebtDueDate = student.DebtDueDate,
@@ -612,11 +644,14 @@ public sealed class CscaService : ICscaService
             student.Email,
             student.PhoneNumber,
             student.PaidAmount,
-            cls.TuitionFee,
+            GetPayableTuition(cls.TuitionFee, student.DiscountAmount),
             student.PaymentStatus,
             student.UpdatedAt ?? student.JoinedAt,
             student.BusinessDocumentId?.ToString("N")), ct);
     }
+
+    private static decimal GetPayableTuition(decimal tuitionFee, decimal discountAmount) =>
+        Math.Max(0, tuitionFee - discountAmount);
 
     private static BusinessDocumentStatus ToDocumentStatus(PaymentStatus status) => status switch
     {
@@ -659,8 +694,11 @@ public sealed class CscaService : ICscaService
                 ClassCode = s.Class.Code,
                 ClassName = s.Class.Name,
                 TuitionFee = s.Class.TuitionFee,
+                DiscountAmount = s.DiscountAmount,
+                DiscountNote = s.DiscountNote,
+                PayableAmount = s.Class.TuitionFee - s.DiscountAmount,
                 PaidAmount = s.PaidAmount,
-                DebtAmount = Math.Max(0, s.Class.TuitionFee - s.PaidAmount),
+                DebtAmount = Math.Max(0, s.Class.TuitionFee - s.DiscountAmount - s.PaidAmount),
                 DebtDueDate = s.DebtDueDate,
                 PaymentStatus = s.PaymentStatus,
                 JoinedAt = s.JoinedAt,
@@ -821,7 +859,7 @@ public sealed class CscaService : ICscaService
         var totalStudents = cls.Students.Count;
         var paidStudents = cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
-        var expectedRevenue = totalStudents * cls.TuitionFee;
+        var expectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
         var totalStaffExpense = cls.Staff.Sum(st => st.CompensationRate);
 
         var summary = new ClassFinancialSummaryDto

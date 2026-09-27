@@ -11,6 +11,8 @@ public sealed record CscaStudentDialogResult(
     string? Hometown,
     string? Email,
     string? PhoneNumber,
+    decimal DiscountAmount,
+    string? DiscountNote,
     decimal PaidAmount,
     int PaymentStatus,
     DateTime? DebtDueDate,
@@ -194,6 +196,24 @@ public static class CscaStudentDialog
         AddFormField(payRow.Right, "Số tiền đã đóng (VNĐ) *", paidAmountBox);
         financeContent.Children.Add(payRow.Grid);
 
+        // Discount is recorded on this enrollment only. The class tuition stays unchanged.
+        var discountRow = CreateTwoColumnGrid();
+        var initialDiscount = student?.DiscountAmount ?? 0;
+        var discountBox = CreateTextBox(initialDiscount.ToString("0", CultureInfo.InvariantCulture));
+        discountBox.ToolTip = "Giảm giá riêng cho học viên học nhiều khóa (VNĐ)";
+        var discountNoteBox = CreateTextBox(student?.DiscountNote);
+        AddFormField(discountRow.Left, "Giảm giá học nhiều khóa (VNĐ)", discountBox);
+        AddFormField(discountRow.Right, "Lý do giảm giá", discountNoteBox);
+        financeContent.Children.Add(discountRow.Grid);
+
+        decimal ReadDiscount()
+        {
+            var rawDiscount = discountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
+            return decimal.TryParse(rawDiscount, NumberStyles.Number, CultureInfo.InvariantCulture, out var discount) && discount > 0
+                ? discount
+                : 0;
+        }
+
         // Quick Preset Buttons
         var presetPanel = new StackPanel
         {
@@ -202,12 +222,12 @@ public static class CscaStudentDialog
         };
         var btnFull = CreatePresetButton("Đóng đủ 100%", () =>
         {
-            paidAmountBox.Text = classTuitionFee.ToString("0", CultureInfo.InvariantCulture);
+            paidAmountBox.Text = Math.Max(0, classTuitionFee - ReadDiscount()).ToString("0", CultureInfo.InvariantCulture);
             statusCombo.SelectedValue = 2;
         });
         var btnHalf = CreatePresetButton("Đóng 50%", () =>
         {
-            paidAmountBox.Text = Math.Round(classTuitionFee / 2).ToString("0", CultureInfo.InvariantCulture);
+            paidAmountBox.Text = Math.Round(Math.Max(0, classTuitionFee - ReadDiscount()) / 2).ToString("0", CultureInfo.InvariantCulture);
             statusCombo.SelectedValue = 1;
         });
         var btnZero = CreatePresetButton("Chưa đóng (0đ)", () =>
@@ -244,7 +264,7 @@ public static class CscaStudentDialog
         });
         var debtCalcFormulaText = new TextBlock
         {
-            Text = $"Học phí {classTuitionFee:N0} đ - Đã đóng {initialPaid:N0} đ",
+            Text = $"Học phí {classTuitionFee:N0} đ - Giảm {initialDiscount:N0} đ - Đã đóng {initialPaid:N0} đ",
             FontSize = 11,
             Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
             Margin = new Thickness(0, 2, 0, 0)
@@ -255,7 +275,7 @@ public static class CscaStudentDialog
 
         var debtValueText = new TextBlock
         {
-            Text = $"{Math.Max(0, classTuitionFee - initialPaid):N0} đ",
+            Text = $"{Math.Max(0, classTuitionFee - initialDiscount - initialPaid):N0} đ",
             FontSize = 18,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
@@ -295,8 +315,10 @@ public static class CscaStudentDialog
             _ = decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var paid);
             if (paid < 0) paid = 0;
 
-            var debt = Math.Max(0, classTuitionFee - paid);
-            debtCalcFormulaText.Text = $"Học phí {classTuitionFee:N0} đ - Đã đóng {paid:N0} đ";
+            var discount = ReadDiscount();
+            var payable = Math.Max(0, classTuitionFee - discount);
+            var debt = Math.Max(0, payable - paid);
+            debtCalcFormulaText.Text = $"Học phí {classTuitionFee:N0} đ - Giảm {discount:N0} đ - Đã đóng {paid:N0} đ";
             debtValueText.Text = $"{debt:N0} đ";
 
             if (debt <= 0)
@@ -317,7 +339,7 @@ public static class CscaStudentDialog
                 isUpdatingInternally = true;
                 try
                 {
-                    if (paid >= classTuitionFee)
+                    if (paid >= payable)
                     {
                         statusCombo.SelectedValue = 2; // Paid
                     }
@@ -338,6 +360,7 @@ public static class CscaStudentDialog
         }
 
         paidAmountBox.TextChanged += (_, _) => UpdateDebtCalculation();
+        discountBox.TextChanged += (_, _) => UpdateDebtCalculation();
 
         statusCombo.SelectionChanged += (_, _) =>
         {
@@ -349,7 +372,7 @@ public static class CscaStudentDialog
                 {
                     if (statusVal == 2) // Paid
                     {
-                        paidAmountBox.Text = classTuitionFee.ToString("0", CultureInfo.InvariantCulture);
+                        paidAmountBox.Text = Math.Max(0, classTuitionFee - ReadDiscount()).ToString("0", CultureInfo.InvariantCulture);
                     }
                     else if (statusVal == 0) // Pending
                     {
@@ -358,9 +381,10 @@ public static class CscaStudentDialog
                     else if (statusVal == 1) // Partial
                     {
                         var rawPaid = paidAmountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
-                        if (!decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var currentPaid) || currentPaid <= 0 || currentPaid >= classTuitionFee)
+                        var payable = Math.Max(0, classTuitionFee - ReadDiscount());
+                        if (!decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var currentPaid) || currentPaid <= 0 || currentPaid >= payable)
                         {
-                            paidAmountBox.Text = Math.Round(classTuitionFee / 2).ToString("0", CultureInfo.InvariantCulture);
+                            paidAmountBox.Text = Math.Round(payable / 2).ToString("0", CultureInfo.InvariantCulture);
                         }
                     }
                 }
@@ -431,6 +455,14 @@ public static class CscaStudentDialog
                 age = parsedAge;
             }
 
+            var rawDiscount = discountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
+            if (!decimal.TryParse(rawDiscount, NumberStyles.Number, CultureInfo.InvariantCulture, out var discountAmount) || discountAmount < 0 || discountAmount > classTuitionFee)
+            {
+                MessageBox.Show(dialog, $"Giảm giá phải là số từ 0 đến {classTuitionFee:N0} đ.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                discountBox.Focus();
+                return;
+            }
+
             var rawPaid = paidAmountBox.Text.Trim().Replace(" ", "").Replace(",", "").Replace(".", "");
             if (!decimal.TryParse(rawPaid, NumberStyles.Number, CultureInfo.InvariantCulture, out var paidAmount) || paidAmount < 0)
             {
@@ -459,6 +491,8 @@ public static class CscaStudentDialog
                 NullIfEmpty(hometownBox.Text),
                 NullIfEmpty(emailBox.Text),
                 NullIfEmpty(phoneBox.Text),
+                discountAmount,
+                NullIfEmpty(discountNoteBox.Text),
                 paidAmount,
                 paymentStatus,
                 debtDueDate,
