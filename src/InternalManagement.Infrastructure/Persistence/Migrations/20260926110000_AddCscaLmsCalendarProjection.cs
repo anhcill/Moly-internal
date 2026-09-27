@@ -1,3 +1,5 @@
+using InternalManagement.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -8,6 +10,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations;
 /// Adds immutable LMS identities and version markers to the Management calendar
 /// read model. LMS remains the only system allowed to edit this projection.
 /// </summary>
+[DbContext(typeof(ApplicationDbContext))]
+[Migration("20260926110000_AddCscaLmsCalendarProjection")]
 public partial class AddCscaLmsCalendarProjection : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

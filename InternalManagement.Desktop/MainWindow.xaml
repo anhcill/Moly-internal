@@ -2302,33 +2302,33 @@
                             <TabControl Background="Transparent" BorderThickness="0">
                                 <TabItem Header="Học viên từ lớp học" FontWeight="SemiBold">
                                     <Grid Margin="0,8,0,0">
-                                        <DataGrid x:Name="CscaStudentsDirectoryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                                        <DataGrid x:Name="CscaStudentsDirectoryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <DataGrid.Columns>
-                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
-                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" Width="130" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="LỚP" Binding="{Binding ClassCode}" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="120" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" Width="105" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" Width="120" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" Width="120" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
-                                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" Width="120" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapAmberTextCellStyle}" />
-                                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" MinWidth="150" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="120" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="170" Width="1.8*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" MinWidth="150" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                                <DataGridTextColumn Header="LỚP" Binding="{Binding ClassCode}" MinWidth="110" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" MinWidth="90" Width="100" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
+                                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" MinWidth="95" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridAmberTextCellStyle}" />
+                                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" MinWidth="95" Width="100" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
                                             </DataGrid.Columns>
                                         </DataGrid>
                                     </Grid>
                                 </TabItem>
                                 <TabItem Header="Khách hàng đăng ký" FontWeight="SemiBold">
                                     <Grid Margin="0,8,0,0">
-                                        <DataGrid x:Name="CustomersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                                        <DataGrid x:Name="CustomersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <DataGrid.Columns>
-                                                <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding SourceId}" Width="140" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
-                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.6*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" Width="130" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="1.8*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="GÓI / KHÓA ĐĂNG KÝ" Binding="{Binding SubscriptionCount}" Width="150" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                                <DataGridTextColumn Header="TỔNG ĐÃ ĐÓNG" Binding="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}" Width="145" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
+                                                <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding SourceId}" MinWidth="120" Width="135" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" MinWidth="150" Width="1.6*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="125" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="170" Width="1.8*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="GÓI / KHÓA ĐĂNG KÝ" Binding="{Binding SubscriptionCount}" MinWidth="130" Width="145" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="TỔNG ĐÃ ĐÓNG" Binding="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="120" Width="135" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
                                             </DataGrid.Columns>
                                         </DataGrid>
                                     </Grid>
