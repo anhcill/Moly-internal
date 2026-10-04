@@ -149,9 +149,27 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("day_of_week");
 
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("interval")
                         .HasColumnName("end_time");
+
+                    b.Property<string>("ExternalScheduleId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("external_schedule_id");
+
+                    b.Property<string>("ExternalSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("external_source");
+
+                    b.Property<int>("ExternalVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("external_version");
 
                     b.Property<string>("MeetingUrl")
                         .HasMaxLength(1000)
@@ -168,9 +186,30 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("room");
 
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("interval")
                         .HasColumnName("start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Timezone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("timezone");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -185,6 +224,11 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClassroomId")
                         .HasDatabaseName("ix_csca_class_schedules_classroom_id");
+
+                    b.HasIndex("ExternalSource", "ExternalScheduleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_csca_class_schedules_external_source_external_schedule_id")
+                        .HasFilter("external_source IS NOT NULL AND external_schedule_id IS NOT NULL");
 
                     b.HasIndex("ClassId", "DayOfWeek", "StartTime", "EndTime")
                         .IsUnique()
@@ -519,6 +563,20 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("interval")
                         .HasColumnName("end_time");
 
+                    b.Property<string>("ExternalSessionId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("external_session_id");
+
+                    b.Property<string>("ExternalSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("external_source");
+
+                    b.Property<int>("ExternalVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("external_version");
+
                     b.Property<DateOnly>("LessonDate")
                         .HasColumnType("date")
                         .HasColumnName("lesson_date");
@@ -560,6 +618,11 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ScheduleId")
                         .HasDatabaseName("ix_csca_lesson_sessions_schedule_id");
+
+                    b.HasIndex("ExternalSource", "ExternalSessionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_csca_lesson_sessions_external_source_external_session_id")
+                        .HasFilter("external_source IS NOT NULL AND external_session_id IS NOT NULL");
 
                     b.HasIndex("ClassId", "LessonDate", "StartTime", "EndTime")
                         .IsUnique()
@@ -4084,6 +4147,21 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("BankAccountHolder")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("bank_account_holder");
+
+                    b.Property<string>("BankAccountNumber")
+                        .HasMaxLength(34)
+                        .HasColumnType("character varying(34)")
+                        .HasColumnName("bank_account_number");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("bank_name");
+
                     b.Property<decimal>("BaseSalary")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
@@ -4399,6 +4477,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id")
                         .HasName("pk_payroll_periods");
 
@@ -4460,6 +4544,108 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_payroll_policy_versions_company_id_version_number");
 
                     b.ToTable("payroll_policy_versions", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.PayrollWorkEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("EvidenceUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("evidence_url");
+
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_voided");
+
+                    b.Property<Guid>("PayrollPeriodId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payroll_period_id");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("ReferenceCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reference_code");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.Property<decimal>("UnitRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_rate");
+
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("voided_at");
+
+                    b.Property<string>("VoidedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("voided_by");
+
+                    b.Property<DateOnly>("WorkDate")
+                        .HasColumnType("date")
+                        .HasColumnName("work_date");
+
+                    b.Property<string>("WorkType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("work_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payroll_work_entries");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_payroll_work_entries_employee_id");
+
+                    b.HasIndex("PayrollPeriodId", "EmployeeId")
+                        .HasDatabaseName("ix_payroll_work_entries_payroll_period_id_employee_id");
+
+                    b.HasIndex("CompanyId", "EmployeeId", "WorkType", "ReferenceCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payroll_work_entries_company_id_employee_id_work_type_refer")
+                        .HasFilter("NOT is_voided");
+
+                    b.ToTable("payroll_work_entries", (string)null);
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.Payslip", b =>
@@ -4584,6 +4770,17 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<decimal>("WorkEarnings")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("work_earnings");
 
                     b.HasKey("Id")
                         .HasName("pk_payslips");
@@ -5292,6 +5489,492 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_user_roles_role_id");
 
                     b.ToTable("user_roles", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationClassMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("activated_at");
+
+                    b.Property<Guid?>("ApplicationCourseMapId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_course_map_id");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CscaClassId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("csca_class_id");
+
+                    b.Property<string>("ExternalClassId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("external_class_id");
+
+                    b.Property<string>("LastSyncError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("last_sync_error");
+
+                    b.Property<Guid>("ManagedApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("managed_application_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_class_maps");
+
+                    b.HasIndex("ApplicationCourseMapId")
+                        .HasDatabaseName("ix_app_class_maps_course_map");
+
+                    b.HasIndex("CscaClassId")
+                        .HasDatabaseName("ix_app_class_maps_csca_class");
+
+                    b.HasIndex("ManagedApplicationId")
+                        .HasDatabaseName("ix_app_class_maps_application");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "CscaClassId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_class_maps_company_app_class");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "ExternalClassId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_class_maps_company_app_ext_id");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "Status")
+                        .HasDatabaseName("ix_app_class_maps_company_app_status");
+
+                    b.ToTable("application_class_maps", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationCourseMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("activated_at");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("course_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("ExternalCourseId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("external_course_id");
+
+                    b.Property<long?>("ExternalCourseNumericId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("external_course_numeric_id");
+
+                    b.Property<string>("ExternalCourseSlug")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("external_course_slug");
+
+                    b.Property<string>("LastSyncError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("last_sync_error");
+
+                    b.Property<Guid>("ManagedApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("managed_application_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_course_maps");
+
+                    b.HasIndex("CourseId")
+                        .HasDatabaseName("ix_app_course_maps_course");
+
+                    b.HasIndex("ManagedApplicationId")
+                        .HasDatabaseName("ix_app_course_maps_application");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "CourseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_course_maps_company_app_course");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "ExternalCourseId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_course_maps_company_app_ext_id");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "ExternalCourseNumericId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_course_maps_company_app_ext_num");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "Status")
+                        .HasDatabaseName("ix_app_course_maps_company_app_status");
+
+                    b.ToTable("application_course_maps", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationEntitlement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ApplicationClassMapId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_class_map_id");
+
+                    b.Property<Guid>("ApplicationCourseMapId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_course_map_id");
+
+                    b.Property<Guid>("ApplicationMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_membership_id");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("CscaClassStudentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("csca_class_student_id");
+
+                    b.Property<string>("LastCorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_correlation_id");
+
+                    b.Property<string>("LastSyncError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("last_sync_error");
+
+                    b.Property<DateTime?>("LastSyncedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_synced_at");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("SourcePaymentId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("source_payment_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTime?>("ValidUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_entitlements");
+
+                    b.HasIndex("ApplicationClassMapId")
+                        .HasDatabaseName("ix_app_entitlements_class_map");
+
+                    b.HasIndex("ApplicationCourseMapId")
+                        .HasDatabaseName("ix_app_entitlements_course_map");
+
+                    b.HasIndex("ApplicationMembershipId")
+                        .HasDatabaseName("ix_app_entitlements_membership");
+
+                    b.HasIndex("CscaClassStudentId")
+                        .HasDatabaseName("ix_app_entitlements_student");
+
+                    b.HasIndex("CscaClassStudentId", "ApplicationCourseMapId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_entitlements_student_course");
+
+                    b.HasIndex("ApplicationMembershipId", "ApplicationCourseMapId", "ApplicationClassMapId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_entitlements_membership_course_class");
+
+                    b.HasIndex("CompanyId", "Status", "ValidUntil")
+                        .HasDatabaseName("ix_app_entitlements_company_status_until");
+
+                    b.ToTable("application_entitlements", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_application_entitlements_valid_range", "valid_until IS NULL OR valid_until > valid_from");
+                        });
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("activated_at");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("ExternalUserId")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("external_user_id");
+
+                    b.Property<Guid>("ManagedApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("managed_application_id");
+
+                    b.Property<Guid>("PartyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("party_id");
+
+                    b.Property<string>("RevocationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("revocation_reason");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_memberships");
+
+                    b.HasIndex("ManagedApplicationId")
+                        .HasDatabaseName("ix_app_memberships_application");
+
+                    b.HasIndex("PartyId")
+                        .HasDatabaseName("ix_app_memberships_party");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "ExternalUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_memberships_company_app_user");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "PartyId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_memberships_company_app_party");
+
+                    b.HasIndex("CompanyId", "ManagedApplicationId", "Status")
+                        .HasDatabaseName("ix_app_memberships_company_app_status");
+
+                    b.ToTable("application_memberships", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationRoleAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_membership_id");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("RevocationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("revocation_reason");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("RoleCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("role_code");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scope_id");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("scope_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTime?>("ValidUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_role_assignments");
+
+                    b.HasIndex("ApplicationMembershipId")
+                        .HasDatabaseName("ix_app_roles_membership");
+
+                    b.HasIndex("CompanyId", "Status", "ValidUntil")
+                        .HasDatabaseName("ix_app_roles_company_status_until");
+
+                    b.HasIndex("ApplicationMembershipId", "RoleCode", "ScopeType", "ScopeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_roles_membership_role_scope");
+
+                    b.ToTable("application_role_assignments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_application_role_assignments_scope", "(scope_type = 'Application' AND scope_id IS NULL) OR (scope_type <> 'Application' AND scope_id IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.IntegrationDeadLetter", b =>
@@ -6087,6 +6770,91 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_lms_sync_statuses_company_id_source_system_status_last_sync");
 
                     b.ToTable("lms_sync_statuses", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ManagedApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("base_url");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("code");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_managed_applications");
+
+                    b.HasIndex("CompanyId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_managed_apps_company_code");
+
+                    b.HasIndex("CompanyId", "Status")
+                        .HasDatabaseName("ix_managed_apps_company_status");
+
+                    b.ToTable("managed_applications", (string)null);
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.InternalData.InternalCustomer", b =>
@@ -7528,6 +8296,27 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("BusinessDocument");
                 });
 
+            modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.PayrollWorkEntry", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", "Employee")
+                        .WithMany("WorkEntries")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payroll_work_entries_employees_employee_id");
+
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.PayrollPeriod", "PayrollPeriod")
+                        .WithMany("WorkEntries")
+                        .HasForeignKey("PayrollPeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payroll_work_entries_payroll_periods_payroll_period_id");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("PayrollPeriod");
+                });
+
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.Payslip", b =>
                 {
                     b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", "Employee")
@@ -7679,6 +8468,126 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationClassMap", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ApplicationCourseMap", "ApplicationCourseMap")
+                        .WithMany("ClassMaps")
+                        .HasForeignKey("ApplicationCourseMapId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_application_class_maps_application_course_maps_application_");
+
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "CscaClass")
+                        .WithMany()
+                        .HasForeignKey("CscaClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_class_maps_csca_classes_csca_class_id");
+
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ManagedApplication", "ManagedApplication")
+                        .WithMany("ClassMaps")
+                        .HasForeignKey("ManagedApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_class_maps_managed_applications_managed_applica");
+
+                    b.Navigation("ApplicationCourseMap");
+
+                    b.Navigation("CscaClass");
+
+                    b.Navigation("ManagedApplication");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationCourseMap", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.EdTech.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_course_maps_courses_course_id");
+
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ManagedApplication", "ManagedApplication")
+                        .WithMany("CourseMaps")
+                        .HasForeignKey("ManagedApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_course_maps_managed_applications_managed_applic");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("ManagedApplication");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationEntitlement", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ApplicationClassMap", "ApplicationClassMap")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("ApplicationClassMapId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_application_entitlements_application_class_maps_application");
+
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ApplicationCourseMap", "ApplicationCourseMap")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("ApplicationCourseMapId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_entitlements_application_course_maps_applicatio");
+
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ApplicationMembership", "ApplicationMembership")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("ApplicationMembershipId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_entitlements_application_memberships_applicatio");
+
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClassStudent", "CscaClassStudent")
+                        .WithMany()
+                        .HasForeignKey("CscaClassStudentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_application_entitlements_csca_class_students_csca_class_stu");
+
+                    b.Navigation("ApplicationClassMap");
+
+                    b.Navigation("ApplicationCourseMap");
+
+                    b.Navigation("ApplicationMembership");
+
+                    b.Navigation("CscaClassStudent");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationMembership", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ManagedApplication", "ManagedApplication")
+                        .WithMany("Memberships")
+                        .HasForeignKey("ManagedApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_memberships_managed_applications_managed_applic");
+
+                    b.HasOne("InternalManagement.Domain.Entities.MasterData.Party", "Party")
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_memberships_parties_party_id");
+
+                    b.Navigation("ManagedApplication");
+
+                    b.Navigation("Party");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationRoleAssignment", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Integration.ApplicationMembership", "ApplicationMembership")
+                        .WithMany("RoleAssignments")
+                        .HasForeignKey("ApplicationMembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_role_assignments_application_memberships_applic");
+
+                    b.Navigation("ApplicationMembership");
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.LmsAccessGrant", b =>
@@ -7976,6 +8885,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("AttendanceRecords");
 
                     b.Navigation("Payslips");
+
+                    b.Navigation("WorkEntries");
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.PayrollPeriod", b =>
@@ -7985,6 +8896,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("Approvals");
 
                     b.Navigation("Payslips");
+
+                    b.Navigation("WorkEntries");
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.Identity.Company", b =>
@@ -8019,6 +8932,25 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("UserRoles");
                 });
 
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationClassMap", b =>
+                {
+                    b.Navigation("Entitlements");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationCourseMap", b =>
+                {
+                    b.Navigation("ClassMaps");
+
+                    b.Navigation("Entitlements");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ApplicationMembership", b =>
+                {
+                    b.Navigation("Entitlements");
+
+                    b.Navigation("RoleAssignments");
+                });
+
             modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.LmsAccountLink", b =>
                 {
                     b.Navigation("AccessGrants");
@@ -8029,6 +8961,15 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("AccessGrants");
                 });
 
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Integration.ManagedApplication", b =>
+                {
+                    b.Navigation("ClassMaps");
+
+                    b.Navigation("CourseMaps");
+
+                    b.Navigation("Memberships");
+                });
+
             modelBuilder.Entity("InternalManagement.Domain.Entities.MasterData.Party", b =>
                 {
                     b.Navigation("BusinessProfiles");
@@ -8037,8 +8978,6 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.Navigation("ExternalIdentities");
                 });
-
-            ApplicationOrchestrationSnapshot.Apply(modelBuilder);
 #pragma warning restore 612, 618
         }
     }

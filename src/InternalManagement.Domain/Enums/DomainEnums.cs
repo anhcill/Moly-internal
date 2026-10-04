@@ -85,7 +85,8 @@ public enum EmploymentType
 public enum PartTimeCalculationMethod
 {
     HOURLY,
-    SHIFT
+    SHIFT,
+    OUTPUT
 }
 
 public enum InventoryMovementType

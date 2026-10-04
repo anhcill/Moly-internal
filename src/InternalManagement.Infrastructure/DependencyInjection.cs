@@ -75,6 +75,10 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<ICscaDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IOrderDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IFinanceDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IPayrollDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

@@ -1,6 +1,10 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using InternalManagement.Application.Common.Interfaces;
+using InternalManagement.Application.Features.CscaInterview.Services;
+using InternalManagement.Application.Features.Fashion.Services;
+using InternalManagement.Application.Features.Finance.Services;
+using InternalManagement.Application.Features.HrPayroll.Services;
 using InternalManagement.Domain.Common;
 using InternalManagement.Domain.Entities.Identity;
 using InternalManagement.Domain.Entities.Integration;
@@ -15,7 +19,8 @@ using InternalManagement.Domain.Entities.Documents;
 
 namespace InternalManagement.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext,
+    ICscaDbContext, IOrderDbContext, IFinanceDbContext, IPayrollDbContext
 {
     private readonly ICurrentUserService? _currentUserService;
     private readonly IDateTimeProvider? _dateTimeProvider;
@@ -101,6 +106,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PayrollPeriod> PayrollPeriods => Set<PayrollPeriod>();
     public DbSet<PayrollPolicyVersion> PayrollPolicyVersions => Set<PayrollPolicyVersion>();
     public DbSet<PayrollAdjustment> PayrollAdjustments => Set<PayrollAdjustment>();
+    public DbSet<PayrollWorkEntry> PayrollWorkEntries => Set<PayrollWorkEntry>();
     public DbSet<Payslip> Payslips => Set<Payslip>();
     public DbSet<PayrollApproval> PayrollApprovals => Set<PayrollApproval>();
 

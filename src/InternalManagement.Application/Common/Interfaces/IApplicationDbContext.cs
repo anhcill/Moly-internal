@@ -85,6 +85,7 @@ public interface IApplicationDbContext
     DbSet<PayrollPeriod> PayrollPeriods { get; }
     DbSet<PayrollPolicyVersion> PayrollPolicyVersions { get; }
     DbSet<PayrollAdjustment> PayrollAdjustments { get; }
+    DbSet<PayrollWorkEntry> PayrollWorkEntries { get; }
     DbSet<Payslip> Payslips { get; }
     DbSet<PayrollApproval> PayrollApprovals { get; }
 

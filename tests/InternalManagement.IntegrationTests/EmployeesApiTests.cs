@@ -5,6 +5,7 @@ using FluentAssertions;
 using InternalManagement.Application.Common.Models;
 using InternalManagement.Application.Features.Auth.DTOs;
 using InternalManagement.Application.Features.HrPayroll.DTOs;
+using InternalManagement.Domain.Enums;
 
 namespace InternalManagement.IntegrationTests;
 
@@ -97,5 +98,41 @@ public class EmployeesApiTests : IClassFixture<CustomWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task PaymentDetails_ShouldBeStoredButNotExposedInEmployeeListOrDetail()
+    {
+        var client = _factory.CreateClient();
+        var token = await GetAdminTokenAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        var request = new CreateEmployeeRequest(
+            $"CTV-{suffix}", "Cộng tác viên nội dung", $"ctv-{suffix.ToLowerInvariant()}@moli.local",
+            null, "Biên soạn đề", 0m,
+            EmploymentType: EmploymentType.PART_TIME,
+            PartTimeCalculationMethod: PartTimeCalculationMethod.OUTPUT,
+            BankName: "Vietcombank", BankAccountNumber: "1234567890",
+            BankAccountHolder: "CONG TAC VIEN NOI DUNG");
+
+        var created = await client.PostAsJsonAsync("/api/v1/employees", request);
+        created.StatusCode.Should().Be(HttpStatusCode.Created, await created.Content.ReadAsStringAsync());
+        var employee = (await created.Content.ReadFromJsonAsync<ApiResponse<EmployeeDto>>())!.Data!;
+
+        var list = await client.GetAsync($"/api/v1/employees?search=CTV-{suffix}");
+        list.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await list.Content.ReadAsStringAsync()).Should().NotContain("bankAccountNumber");
+        var detail = await client.GetAsync($"/api/v1/employees/{employee.Id}");
+        detail.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await detail.Content.ReadAsStringAsync()).Should().NotContain("bankAccountNumber");
+
+        var paymentDetails = await client.GetAsync($"/api/v1/employees/{employee.Id}/payment-details");
+        paymentDetails.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bank = (await paymentDetails.Content.ReadFromJsonAsync<ApiResponse<EmployeePaymentDetailsDto>>())!.Data!;
+        bank.BankAccountNumber.Should().Be("1234567890");
+
+        var anonymous = _factory.CreateClient();
+        (await anonymous.GetAsync($"/api/v1/employees/{employee.Id}/payment-details"))
+            .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

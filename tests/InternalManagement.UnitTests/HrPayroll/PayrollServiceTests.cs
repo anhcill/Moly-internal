@@ -156,6 +156,58 @@ public class PayrollServiceTests
     }
 
     [Fact]
+    public async Task WorkEntries_ShouldPayNamedDeliverablesImmediatelyAndPreserveVoidedHistory()
+    {
+        using var db = await CreateInMemoryDbWithSeedDataAsync();
+        var employees = await db.Employees.ToListAsync();
+        foreach (var employee in employees)
+        {
+            employee.EmploymentType = EmploymentType.PART_TIME;
+            employee.PartTimeCalculationMethod = PartTimeCalculationMethod.OUTPUT;
+            employee.PartTimeUnitRate = null;
+            employee.BaseSalary = 0;
+        }
+        await db.SaveChangesAsync();
+        var service = new PayrollService(db, new CurrentUserService(null!), NullLogger<PayrollService>.Instance);
+        var period = await service.CreatePayrollPeriodAsync(
+            new CreatePayrollPeriodRequest("Lương CTV theo đầu việc", new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 31)),
+            CancellationToken.None);
+        var employeeId = employees[0].Id;
+
+        var first = await service.AddWorkEntryAsync(period.Value!.Id,
+            new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.QuestionPosted,
+                "DE-001", "Đề Toán số 1", new DateOnly(2026, 8, 10), 2, 150_000m), CancellationToken.None);
+        first.Succeeded.Should().BeTrue();
+        first.Value!.Amount.Should().Be(300_000m);
+
+        var duplicate = await service.AddWorkEntryAsync(period.Value.Id,
+            new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.QuestionPosted,
+                "DE-001", "Đề Toán số 1", new DateOnly(2026, 8, 10), 1, 150_000m), CancellationToken.None);
+        duplicate.Succeeded.Should().BeFalse();
+
+        var calculated = await service.CalculatePayrollAsync(period.Value.Id, CancellationToken.None);
+        calculated.Succeeded.Should().BeTrue();
+        calculated.Value!.Payslips.Single(p => p.EmployeeId == employeeId).WorkEarnings.Should().Be(300_000m);
+
+        var second = await service.AddWorkEntryAsync(period.Value.Id,
+            new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.SalesCommission,
+                "ORDER-002", "Hoa hồng đơn hàng", new DateOnly(2026, 8, 20), 1, 250_000m), CancellationToken.None);
+        second.Succeeded.Should().BeTrue();
+        var updatedSlip = await db.Payslips.SingleAsync(p => p.PayrollPeriodId == period.Value.Id && p.EmployeeId == employeeId);
+        updatedSlip.WorkEarnings.Should().Be(550_000m);
+        updatedSlip.NetSalary.Should().Be(550_000m);
+
+        var voided = await service.VoidWorkEntryAsync(first.Value.Id, CancellationToken.None);
+        voided.Succeeded.Should().BeTrue();
+        updatedSlip.WorkEarnings.Should().Be(250_000m);
+        updatedSlip.NetSalary.Should().Be(250_000m);
+        var history = await service.GetWorkEntriesAsync(period.Value.Id, CancellationToken.None);
+        history.Value.Should().HaveCount(2);
+        history.Value.Should().ContainSingle(entry => entry.ReferenceCode == "DE-001" && entry.IsVoided);
+        (await db.PayrollPeriods.SingleAsync(p => p.Id == period.Value.Id)).TotalNetAmount.Should().Be(250_000m);
+    }
+
+    [Fact]
     public async Task CalculatePayroll_WhenFullTimeEmployeeHasNoAttendance_ShouldFailWithoutCreatingPayslips()
     {
         using var db = await CreateInMemoryDbWithSeedDataAsync();

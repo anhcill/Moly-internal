@@ -42,6 +42,57 @@ public class PayrollApiTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
+    public async Task WorkEntries_ShouldExposeDeliverableHistoryAndSupportVoid()
+    {
+        var client = _factory.CreateClient();
+        var token = await GetAdminTokenAsync(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var employeesResponse = await client.GetAsync("/api/v1/employees?pageSize=100");
+        var employees = (await employeesResponse.Content
+            .ReadFromJsonAsync<ApiResponse<PaginatedResult<EmployeeDto>>>())!.Data!;
+        var employee = employees.Items.First(e => e.Status == "Active");
+        var year = 2100 + Random.Shared.Next(0, 100);
+        var periodResponse = await client.PostAsJsonAsync("/api/v1/payroll/periods",
+            new CreatePayrollPeriodRequest($"Kiểm thử đầu việc {Guid.NewGuid():N}",
+                new DateOnly(year, 1, 1), new DateOnly(year, 1, 31)));
+        periodResponse.StatusCode.Should().Be(HttpStatusCode.Created,
+            await periodResponse.Content.ReadAsStringAsync());
+        var period = (await periodResponse.Content
+            .ReadFromJsonAsync<ApiResponse<PayrollPeriodDto>>())!.Data!;
+
+        var reference = $"DE-{Guid.NewGuid():N}"[..20].ToUpperInvariant();
+        var request = new CreatePayrollWorkEntryRequest(employee.Id, PayrollWorkTypes.QuestionPosted,
+            reference, "Đề kiểm thử đã đăng", new DateOnly(year, 1, 15), 2m, 100_000m);
+        var add = await client.PostAsJsonAsync($"/api/v1/payroll/periods/{period.Id}/work-entries", request);
+        add.StatusCode.Should().Be(HttpStatusCode.OK, await add.Content.ReadAsStringAsync());
+        var entry = (await add.Content
+            .ReadFromJsonAsync<ApiResponse<PayrollWorkEntryDto>>())!.Data!;
+        entry.Amount.Should().Be(200_000m);
+
+        var referralReference = $"HV-{Guid.NewGuid():N}"[..20].ToUpperInvariant();
+        var referral = await client.PostAsJsonAsync($"/api/v1/payroll/periods/{period.Id}/work-entries",
+            new CreatePayrollWorkEntryRequest(employee.Id, PayrollWorkTypes.StudentReferral,
+                referralReference, "Học viên được giới thiệu", new DateOnly(year, 1, 16), 1m, 250_000m));
+        referral.StatusCode.Should().Be(HttpStatusCode.OK, await referral.Content.ReadAsStringAsync());
+        (await referral.Content.ReadFromJsonAsync<ApiResponse<PayrollWorkEntryDto>>())!.Data!.Amount
+            .Should().Be(250_000m);
+
+        var duplicate = await client.PostAsJsonAsync($"/api/v1/payroll/periods/{period.Id}/work-entries", request);
+        duplicate.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var list = await client.GetFromJsonAsync<ApiResponse<List<PayrollWorkEntryDto>>>(
+            $"/api/v1/payroll/periods/{period.Id}/work-entries");
+        list!.Data.Should().ContainSingle(e => e.ReferenceCode == reference && !e.IsVoided);
+
+        var voided = await client.PostAsync($"/api/v1/payroll/work-entries/{entry.Id}/void", null);
+        voided.StatusCode.Should().Be(HttpStatusCode.OK);
+        var afterVoid = await client.GetFromJsonAsync<ApiResponse<List<PayrollWorkEntryDto>>>(
+            $"/api/v1/payroll/periods/{period.Id}/work-entries");
+        afterVoid!.Data.Should().ContainSingle(e => e.Id == entry.Id && e.IsVoided);
+    }
+
+    [Fact]
     public async Task GetPayrollPeriods_AsAdmin_ShouldReturnSeededPeriods()
     {
         // Arrange

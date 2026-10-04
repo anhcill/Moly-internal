@@ -58,6 +58,49 @@ public record CreatePayrollAdjustmentRequest(
     decimal Amount,
     string Reason);
 
+public static class PayrollWorkTypes
+{
+    public const string QuestionPosted = "QUESTION_POSTED";
+    public const string QuestionCompleted = "QUESTION_COMPLETED";
+    public const string Project = "PROJECT";
+    public const string SalesCommission = "SALES_COMMISSION";
+    public const string StudentReferral = "STUDENT_REFERRAL";
+    public const string Marketing = "MARKETING";
+    public const string Other = "OTHER";
+
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
+    {
+        QuestionPosted, QuestionCompleted, Project, SalesCommission, StudentReferral, Marketing, Other
+    };
+}
+
+public record PayrollWorkEntryDto(
+    Guid Id,
+    Guid PayrollPeriodId,
+    Guid EmployeeId,
+    string EmployeeCode,
+    string EmployeeName,
+    string WorkType,
+    string ReferenceCode,
+    string Title,
+    string? EvidenceUrl,
+    DateOnly WorkDate,
+    decimal Quantity,
+    decimal UnitRate,
+    decimal Amount,
+    bool IsVoided,
+    DateTime CreatedAt);
+
+public record CreatePayrollWorkEntryRequest(
+    Guid EmployeeId,
+    string WorkType,
+    string ReferenceCode,
+    string Title,
+    DateOnly WorkDate,
+    decimal Quantity,
+    decimal UnitRate,
+    string? EvidenceUrl = null);
+
 public record PayslipDto(
     Guid Id,
     Guid PayrollPeriodId,
@@ -87,7 +130,8 @@ public record PayslipDto(
     decimal KpiBonus = 0,
     decimal HealthInsurance = 0,
     decimal TotalIncome = 0,
-    decimal TotalDeductions = 0);
+    decimal TotalDeductions = 0,
+    decimal WorkEarnings = 0);
 
 /// <summary>
 /// Danh mục mã khoản lương ổn định cho UI. API cũ vẫn có thể gửi Bonus,

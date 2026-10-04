@@ -45,14 +45,15 @@ CV hiện được lưu qua trường đường dẫn `cvUrlOrPath` và các tr�
 ## 5. Tính và duyệt lương
 
 1. Tạo kỳ lương và chọn `businessUnitId`; kỳ đó chỉ tính nhân viên và chấm công thuộc Business Unit tương ứng.
-2. Thêm các khoản điều chỉnh nếu có: Trợ cấp, thưởng KPI, thưởng khác, làm thêm giờ, BHYT hoặc khấu trừ khác.
-3. Chạy **Tính lương**, kiểm tra từng phiếu rồi thực hiện **Gửi duyệt → Phê duyệt → Đã chi → Phát hành**.
-4. Nhân viên chỉ xem được phiếu cá nhân sau khi phiếu đã phát hành.
+2. Với nhân sự part-time/cộng tác viên theo sản phẩm, chọn cách tính **Theo đầu việc** trong hồ sơ; có thể lưu ngân hàng, số tài khoản và tên chủ tài khoản để phục vụ chi trả. Thêm từng đề đã đăng/đã hoàn thành, dự án, hoa hồng sale, học viên giới thiệu/tuyển được, marketing hoặc đầu việc khác bằng mã tham chiếu, tên việc, số lượng, đơn giá và chứng từ nếu có. Với khoản học viên, nhập mã học viên hoặc mã ghi danh làm tham chiếu và kiểm tra chứng từ trước khi chốt lương; hiện hệ thống chưa tự đối soát nguồn giới thiệu từ hồ sơ học viên. Tiền công tự cộng ngay khi nhập vào kỳ đã tính; kỳ nháp được cộng lúc tính lương. Mã tham chiếu không được ghi trùng cho cùng nhân sự và loại việc.
+3. Thêm các khoản điều chỉnh nếu có: Trợ cấp, thưởng KPI, thưởng khác, làm thêm giờ, BHYT hoặc khấu trừ khác.
+4. Chạy **Tính lương**, kiểm tra tiền công đầu việc riêng trên từng phiếu rồi thực hiện **Gửi duyệt → Phê duyệt → Đã chi → Phát hành**. Nếu nhập sai đầu việc trước khi gửi duyệt, dùng **Hủy** để đảo tiền công và giữ lịch sử; không xóa hẳn.
+5. Nhân viên chỉ xem được phiếu cá nhân sau khi phiếu đã phát hành. Số tài khoản chỉ được trả qua mục thông tin thanh toán dành cho người có quyền quản lý nhân sự, không nằm trong danh sách nhân sự thông thường.
 
 Cách tính hiện tại:
 
-- Toàn thời gian: lương công theo ngày công trên chuẩn 22 ngày. Nếu hoàn toàn chưa có chấm công, hệ thống hiện mặc định đủ 22 ngày để tương thích dữ liệu cũ; kế toán phải kiểm tra trước khi duyệt.
-- Bán thời gian: đơn giá nhân số giờ hoặc số ca thực tế; không có chấm công thì lương công bằng 0.
+- Toàn thời gian: lương công theo ngày công trên chuẩn 22 ngày. Nếu hoàn toàn chưa có chấm công trong kỳ, hệ thống chặn tính lương và yêu cầu nhập/chốt chấm công.
+- Bán thời gian: theo giờ, ca hoặc đầu việc. Theo giờ/ca không có chấm công thì lương công bằng 0; theo đầu việc cộng các dòng việc chưa hủy, không tự áp một đơn giá chung cho mọi loại việc.
 - BHYT là khoản khấu trừ nhập bằng mã `HEALTH_INSURANCE`, chưa tự tính theo tỷ lệ.
 - Thực lĩnh không âm: tổng thu nhập trừ BHYT và các khoản khấu trừ khác, tối thiểu bằng 0.
 
@@ -84,7 +85,7 @@ Không nhập áo dài tự may như hàng mua xưởng để làm giảm giả 
 ## 8. Bán hàng và đổi trả
 
 1. Tạo/import đơn theo SKU hoặc product variant; kiểm tra source reference không trùng.
-2. Reserve tồn → xác nhận giao → trừ tồn; không chỉnh trực tiếp số dư thay cho movement.
+2. Reserve tồn → xác nhận giao → trừ tồn; không chỉnh trực tiếp số dư thay cho movement. Nếu hai đơn cùng tranh số lượng cuối cùng, một đơn sẽ nhận thông báo tồn kho vừa thay đổi và cần tải lại trước khi thử lại.
 3. Kiểm hàng hoàn: hàng đủ điều kiện nhập lại; hàng lỗi/hỏng đi theo trạng thái riêng.
 4. Kiểm tra snapshot giá bán, phí kênh, voucher, affiliate, ship, tax, refund và COGS trong đơn.
 

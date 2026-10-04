@@ -28,6 +28,9 @@ public class Employee : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDeleta
     public EmploymentType EmploymentType { get; set; } = EmploymentType.FULL_TIME;
     public PartTimeCalculationMethod? PartTimeCalculationMethod { get; set; }
     public decimal? PartTimeUnitRate { get; set; }
+    public string? BankName { get; set; }
+    public string? BankAccountNumber { get; set; }
+    public string? BankAccountHolder { get; set; }
 
     // Hồ sơ nghề nghiệp/CV. Nullable để dữ liệu nhân sự cũ tiếp tục hợp lệ.
     public string? CvUrlOrPath { get; set; }
@@ -49,6 +52,7 @@ public class Employee : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDeleta
 
     public ICollection<AttendanceRecord> AttendanceRecords { get; set; } = new List<AttendanceRecord>();
     public ICollection<Payslip> Payslips { get; set; } = new List<Payslip>();
+    public ICollection<PayrollWorkEntry> WorkEntries { get; set; } = new List<PayrollWorkEntry>();
 }
 
 public class AttendanceRecord : BaseEntity, ITenantScoped
@@ -78,6 +82,7 @@ public class PayrollPeriod : BaseEntity, IAuditableEntity, ITenantScoped
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public PayrollStatus Status { get; set; } = PayrollStatus.Draft;
+    public uint Version { get; set; }
 
     public decimal TotalGrossAmount { get; set; }
     public decimal TotalNetAmount { get; set; }
@@ -91,6 +96,7 @@ public class PayrollPeriod : BaseEntity, IAuditableEntity, ITenantScoped
 
     public ICollection<Payslip> Payslips { get; set; } = new List<Payslip>();
     public ICollection<PayrollAdjustment> Adjustments { get; set; } = new List<PayrollAdjustment>();
+    public ICollection<PayrollWorkEntry> WorkEntries { get; set; } = new List<PayrollWorkEntry>();
     public ICollection<PayrollApproval> Approvals { get; set; } = new List<PayrollApproval>();
 }
 
@@ -123,6 +129,33 @@ public class PayrollAdjustment : BaseEntity
     public string? CreatedBy { get; set; }
 }
 
+/// <summary>
+/// Một sản phẩm công việc được trả công trong kỳ lương. Mã tham chiếu cho biết
+/// chính xác đề, hạng mục dự án, đơn sale hoặc chiến dịch đã hoàn thành.
+/// </summary>
+public class PayrollWorkEntry : BaseEntity, ITenantScoped
+{
+    public Guid CompanyId { get; set; }
+    public Guid? BusinessUnitId { get; set; }
+    public Guid PayrollPeriodId { get; set; }
+    public PayrollPeriod PayrollPeriod { get; set; } = null!;
+    public Guid EmployeeId { get; set; }
+    public Employee Employee { get; set; } = null!;
+    public string WorkType { get; set; } = string.Empty;
+    public string ReferenceCode { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? EvidenceUrl { get; set; }
+    public DateOnly WorkDate { get; set; }
+    public decimal Quantity { get; set; }
+    public decimal UnitRate { get; set; }
+    public decimal Amount { get; set; }
+    public bool IsVoided { get; set; }
+    public DateTime? VoidedAt { get; set; }
+    public string? VoidedBy { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? CreatedBy { get; set; }
+}
+
 public class Payslip : BaseEntity, IAuditableEntity
 {
     public Guid PayrollPeriodId { get; set; }
@@ -142,12 +175,14 @@ public class Payslip : BaseEntity, IAuditableEntity
     public decimal GrossSalary { get; set; }
     public decimal Allowances { get; set; }
     public decimal KpiBonus { get; set; }
+    public decimal WorkEarnings { get; set; }
     public decimal HealthInsurance { get; set; }
     public decimal TotalIncome { get; set; }
     public decimal Deductions { get; set; }
     public decimal TotalDeductions { get; set; }
     public decimal NetSalary { get; set; }
     public PayrollStatus Status { get; set; } = PayrollStatus.Draft;
+    public uint Version { get; set; }
     public DateTime? PublishedAt { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

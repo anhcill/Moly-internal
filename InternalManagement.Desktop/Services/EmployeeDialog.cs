@@ -25,7 +25,10 @@ public sealed record EmployeeDialogResult(
     string? CvUrlOrPath,
     string? ProfessionalSummary,
     string? Skills,
-    string? Experience);
+    string? Experience,
+    string? BankName,
+    string? BankAccountNumber,
+    string? BankAccountHolder);
 
 public static class EmployeeDialog
 {
@@ -35,7 +38,8 @@ public static class EmployeeDialog
         IReadOnlyList<EmployeeDialogOption> businessUnits,
         IReadOnlyList<EmployeeDialogOption> departments,
         out EmployeeDialogResult? result,
-        ApiClient.EmployeeItem? employee = null)
+        ApiClient.EmployeeItem? employee = null,
+        ApiClient.EmployeePaymentDetails? paymentDetails = null)
     {
         result = null;
         EmployeeDialogResult? submitted = null;
@@ -96,7 +100,7 @@ public static class EmployeeDialog
             ItemsSource = new[]
             {
                 new KeyValuePair<int, string>(0, "Lương tháng — nhân sự chính thức"),
-                new KeyValuePair<int, string>(1, "Tính theo thời gian thực tế — GV/CTV")
+                new KeyValuePair<int, string>(1, "Bán thời gian / cộng tác viên")
             },
             DisplayMemberPath = "Value",
             SelectedValuePath = "Key",
@@ -114,14 +118,18 @@ public static class EmployeeDialog
         var method = ComboField(partRow.Left, "Đơn vị tính *", new[]
         {
             new EmployeeDialogOption(Guid.Empty, "Theo giờ"),
-            new EmployeeDialogOption(Guid.Parse("00000000-0000-0000-0000-000000000001"), "Theo ca")
-        }, employee?.PartTimeCalculationMethod == 1
-            ? Guid.Parse("00000000-0000-0000-0000-000000000001")
-            : Guid.Empty);
+            new EmployeeDialogOption(Guid.Parse("00000000-0000-0000-0000-000000000001"), "Theo ca"),
+            new EmployeeDialogOption(Guid.Parse("00000000-0000-0000-0000-000000000002"), "Theo đầu việc / đề / dự án / sale / marketing")
+        }, employee?.PartTimeCalculationMethod switch
+        {
+            1 => Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            2 => Guid.Parse("00000000-0000-0000-0000-000000000002"),
+            _ => Guid.Empty
+        });
         var unitRate = TextField(partRow.Right, "Đơn giá (đồng/giờ hoặc ca) *", employee?.PartTimeUnitRate?.ToString(CultureInfo.InvariantCulture) ?? "0");
         partTimePanel.Children.Add(new TextBlock
         {
-            Text = "Tiền công = tổng giờ/ca có mặt trong kỳ × đơn giá đã khai báo.",
+            Text = "Theo giờ/ca: chấm công × đơn giá. Theo đầu việc: nhập từng đề hoặc hạng mục trong kỳ lương; số tiền được cộng ngay khi ghi nhận.",
             FontSize = 10.5,
             Foreground = Brush("#64748B"),
             Margin = new Thickness(0, 0, 0, 8),
@@ -129,6 +137,11 @@ public static class EmployeeDialog
         });
         salaryPanel.Children.Add(partTimePanel);
         compensation.Right.Children.Add(salaryPanel);
+
+        var payment = ThreeColumns(root);
+        var bankName = TextField(payment.Left, "Ngân hàng nhận lương", paymentDetails?.BankName);
+        var bankAccountNumber = TextField(payment.Center, "Số tài khoản", paymentDetails?.BankAccountNumber);
+        var bankAccountHolder = TextField(payment.Right, "Tên chủ tài khoản", paymentDetails?.BankAccountHolder);
 
         Label(root, "CV (đường dẫn tệp hoặc liên kết)");
         var cvGrid = new Grid { Margin = new Thickness(0, 0, 0, 8) };
@@ -171,6 +184,12 @@ public static class EmployeeDialog
         var initiallyPartTime = (int?)employmentType.SelectedValue == 1;
         fullTimePanel.Visibility = initiallyPartTime ? Visibility.Collapsed : Visibility.Visible;
         partTimePanel.Visibility = initiallyPartTime ? Visibility.Visible : Visibility.Collapsed;
+        method.SelectionChanged += (_, _) =>
+            partRow.Right.Visibility = (method.SelectedItem as EmployeeDialogOption)?.Id ==
+                Guid.Parse("00000000-0000-0000-0000-000000000002")
+                ? Visibility.Collapsed : Visibility.Visible;
+        partRow.Right.Visibility = employee?.PartTimeCalculationMethod == 2
+            ? Visibility.Collapsed : Visibility.Visible;
 
         var buttons = new StackPanel
         {
@@ -203,9 +222,20 @@ public static class EmployeeDialog
             }
 
             var isPart = (int?)employmentType.SelectedValue == 1;
-            if (!TryParseMoney(isPart ? unitRate.Text : baseSalary.Text, out var payValue) || payValue < 0)
+            var selectedMethod = method.SelectedItem as EmployeeDialogOption;
+            var isOutput = isPart && selectedMethod?.Id == Guid.Parse("00000000-0000-0000-0000-000000000002");
+            decimal payValue = 0;
+            if (!isOutput && (!TryParseMoney(isPart ? unitRate.Text : baseSalary.Text, out payValue) || payValue < 0))
             {
                 Warn(isPart ? "Đơn giá theo giờ/ca chưa hợp lệ." : "Lương cơ bản chưa hợp lệ.");
+                return;
+            }
+
+            if ((bankName.Text.Length > 0 || bankAccountNumber.Text.Length > 0 || bankAccountHolder.Text.Length > 0) &&
+                (string.IsNullOrWhiteSpace(bankName.Text) || string.IsNullOrWhiteSpace(bankAccountNumber.Text) ||
+                 string.IsNullOrWhiteSpace(bankAccountHolder.Text)))
+            {
+                Warn("Khi khai báo chuyển khoản, cần nhập đủ ngân hàng, số tài khoản và tên chủ tài khoản.");
                 return;
             }
 
@@ -215,10 +245,9 @@ public static class EmployeeDialog
                 return;
             }
 
-            var selectedMethod = method.SelectedItem as EmployeeDialogOption;
-            var partMethod = isPart && selectedMethod?.Id == Guid.Parse("00000000-0000-0000-0000-000000000001")
-                ? 1
-                : isPart ? 0 : (int?)null;
+            var partMethod = isOutput ? 2 :
+                isPart && selectedMethod?.Id == Guid.Parse("00000000-0000-0000-0000-000000000001") ? 1 :
+                isPart ? 0 : (int?)null;
             submitted = new EmployeeDialogResult(
                 code.Text.Trim(), name.Text.Trim(), email.Text.Trim(), Null(phone.Text), Null(position.Text),
                 isPart ? 0 : payValue,
@@ -228,15 +257,20 @@ public static class EmployeeDialog
                 employee?.Status ?? "Active",
                 isPart ? 1 : 0,
                 partMethod,
-                isPart ? payValue : null,
-                Null(cv.Text), Null(summary.Text), Null(skills.Text), Null(experience.Text));
+                isPart && !isOutput ? payValue : null,
+                Null(cv.Text), Null(summary.Text), Null(skills.Text), Null(experience.Text),
+                Null(bankName.Text), Null(bankAccountNumber.Text), Null(bankAccountHolder.Text));
             dialog.DialogResult = true;
         };
         buttons.Children.Add(cancel);
         buttons.Children.Add(save);
         root.Children.Add(buttons);
 
-        dialog.Content = root;
+        dialog.Content = new ScrollViewer
+        {
+            Content = root,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
         var accepted = dialog.ShowDialog() == true && submitted is not null;
         result = submitted;
         return accepted;

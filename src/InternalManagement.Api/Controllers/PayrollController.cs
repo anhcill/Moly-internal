@@ -166,6 +166,43 @@ public class PayrollController : BaseApiController
         return Ok(ApiResponse<bool>.Ok(true, "Xóa điều chỉnh lương thành công."));
     }
 
+    [HttpGet("periods/{id:guid}/work-entries")]
+    [HasPermission(Permissions.PayrollViewAll)]
+    [ProducesResponseType(typeof(ApiResponse<List<PayrollWorkEntryDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetWorkEntries(Guid id, CancellationToken ct = default)
+    {
+        var result = await _payrollService.GetWorkEntriesAsync(id, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<List<PayrollWorkEntryDto>>.Fail(result.Errors.FirstOrDefault() ?? "Không tải được đầu việc."));
+
+        return Ok(ApiResponse<List<PayrollWorkEntryDto>>.Ok(result.Value!, "Lấy đầu việc thành công."));
+    }
+
+    [HttpPost("periods/{id:guid}/work-entries")]
+    [HasPermission(Permissions.PayrollCalculate)]
+    [ProducesResponseType(typeof(ApiResponse<PayrollWorkEntryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AddWorkEntry(
+        Guid id, [FromBody] CreatePayrollWorkEntryRequest request, CancellationToken ct = default)
+    {
+        var result = await _payrollService.AddWorkEntryAsync(id, request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<PayrollWorkEntryDto>.Fail(result.Errors.FirstOrDefault() ?? "Không lưu được đầu việc."));
+
+        return Ok(ApiResponse<PayrollWorkEntryDto>.Ok(result.Value!, "Đã cộng đầu việc vào kỳ lương."));
+    }
+
+    [HttpPost("work-entries/{id:guid}/void")]
+    [HasPermission(Permissions.PayrollCalculate)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VoidWorkEntry(Guid id, CancellationToken ct = default)
+    {
+        var result = await _payrollService.VoidWorkEntryAsync(id, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<bool>.Fail(result.Errors.FirstOrDefault() ?? "Không hủy được đầu việc."));
+
+        return Ok(ApiResponse<bool>.Ok(true, "Đã hủy đầu việc và cập nhật tiền công."));
+    }
+
     [HttpGet("policies/active")]
     [HasPermission(Permissions.PayrollViewAll)]
     [ProducesResponseType(typeof(ApiResponse<PayrollPolicyVersionDto>), StatusCodes.Status200OK)]

@@ -84,9 +84,12 @@ public static class PayrollPayslipDialog
 
         var summary = new Grid { Margin = new Thickness(0, 0, 0, 10) };
         for (var i = 0; i < 4; i++) summary.ColumnDefinitions.Add(new ColumnDefinition());
-        var rateLabel = payslip.EmploymentType == 1 ? "ĐƠN GIÁ" : "LƯƠNG CƠ BẢN";
+        var rateLabel = payslip.EmploymentType == 1 && payslip.PartTimeCalculationMethod == 2
+            ? "THEO ĐẦU VIỆC" : payslip.EmploymentType == 1 ? "ĐƠN GIÁ" : "LƯƠNG CƠ BẢN";
         var rateValue = payslip.EmploymentType == 1
-            ? $"{payslip.PartTimeUnitRate.GetValueOrDefault():N0} đ/{(payslip.PartTimeCalculationMethod == 1 ? "ca" : "giờ")}"
+            ? payslip.PartTimeCalculationMethod == 2
+                ? FormatMoney(payslip.WorkEarnings)
+                : $"{payslip.PartTimeUnitRate.GetValueOrDefault():N0} đ/{(payslip.PartTimeCalculationMethod == 1 ? "ca" : "giờ")}"
             : FormatMoney(payslip.BaseSalary);
         AddSummaryCard(summary, 0, rateLabel, rateValue, "#2563EB");
         AddSummaryCard(summary, 1, "TỔNG THU NHẬP", FormatMoney(payslip.TotalIncome != 0 ? payslip.TotalIncome : payslip.GrossSalary), "#0EA5E9");
@@ -104,15 +107,22 @@ public static class PayrollPayslipDialog
         AddValue(workAndIncome, "Công / giờ / ca", payslip.WorkQuantityDisplay);
         if (payslip.EmploymentType == 1)
         {
-            AddValue(workAndIncome, "Đơn vị tính", payslip.PartTimeCalculationMethod == 1 ? "Theo ca" : "Theo giờ");
-            AddValue(workAndIncome, "Đơn giá", rateValue);
+            AddValue(workAndIncome, "Đơn vị tính", payslip.PartTimeCalculationMethod switch
+            {
+                1 => "Theo ca",
+                2 => "Theo đầu việc",
+                _ => "Theo giờ"
+            });
+            if (payslip.PartTimeCalculationMethod != 2)
+                AddValue(workAndIncome, "Đơn giá", rateValue);
         }
         else
         {
             AddValue(workAndIncome, "Công chuẩn tháng", $"{payslip.StandardWorkDays:0.##} ngày");
         }
         AddValue(workAndIncome, "Giờ làm thực tế", $"{payslip.ActualWorkHours:0.##} giờ");
-        AddValue(workAndIncome, "Lương theo công / đơn vị", FormatMoney(Math.Max(0, payslip.GrossSalary - payslip.Allowances - payslip.KpiBonus)));
+        AddValue(workAndIncome, "Lương theo thời gian", FormatMoney(Math.Max(0, payslip.GrossSalary - payslip.Allowances - payslip.KpiBonus - payslip.WorkEarnings)));
+        AddValue(workAndIncome, "Tiền công theo đầu việc", FormatMoney(payslip.WorkEarnings), valueBrush: Brush("#059669"));
         AddValue(workAndIncome, "Trợ cấp + thưởng khác", FormatMoney(payslip.Allowances), valueBrush: Brush("#059669"));
         AddValue(workAndIncome, "Thưởng KPI", FormatMoney(payslip.KpiBonus), valueBrush: Brush("#059669"));
         AddValue(workAndIncome, "Tổng Gross", FormatMoney(payslip.GrossSalary), bold: true, valueBrush: Brush("#2563EB"));

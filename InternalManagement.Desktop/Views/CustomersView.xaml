@@ -1,0 +1,67 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.CustomersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    <Grid >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- TOOLBAR & SEARCH -->
+                        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Học viên &amp; Khách hàng" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                    <TextBlock Text="Học viên đồng bộ trực tiếp từ các lớp học EdTech; thông tin khách hàng đăng ký toàn hệ thống." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBox x:Name="CustomerSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm tên, SĐT, email..." Margin="0,0,10,0" TextChanged="CustomerSearch_TextChanged" />
+                                    <Button Content="🔄 Tải Lại" Click="RefreshCustomers_Click" Style="{StaticResource OutlineButton}" Height="36" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- DATA TABS -->
+                        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                            <TabControl Background="Transparent" BorderThickness="0">
+                                <TabItem Header="Học viên từ lớp học" FontWeight="SemiBold">
+                                    <Grid Margin="0,8,0,0">
+                                        <DataGrid ItemsSource="{Binding Students}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" MinWidth="150" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="120" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="170" Width="1.8*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" MinWidth="150" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                                <DataGridTextColumn Header="LỚP" Binding="{Binding ClassCode}" MinWidth="110" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" MinWidth="90" Width="100" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
+                                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" MinWidth="95" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridAmberTextCellStyle}" />
+                                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" MinWidth="95" Width="100" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                                <TabItem Header="Khách hàng đăng ký" FontWeight="SemiBold">
+                                    <Grid Margin="0,8,0,0">
+                                        <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding SourceId}" MinWidth="120" Width="135" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" MinWidth="150" Width="1.6*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="125" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="170" Width="1.8*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="GÓI / KHÓA ĐĂNG KÝ" Binding="{Binding SubscriptionCount}" MinWidth="130" Width="145" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                                <DataGridTextColumn Header="TỔNG ĐÃ ĐÓNG" Binding="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="120" Width="135" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Border>
+                    </Grid>
+</UserControl>

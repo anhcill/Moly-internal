@@ -81,13 +81,13 @@ public class FashionAndInventoryApiTests : IClassFixture<CustomWebApplicationFac
         var variantRes = await client.PostAsJsonAsync($"/api/v1/fashion/products/{productId}/variants", variantReq);
         variantRes.StatusCode.Should().Be(HttpStatusCode.OK);
         var variantData = await variantRes.Content.ReadFromJsonAsync<ApiResponse<ProductVariantDto>>();
-        variantData!.Data!.Sku.Should().Be($"WIND-BLK-L-{random}");
+        variantData!.Data!.Sku.Should().Be($"WIND-BLK-L-{random.ToUpperInvariant()}");
 
         // 3. Get Details
         var detailRes = await client.GetAsync($"/api/v1/fashion/products/{productId}");
         detailRes.StatusCode.Should().Be(HttpStatusCode.OK);
         var detailData = await detailRes.Content.ReadFromJsonAsync<ApiResponse<ProductDetailDto>>();
-        detailData!.Data!.Variants.Should().ContainSingle(v => v.Sku == $"WIND-BLK-L-{random}");
+        detailData!.Data!.Variants.Should().ContainSingle(v => v.Sku == $"WIND-BLK-L-{random.ToUpperInvariant()}");
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class FashionAndInventoryApiTests : IClassFixture<CustomWebApplicationFac
         var listRes = await client.GetAsync("/api/v1/fashion/suppliers");
         listRes.StatusCode.Should().Be(HttpStatusCode.OK);
         var listData = await listRes.Content.ReadFromJsonAsync<ApiResponse<PaginatedResult<SupplierDto>>>();
-        listData!.Data!.Items.Should().Contain(s => s.Code == $"SUP-{random}");
+        listData!.Data!.Items.Should().Contain(s => s.Code == $"SUP-{random.ToUpperInvariant()}");
     }
 
     [Fact]

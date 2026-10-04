@@ -10,6 +10,8 @@ namespace InternalManagement.IntegrationTests;
 /// PostgreSQL thật cho các bài test Ngày 18.
 /// Mặc định không bật để các bài test nhanh vẫn chạy được trên máy không có Docker;
 /// chạy RUN_POSTGRES_TESTS=true dotnet test để bật fixture này.
+/// Khi không bật, xUnit v2 vẫn báo các bài test này là Passed dù thân test trả về sớm;
+/// chỉ lần chạy với cờ bật và container khởi động thành công mới xác nhận PostgreSQL.
 /// </summary>
 public sealed class PostgreSqlContainerFixture : IAsyncLifetime
 {
@@ -19,21 +21,16 @@ public sealed class PostgreSqlContainerFixture : IAsyncLifetime
         "moli-internal-management-backups",
         Guid.NewGuid().ToString("N"));
 
-    private readonly PostgreSqlContainer _container;
+    private PostgreSqlContainer? _container;
 
     public PostgreSqlContainerFixture()
     {
         DatabaseName = $"moli_test_{Guid.NewGuid():N}";
-        _container = new PostgreSqlBuilder("postgres:17-alpine")
-            .WithDatabase(DatabaseName)
-            .WithUsername("postgres")
-            .WithPassword("postgres_password")
-            .WithBindMount(_hostBackupPath, ContainerBackupPath)
-            .Build();
     }
 
     public string DatabaseName { get; }
-    public string ConnectionString => _container.GetConnectionString();
+    public string ConnectionString => _container?.GetConnectionString()
+        ?? throw new InvalidOperationException("PostgreSQL Testcontainer chưa khởi động.");
     public string HostBackupPath => _hostBackupPath;
     public string ContainerBackupPathValue => ContainerBackupPath;
     public bool Enabled { get; private set; }
@@ -50,18 +47,26 @@ public sealed class PostgreSqlContainerFixture : IAsyncLifetime
         try
         {
             Directory.CreateDirectory(_hostBackupPath);
+            _container = new PostgreSqlBuilder("postgres:18-alpine")
+                .WithDatabase(DatabaseName)
+                .WithUsername("postgres")
+                .WithPassword("postgres_password")
+                .WithBindMount(_hostBackupPath, ContainerBackupPath)
+                .Build();
             await _container.StartAsync();
             Enabled = true;
         }
         catch (Exception ex)
         {
             SkipReason = $"Không khởi động được PostgreSQL Testcontainer: {ex.Message}";
+            throw new InvalidOperationException(SkipReason, ex);
         }
     }
 
     public async Task DisposeAsync()
     {
-        await _container.DisposeAsync();
+        if (_container is not null)
+            await _container.DisposeAsync();
 
         if (Directory.Exists(_hostBackupPath))
             Directory.Delete(_hostBackupPath, recursive: true);
@@ -87,7 +92,7 @@ public sealed class PostgreSqlContainerFixture : IAsyncLifetime
     public Task<ExecResult> ExecAsync(IList<string> command, CancellationToken ct = default)
     {
         EnsureEnabled();
-        return _container.ExecAsync(command, ct);
+        return _container!.ExecAsync(command, ct);
     }
 
     private static bool IsEnabledByEnvironment() =>

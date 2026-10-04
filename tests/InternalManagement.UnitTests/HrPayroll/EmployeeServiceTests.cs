@@ -155,6 +155,44 @@ public class EmployeeServiceTests
     }
 
     [Fact]
+    public async Task CreateOutputPaidCollaborator_WithBankDetails_ShouldKeepAccountInRestrictedLookup()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+        var request = new CreateEmployeeRequest(
+            "CTV-001", "Nguyễn Thị Sale", "sale@moli.local", null, "Cộng tác viên sale", 0,
+            EmploymentType: EmploymentType.PART_TIME,
+            PartTimeCalculationMethod: PartTimeCalculationMethod.OUTPUT,
+            BankName: "Ngân hàng A",
+            BankAccountNumber: "1234 5678 90",
+            BankAccountHolder: "NGUYEN THI SALE");
+
+        var created = await service.CreateEmployeeAsync(request, CancellationToken.None);
+
+        created.Succeeded.Should().BeTrue();
+        created.Value!.PartTimeCalculationMethodNameVi.Should().Be("Theo đầu việc");
+        created.Value.PartTimeUnitRate.Should().BeNull();
+        var payment = await service.GetEmployeePaymentDetailsAsync(created.Value.Id, CancellationToken.None);
+        payment.Value!.BankAccountNumber.Should().Be("1234567890");
+        payment.Value.BankAccountHolder.Should().Be("NGUYEN THI SALE");
+    }
+
+    [Fact]
+    public async Task CreateEmployee_WithIncompleteBankDetails_ShouldFail()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+        var result = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "CTV-002", "Thiếu ngân hàng", "bank@moli.local", null, null, 0,
+            EmploymentType: EmploymentType.PART_TIME,
+            PartTimeCalculationMethod: PartTimeCalculationMethod.OUTPUT,
+            BankAccountNumber: "1234567890"), CancellationToken.None);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("ngân hàng"));
+    }
+
+    [Fact]
     public async Task GetEmployees_WithTechnologyEducationSegment_ShouldExcludeFashion()
     {
         using var db = CreateInMemoryDb();

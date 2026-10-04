@@ -1,0 +1,781 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.FashionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <!-- FASHION TAB CONTROL -->
+        <TabControl x:Name="FashionTabs" Background="Transparent" BorderThickness="0" SelectionChanged="FashionTabs_SelectionChanged">
+            <!-- SUB-TAB 1: PRODUCTS -->
+            <TabItem Header="Sản phẩm" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                     <!-- 4 KPI SUMMARY CARDS (Chỉ hiển thị ở tab Sản phẩm) -->
+                     <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
+                         <!-- Card 1: Total Products -->
+                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                             <Grid>
+                                 <Grid.RowDefinitions>
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                 </Grid.RowDefinitions>
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*" />
+                                     <ColumnDefinition Width="Auto" />
+                                 </Grid.ColumnDefinitions>
+                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SẢN PHẨM" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                 <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                     <TextBlock Text="👗" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                 </Border>
+                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionProductsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
+                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                     <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                         <TextBlock Text="Sản phẩm thời trang MOLY" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                     </Border>
+                                 </StackPanel>
+                             </Grid>
+                         </Border>
+
+                         <!-- Card 2: Variants -->
+                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                             <Grid>
+                                 <Grid.RowDefinitions>
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                 </Grid.RowDefinitions>
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*" />
+                                     <ColumnDefinition Width="Auto" />
+                                 </Grid.ColumnDefinitions>
+                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ BIẾN THỂ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                 <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                     <TextBlock Text="🏷️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                 </Border>
+                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionVariantsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
+                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                     <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                         <TextBlock Text="Kích cỡ &amp; màu sắc quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
+                                     </Border>
+                                 </StackPanel>
+                             </Grid>
+                         </Border>
+
+                         <!-- Card 3: Total On Hand -->
+                         <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                             <Grid>
+                                 <Grid.RowDefinitions>
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                 </Grid.RowDefinitions>
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*" />
+                                     <ColumnDefinition Width="Auto" />
+                                 </Grid.ColumnDefinitions>
+                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG TỒN KHO" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                 <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                     <TextBlock Text="📦" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                 </Border>
+                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionTotalOnHand" Text="0" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
+                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                     <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                         <TextBlock Text="Số lượng sản phẩm trong kho" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
+                                     </Border>
+                                 </StackPanel>
+                             </Grid>
+                         </Border>
+
+                         <!-- Card 4: Suppliers -->
+                         <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                             <Grid>
+                                 <Grid.RowDefinitions>
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                     <RowDefinition Height="Auto" />
+                                 </Grid.RowDefinitions>
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*" />
+                                     <ColumnDefinition Width="Auto" />
+                                 </Grid.ColumnDefinitions>
+                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="NHÀ CUNG CẤP &amp; PHIẾU NHẬP" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                 <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                     <TextBlock Text="🏭" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                 </Border>
+                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionSuppliersCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
+                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                     <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                         <TextBlock Text="Nhà cung ứng đối tác" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
+                                     </Border>
+                                 </StackPanel>
+                             </Grid>
+                         </Border>
+                     </UniformGrid>
+
+                    <!-- TOOLBAR -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Danh mục sản phẩm" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Chọn một sản phẩm để xem các biến thể SKU ở tab kế bên." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,8" />
+                                <Grid Width="300" Height="36" HorizontalAlignment="Left">
+                                    <TextBox x:Name="FashionProductSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="FashionProductSearch_TextChanged" />
+                                    <TextBlock Text="🔍  Tìm mã hoặc tên sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="FashionProductSearchPlaceholder" />
+                                </Grid>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="🔄 Tải Lại" Click="RefreshFashionProducts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="✎ Sửa" Click="EditFashionProductDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="🗑 Xóa" Click="DeleteFashionProduct_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button Content="+ Tạo Sản Phẩm Mới" Click="CreateProductDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                     </Border>
+
+                    <!-- PRODUCT LIST: one task and one table per tab -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="FashionProductsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" SelectionChanged="FashionProductsDataGrid_SelectionChanged" MouseDoubleClick="FashionProductsDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ SP" Binding="{Binding Code}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="TÊN SẢN PHẨM" Binding="{Binding Name}" Width="2.5*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="DANH MỤC" Binding="{Binding Category}" Width="1.3*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="SỐ SKU" Binding="{Binding VariantCount}" Width="0.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                 </Grid>
+             </TabItem>
+
+            <!-- SUB-TAB 2: VARIANTS -->
+            <TabItem Header="Biến thể SKU" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Biến thể SKU" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Chọn sản phẩm để xem và thêm màu, cỡ, giá bán và nguồn hàng." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                                <ComboBox x:Name="FashionVariantProductSelector" Width="360" Height="36" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Name" SelectionChanged="FashionVariantProductSelector_SelectionChanged" />
+                                <TextBlock x:Name="FashionVariantContextText" Text="Chưa chọn sản phẩm" FontSize="11.5" Foreground="#6366F1" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                                <Button Content="🔄 Tải Lại" Click="RefreshFashionVariants_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="✎ Sửa" Click="EditFashionVariantDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="🗑 Xóa" Click="DeleteFashionVariant_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button Content="+ Thêm SKU" Click="AddVariantDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="FashionVariantsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="FashionVariantsDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ SKU" Binding="{Binding Sku}" Width="1.3*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="MÀU" Binding="{Binding Color}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="CỠ" Binding="{Binding Size}" Width="0.6*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="GIÁ VỐN" Binding="{Binding CostPrice, StringFormat='{}{0:N0} đ'}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="GIÁ BÁN" Binding="{Binding SellingPrice, StringFormat='{}{0:N0} đ'}" Width="1.1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                <DataGridTextColumn Header="NGUỒN HÀNG" Binding="{Binding SourcingTypeLabel}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TRẠNG THÁI GIÁ VỐN" Binding="{Binding CostStatusLabel}" Width="1.4*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TỒN KHO" Binding="{Binding OnHandQuantity}" Width="0.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 3: SUPPLIERS -->
+            <TabItem Header="Nhà cung cấp" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- TOOLBAR -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Danh mục nhà cung cấp" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Quản lý thông tin đối tác dùng cho các phiếu nhập kho." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Grid Width="250" Height="36" Margin="0,0,10,0">
+                                    <TextBox x:Name="SupplierSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="SupplierSearch_TextChanged" />
+                                    <TextBlock Text="🔍 Tìm nhà cung cấp..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SupplierSearchPlaceholder" />
+                                </Grid>
+                                <Button Content="🔄 Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="✎ Sửa" Click="EditSupplierDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="🗑 Xóa" Click="DeleteSupplier_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button Content="+ Thêm nhà cung cấp" Click="CreateSupplierDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- SUPPLIERS TABLE -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="SuppliersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="SuppliersDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ NCC" Binding="{Binding Code}" Width="1.05*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="TÊN NHÀ CUNG CẤP" Binding="{Binding Name}" Width="1.7*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="LIÊN HỆ" Binding="{Binding ContactName}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumbersDisplay}" Width="1.15*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="1.45*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TÀI KHOẢN NGÂN HÀNG" Binding="{Binding BankAccountsDisplay}" Width="1.8*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="ĐỊA CHỈ" Binding="{Binding Address}" Width="1.55*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 4: PURCHASE RECEIPTS -->
+            <TabItem Header="Phiếu nhập kho" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Phiếu nhập kho" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Nhấp đúp một dòng để sửa thông tin. Hủy/hoàn kho để giữ đúng số lượng sổ kho và chứng từ gốc." TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Grid Width="250" Height="36" Margin="0,0,10,0">
+                                    <TextBox x:Name="ReceiptSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="ReceiptSearch_TextChanged" />
+                                    <TextBlock Text="🔍 Tìm mã phiếu..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="ReceiptSearchPlaceholder" />
+                                </Grid>
+                                <Button Content="🔄 Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="✎ Sửa thông tin" Click="EditPurchaseReceiptDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="↩ Hủy / hoàn kho" Click="CancelPurchaseReceipt_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="📥 Lập phiếu nhập" Click="CreateReceiptDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="PurchaseReceiptsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="PurchaseReceiptsDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ PHIẾU" Binding="{Binding ReceiptNumber}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="NHÀ CUNG CẤP" Binding="{Binding SupplierName}" Width="2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TỔNG TIỀN" Binding="{Binding TotalAmount, StringFormat='{}{0:N0} đ'}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                <DataGridTextColumn Header="SỐ MẶT HÀNG" Binding="{Binding ItemCount}" Width="0.9*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="NGÀY NHẬP" Binding="{Binding ReceivedAt, StringFormat='{}{0:dd/MM/yyyy}'}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding Status}" Width="1*" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" FontWeight="Bold" />
+                                <DataGridTemplateColumn Header="CHỨNG TỪ" Width="1.6*" MinWidth="180">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4">
+                                                <Button Content="{Binding AttachmentLabel}" Tag="{Binding AttachmentUrl}" Click="OpenReceiptAttachment_Click" Style="{StaticResource OutlineButton}" Height="30" Padding="8,0" />
+                                                <Button Content="＋ Tải thêm" Tag="{Binding Id}" Click="UploadReceiptAttachment_Click" Style="{StaticResource OutlineButton}" Height="30" Padding="8,0" Margin="6,0,0,0" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 5: BALANCES -->
+            <TabItem Header="Tồn kho" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- TOOLBAR -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Số dư tồn kho" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Chọn kho trước, sau đó chọn một dòng để lọc nhật ký giao dịch theo SKU." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,8" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="Kho đang xem:" VerticalAlignment="Center" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" Margin="0,0,8,0" />
+                                    <ComboBox x:Name="InventoryWarehouseSelector" Width="300" Height="36" DisplayMemberPath="Name" VerticalContentAlignment="Center" SelectionChanged="InventoryWarehouseSelector_SelectionChanged" />
+                                </StackPanel>
+                                <Grid Width="300" Height="36" HorizontalAlignment="Left">
+                                    <TextBox x:Name="InventorySearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="InventorySearch_TextChanged" />
+                                    <TextBlock Text="🔍  Tìm SKU hoặc sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="InventorySearchPlaceholder" />
+                                </Grid>
+                                <TextBlock x:Name="InventorySelectedContextText" Text="Chọn một SKU để xem nhật ký giao dịch của SKU đó ở tab Nhật ký giao dịch." FontSize="11" Foreground="#64748B" Margin="0,5,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Content="🔄 Tải Lại" Click="RefreshInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="⬇ Xuất CSV" Click="ExportInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="⚡ Điều Chỉnh Kiểm Kê Kho" Click="StockAdjustmentDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- BALANCES TABLE -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <DataGrid x:Name="InventoryBalancesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" SelectionChanged="InventoryBalancesDataGrid_SelectionChanged" MouseDoubleClick="InventoryBalancesDataGrid_MouseDoubleClick">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="MÃ SKU" Binding="{Binding Sku}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                    <DataGridTextColumn Header="TÊN SẢN PHẨM" Binding="{Binding ProductName}" Width="2.2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                    <DataGridTextColumn Header="MÀU" Binding="{Binding Color}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                    <DataGridTextColumn Header="CỠ" Binding="{Binding Size}" Width="0.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                    <DataGridTextColumn Header="TỒN THỰC TẾ" Binding="{Binding OnHandQuantity}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
+                                    <DataGridTextColumn Header="ĐANG GIỮ" Binding="{Binding ReservedQuantity}" Width="0.8*" ElementStyle="{StaticResource DataGridWrapAmberTextCellStyle}" />
+                                    <DataGridTextColumn Header="KHẢ DỤNG" Binding="{Binding AvailableQuantity}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                    <DataGridTextColumn Header="CẬP NHẬT LÚC" Binding="{Binding LastUpdated, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 6: MOVEMENTS LEDGER -->
+            <TabItem Header="Nhật ký giao dịch" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Nhật ký giao dịch kho" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Theo dõi toàn bộ biến động nhập, xuất, giữ hàng và điều chỉnh theo thời gian." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock x:Name="InventoryLedgerScopeText" Text="Đang xem toàn bộ giao dịch" FontSize="11.5" Foreground="#2563EB" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="↺ Xem toàn bộ" Click="RefreshInventoryMovements_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="🔄 Tải theo SKU đã chọn" Click="RefreshSelectedInventoryMovements_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="InventoryMovementsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="InventoryMovementsDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="THỜI GIAN" Binding="{Binding MovementDate, StringFormat='{}{0:dd/MM/yyyy HH:mm:ss}'}" Width="1.3*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="MÃ SKU" Binding="{Binding Sku}" Width="1.1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="TÊN SẢN PHẨM" Binding="{Binding ProductName}" Width="1.8*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="LOẠI GIAO DỊCH" Binding="{Binding MovementTypeLabel}" Width="1.4*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="BIẾN ĐỘNG" Binding="{Binding QuantityDelta, StringFormat='{}{0:+0;-0;0}'}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                <DataGridTextColumn Header="GIÁ VỐN" Binding="{Binding UnitCost, StringFormat='{}{0:N0} đ'}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="THAM CHIẾU" Binding="{Binding ReferenceType}" Width="1*" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
+                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 7: MANUFACTURING / PRICING / ORDERS -->
+            <TabItem Header="Sản xuất &amp; Giá thành" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Sản xuất &amp; Giá thành thực tế" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Định mức BOM, theo dõi lệnh sản xuất và tính toán giá vốn chính xác theo từng sản phẩm." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                                <TextBlock x:Name="ManufacturingStatusText" Text="Đang tải dữ liệu..." FontSize="11.5" Foreground="#64748B" Margin="0,5,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="🔄 Tải Lại" Click="RefreshManufacturing_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                        <TabItem Header="Tổng quan" FontWeight="SemiBold">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
+                                <StackPanel>
+                                    <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="Quy trình sản xuất khép kín &amp; Quản trị giá thành" FontSize="15" FontWeight="Bold" Foreground="#3730A3" />
+                                            <TextBlock Text="1. Nhập và theo dõi nguyên vật liệu  ➔  2. Kiểm tra định mức BOM theo sản phẩm/size  ➔  3. Theo dõi tiến độ lệnh may  ➔  4. Dùng giá vốn thực tế mô phỏng giá bán và tạo đơn hàng." TextWrapping="Wrap" FontSize="12.5" Foreground="#4338CA" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <UniformGrid Columns="3" Margin="0,0,0,12">
+                                        <!-- NVL metric -->
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="NGUYÊN VẬT LIỆU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="🧵" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingMaterialsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
+                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                    <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                                        <TextBlock Text="Mã NVL đang quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                        <!-- BOM metric -->
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BOM ĐANG DÙNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="📐" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingBomsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#7C3AED" Margin="0,3,0,3" />
+                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                    <Border Background="#F5F3FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#DDD6FE" BorderThickness="1">
+                                                        <TextBlock Text="Định mức sản xuất duyệt" FontSize="10" FontWeight="SemiBold" Foreground="#6D28D9" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                        <!-- Orders metric -->
+                                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỆNH SẢN XUẤT" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                    <TextBlock Text="✂️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingOrdersCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
+                                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                    <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                                        <TextBlock Text="Lệnh sản xuất đã lập" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </UniformGrid>
+                                    <Border Background="White" CornerRadius="12" Padding="20,18" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <StackPanel>
+                                            <TextBlock Text="Thao tác nhanh" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                            <TextBlock Text="Chọn nghiệp vụ phù hợp để quản trị nguồn cung và giá thành đơn hàng." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,16" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Content="+ Tạo nguyên vật liệu" Click="CreateMaterialDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,10,0" Height="38" Padding="16,0" />
+                                                <Button Content="⚡ Mô phỏng giá bán" Click="SimulatePricingDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,10,0" Height="38" Padding="16,0" />
+                                                <Button Content="→ Quản lý đơn hàng" Click="OpenSalesOrders_Click" Style="{StaticResource ModernPrimaryButton}" Height="38" Padding="18,0" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Nguyên vật liệu" FontWeight="SemiBold">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="NVL là vật tư đầu vào để sản xuất." VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,16,0" />
+                                        <Button Content="+ Tạo NVL" Click="CreateMaterialDialog_Click" Style="{StaticResource OutlineButton}" Height="34" Padding="14,0" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                    <DataGrid x:Name="ManufacturingMaterialsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="White" BorderThickness="0" MinRowHeight="42">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="MÃ NVL" Binding="{Binding Code}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                            <DataGridTextColumn Header="TÊN NGUYÊN VẬT LIỆU" Binding="{Binding Name}" Width="2.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="ĐƠN VỊ" Binding="{Binding Unit}" Width="0.9*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="TỒN KHẢ DỤNG" Binding="{Binding QuantityOnHand, StringFormat='{}{0:N2}'}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="BOM / Định mức" FontWeight="SemiBold">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Row="0" Background="#F5F3FF" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#DDD6FE" BorderThickness="1">
+                                    <TextBlock Text="BOM cho biết mỗi sản phẩm/size cần bao nhiêu NVL. Hãy kiểm tra phiên bản Approved trước khi chạy sản xuất." TextWrapping="Wrap" FontSize="12" Foreground="#5B21B6" />
+                                </Border>
+                                <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                    <DataGrid x:Name="ManufacturingBomsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="White" BorderThickness="0" MinRowHeight="42">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="MÃ BOM" Binding="{Binding Code}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                            <DataGridTextColumn Header="SẢN PHẨM" Binding="{Binding ProductName}" Width="2.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="PHIÊN BẢN" Binding="{Binding VersionNumber}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding Status}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Lệnh sản xuất may áo dài" FontWeight="SemiBold">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <!-- TOOLBAR ROW -->
+                                <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="16,12" Margin="0,0,0,12" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Content="+ Tạo lệnh sản xuất" Click="CreateProductionOrderDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="14,0" Margin="0,0,10,0" />
+                                            <ComboBox x:Name="FashionCollectionFilterCombo" Width="170" Height="36" Margin="0,0,10,0" VerticalContentAlignment="Center" SelectionChanged="FashionCollectionFilterCombo_SelectionChanged">
+                                                <ComboBoxItem Content="Tất cả bộ sưu tập" IsSelected="True" />
+                                                <ComboBoxItem Content="BST Áo dài Sen Vàng" />
+                                                <ComboBoxItem Content="BST Lụa Tơ Tằm" />
+                                                <ComboBoxItem Content="BST Gấm Hoa Cúc" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="FashionOrderStatusFilterCombo" Width="150" Height="36" Margin="0,0,10,0" VerticalContentAlignment="Center" SelectionChanged="FashionOrderStatusFilterCombo_SelectionChanged">
+                                                <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True" />
+                                                <ComboBoxItem Content="Đang may" />
+                                                <ComboBoxItem Content="Chờ vật liệu" />
+                                                <ComboBoxItem Content="Hoàn thành" />
+                                                <ComboBoxItem Content="Đã nhập kho" />
+                                            </ComboBox>
+                                            <Grid Width="200" Height="36">
+                                                <TextBox x:Name="ProductionOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="ProductionOrderSearch_TextChanged" />
+                                                <TextBlock x:Name="ProductionOrderSearchPlaceholder" Text="🔍 Search..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Content="⚡ Mô phỏng giá bán" Click="SimulatePricingDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0" />
+                                            <Button Content="→ Quản lý đơn hàng" Click="OpenSalesOrders_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- KPI STATUS CHIPS ROW -->
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Border Style="{StaticResource KpiChipOrange}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Ellipse Width="7" Height="7" Fill="#D97706" Margin="0,0,7,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="Đang may: " FontSize="12" Foreground="#92400E" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipSewingCountText" Text="240 bộ" FontSize="12" FontWeight="Bold" Foreground="#B45309" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource KpiChipGreen}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Ellipse Width="7" Height="7" Fill="#16A34A" Margin="0,0,7,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="Chờ xuất nguyên liệu: " FontSize="12" Foreground="#166534" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipWaitingMaterialCountText" Text="15 lô" FontSize="12" FontWeight="Bold" Foreground="#15803D" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource KpiChipBlue}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Ellipse Width="7" Height="7" Fill="#2563EB" Margin="0,0,7,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="Đã chốt giá vốn: " FontSize="12" Foreground="#1E40AF" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipCostSettledPercentText" Text="98%" FontSize="12" FontWeight="Bold" Foreground="#1D4ED8" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- DATA TABLE -->
+                                <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                                    <DataGrid x:Name="ProductionOrdersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="44">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="MÃ LỆNH ⇅" Binding="{Binding OrderNumber}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                            <DataGridTextColumn Header="MẪU ÁO DÀI" Binding="{Binding ProductName}" Width="2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="SIZE/MÀU ⇅" Binding="{Binding SizeColorDisplay}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="SỐ LƯỢNG" Binding="{Binding PlannedQuantity, StringFormat='{}{0:N0} bộ'}" Width="0.9*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="VẢI CHÍNH (LỤA HÀ ĐÔNG)" Binding="{Binding MainFabricDisplay}" Width="1.4*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="GIÁ THÀNH THỰC TẾ (ACTUAL COST)" Binding="{Binding ActualUnitCost, StringFormat='{}{0:N0} đ'}" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                            <DataGridTemplateColumn Header="ĐỘ LỆCH VARIANCE" Width="1.1*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding VarianceDisplay}" Foreground="{Binding VarianceFg}" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridTemplateColumn Header="TRẠNG THÁI ⇅" Width="1.2*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{Binding StatusPillBg}" CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0">
+                                                            <TextBlock Text="{Binding FashionStatusVi}" Foreground="{Binding StatusPillFg}" FontSize="11.5" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 8: WAREHOUSES -->
+            <TabItem Header="Danh mục kho" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Danh mục kho lưu trữ" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Nhấp đúp một dòng để sửa thông tin kho. Kho mặc định được ưu tiên gán khi tạo phiếu nhập mới." TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="🔄 Tải Lại" Click="RefreshWarehouses_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="✎ Sửa" Click="EditWarehouseDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button Content="🗑 Xóa" Click="DeleteWarehouse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button Content="+ Thêm kho" Click="CreateWarehouseDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="WarehousesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="WarehousesDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ KHO" Binding="{Binding Code}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="TÊN KHO" Binding="{Binding Name}" Width="2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="ĐỊA CHỈ" Binding="{Binding Address}" Width="2.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="1.25*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="MẶC ĐỊNH" Binding="{Binding DefaultLabel}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 9: SALES ORDERS -->
+            <TabItem Header="Đơn hàng &amp; Giao hàng" FontWeight="SemiBold">
+                <Grid Margin="0,12,0,0">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Đơn hàng &amp; Giao hàng đa kênh" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Nhấp đúp để xem/sửa đơn. Hủy đơn tự động hoàn trả tồn kho đang giữ; đơn đã giao xử lý đổi trả đúng quy trình." TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,8" />
+                                <Grid Width="300" Height="36" HorizontalAlignment="Left">
+                                    <TextBox x:Name="SalesOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="SalesOrderSearch_TextChanged" />
+                                    <TextBlock Text="🔍 Tìm mã đơn, khách hàng, SĐT..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SalesOrderSearchPlaceholder" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <ComboBox x:Name="SalesOrderChannelFilter" Width="175" Height="36" SelectedIndex="0" SelectedValuePath="Tag" SelectionChanged="SalesOrderFilter_SelectionChanged" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Tất cả kênh" Tag="ALL" />
+                                        <ComboBoxItem Content="Facebook" Tag="FACEBOOK" />
+                                        <ComboBoxItem Content="Website Áo Dài" Tag="WEBSITE_AODAI" />
+                                        <ComboBoxItem Content="Shopee" Tag="SHOPEE" />
+                                        <ComboBoxItem Content="TikTok Shop" Tag="TIKTOK" />
+                                        <ComboBoxItem Content="Zalo" Tag="ZALO" />
+                                        <ComboBoxItem Content="Cửa hàng" Tag="STORE" />
+                                    </ComboBox>
+                                    <ComboBox x:Name="SalesOrderStatusFilter" Width="165" Height="36" Margin="8,0,0,0" SelectedIndex="0" SelectedValuePath="Tag" SelectionChanged="SalesOrderFilter_SelectionChanged" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Mọi trạng thái" Tag="ALL" />
+                                        <ComboBoxItem Content="Chờ xử lý" Tag="0" />
+                                        <ComboBoxItem Content="Đang giao" Tag="1" />
+                                        <ComboBoxItem Content="Đã giao đủ" Tag="2" />
+                                        <ComboBoxItem Content="Đã hủy" Tag="3" />
+                                        <ComboBoxItem Content="Đã hoàn trả" Tag="4" />
+                                    </ComboBox>
+                                </StackPanel>
+                                <TextBlock x:Name="SalesOrderSummaryText" Text="Chưa có dữ liệu đơn hàng." FontSize="11.5" Foreground="#2563EB" Margin="0,6,0,0" />
+                            </StackPanel>
+                            <WrapPanel Grid.Column="1" Width="580" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Content="🔄 Tải Lại" Click="RefreshSalesOrders_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="⌕ Chi tiết" Click="ViewSalesOrderDetails_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="✎ Sửa" Click="EditSalesOrderDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="↩ Hủy đơn" Click="CancelSalesOrder_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="🚚 Giao phần còn lại" Click="DeliverSalesOrder_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="💳 Ghi nhận thu" Click="RecordSalesOrderPayment_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="🧾 Hóa đơn" Click="IssueSalesOrderDocument_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button Content="+ Tạo đơn" Click="CreateSalesOrderDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,0,6" />
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="SalesOrdersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="SalesOrdersDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ ĐƠN" Binding="{Binding OrderNumber}" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="KÊNH" Binding="{Binding SourceSystemLabel}" Width="1.15*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="KHO XUẤT" Binding="{Binding WarehouseLabel}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="MÃ ĐƠN NGOÀI" Binding="{Binding SourceOrderId}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="KHÁCH HÀNG" Binding="{Binding CustomerName}" Width="1.5*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="SỐ SP" Binding="{Binding ItemCount}" Width="0.65*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TỔNG THANH TOÁN" Binding="{Binding TotalAmount, StringFormat='{}{0:N0} đ'}" Width="1.15*" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                <DataGridTextColumn Header="LỢI NHUẬN" Binding="{Binding Profit, StringFormat='{}{0:N0} đ'}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="1.1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="NGÀY ĐƠN" Binding="{Binding OrderDate, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

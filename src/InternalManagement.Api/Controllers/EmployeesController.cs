@@ -49,6 +49,19 @@ public class EmployeesController : BaseApiController
         return Ok(ApiResponse<EmployeeDetailDto>.Ok(result.Value!, "Lấy thông tin nhân viên thành công."));
     }
 
+    [HttpGet("{id:guid}/payment-details")]
+    [HasPermission(Permissions.EmployeesManage)]
+    [ProducesResponseType(typeof(ApiResponse<EmployeePaymentDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<EmployeePaymentDetailsDto>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetEmployeePaymentDetails(Guid id, CancellationToken ct)
+    {
+        var result = await _employeeService.GetEmployeePaymentDetailsAsync(id, ct);
+        if (!result.Succeeded)
+            return NotFound(ApiResponse<EmployeePaymentDetailsDto>.Fail(result.Errors.FirstOrDefault() ?? "Không tìm thấy nhân viên."));
+
+        return Ok(ApiResponse<EmployeePaymentDetailsDto>.Ok(result.Value!, "Lấy thông tin thanh toán nhân sự thành công."));
+    }
+
     [HttpPost]
     [HasPermission(Permissions.EmployeesManage)]
     [ProducesResponseType(typeof(ApiResponse<EmployeeDto>), StatusCodes.Status201Created)]

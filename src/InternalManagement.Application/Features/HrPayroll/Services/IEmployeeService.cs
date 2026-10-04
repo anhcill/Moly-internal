@@ -11,6 +11,8 @@ public interface IEmployeeService
 
     Task<Result<EmployeeDetailDto>> GetEmployeeByIdAsync(Guid id, CancellationToken ct);
 
+    Task<Result<EmployeePaymentDetailsDto>> GetEmployeePaymentDetailsAsync(Guid id, CancellationToken ct);
+
     Task<Result<EmployeeDto>> CreateEmployeeAsync(CreateEmployeeRequest request, CancellationToken ct);
 
     Task<Result<EmployeeDto>> UpdateEmployeeAsync(Guid id, UpdateEmployeeRequest request, CancellationToken ct);

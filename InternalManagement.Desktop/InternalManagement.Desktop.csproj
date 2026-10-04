@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="Velopack" />
 
     <!-- Velopack must bootstrap before WPF creates any windows. -->
     <ApplicationDefinition Remove="App.xaml" />

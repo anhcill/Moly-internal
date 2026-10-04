@@ -1,0 +1,373 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.CourseManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <TabControl x:Name="CourseModuleTabControl" SelectionChanged="CourseModuleTabControl_SelectionChanged">
+
+            <!-- SUB-TAB 1: KHÓA HỌC -->
+            <TabItem x:Name="TabItemCourses" Header="Khóa học" FontWeight="SemiBold">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                     <!-- TOOLBAR -->
+                     <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                         <DockPanel LastChildFill="False">
+                             <!-- VÙNG TÌM KIẾM (BÊN TRÁI) -->
+                             <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                                 <Grid Width="240" Height="36" Margin="0,2,8,2">
+                                     <TextBox x:Name="CourseSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CourseSearch_TextChanged" />
+                                     <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                     <TextBlock x:Name="CourseSearchPlaceholder" Text="Tìm theo tên khóa học..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                                 </Grid>
+                             </WrapPanel>
+
+                             <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
+                             <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                 <Button Content="🔄 Tải lại" Click="RefreshCourses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách khóa học" />
+                                 <Button Content="▦ Xem các lớp" Click="ViewCourseClasses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xem danh sách lớp của khóa học đã chọn" />
+                                 <Button Content="✎ Sửa" Click="EditCourseDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin khóa học" />
+                                 <Button Content="🗑️ Xóa" Click="DeleteCourse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xóa khóa học đã chọn" />
+                                 <Button Content="+ Tạo khóa học mới" Click="CreateCourseDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
+                             </WrapPanel>
+                         </DockPanel>
+                     </Border>
+
+                    <!-- COURSES DATAGRID -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="CoursesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="CoursesDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ NGUỒN" Binding="{Binding CourseSourceId}" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="TÊN KHÓA HỌC" Binding="{Binding Title}" Width="2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="SLUG" Binding="{Binding Slug}" Width="1.4*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="HỌC PHÍ (VND)" Binding="{Binding Price, StringFormat='{}{0:N0} đ'}" Width="130" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridEmeraldTextCellStyle}" />
+                                <DataGridTextColumn Header="MODULES" Binding="{Binding ModuleCount}" Width="80" />
+                                <DataGridTextColumn Header="SỐ LỚP" Binding="{Binding ClassCount}" Width="80" FontWeight="Bold" />
+                                <DataGridTextColumn Header="PHIÊN BẢN" Binding="{Binding Version, StringFormat='v{0}'}" Width="90" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding Status}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 2: LỚP HỌC & TÀI CHÍNH -->
+            <TabItem x:Name="TabItemClasses" Header="Lớp học &amp; Tài chính" FontWeight="SemiBold">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- FILTER BANNER (WHEN FILTERED BY SPECIFIC COURSE) -->
+                    <Border Grid.Row="0" x:Name="CscaCourseFilterBanner" Visibility="Collapsed" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="#4F46E5" CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
+                                    <TextBlock Text="LỌC" FontSize="10" FontWeight="Bold" Foreground="White" />
+                                </Border>
+                                <TextBlock x:Name="CscaCourseFilterText" Text="🎯 Đang lọc các lớp thuộc khóa học: ..." FontWeight="SemiBold" Foreground="#3730A3" FontSize="12.5" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="✕ Xem tất cả các lớp" Click="ClearCscaCourseFilter_Click" Style="{StaticResource OutlineButton}" Height="30" FontSize="11" Padding="10,2" />
+                        </Grid>
+                    </Border>
+
+                    <!-- METRICS STATS BAR (SaaS Modern KPI Cards) -->
+                    <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,12">
+                        <!-- Card 1: Số lớp CSCA -->
+                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ LỚP CSCA" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                    <TextBlock Text="🏫" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaClassCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đang vận hành" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Card 2: Tổng học viên -->
+                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG HỌC VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                    <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Ghi danh các lớp" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Card 3: Doanh thu đã thu -->
+                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                    <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaRevenue" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Card 4: Số tiền còn nợ -->
+                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ TIỀN CÒN NỢ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                    <TextBlock Text="⏳" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaDebt" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,1" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Cần đối soát công nợ" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Card 5: Lợi nhuận ròng -->
+                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN RÒNG (NET)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
+                                    <TextBlock Text="📈" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaNetProfit" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#4F46E5" Margin="0,3,0,1" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Doanh thu trừ thù lao" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                            </Grid>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- TOOLBAR -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DockPanel LastChildFill="False">
+                            <!-- VÙNG TÌM KIẾM & BỘ LỌC (BÊN TRÁI) -->
+                            <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Search Box -->
+                                <Grid Width="200" Height="36" Margin="0,2,8,2">
+                                    <TextBox x:Name="CscaSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CscaSearch_TextChanged" />
+                                    <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                    <TextBlock x:Name="CscaSearchPlaceholder" Text="Tìm mã lớp, tên lớp..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                                </Grid>
+                                <!-- Course Filter ComboBox -->
+                                <ComboBox x:Name="CscaCourseFilterComboBox" Width="175" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
+                            </WrapPanel>
+
+                            <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
+                            <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button Content="🔄 Tải lại" Click="RefreshCsca_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách lớp" />
+                                <Button Content="✎ Sửa" Click="EditCscaClass_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin lớp đã chọn" />
+                                <Button Content="🗑️ Xóa" Click="DeleteCscaClass_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xóa lớp đã chọn" />
+                                <Button Content="▣ Chi tiết" Click="ViewCscaClassDetails_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xem chi tiết lớp học" />
+                                <Button Content="+ Tạo lớp mới" Click="CreateCscaClassDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
+                            </WrapPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- CSCA CLASSES DATAGRID -->
+                    <Border Grid.Row="3" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="CscaClassesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="CscaClassesDataGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ LỚP" Binding="{Binding Code}" Width="105" FontWeight="Bold" />
+                                <DataGridTemplateColumn Header="TÊN LỚP &amp; KHÓA HỌC" Width="1.7*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="2,4">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" TextWrapping="Wrap" LineHeight="16" />
+                                                <TextBlock Text="{Binding CourseTitle}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="ĐỢT" Binding="{Binding Batch}" Width="105" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="LỊCH HỌC" Binding="{Binding Schedule}" Width="1.3*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="HỌC PHÍ" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="95" />
+                                <DataGridTextColumn Header="SĨ SỐ" Binding="{Binding StudentCount}" Width="55" />
+                                <DataGridTextColumn Header="DOANH THU" Binding="{Binding TotalRevenue, StringFormat='{}{0:N0} đ'}" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridEmeraldTextCellStyle}" />
+                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridAmberTextCellStyle}" />
+                                <DataGridTextColumn Header="THÙ LAO GV" Binding="{Binding TotalStaffExpense, StringFormat='{}{0:N0} đ'}" Width="100" ElementStyle="{StaticResource DataGridRedTextCellStyle}" />
+                                <DataGridTextColumn Header="LỢI NHUẬN" Binding="{Binding NetProfit, StringFormat='{}{0:N0} đ'}" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridIndigoTextCellStyle}" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding Status}" Width="85" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 3: TÀI LIỆU WEB -->
+            <TabItem Header="Tài liệu web" FontWeight="SemiBold">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- HEADER CARD -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Kho tài liệu bài giảng &amp; Giáo trình trực tuyến" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Đồng bộ tự động từ hệ thống CSCA Web dành cho học viên và cộng đồng." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="#EEF2FF" CornerRadius="12" Padding="12,5" VerticalAlignment="Center">
+                                <TextBlock Text="🌐 CSCA Web Resource Hub" FontSize="11" FontWeight="Bold" Foreground="#4F46E5" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="CscaMaterialsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="44">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="TIÊU ĐỀ" Binding="{Binding Title}" Width="2*" FontWeight="SemiBold" />
+                                <DataGridTextColumn Header="MÔN" Binding="{Binding Subject}" Width="120" />
+                                <DataGridTextColumn Header="CHỦ ĐỀ" Binding="{Binding Topic}" Width="150" />
+                                <DataGridTextColumn Header="LOẠI FILE" Binding="{Binding FileType}" Width="90" />
+                                <DataGridCheckBoxColumn Header="PREMIUM" Binding="{Binding IsPremium}" Width="85" />
+                                <DataGridTextColumn Header="LƯỢT XEM" Binding="{Binding ViewCount}" Width="85" />
+                                <DataGridTextColumn Header="LƯỢT TẢI" Binding="{Binding DownloadCount}" Width="85" />
+                                <DataGridTextColumn Header="CẬP NHẬT" Binding="{Binding UpdatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="140" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 4: TỪ VỰNG WEB -->
+            <TabItem Header="Từ vựng web" FontWeight="SemiBold">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- HEADER CARD -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Kho từ vựng chuyên ngành CSCA" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Bộ từ điển thuật ngữ HSK, Thương mại và Giao tiếp đa ngôn ngữ phục vụ học tập." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="#F0FDF4" CornerRadius="12" Padding="12,5" VerticalAlignment="Center">
+                                <TextBlock Text="🈴 Flashcard Dictionary" FontSize="11" FontWeight="Bold" Foreground="#16A34A" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="CscaVocabularyDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="42">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="中文" Binding="{Binding WordChinese}" Width="100" FontWeight="Bold" />
+                                <DataGridTextColumn Header="PINYIN" Binding="{Binding Pinyin}" Width="120" />
+                                <DataGridTextColumn Header="TIẾNG VIỆT" Binding="{Binding WordVietnamese}" Width="1.4*" />
+                                <DataGridTextColumn Header="ENGLISH" Binding="{Binding WordEnglish}" Width="1.2*" />
+                                <DataGridTextColumn Header="MÔN" Binding="{Binding Subject}" Width="110" />
+                                <DataGridTextColumn Header="CHỦ ĐỀ" Binding="{Binding Topic}" Width="150" />
+                                <DataGridCheckBoxColumn Header="PREMIUM" Binding="{Binding IsPremium}" Width="85" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- SUB-TAB 5: CỘNG ĐỒNG WEB -->
+            <TabItem Header="Cộng đồng web" FontWeight="SemiBold">
+                <Grid Margin="0,14,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- HEADER CARD -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Cộng đồng hỏi đáp &amp; Thảo luận" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Kiểm duyệt và quản lý các bài viết hỏi đáp, tương tác từ người học trên cổng CSCA." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Background="#FEF3C7" CornerRadius="12" Padding="12,5" VerticalAlignment="Center">
+                                <TextBlock Text="💬 Forum Moderation" FontSize="11" FontWeight="Bold" Foreground="#B45309" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="CscaPostsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="NỘI DUNG" Binding="{Binding Content}" Width="2.5*" />
+                                <DataGridTextColumn Header="TÁC GIẢ" Binding="{Binding AuthorName}" Width="150" FontWeight="SemiBold" />
+                                <DataGridTextColumn Header="LOẠI" Binding="{Binding PostType}" Width="100" />
+                                <DataGridTextColumn Header="DUYỆT" Binding="{Binding ModerationStatus}" Width="100" />
+                                <DataGridTextColumn Header="LIKE" Binding="{Binding LikeCount}" Width="65" />
+                                <DataGridTextColumn Header="BÌNH LUẬN" Binding="{Binding CommentCount}" Width="90" />
+                                <DataGridTextColumn Header="NGÀY" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="140" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>

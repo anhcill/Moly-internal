@@ -64,6 +64,12 @@ public record EmployeeDetailDto(
     DateTime? StatusChangedAt = null,
     string? StatusReason = null);
 
+public record EmployeePaymentDetailsDto(
+    Guid EmployeeId,
+    string? BankName,
+    string? BankAccountNumber,
+    string? BankAccountHolder);
+
 public record CreateEmployeeRequest(
     string EmployeeCode,
     string FullName,
@@ -84,7 +90,10 @@ public record CreateEmployeeRequest(
     string? Experience = null,
     DateTime? StatusChangedAt = null,
     string? StatusReason = null,
-    Guid? UserId = null);
+    Guid? UserId = null,
+    string? BankName = null,
+    string? BankAccountNumber = null,
+    string? BankAccountHolder = null);
 
 public record UpdateEmployeeRequest(
     string FullName,
@@ -105,4 +114,7 @@ public record UpdateEmployeeRequest(
     string? Experience = null,
     DateTime? StatusChangedAt = null,
     string? StatusReason = null,
-    Guid? UserId = null);
+    Guid? UserId = null,
+    string? BankName = null,
+    string? BankAccountNumber = null,
+    string? BankAccountHolder = null);

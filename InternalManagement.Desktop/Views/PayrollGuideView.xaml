@@ -1,0 +1,19 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.PayrollGuideView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,14,0,0"
+            BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <StackPanel>
+            <TextBlock Text="HƯỚNG DẪN VẬN HÀNH" FontSize="13" FontWeight="Bold"
+                       Foreground="{StaticResource TextDarkBrush}" />
+            <TextBlock Text="1. Chọn kỳ lương và kiểm tra bộ lọc phòng ban.&#xA;2. Với cộng tác viên theo sản phẩm, mở Đầu việc &amp; tiền công, chọn nhân sự và ghi từng đề/dự án/hoa hồng bằng mã tham chiếu, số lượng, đơn giá. Khoản tiền tự cộng ngay khi nhập; kỳ nháp sẽ cộng khi tính lương lần đầu.&#xA;3. Vào Bảng tính lương, double-click nhân sự để xem lương cơ bản và tiền công đầu việc tách riêng.&#xA;4. Ghi các khoản điều chỉnh khác kèm lý do; hủy đầu việc sai để giữ lịch sử thay vì xóa.&#xA;5. Sau khi gửi duyệt, hệ thống khóa thêm/hủy đầu việc và điều chỉnh. Thực hiện Phê duyệt → Đã chi lương → Phát hành theo trạng thái được mở."
+                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"
+                       LineHeight="24" Margin="0,12,0,0" />
+            <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1"
+                    CornerRadius="10" Padding="12" Margin="0,16,0,0">
+                <TextBlock Text="Mỗi đầu việc chỉ được ghi một lần cho cùng nhân sự, loại việc và mã tham chiếu. Khi kỳ đã gửi duyệt hoặc chi lương, không tự ý tính lại hay thay đổi dữ liệu."
+                           FontSize="12" Foreground="#92400E" TextWrapping="Wrap" />
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

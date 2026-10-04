@@ -109,7 +109,8 @@ public sealed class EmployeeService : IEmployeeService
                 e.EmploymentType == EmploymentType.PART_TIME ? "Bán thời gian" : "Toàn thời gian",
                 e.PartTimeCalculationMethod,
                 e.PartTimeCalculationMethod == PartTimeCalculationMethod.HOURLY ? "Theo giờ" :
-                    e.PartTimeCalculationMethod == PartTimeCalculationMethod.SHIFT ? "Theo ca" : null,
+                    e.PartTimeCalculationMethod == PartTimeCalculationMethod.SHIFT ? "Theo ca" :
+                    e.PartTimeCalculationMethod == PartTimeCalculationMethod.OUTPUT ? "Theo đầu việc" : null,
                 e.PartTimeUnitRate,
                 e.CvUrlOrPath,
                 e.ProfessionalSummary,
@@ -198,6 +199,18 @@ public sealed class EmployeeService : IEmployeeService
         return Result<EmployeeDetailDto>.Success(detail);
     }
 
+    public async Task<Result<EmployeePaymentDetailsDto>> GetEmployeePaymentDetailsAsync(Guid id, CancellationToken ct)
+    {
+        var companyId = await GetCompanyIdAsync(ct);
+        var employee = await _db.Employees.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id && e.CompanyId == companyId && !e.IsDeleted, ct);
+        if (employee is null)
+            return Result<EmployeePaymentDetailsDto>.Failure("Không tìm thấy nhân viên.");
+
+        return Result<EmployeePaymentDetailsDto>.Success(new EmployeePaymentDetailsDto(
+            employee.Id, employee.BankName, employee.BankAccountNumber, employee.BankAccountHolder));
+    }
+
     public async Task<Result<EmployeeDto>> CreateEmployeeAsync(CreateEmployeeRequest request, CancellationToken ct)
     {
         var companyId = await GetCompanyIdAsync(ct);
@@ -221,6 +234,13 @@ public sealed class EmployeeService : IEmployeeService
         {
             return Result<EmployeeDto>.Failure(compensationValidation);
         }
+
+        var bankName = NormalizeOptional(request.BankName);
+        var bankAccountNumber = NormalizeAccountNumber(request.BankAccountNumber);
+        var bankAccountHolder = NormalizeOptional(request.BankAccountHolder);
+        var paymentValidation = ValidatePaymentDetails(bankName, bankAccountNumber, bankAccountHolder);
+        if (paymentValidation != null)
+            return Result<EmployeeDto>.Failure(paymentValidation);
 
         if (request.BusinessUnitId.HasValue && !await IsValidBusinessUnitAsync(companyId, request.BusinessUnitId.Value, ct))
         {
@@ -260,6 +280,9 @@ public sealed class EmployeeService : IEmployeeService
             PartTimeUnitRate = request.EmploymentType == EmploymentType.PART_TIME
                 ? request.PartTimeUnitRate
                 : null,
+            BankName = bankName,
+            BankAccountNumber = bankAccountNumber,
+            BankAccountHolder = bankAccountHolder,
             CvUrlOrPath = NormalizeOptional(request.CvUrlOrPath),
             ProfessionalSummary = NormalizeOptional(request.ProfessionalSummary),
             Skills = NormalizeOptional(request.Skills),
@@ -330,7 +353,8 @@ public sealed class EmployeeService : IEmployeeService
 
         var employmentType = request.EmploymentType ?? emp.EmploymentType;
         var partTimeMethod = request.PartTimeCalculationMethod ?? emp.PartTimeCalculationMethod;
-        var partTimeUnitRate = request.PartTimeUnitRate ?? emp.PartTimeUnitRate;
+        var partTimeUnitRate = partTimeMethod == PartTimeCalculationMethod.OUTPUT
+            ? null : request.PartTimeUnitRate ?? emp.PartTimeUnitRate;
         var compensationValidation = ValidateCompensation(
             employmentType,
             request.BaseSalary,
@@ -340,6 +364,15 @@ public sealed class EmployeeService : IEmployeeService
         {
             return Result<EmployeeDto>.Failure(compensationValidation);
         }
+
+        var bankName = request.BankName is null ? emp.BankName : NormalizeOptional(request.BankName);
+        var bankAccountNumber = request.BankAccountNumber is null
+            ? emp.BankAccountNumber : NormalizeAccountNumber(request.BankAccountNumber);
+        var bankAccountHolder = request.BankAccountHolder is null
+            ? emp.BankAccountHolder : NormalizeOptional(request.BankAccountHolder);
+        var paymentValidation = ValidatePaymentDetails(bankName, bankAccountNumber, bankAccountHolder);
+        if (paymentValidation != null)
+            return Result<EmployeeDto>.Failure(paymentValidation);
 
         if (request.BusinessUnitId.HasValue && !await IsValidBusinessUnitAsync(companyId, request.BusinessUnitId.Value, ct))
         {
@@ -371,6 +404,9 @@ public sealed class EmployeeService : IEmployeeService
         emp.EmploymentType = employmentType;
         emp.PartTimeCalculationMethod = employmentType == EmploymentType.PART_TIME ? partTimeMethod : null;
         emp.PartTimeUnitRate = employmentType == EmploymentType.PART_TIME ? partTimeUnitRate : null;
+        emp.BankName = bankName;
+        emp.BankAccountNumber = bankAccountNumber;
+        emp.BankAccountHolder = bankAccountHolder;
         if (request.CvUrlOrPath != null) emp.CvUrlOrPath = NormalizeOptional(request.CvUrlOrPath);
         if (request.ProfessionalSummary != null) emp.ProfessionalSummary = NormalizeOptional(request.ProfessionalSummary);
         if (request.Skills != null) emp.Skills = NormalizeOptional(request.Skills);
@@ -468,13 +504,18 @@ public sealed class EmployeeService : IEmployeeService
 
         if (employmentType == EmploymentType.PART_TIME && !partTimeMethod.HasValue)
         {
-            return "Nhân sự bán thời gian phải chọn cách tính lương theo giờ hoặc theo ca.";
+            return "Nhân sự bán thời gian phải chọn cách tính lương theo giờ, theo ca hoặc theo đầu việc.";
         }
 
-        if (employmentType == EmploymentType.PART_TIME && (!partTimeUnitRate.HasValue || partTimeUnitRate <= 0))
+        if (employmentType == EmploymentType.PART_TIME && partTimeMethod != PartTimeCalculationMethod.OUTPUT &&
+            (!partTimeUnitRate.HasValue || partTimeUnitRate <= 0))
         {
             return "Nhân sự bán thời gian phải có đơn giá lớn hơn 0.";
         }
+
+        if (employmentType == EmploymentType.PART_TIME && partTimeMethod == PartTimeCalculationMethod.OUTPUT &&
+            partTimeUnitRate.GetValueOrDefault() > 0)
+            return "Nhân sự theo đầu việc nhập đơn giá ở từng đầu việc, không đặt đơn giá thời gian.";
 
         return null;
     }
@@ -486,8 +527,27 @@ public sealed class EmployeeService : IEmployeeService
     {
         PartTimeCalculationMethod.HOURLY => "Theo giờ",
         PartTimeCalculationMethod.SHIFT => "Theo ca",
+        PartTimeCalculationMethod.OUTPUT => "Theo đầu việc",
         _ => null
     };
+
+    private static string? ValidatePaymentDetails(string? bankName, string? accountNumber, string? accountHolder)
+    {
+        if (bankName is null && accountNumber is null && accountHolder is null)
+            return null;
+        if (bankName is null || accountNumber is null || accountHolder is null)
+            return "Thông tin chuyển khoản phải có đủ ngân hàng, số tài khoản và tên chủ tài khoản.";
+        if (bankName.Length > 120 || accountHolder.Length > 200 ||
+            accountNumber.Length is < 6 or > 34 ||
+            !accountNumber.All(c => c is >= '0' and <= '9' or >= 'A' and <= 'Z'))
+            return "Thông tin tài khoản ngân hàng không hợp lệ.";
+        return null;
+    }
+
+    private static string? NormalizeAccountNumber(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? null
+            : new string(value.Where(c => !char.IsWhiteSpace(c) && c != '-').ToArray()).ToUpperInvariant();
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

@@ -1,0 +1,705 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:InternalManagement.Desktop">
+    <Grid Background="#060B18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.08*" MinWidth="480" MaxWidth="640" />
+            <ColumnDefinition Width="1.22*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- LEFT HERO PANEL: BRAND, AMBIENT STARS & 4 CORE MODULE CARDS         -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="0" ClipToBounds="True">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#060B18" Offset="0" />
+                    <GradientStop Color="#0B1B36" Offset="0.5" />
+                    <GradientStop Color="#050811" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <!-- Background Ambient Glowing Accents -->
+                <Canvas IsHitTestVisible="False">
+                    <!-- Top left ambient glow -->
+                    <Ellipse Width="380" Height="380" Fill="#1E3A8A" Opacity="0.30" Canvas.Left="-100" Canvas.Top="-80">
+                        <Ellipse.Effect>
+                            <DropShadowEffect BlurRadius="140" ShadowDepth="0" Color="#0284C7" Opacity="0.6" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <!-- Bottom right ambient violet glow -->
+                    <Ellipse Width="320" Height="320" Fill="#311042" Opacity="0.28" Canvas.Right="-80" Canvas.Bottom="40">
+                        <Ellipse.Effect>
+                            <DropShadowEffect BlurRadius="120" ShadowDepth="0" Color="#7C3AED" Opacity="0.5" />
+                        </Ellipse.Effect>
+                    </Ellipse>
+
+                    <!-- Subtle starry particles -->
+                    <Ellipse Width="3" Height="3" Fill="#E0F2FE" Opacity="0.6" Canvas.Left="90" Canvas.Top="70" />
+                    <Ellipse Width="2" Height="2" Fill="#E0F2FE" Opacity="0.4" Canvas.Left="210" Canvas.Top="45" />
+                    <Ellipse Width="4" Height="4" Fill="#38BDF8" Opacity="0.7" Canvas.Left="340" Canvas.Top="110">
+                        <Ellipse.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="0" Color="#38BDF8" /></Ellipse.Effect>
+                    </Ellipse>
+                    <Ellipse Width="3" Height="3" Fill="#BAE6FD" Opacity="0.5" Canvas.Left="60" Canvas.Top="260" />
+                    <Ellipse Width="2" Height="2" Fill="#FFFFFF" Opacity="0.45" Canvas.Left="420" Canvas.Top="220" />
+                    <Ellipse Width="3" Height="3" Fill="#67E8F9" Opacity="0.6" Canvas.Left="140" Canvas.Top="380" />
+                    <Ellipse Width="4" Height="4" Fill="#818CF8" Opacity="0.65" Canvas.Left="390" Canvas.Top="410">
+                        <Ellipse.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="0" Color="#818CF8" /></Ellipse.Effect>
+                    </Ellipse>
+                    <Ellipse Width="2" Height="2" Fill="#FFFFFF" Opacity="0.4" Canvas.Left="270" Canvas.Top="520" />
+                    <Ellipse Width="3" Height="3" Fill="#38BDF8" Opacity="0.5" Canvas.Left="80" Canvas.Top="640" />
+                    <Ellipse Width="2" Height="2" Fill="#E0F2FE" Opacity="0.4" Canvas.Left="440" Canvas.Top="670" />
+                </Canvas>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="52,42,52,42">
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- BRAND LOGO BADGE & NAME -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,28">
+                            <Border Width="54" Height="54" CornerRadius="16" Background="#0C1222" BorderBrush="#38BDF8" BorderThickness="1.2">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="22" ShadowDepth="0" Color="#38BDF8" Opacity="0.55" />
+                                </Border.Effect>
+                                <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Viewbox Width="34" Height="34" Stretch="Uniform">
+                                        <Canvas Width="36" Height="36">
+                                            <!-- Segment 1: Left Vertical Upward Stroke (Cyan to Sky Blue) -->
+                                            <Path Data="M 6,29 L 6,12 C 6,8 9.5,7 12,9 L 18,17 L 14,21 L 10,15 L 10,29 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                                                        <GradientStop Color="#0284C7" Offset="0" />
+                                                        <GradientStop Color="#00F0FF" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                            <!-- Segment 2: Left Diagonal Fold / Shadow (Sky Blue to Dark Indigo) -->
+                                            <Path Data="M 12,9 L 18.5,19.5 L 15.5,23.5 L 9.5,13.5 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#2563EB" Offset="0" />
+                                                        <GradientStop Color="#1E1B4B" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                            <!-- Segment 3: Right Diagonal Fold / Glow (Indigo to Purple) -->
+                                            <Path Data="M 17.5,23.5 L 15,20 L 23.5,9 L 26,12.5 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#4338CA" Offset="0" />
+                                                        <GradientStop Color="#8B5CF6" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                            <!-- Segment 4: Right Vertical Downward Stroke (Purple to Hot Pink) -->
+                                            <Path Data="M 24,9 C 26.5,7 30,8 30,12 L 30,29 L 26,29 L 26,15 L 22,21 L 18,17 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#8B5CF6" Offset="0" />
+                                                        <GradientStop Color="#EC4899" Offset="0.65" />
+                                                        <GradientStop Color="#F43F5E" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Grid>
+                            </Border>
+                            <TextBlock Text="MOLY" FontSize="32" FontWeight="Bold" Foreground="White" Margin="16,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- ENTERPRISE OS TITLE -->
+                        <TextBlock FontSize="23" FontWeight="Bold" Foreground="White" Margin="0,0,0,32" LineHeight="32">
+                            <Run Text="MOLY ENTERPRISE OS -" /><LineBreak />
+                            <Run Text="Comprehensive Enterprise" /><LineBreak />
+                            <Run Text="Management System" />
+                        </TextBlock>
+
+                        <!-- 2X2 GRID OF 4 CORE MODULE CARDS -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- CARD 1: EDTECH (Top-Left) -->
+                            <Border Grid.Row="0" Grid.Column="0" CornerRadius="16" Padding="18,16" Margin="0,0,8,14" Height="124" Effect="{StaticResource LoginCardGlowShadow}" BorderThickness="1.2">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#142142" Offset="0" />
+                                        <GradientStop Color="#0D172E" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#38BDF8" Offset="0" />
+                                        <GradientStop Color="#1E40AF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                                <StackPanel VerticalAlignment="Center">
+                                    <!-- Graduation Cap Icon -->
+                                    <Viewbox Width="34" Height="28" HorizontalAlignment="Left" Stretch="Uniform">
+                                        <Canvas Width="36" Height="30">
+                                            <!-- Diamond Cap (Cyan to Blue Gradient) -->
+                                            <Path Data="M 18,3 L 34,10 L 18,17 L 2,10 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#00F0FF" Offset="0" />
+                                                        <GradientStop Color="#0284C7" Offset="0.4" />
+                                                        <GradientStop Color="#3B82F6" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                            <!-- Cap Underside / Skull Band -->
+                                            <Path Data="M 8,13.5 L 8,19 C 8,24 28,24 28,19 L 28,13.5 C 25,15.5 21,17 18,17 C 15,17 11,15.5 8,13.5 Z">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#2563EB" Offset="0" />
+                                                        <GradientStop Color="#1E3A8A" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                            </Path>
+                                            <!-- Center Cap Button -->
+                                            <Ellipse Canvas.Left="16" Canvas.Top="8.5" Width="4" Height="3" Fill="#FBBF24" />
+                                            <!-- Gold Tassel Hanging Down Right -->
+                                            <Path Data="M 18,10 Q 28,12 29,20" Stroke="#FBBF24" StrokeThickness="2.2" Fill="Transparent" StrokeEndLineCap="Round" />
+                                            <!-- Tassel Fringe -->
+                                            <Polygon Points="27,20 31,20 30,26 28,26" Fill="#F97316" />
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Text="EdTech" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CARD 2: FASHION & SUPPLY CHAIN (Top-Right) -->
+                            <Border Grid.Row="0" Grid.Column="1" CornerRadius="16" Padding="18,16" Margin="8,0,0,14" Height="124" Effect="{StaticResource LoginCardGlowShadow}" BorderThickness="1.2">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#142142" Offset="0" />
+                                        <GradientStop Color="#0D172E" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#38BDF8" Offset="0" />
+                                        <GradientStop Color="#1E40AF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                                <StackPanel VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" VerticalAlignment="Center">
+                                        <!-- Clothes Hanger Icon -->
+                                        <Viewbox Width="28" Height="26" HorizontalAlignment="Left" Stretch="Uniform" Margin="0,0,12,0">
+                                            <Canvas Width="28" Height="26">
+                                                <!-- Metal Hook (Cyan/Blue) -->
+                                                <Path Data="M 14,9 C 14,4 19,4 19,7 C 19,9 16,10 14,12" Stroke="#38BDF8" StrokeThickness="2.2" StrokeStartLineCap="Round" Fill="Transparent" />
+                                                <!-- Triangular Hanger Body (Orange/Coral) -->
+                                                <Path Data="M 14,12 L 2,21 C 1.5,21.5 2,22.5 3,22.5 L 25,22.5 C 26,22.5 26.5,21.5 26,21 Z"
+                                                      Stroke="#FB923C" StrokeThickness="2.2" StrokeLineJoin="Round" Fill="#7C2D12" Opacity="0.6" />
+                                                <Line X1="4" Y1="21.5" X2="24" Y2="21.5" Stroke="#F97316" StrokeThickness="2" />
+                                            </Canvas>
+                                        </Viewbox>
+                                        <!-- Cargo Delivery Truck Icon -->
+                                        <Viewbox Width="32" Height="26" HorizontalAlignment="Left" Stretch="Uniform">
+                                            <Canvas Width="34" Height="26">
+                                                <!-- Orange Cargo Box -->
+                                                <Rectangle Canvas.Left="1" Canvas.Top="4" Width="19" Height="14" RadiusX="2" RadiusY="2" Fill="#F97316" />
+                                                <Line X1="7" Y1="5" X2="7" Y2="17" Stroke="#EA580C" StrokeThickness="1" />
+                                                <Line X1="13" Y1="5" X2="13" Y2="17" Stroke="#EA580C" StrokeThickness="1" />
+                                                <!-- Blue Cabin -->
+                                                <Path Data="M 20,8 L 26,8 C 28,8 30,10 31,12 L 31,18 L 20,18 Z" Fill="#0284C7" />
+                                                <!-- Light Blue Windshield -->
+                                                <Path Data="M 22,9.5 L 26,9.5 C 27,9.5 28,10.5 28.5,12 L 22,12 Z" Fill="#E0F2FE" />
+                                                <!-- Yellow Headlight -->
+                                                <Rectangle Canvas.Left="30" Canvas.Top="14.5" Width="1.5" Height="2.5" Fill="#FBBF24" />
+                                                <!-- Wheels -->
+                                                <Ellipse Canvas.Left="4" Canvas.Top="15" Width="6.5" Height="6.5" Fill="#0F172A" />
+                                                <Ellipse Canvas.Left="5.75" Canvas.Top="16.75" Width="3" Height="3" Fill="#94A3B8" />
+                                                <Ellipse Canvas.Left="23" Canvas.Top="15" Width="6.5" Height="6.5" Fill="#0F172A" />
+                                                <Ellipse Canvas.Left="24.75" Canvas.Top="16.75" Width="3" Height="3" Fill="#94A3B8" />
+                                            </Canvas>
+                                        </Viewbox>
+                                    </StackPanel>
+                                    <TextBlock FontSize="16.5" FontWeight="Bold" Foreground="#FFFFFF" LineHeight="20" Margin="0,8,0,0">
+                                        <Run Text="Fashion &amp;" /><LineBreak />
+                                        <Run Text="Supply Chain" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CARD 3: HRM & ATTENDANCE (Bottom-Left) -->
+                            <Border Grid.Row="1" Grid.Column="0" CornerRadius="16" Padding="18,16" Margin="0,0,8,0" Height="124" Effect="{StaticResource LoginCardGlowShadow}" BorderThickness="1.2">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#142142" Offset="0" />
+                                        <GradientStop Color="#0D172E" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#38BDF8" Offset="0" />
+                                        <GradientStop Color="#1E40AF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                                <StackPanel VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" VerticalAlignment="Center">
+                                        <!-- ID Card / Badge Icon -->
+                                        <Viewbox Width="28" Height="26" HorizontalAlignment="Left" Stretch="Uniform" Margin="0,0,12,0">
+                                            <Canvas Width="28" Height="26">
+                                                <!-- Badge Body -->
+                                                <Rectangle Canvas.Left="1" Canvas.Top="3" Width="26" Height="20" RadiusX="3" RadiusY="3" Fill="#1E293B" Stroke="#60A5FA" StrokeThickness="1.2" />
+                                                <!-- Avatar Silhouette (Purple) -->
+                                                <Ellipse Canvas.Left="4.5" Canvas.Top="6" Width="6" Height="6" Fill="#A855F7" />
+                                                <Path Data="M 3.5,19 C 3.5,14 11.5,14 11.5,19 Z" Fill="#A855F7" />
+                                                <!-- Text Info Bars (Blue) -->
+                                                <Rectangle Canvas.Left="13" Canvas.Top="7" Width="11" Height="2" RadiusX="1" RadiusY="1" Fill="#38BDF8" />
+                                                <Rectangle Canvas.Left="13" Canvas.Top="11" Width="8" Height="2" RadiusX="1" RadiusY="1" Fill="#818CF8" />
+                                                <Rectangle Canvas.Left="13" Canvas.Top="15" Width="10" Height="2" RadiusX="1" RadiusY="1" Fill="#93C5FD" />
+                                                <!-- Clip slot at top -->
+                                                <Rectangle Canvas.Left="11" Canvas.Top="1" Width="6" Height="3" RadiusX="1" RadiusY="1" Fill="#94A3B8" />
+                                            </Canvas>
+                                        </Viewbox>
+                                        <!-- Calendar Icon -->
+                                        <Viewbox Width="28" Height="26" HorizontalAlignment="Left" Stretch="Uniform">
+                                            <Canvas Width="28" Height="26">
+                                                <!-- Calendar White Body -->
+                                                <Rectangle Canvas.Left="2" Canvas.Top="4" Width="24" Height="20" RadiusX="3" RadiusY="3" Fill="#F8FAFC" Stroke="#CBD5E1" StrokeThickness="1.2" />
+                                                <!-- Calendar Purple Header -->
+                                                <Path Data="M 2,7 C 2,5.3 3.3,4 5,4 L 23,4 C 24.7,4 26,5.3 26,7 L 26,10 L 2,10 Z" Fill="#8B5CF6" />
+                                                <!-- Binder Rings -->
+                                                <Rectangle Canvas.Left="7" Canvas.Top="1.5" Width="2.5" Height="4.5" RadiusX="1" RadiusY="1" Fill="#94A3B8" />
+                                                <Rectangle Canvas.Left="18.5" Canvas.Top="1.5" Width="2.5" Height="4.5" RadiusX="1" RadiusY="1" Fill="#94A3B8" />
+                                                <!-- Date Dots Matrix -->
+                                                <Ellipse Canvas.Left="6" Canvas.Top="12.5" Width="3" Height="3" Fill="#38BDF8" />
+                                                <Ellipse Canvas.Left="12.5" Canvas.Top="12.5" Width="3" Height="3" Fill="#818CF8" />
+                                                <Ellipse Canvas.Left="19" Canvas.Top="12.5" Width="3" Height="3" Fill="#F43F5E" />
+                                                <Ellipse Canvas.Left="6" Canvas.Top="17.5" Width="3" Height="3" Fill="#10B981" />
+                                                <Ellipse Canvas.Left="12.5" Canvas.Top="17.5" Width="3" Height="3" Fill="#F59E0B" />
+                                                <Ellipse Canvas.Left="19" Canvas.Top="17.5" Width="3" Height="3" Fill="#6366F1" />
+                                            </Canvas>
+                                        </Viewbox>
+                                    </StackPanel>
+                                    <TextBlock Text="HRM &amp; Attendance" FontSize="16.5" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CARD 4: FINANCE (Bottom-Right) -->
+                            <Border Grid.Row="1" Grid.Column="1" CornerRadius="16" Padding="18,16" Margin="8,0,0,0" Height="124" Effect="{StaticResource LoginCardGlowShadow}" BorderThickness="1.2">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#142142" Offset="0" />
+                                        <GradientStop Color="#0D172E" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.BorderBrush>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#38BDF8" Offset="0" />
+                                        <GradientStop Color="#1E40AF" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.BorderBrush>
+                                <StackPanel VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" VerticalAlignment="Center">
+                                        <!-- Coins Icon -->
+                                        <Viewbox Width="28" Height="26" HorizontalAlignment="Left" Stretch="Uniform" Margin="0,0,12,0">
+                                            <Canvas Width="28" Height="26">
+                                                <!-- Gold Coin (Behind) -->
+                                                <Ellipse Canvas.Left="7" Canvas.Top="2" Width="16" Height="16" Fill="#F59E0B" Stroke="#D97706" StrokeThickness="1" />
+                                                <Ellipse Canvas.Left="9.5" Canvas.Top="4.5" Width="11" Height="11" Stroke="#FCD34D" StrokeThickness="0.8" />
+                                                <!-- Emerald/Green Coin (Front) -->
+                                                <Ellipse Canvas.Left="1" Canvas.Top="7" Width="18" Height="18" Fill="#10B981" Stroke="#059669" StrokeThickness="1.2" />
+                                                <Ellipse Canvas.Left="3.5" Canvas.Top="9.5" Width="13" Height="13" Stroke="#6EE7B7" StrokeThickness="0.8" />
+                                                <!-- Dollar Symbol -->
+                                                <TextBlock Canvas.Left="6" Canvas.Top="7" Text="$" FontSize="12.5" FontWeight="ExtraBold" Foreground="White" />
+                                            </Canvas>
+                                        </Viewbox>
+                                        <!-- Growth Chart Icon -->
+                                        <Viewbox Width="28" Height="26" HorizontalAlignment="Left" Stretch="Uniform">
+                                            <Canvas Width="28" Height="26">
+                                                <!-- Baseline -->
+                                                <Line X1="2" Y1="22" X2="26" Y2="22" Stroke="#475569" StrokeThickness="1.5" />
+                                                <!-- Ascending Bars -->
+                                                <Rectangle Canvas.Left="4" Canvas.Top="14" Width="4.5" Height="8" RadiusX="1" RadiusY="1" Fill="#C084FC" />
+                                                <Rectangle Canvas.Left="11" Canvas.Top="9" Width="4.5" Height="13" RadiusX="1" RadiusY="1" Fill="#8B5CF6" />
+                                                <Rectangle Canvas.Left="18" Canvas.Top="4" Width="4.5" Height="18" RadiusX="1" RadiusY="1" Fill="#F97316" />
+                                                <!-- Upward Trend Line with Arrow -->
+                                                <Path Data="M 4,14 L 13,8 L 22,2 M 17,2 L 22,2 L 22,7" Stroke="#EF4444" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                                            </Canvas>
+                                        </Viewbox>
+                                    </StackPanel>
+                                    <TextBlock Text="Finance" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- RIGHT AUTHENTICATION PANEL                                          -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="1" Padding="28">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#090E1D" Offset="0" />
+                    <GradientStop Color="#0D152A" Offset="0.5" />
+                    <GradientStop Color="#070B16" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <!-- Background ambient cyan/blue glow -->
+                <Ellipse Width="440" Height="440" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-120,-120" IsHitTestVisible="False">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#1438BDF8" Offset="0" />
+                            <GradientStop Color="#00000000" Offset="1" />
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <!-- TOP RIGHT 3-DOTS SERVER / SETTINGS MENU BUTTON -->
+                <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,8,0">
+                    <Button x:Name="LoginServerConfigButton"
+                            Width="36"
+                            Height="36"
+                            Background="#162544"
+                            BorderBrush="#2A3F6D"
+                            BorderThickness="1"
+                            Foreground="White"
+                            Cursor="Hand"
+                            ToolTip="Thông tin máy chủ &amp; Trạng thái kết nối"
+                            Click="LoginServerConfigButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                                    <TextBlock Text="⋮" FontSize="18" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Border>
+
+                <!-- MAIN AUTHENTICATION CARD (CENTERED) -->
+                <Border Width="430"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="#0D162B"
+                        BorderBrush="#1E2F54"
+                        BorderThickness="1.2"
+                        CornerRadius="22"
+                        Padding="36,38,36,34">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.65" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <!-- TITLE -->
+                        <TextBlock Text="Đăng nhập tài khoản điều hành"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#FFFFFF"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,26" />
+
+                        <!-- INPUT 1: USERNAME -->
+                        <Border Background="#162544"
+                                BorderBrush="#2A3F6D"
+                                BorderThickness="1.2"
+                                CornerRadius="10"
+                                Height="50"
+                                Margin="0,0,0,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Person vector icon -->
+                                <Viewbox Grid.Column="0" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Canvas Width="24" Height="24">
+                                        <Ellipse Canvas.Left="7" Canvas.Top="3" Width="10" Height="10" Stroke="#38BDF8" StrokeThickness="1.8" Fill="Transparent" />
+                                        <Path Data="M 4,21 C 4,16.5 7.5,15 12,15 C 16.5,15 20,16.5 20,21" Stroke="#38BDF8" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent" />
+                                    </Canvas>
+                                </Viewbox>
+                                <!-- Watermark placeholder -->
+                                <TextBlock Grid.Column="1"
+                                           x:Name="UsernameWatermark"
+                                           Text="Username"
+                                           Foreground="#64748B"
+                                           FontSize="15"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"
+                                           IsHitTestVisible="False" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="UsernameTextBox"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         FontSize="15"
+                                         Foreground="#FFFFFF"
+                                         CaretBrush="#38BDF8"
+                                         VerticalContentAlignment="Center"
+                                         Padding="4,0,12,0"
+                                         KeyDown="InputBox_KeyDown"
+                                         TextChanged="UsernameTextBox_TextChanged"
+                                         GotFocus="UsernameTextBox_GotFocus"
+                                         LostFocus="UsernameTextBox_LostFocus" />
+                            </Grid>
+                        </Border>
+
+                        <!-- INPUT 2: PASSWORD -->
+                        <Border Background="#162544"
+                                BorderBrush="#2A3F6D"
+                                BorderThickness="1.2"
+                                CornerRadius="10"
+                                Height="50"
+                                Margin="0,0,0,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="42" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Lock vector icon -->
+                                <Viewbox Grid.Column="0" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="M 6.5,10 L 6.5,6.5 C 6.5,3.5 9,1.5 12,1.5 C 15,1.5 17.5,3.5 17.5,6.5 L 17.5,10" Stroke="#38BDF8" StrokeThickness="1.8" Fill="Transparent" />
+                                        <Rectangle Canvas.Left="3.5" Canvas.Top="10" Width="17" Height="12.5" RadiusX="3" RadiusY="3" Stroke="#38BDF8" StrokeThickness="1.8" Fill="Transparent" />
+                                        <Ellipse Canvas.Left="10.5" Canvas.Top="13" Width="3" Height="3" Fill="#38BDF8" />
+                                        <Line X1="12" Y1="15.5" X2="12" Y2="18.5" Stroke="#38BDF8" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                                    </Canvas>
+                                </Viewbox>
+                                <!-- Watermark placeholder -->
+                                <TextBlock Grid.Column="1"
+                                           x:Name="PasswordWatermark"
+                                           Text="Password"
+                                           Foreground="#64748B"
+                                           FontSize="15"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"
+                                           IsHitTestVisible="False" />
+                                <PasswordBox Grid.Column="1"
+                                             x:Name="PasswordBox"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             FontSize="15"
+                                             Foreground="#FFFFFF"
+                                             CaretBrush="#38BDF8"
+                                             VerticalContentAlignment="Center"
+                                             Padding="4,0,4,0"
+                                             KeyDown="InputBox_KeyDown"
+                                             PasswordChanged="PasswordBox_PasswordChanged"
+                                             GotFocus="PasswordBox_GotFocus"
+                                             LostFocus="PasswordBox_LostFocus" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="VisiblePasswordTextBox"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         FontSize="15"
+                                         Foreground="#FFFFFF"
+                                         CaretBrush="#38BDF8"
+                                         VerticalContentAlignment="Center"
+                                         Padding="4,0,4,0"
+                                         Visibility="Collapsed"
+                                         KeyDown="InputBox_KeyDown"
+                                         TextChanged="VisiblePasswordTextBox_TextChanged"
+                                         GotFocus="VisiblePasswordTextBox_GotFocus"
+                                         LostFocus="VisiblePasswordTextBox_LostFocus" />
+                                <Button Grid.Column="2"
+                                        x:Name="PasswordVisibilityButton"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Width="38"
+                                        Height="38"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Padding="0"
+                                        Cursor="Hand"
+                                        ToolTip="Hiện hoặc ẩn mật khẩu"
+                                        Click="PasswordVisibilityButton_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="Transparent">
+                                                <Viewbox Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="M 2,12 C 5,6 19,6 22,12 C 19,18 5,18 2,12 Z" Stroke="#94A3B8" StrokeThickness="1.8" Fill="Transparent" />
+                                                        <Ellipse Canvas.Left="8.5" Canvas.Top="8.5" Width="7" Height="7" Stroke="#94A3B8" StrokeThickness="1.8" Fill="#38BDF8" />
+                                                    </Canvas>
+                                                </Viewbox>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- INPUT 3: BUSINESS UNIT SELECTOR -->
+                        <ComboBox x:Name="LoginBusinessUnitCombo"
+                                  Style="{StaticResource LoginComboBoxStyle}"
+                                  FontSize="15"
+                                  Height="50"
+                                  Margin="0,0,0,16">
+                            <ComboBoxItem Content="Business Unit" IsSelected="True" />
+                            <ComboBoxItem Content="Business Unit: Toàn hệ thống (Mặc định)" />
+                            <ComboBoxItem Content="Business Unit: Công nghệ - Giáo dục (EdTech)" />
+                            <ComboBoxItem Content="Business Unit: Thời trang &amp; Chuỗi cung ứng (Fashion)" />
+                        </ComboBox>
+
+                        <!-- ROW: REMEMBER ME & FORGOT PASSWORD -->
+                        <Grid Margin="2,0,2,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0"
+                                      x:Name="RememberMeCheckBox"
+                                      Content="Ghi nhớ đăng nhập"
+                                      IsChecked="False"
+                                      Style="{StaticResource DarkCheckBoxStyle}"
+                                      Click="RememberMeCheckBox_Click"
+                                      VerticalAlignment="Center" />
+                            <Button Grid.Column="1"
+                                    x:Name="ForgotPasswordButton"
+                                    Content="Quên mật khẩu?"
+                                    FontSize="13.5"
+                                    Foreground="#38BDF8"
+                                    FontWeight="Medium"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Click="ForgotPasswordButton_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <TextBlock Text="{TemplateBinding Content}"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   Cursor="Hand" />
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <!-- SUBMIT BUTTON -->
+                        <Button x:Name="LoginButton"
+                                Content="Đăng nhập"
+                                Height="50"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Style="{StaticResource LoginPillButtonStyle}"
+                                Click="LoginButton_Click" />
+
+                        <!-- CAPS LOCK WARNING -->
+                        <TextBlock x:Name="CapsLockWarning"
+                                   Text="⚠️ Đang bật Caps Lock"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FBBF24"
+                                   Visibility="Collapsed"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0" />
+
+                        <!-- ERROR / STATUS BANNER -->
+                        <Border x:Name="ResultBanner"
+                                Visibility="Collapsed"
+                                CornerRadius="8"
+                                Padding="14,10"
+                                Margin="0,14,0,0"
+                                Background="#2D1515"
+                                BorderBrush="#7F1D1D"
+                                BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="⛔" FontSize="13" Foreground="#FCA5A5" Margin="0,0,8,0" VerticalAlignment="Top" />
+                                <TextBlock Grid.Column="1" x:Name="ResultText" TextWrapping="Wrap" FontSize="12.5" FontWeight="Medium" Foreground="#FCA5A5" LineHeight="17" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <!-- SERVER STATUS (SUBTLE FOOTER) -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,24,0,0">
+                            <Ellipse x:Name="ApiHealthIndicator" Width="6.5" Height="6.5" Fill="#10B981" Margin="0,0,7,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="ApiHealthStatusText" Text="Máy chủ xác thực: Trực tuyến" FontSize="11.5" Foreground="#94A3B8" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- MODAL OVERLAY: FORGOT PASSWORD REQUEST TO SUPER ADMIN                -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border x:Name="ForgotPasswordOverlay" Grid.ColumnSpan="2" Background="#B2000000" Visibility="Collapsed" Panel.ZIndex="60">
+            <Border Background="#0D162B" BorderBrush="#1E2F54" BorderThickness="1.2" CornerRadius="20" Padding="32,28" HorizontalAlignment="Center" VerticalAlignment="Center" Width="480" Effect="{StaticResource FloatingShadow}">
+                <StackPanel>
+                    <!-- Header badge & Title -->
+                    <Border Background="#162544" BorderBrush="#2A3F6D" BorderThickness="1" CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🔑" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="YÊU CẦU CẤP LẠI MẬT KHẨU" FontSize="10.5" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Gửi yêu cầu đến Admin tổng" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,6" />
+                    <TextBlock Text="Hệ thống sẽ chuyển yêu cầu trực tiếp đến Quản trị viên Tổng công ty để xác minh danh tính và cấp lại thông tin đăng nhập cho bạn."
+                               FontSize="12.5" Foreground="#94A3B8" TextWrapping="Wrap" LineHeight="18" Margin="0,0,0,18" />
+
+                    <!-- Input: Username or Email -->
+                    <TextBlock Text="TÊN ĐĂNG NHẬP HOẶC EMAIL CÔNG VỤ *" FontSize="11" FontWeight="Bold" Foreground="#CBD5E1" Margin="0,0,0,6" />
+                    <TextBox x:Name="ForgotUsernameOrEmailBox" Height="42" Style="{StaticResource DarkModernTextBox}" Margin="0,0,0,12" ToolTip="Nhập username hoặc email tài khoản cần cấp lại" />
+
+                    <!-- Input: Full Name -->
+                    <TextBlock Text="HỌ VÀ TÊN (TÙY CHỌN)" FontSize="11" FontWeight="Bold" Foreground="#CBD5E1" Margin="0,0,0,6" />
+                    <TextBox x:Name="ForgotFullNameBox" Height="42" Style="{StaticResource DarkModernTextBox}" Margin="0,0,0,12" ToolTip="Nhập họ và tên người sử dụng tài khoản" />
+
+                    <!-- Input: Phone Number -->
+                    <TextBlock Text="SỐ ĐIỆN THOẠI LIÊN HỆ (TÙY CHỌN)" FontSize="11" FontWeight="Bold" Foreground="#CBD5E1" Margin="0,0,0,6" />
+                    <TextBox x:Name="ForgotPhoneBox" Height="42" Style="{StaticResource DarkModernTextBox}" Margin="0,0,0,12" ToolTip="Số điện thoại để Admin liên hệ bàn giao mật khẩu" />
+
+                    <!-- Input: Note / Reason -->
+                    <TextBlock Text="LÝ DO / GHI CHÚ BỔ SUNG" FontSize="11" FontWeight="Bold" Foreground="#CBD5E1" Margin="0,0,0,6" />
+                    <TextBox x:Name="ForgotNoteBox" Height="64" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource DarkModernTextBox}" Margin="0,0,0,16" ToolTip="Ghi chú thêm nếu có" />
+
+                    <!-- Status Message -->
+                    <Border x:Name="ForgotStatusBanner" Visibility="Collapsed" CornerRadius="8" Padding="12,8" Margin="0,0,0,14" Background="#2D1515" BorderBrush="#7F1D1D" BorderThickness="1">
+                        <TextBlock x:Name="ForgotStatusText" TextWrapping="Wrap" FontSize="12.5" FontWeight="Medium" Foreground="#FCA5A5" />
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="1.5*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                x:Name="CancelForgotPasswordButton"
+                                Content="Quay lại"
+                                Height="42"
+                                Style="{StaticResource DarkOutlineButton}"
+                                Margin="0,0,10,0"
+                                Click="CancelForgotPassword_Click" />
+                        <Button Grid.Column="1"
+                                x:Name="SubmitForgotPasswordButton"
+                                Content="Gửi đến Admin tổng"
+                                Height="42"
+                                Style="{StaticResource PrimaryGradientButton}"
+                                Click="SubmitForgotPassword_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SLEEK LOGIN & STARTUP BUSY OVERLAY                                  -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border x:Name="LoginBusyOverlay" Grid.ColumnSpan="2" Background="#E6080D1A" Visibility="Collapsed" Panel.ZIndex="50">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32">
+                <!-- Animated Dual-Orbit Spinner with Brand Badge (Mẫu 3) -->
+                <local:MolyDualOrbitSpinner Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,18" />
+                <TextBlock x:Name="LoginBusyTitle" Text="Đang xác thực hệ thống..." FontSize="15" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,0,0,4" />
+                <TextBlock x:Name="LoginBusySubText" Text="Đang kết nối hệ thống dữ liệu MOLY..." FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="290" Margin="0,0,0,16" />
+                <ProgressBar IsIndeterminate="True" Width="220" Height="4" Style="{StaticResource ModernProgressBarStyle}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

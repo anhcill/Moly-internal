@@ -1,0 +1,99 @@
+<Window x:Class="InternalManagement.Desktop.Views.PayrollWorkEntriesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Đầu việc và tiền công" Width="1120" Height="760" MinWidth="900" MinHeight="620"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource LightBgBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="ĐẦU VIỆC / ĐỀ / DỰ ÁN / HOA HỒNG" FontWeight="Bold" FontSize="18" Foreground="{StaticResource TextDarkBrush}" />
+            <TextBlock x:Name="PeriodText" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+            <TextBlock Text="Mỗi mã tham chiếu là một đầu việc cụ thể. Số tiền = số lượng × đơn giá; kỳ lương đã tính được cập nhật ngay khi lưu."
+                       FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Margin="0,0,0,14">
+            <StackPanel>
+                <UniformGrid Columns="3">
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Tìm nhân sự theo mã / tên" Margin="0,0,0,4" />
+                        <DockPanel>
+                            <Button Content="Tìm" DockPanel.Dock="Right" Click="SearchEmployees_Click" Style="{StaticResource OutlineButton}" Padding="14,0" Margin="8,0,0,0" />
+                            <TextBox x:Name="EmployeeSearchBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                        </DockPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Nhân sự *" Margin="0,0,0,4" />
+                        <ComboBox x:Name="EmployeeCombo" Height="34" DisplayMemberPath="DisplayName" SelectedValuePath="Id" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,8">
+                        <TextBlock Text="Loại đầu việc *" Margin="0,0,0,4" />
+                        <ComboBox x:Name="WorkTypeCombo" Height="34" DisplayMemberPath="Name" SelectedValuePath="Code" />
+                    </StackPanel>
+                </UniformGrid>
+                <UniformGrid Columns="3">
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Mã đề / hạng mục / đơn / chiến dịch *" Margin="0,0,0,4" />
+                        <TextBox x:Name="ReferenceCodeBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Tên đầu việc *" Margin="0,0,0,4" />
+                        <TextBox x:Name="TitleBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,8">
+                        <TextBlock Text="Ngày hoàn thành *" Margin="0,0,0,4" />
+                        <DatePicker x:Name="WorkDatePicker" Height="34" />
+                    </StackPanel>
+                </UniformGrid>
+                <UniformGrid Columns="3">
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Số lượng *" Margin="0,0,0,4" />
+                        <TextBox x:Name="QuantityBox" Text="1" Height="34" Style="{StaticResource ModernTextBox}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,12,8">
+                        <TextBlock Text="Đơn giá (đồng) *" Margin="0,0,0,4" />
+                        <TextBox x:Name="UnitRateBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,8">
+                        <TextBlock Text="Liên kết chứng từ (nếu có)" Margin="0,0,0,4" />
+                        <TextBox x:Name="EvidenceBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                    </StackPanel>
+                </UniformGrid>
+                <DockPanel LastChildFill="False" Margin="0,4,0,0">
+                    <Button x:Name="AddButton" Content="＋ Ghi nhận và cộng lương" DockPanel.Dock="Right" Click="Add_Click"
+                            Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="18,0" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <DataGrid x:Name="EntriesGrid" AutoGenerateColumns="False" IsReadOnly="True" MinRowHeight="36"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="NHÂN SỰ" Binding="{Binding EmployeeName}" Width="1.3*" />
+                    <DataGridTextColumn Header="LOẠI" Binding="{Binding WorkTypeNameVi}" Width="1.2*" />
+                    <DataGridTextColumn Header="MÃ THAM CHIẾU" Binding="{Binding ReferenceCode}" Width="1.2*" />
+                    <DataGridTextColumn Header="ĐẦU VIỆC" Binding="{Binding Title}" Width="2*" />
+                    <DataGridTextColumn Header="NGÀY" Binding="{Binding WorkDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" />
+                    <DataGridTextColumn Header="SỐ LƯỢNG" Binding="{Binding Quantity}" Width="85" />
+                    <DataGridTextColumn Header="ĐƠN GIÁ" Binding="{Binding UnitRate, StringFormat='{}{0:N0}'}" Width="110" />
+                    <DataGridTextColumn Header="THÀNH TIỀN" Binding="{Binding Amount, StringFormat='{}{0:N0} đ'}" Width="125" />
+                    <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="115" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <DockPanel Grid.Row="3" Margin="0,12,0,0" LastChildFill="True">
+            <Button Content="Đóng" DockPanel.Dock="Right" Click="Close_Click" Style="{StaticResource OutlineButton}" Height="34" Padding="18,0" />
+            <Button x:Name="VoidButton" Content="Hủy đầu việc đã chọn" DockPanel.Dock="Right" Click="Void_Click"
+                    Style="{StaticResource OutlineButton}" Height="34" Padding="14,0" Margin="0,0,8,0" />
+            <TextBlock x:Name="SummaryText" VerticalAlignment="Center" Foreground="{StaticResource TextDarkBrush}" FontWeight="SemiBold" />
+        </DockPanel>
+    </Grid>
+</Window>

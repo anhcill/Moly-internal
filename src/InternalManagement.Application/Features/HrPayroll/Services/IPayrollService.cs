@@ -25,6 +25,12 @@ public interface IPayrollService
 
     Task<Result<bool>> DeleteAdjustmentAsync(Guid adjustmentId, CancellationToken ct);
 
+    Task<Result<List<PayrollWorkEntryDto>>> GetWorkEntriesAsync(Guid periodId, CancellationToken ct);
+
+    Task<Result<PayrollWorkEntryDto>> AddWorkEntryAsync(Guid periodId, CreatePayrollWorkEntryRequest request, CancellationToken ct);
+
+    Task<Result<bool>> VoidWorkEntryAsync(Guid entryId, CancellationToken ct);
+
     Task<PaginatedResult<PayslipDto>> GetPayslipsAsync(
         Guid periodId, Guid? departmentId, string? search, int pageIndex, int pageSize, CancellationToken ct);
 
