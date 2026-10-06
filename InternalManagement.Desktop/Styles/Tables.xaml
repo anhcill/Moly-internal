@@ -5,6 +5,9 @@
              blue selection from hiding semantic column colors. -->
         <Style TargetType="DataGrid">
             <Setter Property="behaviors:DataGridColumnWidthPersistence.IsEnabled" Value="True" />
+            <Setter Property="CanUserResizeColumns" Value="True" />
+            <Setter Property="MinColumnWidth" Value="90" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -13,7 +14,16 @@ namespace InternalManagement.Desktop.Behaviors;
 /// </summary>
 public static class DataGridColumnWidthPersistence
 {
-    private static readonly DataGridLayoutStore LayoutStore = new(DataGridLayoutStore.DefaultFilePath);
+    private static readonly DependencyPropertyDescriptor ColumnWidthDescriptor =
+        DependencyPropertyDescriptor.FromProperty(DataGridColumn.WidthProperty, typeof(DataGridColumn));
+
+    private static readonly object StoresLock = new();
+    private static readonly Dictionary<string, DataGridLayoutStore> Stores = new(StringComparer.OrdinalIgnoreCase);
+
+    private static readonly DependencyProperty StateProperty = DependencyProperty.RegisterAttached(
+        "State",
+        typeof(PersistenceState),
+        typeof(DataGridColumnWidthPersistence));
 
     public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.RegisterAttached(
         "IsEnabled",
@@ -21,11 +31,23 @@ public static class DataGridColumnWidthPersistence
         typeof(DataGridColumnWidthPersistence),
         new PropertyMetadata(false, OnIsEnabledChanged));
 
+    public static readonly DependencyProperty StoragePathProperty = DependencyProperty.RegisterAttached(
+        "StoragePath",
+        typeof(string),
+        typeof(DataGridColumnWidthPersistence),
+        new PropertyMetadata(null));
+
     public static bool GetIsEnabled(DependencyObject element) =>
         (bool)element.GetValue(IsEnabledProperty);
 
     public static void SetIsEnabled(DependencyObject element, bool value) =>
         element.SetValue(IsEnabledProperty, value);
+
+    public static string? GetStoragePath(DependencyObject element) =>
+        (string?)element.GetValue(StoragePathProperty);
+
+    public static void SetStoragePath(DependencyObject element, string? value) =>
+        element.SetValue(StoragePathProperty, value);
 
     private static void OnIsEnabledChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
     {
@@ -37,12 +59,15 @@ public static class DataGridColumnWidthPersistence
         if ((bool)args.NewValue)
         {
             dataGrid.Loaded += OnDataGridLoaded;
+            dataGrid.Unloaded += OnDataGridUnloaded;
             dataGrid.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(OnDragCompleted), true);
         }
         else
         {
             dataGrid.Loaded -= OnDataGridLoaded;
+            dataGrid.Unloaded -= OnDataGridUnloaded;
             dataGrid.RemoveHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(OnDragCompleted));
+            DetachState(dataGrid, flushPendingWidths: true);
         }
     }
 
@@ -55,7 +80,15 @@ public static class DataGridColumnWidthPersistence
 
         dataGrid.Dispatcher.BeginInvoke(
             DispatcherPriority.Loaded,
-            new Action(() => RestoreWidths(dataGrid)));
+            new Action(() => InitializeState(dataGrid)));
+    }
+
+    private static void OnDataGridUnloaded(object sender, RoutedEventArgs args)
+    {
+        if (sender is DataGrid dataGrid)
+        {
+            DetachState(dataGrid, flushPendingWidths: true);
+        }
     }
 
     private static void OnDragCompleted(object sender, DragCompletedEventArgs args)
@@ -66,6 +99,103 @@ public static class DataGridColumnWidthPersistence
             return;
         }
 
+        if (dataGrid.GetValue(StateProperty) is PersistenceState state)
+        {
+            QueueWidthSave(state, column, saveImmediately: true);
+            return;
+        }
+
+        SaveColumnWidth(dataGrid, column);
+    }
+
+    private static void InitializeState(DataGrid dataGrid)
+    {
+        if (!dataGrid.IsLoaded || !GetIsEnabled(dataGrid))
+        {
+            return;
+        }
+
+        DetachState(dataGrid, flushPendingWidths: true);
+
+        var state = new PersistenceState(dataGrid);
+        dataGrid.SetValue(StateProperty, state);
+        state.IsRestoring = true;
+
+        try
+        {
+            RestoreWidths(dataGrid);
+        }
+        finally
+        {
+            state.IsRestoring = false;
+        }
+
+        foreach (var column in dataGrid.Columns)
+        {
+            EventHandler handler = (_, _) => OnColumnWidthChanged(state, column);
+            ColumnWidthDescriptor.AddValueChanged(column, handler);
+            state.ColumnHandlers[column] = handler;
+        }
+    }
+
+    private static void OnColumnWidthChanged(PersistenceState state, DataGridColumn column)
+    {
+        if (!state.IsRestoring && state.DataGrid.IsLoaded)
+        {
+            QueueWidthSave(state, column, saveImmediately: false);
+        }
+    }
+
+    private static void QueueWidthSave(PersistenceState state, DataGridColumn column, bool saveImmediately)
+    {
+        state.PendingColumns.Add(column);
+        state.SaveTimer.Stop();
+
+        if (saveImmediately)
+        {
+            FlushPendingWidths(state);
+        }
+        else
+        {
+            state.SaveTimer.Start();
+        }
+    }
+
+    private static void FlushPendingWidths(PersistenceState state)
+    {
+        state.SaveTimer.Stop();
+        foreach (var column in state.PendingColumns)
+        {
+            SaveColumnWidth(state.DataGrid, column);
+        }
+
+        state.PendingColumns.Clear();
+    }
+
+    private static void DetachState(DataGrid dataGrid, bool flushPendingWidths)
+    {
+        if (dataGrid.GetValue(StateProperty) is not PersistenceState state)
+        {
+            return;
+        }
+
+        if (flushPendingWidths)
+        {
+            FlushPendingWidths(state);
+        }
+
+        foreach (var (column, handler) in state.ColumnHandlers)
+        {
+            ColumnWidthDescriptor.RemoveValueChanged(column, handler);
+        }
+
+        state.ColumnHandlers.Clear();
+        state.SaveTimer.Stop();
+        dataGrid.ClearValue(StateProperty);
+    }
+
+    private static void SaveColumnWidth(DataGrid dataGrid, DataGridColumn column)
+    {
         var tableKey = GetTableKey(dataGrid);
         var columnKey = GetColumnKey(dataGrid, column);
         if (tableKey is null || columnKey is null)
@@ -73,7 +203,13 @@ public static class DataGridColumnWidthPersistence
             return;
         }
 
-        LayoutStore.SaveColumnWidth(tableKey, columnKey, column.ActualWidth);
+        var width = column.ActualWidth;
+        if ((!double.IsFinite(width) || width < 24) && column.Width.IsAbsolute)
+        {
+            width = column.Width.Value;
+        }
+
+        GetLayoutStore(dataGrid).SaveColumnWidth(tableKey, columnKey, width);
     }
 
     private static void RestoreWidths(DataGrid dataGrid)
@@ -87,7 +223,7 @@ public static class DataGridColumnWidthPersistence
         foreach (var column in dataGrid.Columns)
         {
             var columnKey = GetColumnKey(dataGrid, column);
-            if (columnKey is null || LayoutStore.GetColumnWidth(tableKey, columnKey) is not { } savedWidth)
+            if (columnKey is null || GetLayoutStore(dataGrid).GetColumnWidth(tableKey, columnKey) is not { } savedWidth)
             {
                 continue;
             }
@@ -99,6 +235,26 @@ public static class DataGridColumnWidthPersistence
             }
 
             column.Width = new DataGridLength(width, DataGridLengthUnitType.Pixel);
+        }
+    }
+
+    private static DataGridLayoutStore GetLayoutStore(DataGrid dataGrid)
+    {
+        var path = GetStoragePath(dataGrid);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            path = DataGridLayoutStore.DefaultFilePath;
+        }
+
+        lock (StoresLock)
+        {
+            if (!Stores.TryGetValue(path, out var store))
+            {
+                store = new DataGridLayoutStore(path);
+                Stores[path] = store;
+            }
+
+            return store;
         }
     }
 
@@ -190,5 +346,29 @@ public static class DataGridColumnWidthPersistence
         return element is FrameworkContentElement contentElement
             ? contentElement.Parent
             : LogicalTreeHelper.GetParent(element);
+    }
+
+    private sealed class PersistenceState
+    {
+        public PersistenceState(DataGrid dataGrid)
+        {
+            DataGrid = dataGrid;
+            SaveTimer = new DispatcherTimer(
+                TimeSpan.FromMilliseconds(250),
+                DispatcherPriority.Background,
+                (_, _) => FlushPendingWidths(this),
+                dataGrid.Dispatcher);
+            SaveTimer.Stop();
+        }
+
+        public DataGrid DataGrid { get; }
+
+        public DispatcherTimer SaveTimer { get; }
+
+        public Dictionary<DataGridColumn, EventHandler> ColumnHandlers { get; } = [];
+
+        public HashSet<DataGridColumn> PendingColumns { get; } = [];
+
+        public bool IsRestoring { get; set; }
     }
 }

@@ -292,7 +292,7 @@
 
                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" Margin="0,12,0,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="PayrollAdjustmentEmployeesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="40" SelectionChanged="PayrollAdjustmentEmployees_SelectionChanged" MouseDoubleClick="PayrollAdjustmentEmployees_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid x:Name="PayrollAdjustmentEmployeesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="40" SelectionChanged="PayrollAdjustmentEmployees_SelectionChanged" MouseDoubleClick="PayrollAdjustmentEmployees_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.75*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.3*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -320,7 +320,7 @@
 
                     <Border Grid.Row="3" Background="White" CornerRadius="12" Padding="8" Margin="0,10,0,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="PayrollAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" SelectionChanged="PayrollAdjustments_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid x:Name="PayrollAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" SelectionChanged="PayrollAdjustments_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="LOẠI KHOẢN" Binding="{Binding TypeNameVi}" Width="1.1*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="TÁC ĐỘNG" Binding="{Binding AmountEffectDisplay}" Width="1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapSkyTextCellStyle}" />
@@ -415,7 +415,7 @@
                     </Border>
 
                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" Margin="0,12,0,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="PayrollMonthlySummaryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" SelectionChanged="PayrollMonthlySummary_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <DataGrid x:Name="PayrollMonthlySummaryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" SelectionChanged="PayrollMonthlySummary_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="0.7*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 <DataGridTextColumn Header="KỲ LƯƠNG" Binding="{Binding PeriodName}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -435,7 +435,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <TextBlock Text="DANH SÁCH NGƯỜI NHẬN LƯƠNG" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="4,2,4,8" />
-                            <DataGrid x:Name="PayrollMonthlyRecipientsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="38" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid x:Name="PayrollMonthlyRecipientsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="38" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -497,7 +497,7 @@
                             </Grid.RowDefinitions>
                             <TextBlock Text="CÁC KHOẢN ĐIỀU CHỈNH CẦN ĐỐI CHIẾU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="4,2,4,8" />
                             <Grid Grid.Row="1">
-                                <DataGrid x:Name="PayrollReviewAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <DataGrid x:Name="PayrollReviewAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.75*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                         <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />

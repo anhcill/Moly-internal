@@ -61,7 +61,7 @@
             <!-- RESOURCES PANEL -->
             <Border x:Name="InternalResourcesPanel" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
-                    <DataGrid x:Name="InternalResourcesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <DataGrid x:Name="InternalResourcesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="MÃ" Binding="{Binding Code}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                             <DataGridTextColumn Header="TÊN TÀI LIỆU / MẪU" Binding="{Binding Title}" Width="1.8*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
