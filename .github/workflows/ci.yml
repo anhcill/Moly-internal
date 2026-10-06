@@ -64,3 +64,6 @@ jobs:
           --configuration Release --nologo
           --filter "FullyQualifiedName~PostgreSqlIntegrationTests"
           --blame-hang-timeout 5m
+
+      - name: Build production API image
+        run: docker build --tag moly-internal-api:ci .

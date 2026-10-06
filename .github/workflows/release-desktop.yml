@@ -28,6 +28,9 @@ jobs:
           --filter "FullyQualifiedName~PostgreSqlIntegrationTests"
           --blame-hang-timeout 5m
 
+      - name: Build production API image
+        run: docker build --tag moly-internal-api:release-check .
+
   release-desktop:
     needs: postgres-integration
     runs-on: windows-latest

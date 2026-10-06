@@ -5,6 +5,7 @@ WORKDIR /src
 
 # Copy project metadata first so dependency restore stays cacheable.
 COPY Directory.Build.props ./
+COPY Directory.Packages.props ./
 COPY src/InternalManagement.Api/InternalManagement.Api.csproj src/InternalManagement.Api/
 COPY src/InternalManagement.Application/InternalManagement.Application.csproj src/InternalManagement.Application/
 COPY src/InternalManagement.Domain/InternalManagement.Domain.csproj src/InternalManagement.Domain/
