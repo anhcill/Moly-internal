@@ -95,7 +95,7 @@
 
                         <!-- INTERVIEW DATAGRID -->
                         <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                            <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                            <DataGrid x:Name="InterviewCustomersDataGrid" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NGUỒN" Binding="{Binding SourceId}" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />

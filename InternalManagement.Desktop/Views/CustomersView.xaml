@@ -30,7 +30,7 @@
                             <TabControl Background="Transparent" BorderThickness="0">
                                 <TabItem Header="Học viên từ lớp học" FontWeight="SemiBold">
                                     <Grid Margin="0,8,0,0">
-                                        <DataGrid ItemsSource="{Binding Students}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <DataGrid x:Name="StudentsDataGrid" ItemsSource="{Binding Students}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" MinWidth="150" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                                 <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="120" ElementStyle="{StaticResource DataGridTextCellStyle}" />
@@ -49,7 +49,7 @@
                                 </TabItem>
                                 <TabItem Header="Khách hàng đăng ký" FontWeight="SemiBold">
                                     <Grid Margin="0,8,0,0">
-                                        <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding SourceId}" MinWidth="120" Width="135" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridBoldTextCellStyle}" />
                                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" MinWidth="150" Width="1.6*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />

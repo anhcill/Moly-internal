@@ -1,6 +1,7 @@
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using InternalManagement.Desktop;
+using InternalManagement.Desktop.Behaviors;
 using InternalManagement.Desktop.Services;
 using InternalManagement.Desktop.Views;
 
@@ -27,7 +28,9 @@ public sealed class WpfCompositionTests
                 Assert.NotNull(window.FindName("ViewQuestionsContainer"));
                 Assert.NotNull(window.FindName("ViewInterviewContainer"));
                 Assert.NotNull(window.FindName("ViewCustomersContainer"));
-                Assert.IsType<CourseManagementView>(window.FindName("ViewCoursesContainer"));
+                var coursesView = Assert.IsType<CourseManagementView>(window.FindName("ViewCoursesContainer"));
+                var coursesDataGrid = Assert.IsType<System.Windows.Controls.DataGrid>(coursesView.FindName("CoursesDataGrid"));
+                Assert.True(DataGridColumnWidthPersistence.GetIsEnabled(coursesDataGrid));
                 var employeesView = Assert.IsType<EmployeesView>(window.FindName("ViewEmployeesContainer"));
                 Assert.NotNull(employeesView.ViewModel);
                 Assert.IsType<AttendanceView>(window.FindName("ViewAttendanceContainer"));
