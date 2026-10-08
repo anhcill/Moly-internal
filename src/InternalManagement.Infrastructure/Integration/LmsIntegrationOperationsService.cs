@@ -252,8 +252,11 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
         {
             var classes = await _db.CscaClasses
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(cls => cls.Staff).ThenInclude(staff => staff.Employee)
                 .Include(cls => cls.Students)
+                .Include(cls => cls.Schedules)
+                .Include(cls => cls.LessonSessions)
                 .Where(cls => cls.CourseId == course.Id && cls.CompanyId == companyId && !cls.IsDeleted)
                 .OrderBy(cls => cls.Code)
                 .ToListAsync(ct);
@@ -279,6 +282,13 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             if (classWithoutLead is not null)
                 return Result<LmsCourseMappingDto>.Failure(
                     $"Lớp {classWithoutLead.Code} chưa có giáo viên vai trò Teacher với email hợp lệ để đồng bộ sang Web.");
+            var scheduleWithoutDates = classes.SelectMany(cls => cls.Schedules
+                .Where(schedule => !LmsCalendarEventFactory.HasEffectiveDates(cls, schedule))
+                .Select(schedule => (Class: cls, Schedule: schedule)))
+                .FirstOrDefault();
+            if (scheduleWithoutDates != default)
+                return Result<LmsCourseMappingDto>.Failure(
+                    $"Lớp {scheduleWithoutDates.Class.Code} có lịch cố định nhưng thiếu ngày bắt đầu hoặc kết thúc. Hãy đặt thời hạn lớp trước khi đồng bộ lịch lên Web.");
 
             var correlationId = Guid.NewGuid().ToString("N");
             foreach (var teacher in teachers)
@@ -317,6 +327,23 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
+            }
+
+            // The Management calendar is authoritative. Include existing slots
+            // and lessons in every mapping sync so a class created before this
+            // bridge (including class 01) is backfilled without manual edits.
+            foreach (var cls in classes)
+            {
+                foreach (var schedule in cls.Schedules)
+                    QueueManagementEvent(existing,
+                        string.Equals(schedule.Status, "Archived", StringComparison.OrdinalIgnoreCase)
+                            ? "class.schedule.archived" : "class.schedule.upserted",
+                        LmsCalendarEventFactory.Schedule(cls, schedule, now), correlationId, now, actor);
+                foreach (var session in cls.LessonSessions)
+                    QueueManagementEvent(existing,
+                        string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+                            ? "class.session.cancelled" : "class.session.upserted",
+                        LmsCalendarEventFactory.Session(session, now), correlationId, now, actor);
             }
 
             var validStudents = classes.SelectMany(cls => cls.Students.Where(student =>

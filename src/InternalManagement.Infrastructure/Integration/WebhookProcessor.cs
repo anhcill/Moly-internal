@@ -138,6 +138,38 @@ public sealed class WebhookProcessor : IWebhookProcessor
         return processed;
     }
 
+    public async Task<int> ReplayPendingCscaAttendanceAsync(int batchSize, CancellationToken ct)
+    {
+        var pending = await _db.IntegrationInboxes
+            .Where(item => item.Status == IntegrationStatus.Pending &&
+                item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                item.EventType == CscaLmsAttendanceEvent)
+            .OrderBy(item => item.ReceivedAt)
+            .Take(Math.Clamp(batchSize, 1, 100))
+            .ToListAsync(ct);
+
+        var projected = 0;
+        foreach (var inbox in pending)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                var result = await ProjectCscaAttendanceAsync(inbox, ct);
+                if (result.Accepted) projected++;
+            }
+            catch (Exception ex)
+            {
+                inbox.Status = IntegrationStatus.Failed;
+                inbox.ErrorMessage = TruncateError(ex.Message);
+                inbox.ProcessedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync(ct);
+                _logger.LogError(ex, "CSCA LMS attendance replay failed: {EventId}", inbox.EventId);
+            }
+        }
+
+        return projected;
+    }
+
     private async Task<(bool Accepted, string Message)> ProjectCscaAttendanceAsync(IntegrationInbox inbox, CancellationToken ct)
     {
         try
@@ -236,6 +268,17 @@ public sealed class WebhookProcessor : IWebhookProcessor
         if (normalizedAttendance.Select(item => item.StudentId).Distinct().Count() != normalizedAttendance.Count)
             throw new CscaLmsValidationException("Một học viên chỉ được xuất hiện một lần trong điểm danh.");
 
+        // Validate every dependency before adding a session to the change tracker.
+        // A rejected inbox is saved below; tracked session changes must not leak
+        // into that save when a student mapping is still missing.
+        var studentIds = normalizedAttendance.Select(item => item.StudentId).ToList();
+        var students = await _db.CscaClassStudents
+            .Where(student => student.ClassId == classId && studentIds.Contains(student.Id))
+            .Select(student => student.Id)
+            .ToListAsync(ct);
+        if (students.Count != studentIds.Count)
+            throw new CscaLmsDependencyException("Có học viên LMS chưa được liên kết với đúng lớp Management.");
+
         var localStart = TimeZoneInfo.ConvertTime(startTime, VietnamTimeZone());
         var localEnd = TimeZoneInfo.ConvertTime(endTime, VietnamTimeZone());
         var source = LmsIntegrationSourceSystems.CscaCourseLms;
@@ -279,14 +322,6 @@ public sealed class WebhookProcessor : IWebhookProcessor
             session.UpdatedAt = DateTime.UtcNow;
             session.UpdatedBy = LmsActor;
         }
-
-        var studentIds = normalizedAttendance.Select(item => item.StudentId).ToList();
-        var students = await _db.CscaClassStudents
-            .Where(student => student.ClassId == classId && studentIds.Contains(student.Id))
-            .Select(student => student.Id)
-            .ToListAsync(ct);
-        if (students.Count != studentIds.Count)
-            throw new CscaLmsDependencyException("Có học viên LMS chưa được liên kết với đúng lớp Management.");
 
         var existing = await _db.CscaLessonAttendances
             .Where(item => item.LessonSessionId == session.Id && studentIds.Contains(item.StudentId))

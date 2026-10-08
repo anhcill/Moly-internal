@@ -262,6 +262,9 @@ public sealed partial class CscaService
             cls.CourseId = courseResult.Value!.Id;
         }
 
+        var calendarMetadataChanged = cls.StartDate != NormalizeClassDate(request.StartDate) ||
+            cls.EndDate != NormalizeClassDate(request.EndDate) ||
+            !string.Equals(cls.Name, request.Name.Trim(), StringComparison.Ordinal);
         cls.Name = request.Name.Trim();
         cls.Batch = request.Batch?.Trim() ?? string.Empty;
         // The structured weekly schedule is the source of truth as soon as the class has lesson slots.
@@ -276,6 +279,16 @@ public sealed partial class CscaService
         cls.UpdatedAt = DateTime.UtcNow;
         cls.UpdatedBy = _currentUser.Username ?? "System";
 
+        // A class date change alters the recurrence range on the teaching Web.
+        // Keep its fixed slots in sync without requiring another course sync.
+        if (calendarMetadataChanged)
+        foreach (var schedule in cls.Schedules)
+        {
+            var syncError = await QueueScheduleForWebAsync(cls, schedule,
+                string.Equals(schedule.Status, "Archived", StringComparison.OrdinalIgnoreCase), ct);
+            if (syncError is not null)
+                return Result<CscaClassDto>.Failure(syncError);
+        }
         await _db.SaveChangesAsync(ct);
 
         var dto = new CscaClassDto

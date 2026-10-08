@@ -77,6 +77,9 @@ public sealed partial class CscaService
             Room = classroomResult.Value?.Name ?? request.Room?.Trim(), MeetingUrl = request.MeetingUrl?.Trim(), Notes = request.Notes?.Trim()
         };
         _db.CscaClassSchedules.Add(schedule);
+        var syncError = await QueueScheduleForWebAsync(cls, schedule, false, ct);
+        if (syncError is not null)
+            return Result<CscaScheduleDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
         return Result<CscaScheduleDto>.Success(ToScheduleDto(schedule));
@@ -115,6 +118,9 @@ public sealed partial class CscaService
         schedule.Room = classroomResult.Value?.Name ?? request.Room?.Trim();
         schedule.MeetingUrl = request.MeetingUrl?.Trim();
         schedule.Notes = request.Notes?.Trim();
+        var syncError = await QueueScheduleForWebAsync(schedule.Class, schedule, false, ct);
+        if (syncError is not null)
+            return Result<CscaScheduleDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
         return Result<CscaScheduleDto>.Success(ToScheduleDto(schedule));
@@ -130,6 +136,9 @@ public sealed partial class CscaService
             return Result<bool>.Failure("Không tìm thấy lịch học.");
         if (IsLmsCalendarProjection(schedule.ExternalSource))
             return Result<bool>.Failure("Lịch này được quản lý trên LMS. Hãy ngừng lịch tại LMS.");
+        var syncError = await QueueScheduleForWebAsync(schedule.Class, schedule, true, ct);
+        if (syncError is not null)
+            return Result<bool>.Failure(syncError);
         _db.CscaClassSchedules.Remove(schedule);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
@@ -297,6 +306,7 @@ public sealed partial class CscaService
             Classroom = classroomResult.Value
         };
         _db.CscaLessonSessions.Add(session);
+        await QueueSessionForWebAsync(cls, session, false, ct);
         await _db.SaveChangesAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
@@ -334,6 +344,8 @@ public sealed partial class CscaService
         session.Notes = request.Notes?.Trim();
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
+        await QueueSessionForWebAsync(session.Class, session,
+            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct);
         await _db.SaveChangesAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
@@ -342,12 +354,14 @@ public sealed partial class CscaService
     {
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA.");
-        var session = await _db.CscaLessonSessions.FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
+        var session = await _db.CscaLessonSessions.Include(item => item.Class)
+            .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<bool>.Failure("Không tìm thấy buổi học.");
         if (IsLmsCalendarProjection(session.ExternalSource))
             return Result<bool>.Failure("Buổi học này được quản lý trên LMS. Hãy hủy buổi tại LMS.");
 
+        await QueueSessionForWebAsync(session.Class, session, true, ct);
         _db.CscaLessonSessions.Remove(session);
         await _db.SaveChangesAsync(ct);
         return Result<bool>.Success(true);
@@ -411,6 +425,9 @@ public sealed partial class CscaService
         if (generated.Count > 0)
         {
             _db.CscaLessonSessions.AddRange(generated);
+            var cls = await _db.CscaClasses.FirstAsync(item => item.Id == classId, ct);
+            foreach (var session in generated)
+                await QueueSessionForWebAsync(cls, session, false, ct);
             await _db.SaveChangesAsync(ct);
         }
         return Result<int>.Success(generated.Count);

@@ -36,6 +36,9 @@ public interface IWebhookProcessor
 
     /// <summary>Xử lý batch các sự kiện đang chờ trong inbox (Status = Pending).</summary>
     Task<int> ProcessPendingAsync(int batchSize, CancellationToken ct);
+
+    /// <summary>Replays only pending CSCA Course attendance events accepted by older API versions.</summary>
+    Task<int> ReplayPendingCscaAttendanceAsync(int batchSize, CancellationToken ct);
 }
 
 /// <summary>

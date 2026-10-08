@@ -131,7 +131,10 @@ public static class DependencyInjection
         services.AddScoped<ILmsIntegrationOperationsService, LmsIntegrationOperationsService>();
         services.AddScoped<IApplicationOrchestrationService, ApplicationOrchestrationService>();
         if (!isInMemory)
+        {
             services.AddHostedService<LmsOutboxWorker>();
+            services.AddHostedService<CscaAttendanceInboxReplayWorker>();
+        }
 
         // Module Services
         services.AddScoped<IEdTechService, EdTechService>();
