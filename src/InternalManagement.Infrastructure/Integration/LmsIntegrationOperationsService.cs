@@ -2,6 +2,7 @@ using InternalManagement.Application.Common.Interfaces;
 using InternalManagement.Application.Common.Models;
 using InternalManagement.Application.Features.Integration.DTOs;
 using InternalManagement.Application.Features.Integration.Interfaces;
+using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
