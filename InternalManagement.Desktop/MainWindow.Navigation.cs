@@ -679,6 +679,9 @@ public partial class MainWindow
         }
 
         HideAllViews();
+        QuickSyncButton.Content = sender == NavLms
+            ? "↻ Đồng bộ khóa đã chọn"
+            : "↻ Nhập khóa học từ Website";
 
         if (sender == NavDashboard)
         {

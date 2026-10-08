@@ -119,11 +119,14 @@ public partial class MainWindow
     }
 
     private async void SaveLmsMapping_Click(object sender, RoutedEventArgs e)
+        => await SaveLmsMappingAsync();
+
+    private async Task<bool> SaveLmsMappingAsync(bool activateForSync = false)
     {
         if (LmsCourseMappingsDataGrid.SelectedItem is not ApiClient.LmsCourseMappingItem mapping)
         {
             ShowToast("Vui lòng chọn một khóa học từ danh sách trước khi lưu.", isError: true);
-            return;
+            return false;
         }
 
         long? lmsCourseId = null;
@@ -133,7 +136,7 @@ public partial class MainWindow
             if (!long.TryParse(rawLmsCourseId, out var parsedLmsCourseId) || parsedLmsCourseId <= 0)
             {
                 ShowToast("Mã số Web (LMS course ID) phải là số nguyên dương.", isError: true);
-                return;
+                return false;
             }
 
             lmsCourseId = parsedLmsCourseId;
@@ -146,7 +149,7 @@ public partial class MainWindow
             LmsCourseSlugBox.Text = slug;
         }
 
-        var enableAccess = LmsEnableAccessCheckBox.IsChecked == true;
+        var enableAccess = activateForSync || LmsEnableAccessCheckBox.IsChecked == true;
         if (enableAccess)
         {
             var confirmation = MessageBox.Show(
@@ -154,9 +157,10 @@ public partial class MainWindow
                 "Xác nhận đồng bộ Web Course",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
-            if (confirmation != MessageBoxResult.Yes) return;
+            if (confirmation != MessageBoxResult.Yes) return false;
         }
 
+        var savedSuccessfully = false;
         await RunWithBusyAsync("Đang lưu cấu hình đồng bộ Web CSCA...", async () =>
         {
             var saved = await _apiClient.UpsertLmsCourseMappingAsync(
@@ -169,11 +173,13 @@ public partial class MainWindow
             if (saved is null)
                 throw new InvalidOperationException("Không lưu được cấu hình liên kết Web. Vui lòng kiểm tra quyền thao tác hoặc thông tin mã/slug.");
 
+            savedSuccessfully = true;
             ShowToast(enableAccess
                 ? "Đã xếp khóa học, lớp và học viên vào hàng chờ gửi sang Web. Theo dõi trạng thái đồng bộ bên dưới."
                 : "Đã lưu cấu hình liên kết (đang ở trạng thái tạm dừng cấp quyền).");
             await LoadLmsIntegrationAsync();
         });
+        return savedSuccessfully;
     }
 
     private async void RetryLmsOutbox_Click(object sender, RoutedEventArgs e)
@@ -208,13 +214,19 @@ public partial class MainWindow
     }
 
     private async void DispatchLmsOutbox_Click(object sender, RoutedEventArgs e)
+        => await SyncLmsNowAsync();
+
+    private async Task SyncLmsNowAsync()
     {
-        var confirmation = MessageBox.Show(
-            "Đồng bộ ngay các lệnh đang chờ sang Web CSCA Course?\n\nHệ thống sẽ gửi tài khoản và quyền truy cập của học viên đã đóng học phí sang Web Course để học viên có thể đăng nhập học ngay.",
-            "Xác nhận đồng bộ sang Web Course",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-        if (confirmation != MessageBoxResult.Yes) return;
+        if (LmsCourseMappingsDataGrid.SelectedItem is not ApiClient.LmsCourseMappingItem)
+        {
+            ShowToast("Hãy chọn khóa học trong bảng để đồng bộ khóa và các lớp sang Web.", isError: true);
+            return;
+        }
+
+        // Refresh the selected course and its classes even if a previous batch succeeded.
+        // Dispatch alone only processes commands already in the outbox.
+        if (!await SaveLmsMappingAsync(activateForSync: true)) return;
 
         await RunWithBusyAsync("Đang gửi dữ liệu sang Web CSCA Course...", async () =>
         {
@@ -222,7 +234,9 @@ public partial class MainWindow
             if (result is null)
                 throw new InvalidOperationException("Không gửi được dữ liệu sang Web Course. Vui lòng kiểm tra kết nối mạng và khóa bảo mật.");
 
-            ShowToast($"Đồng bộ Web Course hoàn tất: {result.Succeeded} thành công, {result.Retrying} đang thử lại, {result.DeadLettered} cần kiểm tra.");
+            ShowToast(result.Processed == 0
+                ? "Chưa có lệnh sẵn sàng gửi ngay. Hệ thống sẽ tiếp tục xử lý hàng chờ trong nền; hãy làm mới để xem trạng thái."
+                : $"Đã bắt đầu đồng bộ: {result.Succeeded} lệnh thành công, {result.Retrying} đang thử lại, {result.DeadLettered} cần kiểm tra. Các lệnh tiếp theo chạy trong nền.");
             await LoadLmsIntegrationAsync();
         });
     }

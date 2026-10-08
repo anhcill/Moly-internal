@@ -231,7 +231,7 @@
 
                         <!-- QUICK ACTIONS & HEALTH -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="⚡ Đồng Bộ Website Ngay" Click="QuickSync_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,12,0" />
+                            <Button x:Name="QuickSyncButton" Content="↻ Nhập khóa học từ Website" Click="QuickSync_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,12,0" />
                             <Border x:Name="ApiHealthBorder" Background="#F8FAFC" CornerRadius="16" Padding="12,6" BorderBrush="#E2E8F0" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Ellipse x:Name="ApiHealthDot" Width="8" Height="8" Fill="#94A3B8" Margin="0,0,6,0" />

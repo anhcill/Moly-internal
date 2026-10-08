@@ -19,6 +19,12 @@ public partial class MainWindow
 
     private async void QuickSync_Click(object sender, RoutedEventArgs e)
     {
+        if (ViewLmsContainer.Visibility == Visibility.Visible)
+        {
+            await SyncLmsNowAsync();
+            return;
+        }
+
         var result = await _apiClient.TriggerSyncAsync("CSCA_MOLI_STUDIO", "Courses");
         if (result != null)
         {
