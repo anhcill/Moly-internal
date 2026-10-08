@@ -22,6 +22,8 @@ public interface ILmsOutboxDispatcher
 /// <summary>HTTP boundary for the CSCA Course LMS integration contract.</summary>
 public interface ICscaCourseLmsClient
 {
+    Task SendManagementEventAsync(LmsManagementEvent command, LmsOutboundRequestContext context, CancellationToken ct);
+
     Task<LmsProvisionResult> ProvisionStudentAsync(
         LmsProvisionCommand command,
         LmsOutboundRequestContext context,

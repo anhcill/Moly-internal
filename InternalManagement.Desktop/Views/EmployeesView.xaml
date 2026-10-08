@@ -22,7 +22,7 @@
                     <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự đang công tác, hồ sơ CV, thiếu hồ sơ, nhân sự đã nghỉ việc và danh sách Blacklist." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải lại dữ liệu" Click="RefreshEmployees_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                    <Button Click="RefreshEmployees_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải lại dữ liệu" VerticalAlignment="Center"/></StackPanel></Button>
                     <Button Content="+ Thêm nhân sự mới" Click="CreateEmployee_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                 </StackPanel>
             </Grid>
@@ -158,8 +158,8 @@
                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                 <Button Content="Mở CV" Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
                                 <Button Content="Sửa hồ sơ" Click="EditEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8AC; Chuyển nghỉ việc" Click="ResignEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE711; Đưa vào Blacklist" Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0" />
+                                <Button Click="ResignEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8AC;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Chuyển nghỉ việc" VerticalAlignment="Center"/></StackPanel></Button>
+                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Đưa vào Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
                                 <Button Content="Xóa" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
                             </StackPanel>
                         </Grid>
@@ -206,7 +206,7 @@
                                 <TextBlock Text="Xem xét năng lực chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV của nhân sự." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8B7; Mở tệp/link CV" Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                                <Button Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Mở tệp/link CV" VerticalAlignment="Center"/></StackPanel></Button>
                                 <Button Content="⚡ Cập nhật CV / Hồ sơ" Click="QuickUpdateProfile_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
@@ -251,8 +251,8 @@
                                 <TextBlock Text="Các nhân sự đang làm việc nhưng chưa có đường dẫn hoặc tệp CV lưu trữ trong hệ thống." FontSize="12.5" Foreground="#B91C1C" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8B8; Gán tệp CV ngay" Click="QuickAssignCvFile_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE71B; Nhập link CV" Click="QuickAssignCvUrl_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                                <Button Click="QuickAssignCvFile_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B8;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Gán tệp CV ngay" VerticalAlignment="Center"/></StackPanel></Button>
+                                <Button Click="QuickAssignCvUrl_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71B;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Nhập link CV" VerticalAlignment="Center"/></StackPanel></Button>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -297,8 +297,8 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Button Content="↩ Khôi phục làm việc" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE70F; Sửa lý do nghỉ" Click="UpdateResignedReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE711; Chuyển sang Blacklist" Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0" />
+                                <Button Click="UpdateResignedReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Sửa lý do nghỉ" VerticalAlignment="Center"/></StackPanel></Button>
+                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Chuyển sang Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
                                 <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
                             </StackPanel>
                         </Grid>
@@ -344,7 +344,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Button Content="↩ Bỏ khỏi Blacklist / Khôi phục" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE70F; Cập nhật lý do Blacklist" Click="UpdateBlacklistReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                                <Button Click="UpdateBlacklistReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Cập nhật lý do Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
                                 <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
                             </StackPanel>
                         </Grid>

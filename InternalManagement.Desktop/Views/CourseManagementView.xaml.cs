@@ -54,6 +54,9 @@ public partial class CourseManagementView : UserControl
     private void CscaCourseFilterComboBox_SelectionChanged(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaCourseFilterComboBox_SelectionChanged), sender, e));
 
+    private void CscaFinanceCourseFilterComboBox_SelectionChanged(object sender, RoutedEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaFinanceCourseFilterComboBox_SelectionChanged), sender, e));
+
     private void CourseSearch_TextChanged(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CourseSearch_TextChanged), sender, e));
 

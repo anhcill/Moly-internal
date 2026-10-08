@@ -26,15 +26,18 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
     private readonly IApplicationDbContext _db;
     private readonly ICscaCourseLmsClient _client;
     private readonly ILogger<LmsOutboxDispatcher> _logger;
+    private readonly ILmsAccessLifecycleService? _accessLifecycle;
 
     public LmsOutboxDispatcher(
         IApplicationDbContext db,
         ICscaCourseLmsClient client,
-        ILogger<LmsOutboxDispatcher> logger)
+        ILogger<LmsOutboxDispatcher> logger,
+        ILmsAccessLifecycleService? accessLifecycle = null)
     {
         _db = db;
         _client = client;
         _logger = logger;
+        _accessLifecycle = accessLifecycle;
     }
 
     public async Task<LmsOutboxDispatchResult> DispatchPendingAsync(int batchSize, CancellationToken ct)
@@ -46,6 +49,7 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                            && (item.Status == IntegrationStatus.Pending || item.Status == IntegrationStatus.Failed)
                            && (item.NextAttemptAt == null || item.NextAttemptAt <= now))
             .OrderBy(item => item.CreatedAt)
+            .ThenBy(item => item.Id)
             .Take(safeBatchSize)
             .ToListAsync(ct);
 
@@ -56,6 +60,30 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
         foreach (var item in items)
         {
             ct.ThrowIfCancellationRequested();
+            if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+            {
+                // Another dispatcher may be handling the preceding teacher/course
+                // event. Do not send a dependent event until its projection is
+                // confirmed by the LMS worker.
+                var predecessorPending = await _db.IntegrationOutboxes.AsNoTracking().AnyAsync(other =>
+                    other.CompanyId == item.CompanyId &&
+                    other.CorrelationId == item.CorrelationId &&
+                    other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                    other.CreatedAt < item.CreatedAt &&
+                    other.Status != IntegrationStatus.Success, ct);
+                if (predecessorPending) continue;
+            }
+            if (item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
+            {
+                var grant = await GetAggregateAsync<LmsAccessGrant>(_db.LmsAccessGrants, item.AggregateId, ct);
+                var provisionPending = await _db.IntegrationOutboxes.AsNoTracking().AnyAsync(other =>
+                    other.CompanyId == item.CompanyId &&
+                    other.EventType == LmsOutboxEventTypes.StudentProvisionRequested &&
+                    other.AggregateId == grant.LmsAccountLinkId.ToString("N") &&
+                    other.CreatedAt <= item.CreatedAt &&
+                    other.Status != IntegrationStatus.Success, ct);
+                if (provisionPending) continue;
+            }
             processed++;
             item.Status = IntegrationStatus.Processing;
             item.AttemptCount++;
@@ -70,11 +98,14 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                 item.NextAttemptAt = null;
                 item.LastError = null;
                 await ResolveOutboxDeadLettersAsync(item, ct);
+                if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+                    await UpdateCourseLinkDeliveryAsync(item, ct);
                 succeeded++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                var retryable = IsRetryable(ex) && item.AttemptCount < MaxAttempts;
+                var maxAttempts = item.EventType == LmsOutboxEventTypes.ManagementEventRequested ? 12 : MaxAttempts;
+                var retryable = IsRetryable(ex) && item.AttemptCount < maxAttempts;
                 item.LastError = ToSafeErrorMessage(ex);
                 if (retryable)
                 {
@@ -86,7 +117,7 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                         "LMS outbox command {OutboxId} failed transiently on attempt {Attempt}/{MaxAttempts}.",
                         item.Id,
                         item.AttemptCount,
-                        MaxAttempts);
+                        maxAttempts);
                 }
                 else
                 {
@@ -116,6 +147,12 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
 
         switch (item.EventType)
         {
+            case LmsOutboxEventTypes.ManagementEventRequested:
+            {
+                var command = Deserialize<LmsManagementEvent>(item.PayloadJson);
+                await _client.SendManagementEventAsync(command, context, ct);
+                break;
+            }
             case LmsOutboxEventTypes.StudentProvisionRequested:
             {
                 var command = Deserialize<LmsProvisionCommand>(item.PayloadJson);
@@ -160,6 +197,16 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
     {
         switch (item.EventType)
         {
+            case LmsOutboxEventTypes.ManagementEventRequested:
+            {
+                var link = await GetAggregateAsync<LmsCourseLink>(_db.LmsCourseLinks, item.AggregateId, ct);
+                if (await IsCurrentManagementBatchAsync(item, link, ct))
+                {
+                    link.Status = status;
+                    link.LastSyncError = error;
+                }
+                break;
+            }
             case LmsOutboxEventTypes.StudentProvisionRequested:
             {
                 var command = Deserialize<LmsProvisionCommand>(item.PayloadJson);
@@ -178,6 +225,67 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                 break;
             }
         }
+    }
+
+    private async Task UpdateCourseLinkDeliveryAsync(IntegrationOutbox item, CancellationToken ct)
+    {
+        var link = await GetAggregateAsync<LmsCourseLink>(_db.LmsCourseLinks, item.AggregateId, ct);
+        if (!await IsCurrentManagementBatchAsync(item, link, ct)) return;
+        var hasRemaining = await _db.IntegrationOutboxes.AnyAsync(other =>
+            other.Id != item.Id &&
+            other.CompanyId == item.CompanyId &&
+            other.CorrelationId == item.CorrelationId &&
+            other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+            other.Status != IntegrationStatus.Success, ct);
+        if (!hasRemaining)
+        {
+            link.Status = IntegrationStatus.Success;
+            link.LastSyncedAt = DateTime.UtcNow;
+            link.LastSyncError = null;
+            if (_accessLifecycle is not null)
+            {
+                var classes = await _db.CscaClasses.AsNoTracking()
+                    .Include(cls => cls.Students)
+                    .Where(cls => cls.CompanyId == link.CompanyId && cls.CourseId == link.CourseId && !cls.IsDeleted)
+                    .ToListAsync(ct);
+                foreach (var cls in classes)
+                foreach (var student in cls.Students)
+                {
+                    await _accessLifecycle.ReconcileStudentAccessAsync(new LmsAccessEvaluationRequest(
+                        cls.CompanyId,
+                        cls.BusinessUnitId,
+                        student.Id,
+                        student.PartyId,
+                        cls.Id,
+                        link.CourseId,
+                        link.ExternalCourseId,
+                        student.StudentName,
+                        student.Email,
+                        student.PhoneNumber,
+                        student.PaidAmount,
+                        Math.Max(0, cls.TuitionFee - student.DiscountAmount),
+                        student.PaymentStatus,
+                        student.UpdatedAt ?? student.JoinedAt,
+                        student.BusinessDocumentId?.ToString("N")), ct);
+                }
+            }
+        }
+    }
+
+    private async Task<bool> IsCurrentManagementBatchAsync(
+        IntegrationOutbox item, LmsCourseLink link, CancellationToken ct)
+    {
+        if (link.Status == IntegrationStatus.Pending && link.UpdatedAt > item.CreatedAt)
+            return false;
+        var latestCorrelationId = await _db.IntegrationOutboxes.AsNoTracking()
+            .Where(other => other.CompanyId == item.CompanyId &&
+                other.AggregateType == nameof(LmsCourseLink) &&
+                other.AggregateId == item.AggregateId &&
+                other.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+            .OrderByDescending(other => other.CreatedAt)
+            .Select(other => other.CorrelationId)
+            .FirstOrDefaultAsync(ct);
+        return latestCorrelationId == item.CorrelationId;
     }
 
     private async Task UpsertSyncStatusAsync(

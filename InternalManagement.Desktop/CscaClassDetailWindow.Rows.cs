@@ -165,33 +165,6 @@ public partial class CscaClassDetailWindow
         };
     }
 
-    private sealed class AttendanceRow
-    {
-        public Guid StudentId { get; init; }
-        public string StudentName { get; init; } = string.Empty;
-        public string Status { get; init; } = "Unmarked";
-        public DateTime? CheckInAt { get; init; }
-        public string? Notes { get; init; }
-        public string StatusLabel => Status switch
-        {
-            "Present" => "Có mặt",
-            "Late" => "Đi muộn",
-            "Absent" => "Vắng",
-            "Excused" => "Có phép",
-            _ => "Chưa điểm danh"
-        };
-        public string CheckInLabel => CheckInAt?.ToLocalTime().ToString("dd/MM HH:mm", CultureInfo.InvariantCulture) ?? "—";
-
-        public static AttendanceRow From(ApiClient.CscaLessonAttendanceItem attendance) => new()
-        {
-            StudentId = attendance.StudentId,
-            StudentName = attendance.StudentName,
-            Status = attendance.Status,
-            CheckInAt = attendance.CheckInAt,
-            Notes = attendance.Notes
-        };
-    }
-
     private sealed class ScheduleWeekDay(int dayOfWeek, string dayLabel, IReadOnlyList<ScheduleRow> lessons)
     {
         public int DayOfWeek { get; } = dayOfWeek;

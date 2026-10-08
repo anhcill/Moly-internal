@@ -2,6 +2,8 @@ using FluentAssertions;
 using InternalManagement.Application.Common.Interfaces;
 using InternalManagement.Application.Features.Integration.DTOs;
 using InternalManagement.Domain.Entities.EdTech;
+using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
@@ -14,11 +16,16 @@ namespace InternalManagement.UnitTests.Integration;
 public sealed class LmsIntegrationOperationsServiceTests
 {
     [Fact]
-    public async Task UpsertCourseMapping_WhenEnabledWithConfirmedLmsTarget_ShouldMakeMappingReady()
+    public async Task UpsertCourseMapping_WhenEnabled_ShouldQueueCourseAndClassUntilWebConfirms()
     {
         await using var db = CreateInMemoryDb();
         var companyId = Guid.NewGuid();
         var course = AddCourse(db, companyId, "csca-foundation");
+        var teacher = new Employee { CompanyId = companyId, EmployeeCode = "T001", FullName = "Teacher One", Email = "teacher@example.com" };
+        var cls = new CscaClass { CompanyId = companyId, CourseId = course.Id, Code = "CSCA-01", Name = "CSCA Class 01" };
+        db.Employees.Add(teacher);
+        db.CscaClasses.Add(cls);
+        db.CscaClassStaffs.Add(new CscaClassStaff { ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher" });
         await db.SaveChangesAsync();
         var service = CreateService(db, companyId);
 
@@ -28,14 +35,15 @@ public sealed class LmsIntegrationOperationsServiceTests
             CancellationToken.None);
 
         result.Succeeded.Should().BeTrue();
-        result.Value!.Status.Should().Be(IntegrationStatus.Success.ToString());
+        result.Value!.Status.Should().Be(IntegrationStatus.Processing.ToString());
         result.Value.ExternalCourseId.Should().Be("csca-foundation");
+        (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync()).Should().HaveCount(3);
         var overview = await service.GetOverviewAsync(CancellationToken.None);
-        overview.Value!.ReadyCourseMappings.Should().Be(1);
+        overview.Value!.ReadyCourseMappings.Should().Be(0);
     }
 
     [Fact]
-    public async Task UpsertCourseMapping_WhenEnabledWithoutTargetConfirmation_ShouldRejectRequest()
+    public async Task UpsertCourseMapping_WhenEnabledWithoutTeacher_ShouldRejectRequest()
     {
         await using var db = CreateInMemoryDb();
         var companyId = Guid.NewGuid();
@@ -49,7 +57,7 @@ public sealed class LmsIntegrationOperationsServiceTests
             CancellationToken.None);
 
         result.Succeeded.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.Should().Contain("LMS course ID");
+        result.Errors.Should().ContainSingle().Which.Should().Contain("giáo viên");
         (await db.LmsCourseLinks.CountAsync()).Should().Be(0);
     }
 

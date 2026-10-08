@@ -26,7 +26,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="⚡ Đồng Bộ Courses" Click="TriggerSyncCourses_Click" Style="{StaticResource PrimaryGradientButton}" Margin="0,0,8,0" Height="36" Padding="16,0" />
                     <Button Content="⚡ Đồng Bộ Customers" Click="TriggerSyncCustomers_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="14,0" />
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại Lịch Sử" Click="RefreshSyncRuns_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0" />
+                    <Button Click="RefreshSyncRuns_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Lại Lịch Sử" VerticalAlignment="Center"/></StackPanel></Button>
                     <Button Content="⬇ Xuất CSV" Click="ExportSyncRuns_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" />
                 </StackPanel>
             </Grid>
@@ -75,7 +75,7 @@
                             <TextBlock Text="Các bản ghi đồng bộ lỗi được giữ lại để kiểm tra và retry có kiểm soát." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Dead-Letter" Click="RefreshDeadLetters_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="34" Padding="12,0" />
+                            <Button Click="RefreshDeadLetters_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="34" Padding="12,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Dead-Letter" VerticalAlignment="Center"/></StackPanel></Button>
                             <Button Content="↻ Retry bản ghi đã chọn" Click="RetryDeadLetter_Click" Style="{StaticResource PrimaryGradientButton}" Height="34" Padding="14,0" />
                         </StackPanel>
                     </Grid>

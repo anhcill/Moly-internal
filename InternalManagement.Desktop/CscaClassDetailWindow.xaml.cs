@@ -43,7 +43,9 @@ public partial class CscaClassDetailWindow : Window
 
             _detail = detail;
             RenderDetail(detail);
-            await LoadLessonSessionsAsync();
+            await LoadScheduleCalendarSessionsAsync();
+            if (DetailTabs.SelectedItem == AttendanceReportTab)
+                await LoadAttendanceReportAsync();
         }
         catch (Exception ex)
         {
@@ -84,24 +86,28 @@ public partial class CscaClassDetailWindow : Window
         ClassEndDateText.Text = FormatDate(detail.EndDate);
         ClassCourseText.Text = detail.CourseTitle;
         FinancialSummaryText.Text =
-            $"Dự thu: {Money(detail.FinancialSummary.ExpectedRevenue)}    |    Đã thu: {Money(detail.FinancialSummary.ActualRevenue)}    |    Còn nợ: {Money(Math.Max(0, detail.FinancialSummary.ExpectedRevenue - detail.FinancialSummary.ActualRevenue))}    |    Lợi nhuận: {Money(detail.FinancialSummary.NetProfit)}";
+            $"Dự thu: {Money(detail.FinancialSummary.ExpectedRevenue)}    |    Đã thu: {Money(detail.FinancialSummary.ActualRevenue)}    |    Còn nợ: {Money(Math.Max(0, detail.FinancialSummary.ExpectedRevenue - detail.FinancialSummary.ActualRevenue))}    |    Sau thù lao GV: {Money(detail.FinancialSummary.NetProfit)}";
 
-        StudentsDataGrid.ItemsSource = detail.Students
+        var studentRows = detail.Students
             .Select(student => StudentRow.From(student, detail.TuitionFee))
             .ToList();
-        TeachersDataGrid.ItemsSource = detail.Staff
+        StudentsDataGrid.ItemsSource = studentRows;
+        StudentFinanceDataGrid.ItemsSource = studentRows;
+        var teacherRows = detail.Staff
             .Select(TeacherRow.From)
             .ToList();
+        TeachersDataGrid.ItemsSource = teacherRows;
+        TeacherFinanceDataGrid.ItemsSource = teacherRows;
         SchedulesDataGrid.ItemsSource = scheduleRows;
-        WeeklyTimetableItems.ItemsSource = BuildWeeklyTimetable(scheduleRows);
+        RenderScheduleCalendar(scheduleRows);
 
         var weeklyDuration = scheduleRows.Aggregate(TimeSpan.Zero, (total, schedule) => total + (schedule.EndTime - schedule.StartTime));
         ScheduleSummaryText.Text = scheduleRows.Count == 0
-            ? "Chưa có buổi nào. Hãy thêm buổi học đầu tiên để tạo thời khóa biểu."
+            ? "Chưa có khung giờ cố định. Hãy thêm các buổi học hằng tuần."
             : $"{scheduleRows.Count} buổi/tuần  •  Tổng thời lượng {FormatDuration(weeklyDuration)}";
         ScheduleCoverageText.Text = scheduleRows.Count == 0
-            ? "Chưa thiết lập"
-            : $"{scheduleRows.Select(schedule => schedule.DayOfWeek).Distinct().Count()} ngày học/tuần";
+            ? "Sau khi thêm khung giờ, chọn Thiết lập kỳ học để đặt ngày kết thúc và tạo buổi học."
+            : $"{scheduleRows.Select(schedule => schedule.DayOfWeek).Distinct().Count()} ngày học/tuần  •  {FormatDate(detail.StartDate)} – {FormatDate(detail.EndDate)}";
     }
 
     private async void EditClass_Click(object sender, RoutedEventArgs e)

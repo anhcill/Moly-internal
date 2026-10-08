@@ -47,15 +47,27 @@ public partial class MainWindow
             new CourseFilterOption(null, "Tất cả khóa học")
         };
         filterOptions.AddRange(_cachedCourses.Select(c => new CourseFilterOption(c.Id, c.Title)));
-        CscaCourseFilterComboBox.ItemsSource = filterOptions;
-        if (_selectedCourseFilterId.HasValue && filterOptions.Any(f => f.Id == _selectedCourseFilterId.Value))
+        _isCscaFilterSyncing = true;
+        try
         {
-            CscaCourseFilterComboBox.SelectedValue = _selectedCourseFilterId.Value;
+            CscaCourseFilterComboBox.ItemsSource = filterOptions;
+            CscaFinanceCourseFilterComboBox.ItemsSource = filterOptions;
+            if (_selectedCourseFilterId.HasValue && filterOptions.Any(f => f.Id == _selectedCourseFilterId.Value))
+            {
+                CscaCourseFilterComboBox.SelectedValue = _selectedCourseFilterId.Value;
+                CscaFinanceCourseFilterComboBox.SelectedValue = _selectedCourseFilterId.Value;
+            }
+            else
+            {
+                CscaCourseFilterComboBox.SelectedIndex = 0;
+                CscaFinanceCourseFilterComboBox.SelectedIndex = 0;
+            }
         }
-        else
+        finally
         {
-            CscaCourseFilterComboBox.SelectedIndex = 0;
+            _isCscaFilterSyncing = false;
         }
+        ApplyCscaFinanceFilter();
 
         SetLoadedStatus("Khóa học", data.Items.Count);
     }
@@ -88,6 +100,20 @@ public partial class MainWindow
         SetLoadedStatus("Lớp CSCA", data.Items.Count);
     }
 
+    private async Task LoadCscaFinanceAsync()
+    {
+        var data = await _apiClient.GetCscaClassesAsync();
+        if (data is null)
+        {
+            CscaFinanceDataGrid.ItemsSource = Array.Empty<object>();
+            SetViewStatus("Không tải được tài chính lớp học. Vui lòng thử lại.", isError: true);
+            return;
+        }
+
+        _allCscaFinanceClasses = data.Items.ToList();
+        ApplyCscaFinanceFilter();
+    }
+
     private void ApplyCscaClassFilter()
     {
         var filtered = _allCscaClasses.AsEnumerable();
@@ -112,6 +138,26 @@ public partial class MainWindow
 
         MetricCscaClassCount.Text = itemsList.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
         MetricCscaStudentCount.Text = itemsList.Sum(c => c.StudentCount).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private void ApplyCscaFinanceFilter()
+    {
+        var filtered = _allCscaFinanceClasses.AsEnumerable();
+        if (_selectedCourseFilterId.HasValue)
+        {
+            var course = _cachedCourses.FirstOrDefault(c => c.Id == _selectedCourseFilterId.Value);
+            var title = course?.Title ?? _selectedCourseFilterTitle;
+            if (!string.IsNullOrEmpty(title))
+                filtered = filtered.Where(c => string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
+            CscaFinanceScopeText.Text = $"Khóa học: {title}";
+        }
+        else
+        {
+            CscaFinanceScopeText.Text = "Tất cả lớp học";
+        }
+
+        var itemsList = filtered.ToList();
+        CscaFinanceDataGrid.ItemsSource = itemsList;
         var totalRev = itemsList.Sum(c => c.TotalRevenue);
         var totalDebt = itemsList.Sum(c => c.DebtAmount);
         var totalProfit = itemsList.Sum(c => c.NetProfit);

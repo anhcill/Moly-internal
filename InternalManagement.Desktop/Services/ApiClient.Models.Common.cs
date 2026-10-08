@@ -152,13 +152,15 @@ public sealed partial class ApiClient
         string? Status,
         DateTime? LastSyncedAt,
         string? LastSyncError,
-        Guid? BusinessUnitId)
+        Guid? BusinessUnitId,
+        string ClassSummary = "",
+        int ClassCount = 0)
     {
         public string StatusLabel => Status switch
         {
             "Success" => "Sẵn sàng cấp quyền",
-            "Pending" => "Đã liên kết (chưa bật)",
-            "Processing" => "Đang xử lý",
+            "Pending" => "Chưa bật đồng bộ",
+            "Processing" => "Đang gửi sang Web",
             "Failed" => "Lỗi đồng bộ",
             "DeadLetter" => "Cần rà soát",
             _ => "Chưa liên kết Web"
@@ -196,6 +198,7 @@ public sealed partial class ApiClient
             "lms.student.provision.requested" or "student.provisioned" => "Cấp tài khoản học viên",
             "course.upserted" => "Đồng bộ khóa học",
             "class.upserted" => "Đồng bộ lớp học",
+            "class.membership.changed" => "Ghi danh học viên vào lớp",
             "class.teacher.assigned" => "Phân công giảng viên",
             "teacher.upserted" => "Đồng bộ giảng viên",
             "entitlement.changed" => "Cập nhật quyền học",

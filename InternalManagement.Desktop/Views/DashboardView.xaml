@@ -145,7 +145,7 @@
                                             <TextBlock Text="⚡ API: Tốc độ cao" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8" />
                                         </Border>
                                         <Border Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="12" Padding="10,4">
-                                            <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE895; Đồng bộ: Bình thường" FontSize="12" FontWeight="SemiBold" Foreground="#6D28D9" />
+                                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#6D28D9"><Run FontFamily="Segoe MDL2 Assets" Text="&#xE895;"/><Run Text=" Đồng bộ: Bình thường"/></TextBlock>
                                         </Border>
                                     </StackPanel>
                                 </Grid>

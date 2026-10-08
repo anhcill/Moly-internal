@@ -124,13 +124,13 @@
                     <DatePicker x:Name="AttendanceFromDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
                     <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
                     <DatePicker x:Name="AttendanceToDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE721; Lọc" Click="FilterAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                    <Button Click="FilterAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Lọc" VerticalAlignment="Center"/></StackPanel></Button>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Content="Nhập giờ công" Click="RecordAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,8,0" />
                     <Button Content="⬇ Tải mẫu Excel" Click="DownloadAttendanceTemplate_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8B7; Import File Excel / CSV" Click="ImportAttendance_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,8,0" />
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" />
+                    <Button Click="ImportAttendance_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Import File Excel / CSV" VerticalAlignment="Center"/></StackPanel></Button>
+                    <Button Click="RefreshAttendance_Click" Style="{StaticResource OutlineButton}" Height="36"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Lại" VerticalAlignment="Center"/></StackPanel></Button>
                 </StackPanel>
             </Grid>
         </Border>

@@ -22,11 +22,22 @@ public sealed partial class ApiClient
 
     public async Task<PaginatedData<LmsCourseMappingItem>?> GetLmsCourseMappingsAsync(CancellationToken ct = default)
     {
-        using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync("api/v1/lms-integration/course-mappings?pageSize=100", ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
-
-        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PaginatedData<LmsCourseMappingItem>>>(_jsonOptions, ct);
-        return envelope?.Data;
+        var items = new List<LmsCourseMappingItem>();
+        var page = 1;
+        var totalCount = 0;
+        do
+        {
+            using var response = await SendWithRefreshAsync(
+                () => _httpClient.GetAsync($"api/v1/lms-integration/course-mappings?pageIndex={page}&pageSize=200", ct), ct);
+            if (!response.IsSuccessStatusCode) return null;
+            var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PaginatedData<LmsCourseMappingItem>>>(_jsonOptions, ct);
+            if (envelope?.Data is null) return null;
+            totalCount = envelope.Data.TotalCount;
+            if (envelope.Data.Items.Count == 0) break;
+            items.AddRange(envelope.Data.Items);
+            page++;
+        } while (items.Count < totalCount);
+        return new PaginatedData<LmsCourseMappingItem>(items, totalCount, 1, items.Count);
     }
 
     public async Task<LmsCourseMappingItem?> UpsertLmsCourseMappingAsync(
@@ -37,7 +48,11 @@ public sealed partial class ApiClient
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PutAsJsonAsync($"api/v1/lms-integration/course-mappings/{courseId}", request, _jsonOptions, ct),
             ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+        {
+            var failure = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsCourseMappingItem>>(_jsonOptions, ct);
+            throw new InvalidOperationException(failure?.Message ?? "Không lưu được cấu hình đồng bộ Web CSCA Course.");
+        }
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsCourseMappingItem>>(_jsonOptions, ct);
         return envelope?.Data;

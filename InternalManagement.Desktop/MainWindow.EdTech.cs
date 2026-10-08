@@ -34,7 +34,7 @@ public partial class MainWindow
         if (LmsCourseMappingsDataGrid.SelectedItem is not ApiClient.LmsCourseMappingItem mapping)
         {
             LmsSelectedCourseText.Text = "Chọn một khóa học từ bảng bên dưới";
-            LmsSelectedCourseStatusBadge.Text = "⚪ Chưa chọn khóa học";
+            LmsSelectedCourseStatusBadge.Text = "Chưa chọn khóa học";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
             LmsExternalCourseIdBox.Text = string.Empty;
@@ -52,13 +52,20 @@ public partial class MainWindow
         LmsCourseIdBox.Text = mapping.LmsCourseId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
 
         var isActive = string.Equals(mapping.Status, "Success", StringComparison.OrdinalIgnoreCase);
-        LmsEnableAccessCheckBox.IsChecked = isActive;
+        var isSending = string.Equals(mapping.Status, "Processing", StringComparison.OrdinalIgnoreCase);
+        LmsEnableAccessCheckBox.IsChecked = isActive || isSending;
 
         if (isActive)
         {
             LmsSelectedCourseStatusBadge.Text = "ĐÃ KÍCH HOẠT CẤP QUYỀN";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
+        }
+        else if (isSending)
+        {
+            LmsSelectedCourseStatusBadge.Text = "ĐANG GỬI KHÓA & LỚP SANG WEB";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(219, 234, 254));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(30, 64, 175));
         }
         else if (string.Equals(mapping.Status, "Pending", StringComparison.OrdinalIgnoreCase))
         {
@@ -68,7 +75,7 @@ public partial class MainWindow
         }
         else
         {
-            LmsSelectedCourseStatusBadge.Text = "⚪ CHƯA LIÊN KẾT WEB";
+            LmsSelectedCourseStatusBadge.Text = "CHƯA LIÊN KẾT WEB";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
         }
@@ -143,8 +150,8 @@ public partial class MainWindow
         if (enableAccess)
         {
             var confirmation = MessageBox.Show(
-                $"Kích hoạt đồng bộ sang Web CSCA Course cho khóa '{mapping.CourseTitle}'?\n\nSau khi kích hoạt, bất kỳ học viên nào hoàn thành học phí của khóa này sẽ được tự động cấp quyền vào học trên Web Course ngay lập tức.",
-                "Xác nhận kích hoạt cấp quyền Web Course",
+                $"Gửi khóa '{mapping.CourseTitle}' và {mapping.ClassCount} lớp sang Web CSCA Course?\n\nGiáo viên, khóa học, lớp và học viên có email sẽ được đưa vào hàng chờ đồng bộ. Quyền học chỉ kích hoạt sau khi Web nhận dữ liệu thành công.",
+                "Xác nhận đồng bộ Web Course",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
             if (confirmation != MessageBoxResult.Yes) return;
@@ -163,7 +170,7 @@ public partial class MainWindow
                 throw new InvalidOperationException("Không lưu được cấu hình liên kết Web. Vui lòng kiểm tra quyền thao tác hoặc thông tin mã/slug.");
 
             ShowToast(enableAccess
-                ? "Đã kích hoạt tự động cấp quyền Web CSCA Course thành công!"
+                ? "Đã xếp khóa học, lớp và học viên vào hàng chờ gửi sang Web. Theo dõi trạng thái đồng bộ bên dưới."
                 : "Đã lưu cấu hình liên kết (đang ở trạng thái tạm dừng cấp quyền).");
             await LoadLmsIntegrationAsync();
         });
@@ -468,25 +475,55 @@ public partial class MainWindow
         }
 
         ApplyCscaClassFilter();
+        ApplyCscaFinanceFilter();
     }
 
     private void ClearCscaCourseFilter_Click(object sender, RoutedEventArgs e)
     {
         _selectedCourseFilterId = null;
         _selectedCourseFilterTitle = null;
-        CscaCourseFilterComboBox.SelectedIndex = 0;
+        _isCscaFilterSyncing = true;
+        try
+        {
+            CscaCourseFilterComboBox.SelectedIndex = 0;
+            CscaFinanceCourseFilterComboBox.SelectedIndex = 0;
+        }
+        finally
+        {
+            _isCscaFilterSyncing = false;
+        }
         ApplyCscaClassFilter();
+        ApplyCscaFinanceFilter();
     }
 
+    private bool _isCscaFilterSyncing;
+
     private void CscaCourseFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => UpdateCscaCourseFilter(CscaCourseFilterComboBox, CscaFinanceCourseFilterComboBox);
+
+    private void CscaFinanceCourseFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => UpdateCscaCourseFilter(CscaFinanceCourseFilterComboBox, CscaCourseFilterComboBox);
+
+    private void UpdateCscaCourseFilter(ComboBox source, ComboBox target)
     {
-        if (!_isUiReady) return;
-        if (CscaCourseFilterComboBox.SelectedItem is CourseFilterOption opt)
+        if (!_isUiReady || _isCscaFilterSyncing || source.SelectedItem is not CourseFilterOption opt) return;
+        _selectedCourseFilterId = opt.Id;
+        _selectedCourseFilterTitle = opt.Id.HasValue ? opt.Title : null;
+        _isCscaFilterSyncing = true;
+        try
         {
-            _selectedCourseFilterId = opt.Id;
-            _selectedCourseFilterTitle = opt.Id.HasValue ? opt.Title : null;
-            ApplyCscaClassFilter();
+            if ((target.SelectedItem as CourseFilterOption)?.Id != opt.Id)
+            {
+                if (opt.Id.HasValue) target.SelectedValue = opt.Id.Value;
+                else target.SelectedIndex = 0;
+            }
         }
+        finally
+        {
+            _isCscaFilterSyncing = false;
+        }
+        ApplyCscaClassFilter();
+        ApplyCscaFinanceFilter();
     }
 
     private void CourseModuleTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -500,6 +537,10 @@ public partial class MainWindow
                 {
                     _ = LoadCscaClassesAsync();
                 }
+            }
+            else if (selectedTab == TabItemClassFinance)
+            {
+                _ = LoadCscaFinanceAsync();
             }
         }
     }

@@ -5,6 +5,8 @@ using InternalManagement.Application.Features.Integration.Interfaces;
 using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternalManagement.Infrastructure.Integration;
@@ -18,6 +20,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 {
     private const int DefaultPageSize = 20;
     private const int MaximumPageSize = 200;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly IApplicationDbContext _db;
     private readonly ICurrentUserService _currentUser;
@@ -124,13 +127,43 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             .ToListAsync(ct);
 
         var courseIds = pageCourses.Select(course => course.Id).ToList();
+        var classRows = await _db.CscaClasses.AsNoTracking()
+            .Where(cls => courseIds.Contains(cls.CourseId) && cls.CompanyId == companyId && !cls.IsDeleted)
+            .Select(cls => new { cls.CourseId, cls.Code, cls.Name })
+            .ToListAsync(ct);
+        var classesByCourse = classRows.GroupBy(cls => cls.CourseId)
+            .ToDictionary(group => group.Key, group => group.OrderBy(cls => cls.Code).ToList());
+        var studentRows = await _db.CscaClassStudents.AsNoTracking()
+            .Where(student => courseIds.Contains(student.Class.CourseId) &&
+                student.Class.CompanyId == companyId && !student.Class.IsDeleted)
+            .Select(student => new { student.Class.CourseId, student.Email, student.StudentName })
+            .ToListAsync(ct);
+        var emailIssuesByCourse = studentRows
+            .Where(student => !IsValidLmsEmail(student.Email) ||
+                string.IsNullOrWhiteSpace(student.StudentName) || student.StudentName.Length > 120)
+            .GroupBy(student => student.CourseId)
+            .ToDictionary(group => group.Key, group => group.Count());
         var mappingByCourseId = courseIds.Count == 0
             ? new Dictionary<Guid, LmsCourseLink>()
             : (await mappings.Where(link => courseIds.Contains(link.CourseId)).ToListAsync(ct))
                 .ToDictionary(link => link.CourseId);
 
         var items = pageCourses
-            .Select(course => ToCourseMappingDto(course, mappingByCourseId.GetValueOrDefault(course.Id)))
+            .Select(course =>
+            {
+                var classes = classesByCourse.GetValueOrDefault(course.Id);
+                var missing = emailIssuesByCourse.GetValueOrDefault(course.Id);
+                return ToCourseMappingDto(course, mappingByCourseId.GetValueOrDefault(course.Id)) with
+                {
+                    ClassCount = classes?.Count ?? 0,
+                    ClassSummary = classes is null || classes.Count == 0
+                        ? "Chưa có lớp học"
+                        : string.Join(" · ", classes.Select(cls => $"{cls.Code} — {cls.Name}")) +
+                          (missing > 0
+                              ? $" · {missing} học viên thiếu email/họ tên hợp lệ"
+                              : string.Empty)
+                };
+            })
             .ToList();
 
         return Result<PaginatedResult<LmsCourseMappingDto>>.Success(
@@ -166,12 +199,6 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
         if (externalCourseId.Length > 200 || lmsCourseSlug?.Length > 250)
             return Result<LmsCourseMappingDto>.Failure("Mã khóa học LMS vượt quá độ dài cho phép.");
-
-        if (request.EnableAccess && request.LmsCourseId is null && lmsCourseSlug is null)
-        {
-            return Result<LmsCourseMappingDto>.Failure(
-                "Để bật cấp quyền LMS, cần xác nhận LMS course ID hoặc LMS course slug.");
-        }
 
         var existing = await _db.LmsCourseLinks.FirstOrDefaultAsync(link =>
             link.CompanyId == companyId &&
@@ -215,11 +242,108 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
         existing.ExternalCourseId = externalCourseId;
         existing.LmsCourseId = request.LmsCourseId;
         existing.LmsCourseSlug = lmsCourseSlug;
-        existing.Status = request.EnableAccess ? IntegrationStatus.Success : IntegrationStatus.Pending;
-        existing.LastSyncedAt = request.EnableAccess ? now : null;
+        existing.Status = request.EnableAccess ? IntegrationStatus.Processing : IntegrationStatus.Pending;
+        existing.LastSyncedAt = null;
         existing.LastSyncError = null;
         existing.UpdatedAt = now;
         existing.UpdatedBy = actor;
+        if (request.EnableAccess)
+        {
+            var classes = await _db.CscaClasses
+                .AsNoTracking()
+                .Include(cls => cls.Staff).ThenInclude(staff => staff.Employee)
+                .Include(cls => cls.Students)
+                .Where(cls => cls.CourseId == course.Id && cls.CompanyId == companyId && !cls.IsDeleted)
+                .OrderBy(cls => cls.Code)
+                .ToListAsync(ct);
+            if (classes.Any(cls => cls.Students.Count > 1000))
+                return Result<LmsCourseMappingDto>.Failure(
+                    "Một lớp có hơn 1.000 học viên, vượt giới hạn lớp học của Web CSCA Course.");
+            var teachers = classes.SelectMany(cls => cls.Staff)
+                .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                    !staff.Employee.IsDeleted &&
+                    !string.Equals(staff.Employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
+                    IsValidLmsEmail(staff.Employee.Email) &&
+                    !string.IsNullOrWhiteSpace(staff.Employee.FullName) &&
+                    staff.Employee.FullName.Length <= 160)
+                .GroupBy(staff => staff.EmployeeId)
+                .Select(group => group.First().Employee)
+                .ToList();
+            if (teachers.Count == 0)
+                return Result<LmsCourseMappingDto>.Failure(
+                    "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ trước khi đồng bộ lên Web.");
+            var classWithoutLead = classes.FirstOrDefault(cls => !cls.Staff.Any(staff =>
+                string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                teachers.Any(teacher => teacher.Id == staff.EmployeeId)));
+            if (classWithoutLead is not null)
+                return Result<LmsCourseMappingDto>.Failure(
+                    $"Lớp {classWithoutLead.Code} chưa có giáo viên vai trò Teacher với email hợp lệ để đồng bộ sang Web.");
+
+            var correlationId = Guid.NewGuid().ToString("N");
+            foreach (var teacher in teachers)
+                QueueManagementEvent(existing, "teacher.upserted", new
+                {
+                    TeacherSourceId = teacher.Id.ToString("N"),
+                    teacher.FullName,
+                    teacher.Email,
+                    AccountStatus = string.Equals(teacher.Status, "Resigned", StringComparison.OrdinalIgnoreCase) ? "suspended" : "active",
+                    SourceUpdatedAt = now
+                }, correlationId, now, actor);
+
+            QueueManagementEvent(existing, "course.upserted", new
+            {
+                CourseSourceId = externalCourseId,
+                course.Title,
+                course.Description,
+                TeacherSourceId = teachers[0].Id.ToString("N"),
+                IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
+                SourceUpdatedAt = now
+            }, correlationId, now, actor);
+
+            foreach (var cls in classes)
+            {
+                var lead = cls.Staff.First(staff =>
+                    string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                    teachers.Any(teacher => teacher.Id == staff.EmployeeId));
+                QueueManagementEvent(existing, "class.upserted", new
+                {
+                    ClassSourceId = cls.Id.ToString("N"),
+                    CourseSourceId = externalCourseId,
+                    Title = cls.Name,
+                    Description = cls.Batch,
+                    MaxStudents = Math.Max(30, cls.Students.Count),
+                    Status = NormalizeClassStatus(cls.Status),
+                    LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
+                    SourceUpdatedAt = now
+                }, correlationId, now, actor);
+
+                foreach (var student in cls.Students.Where(student =>
+                    IsValidLmsEmail(student.Email) &&
+                    !string.IsNullOrWhiteSpace(student.StudentName) &&
+                    student.StudentName.Length <= 120))
+                {
+                    var paidInFull = student.PaymentStatus == PaymentStatus.Paid &&
+                        student.PaidAmount >= Math.Max(0, cls.TuitionFee - student.DiscountAmount);
+                    QueueManagementEvent(existing, "student.provisioned", new
+                    {
+                        StudentSourceId = student.Id.ToString("N"),
+                        FullName = student.StudentName,
+                        student.Email,
+                        Phone = student.PhoneNumber,
+                        AccountStatus = paidInFull ? "active" : "pending_payment",
+                        SourceUpdatedAt = now
+                    }, correlationId, now, actor);
+                    QueueManagementEvent(existing, "class.membership.changed", new
+                    {
+                        MembershipSourceId = student.Id.ToString("N"),
+                        ClassSourceId = cls.Id.ToString("N"),
+                        StudentSourceId = student.Id.ToString("N"),
+                        Status = "active",
+                        SourceUpdatedAt = now
+                    }, correlationId, now, actor);
+                }
+            }
+        }
         await _db.SaveChangesAsync(ct);
 
         return Result<LmsCourseMappingDto>.Success(ToCourseMappingDto(course, existing));
@@ -309,6 +433,42 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
     private static string? TrimToNull(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private void QueueManagementEvent(LmsCourseLink link, string eventType, object payload,
+        string correlationId, DateTime now, string actor)
+    {
+        var eventId = Guid.NewGuid().ToString("N");
+        var command = new LmsManagementEvent(eventId, eventType, now, "internal-management", payload);
+        _db.IntegrationOutboxes.Add(new IntegrationOutbox
+        {
+            CompanyId = link.CompanyId,
+            BusinessUnitId = link.BusinessUnitId,
+            SourceSystem = LmsIntegrationSourceSystems.CscaCourseLms,
+            EventId = eventId,
+            EventType = LmsOutboxEventTypes.ManagementEventRequested,
+            AggregateType = nameof(LmsCourseLink),
+            AggregateId = link.Id.ToString("N"),
+            IdempotencyKey = $"management-event:{eventId}",
+            CorrelationId = correlationId,
+            PayloadJson = JsonSerializer.Serialize(command, JsonOptions),
+            Status = IntegrationStatus.Pending,
+            NextAttemptAt = now,
+            CreatedAt = now.AddMilliseconds(_db.IntegrationOutboxes.Local.Count(item => item.CorrelationId == correlationId)),
+            CreatedBy = actor
+        });
+    }
+
+    private static string NormalizeClassStatus(string? status) =>
+        status?.Trim().ToLowerInvariant() switch
+        {
+            "completed" => "completed",
+            "cancelled" or "canceled" => "cancelled",
+            _ => "active"
+        };
+
+    private static bool IsValidLmsEmail(string? email) =>
+        !string.IsNullOrWhiteSpace(email) && email.Length <= 255 &&
+        Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+
     private static LmsCourseMappingDto ToCourseMappingDto(Course course, LmsCourseLink? mapping) => new()
     {
         CourseId = course.Id,
@@ -328,7 +488,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
     private static LmsOutboxItemDto ToOutboxItemDto(IntegrationOutbox item) => new()
     {
         Id = item.Id,
-        EventType = item.EventType,
+        EventType = GetDisplayEventType(item),
         AggregateType = item.AggregateType,
         AggregateId = item.AggregateId,
         Status = item.Status.ToString(),
@@ -339,4 +499,21 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
         CorrelationId = item.CorrelationId,
         LastError = item.LastError
     };
+
+    private static string GetDisplayEventType(IntegrationOutbox item)
+    {
+        if (item.EventType != LmsOutboxEventTypes.ManagementEventRequested)
+            return item.EventType;
+        try
+        {
+            using var document = JsonDocument.Parse(item.PayloadJson);
+            return document.RootElement.TryGetProperty("eventType", out var eventType)
+                ? eventType.GetString() ?? item.EventType
+                : item.EventType;
+        }
+        catch (JsonException)
+        {
+            return item.EventType;
+        }
+    }
 }

@@ -112,24 +112,12 @@
                             <TextBlock x:Name="StudentCountText" Text="0" Foreground="#312E81" FontWeight="Bold" />
                         </StackPanel>
                     </Border>
-                    <Border Background="#ECFDF5" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Đã thu: " Foreground="#059669" FontWeight="SemiBold" />
-                            <TextBlock x:Name="RevenueText" Text="0 đ" Foreground="#065F46" FontWeight="Bold" />
-                        </StackPanel>
-                    </Border>
-                    <Border Background="#FEF3C7" CornerRadius="8" Padding="12,8" Margin="0,0,16,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Còn nợ: " Foreground="#D97706" FontWeight="SemiBold" />
-                            <TextBlock x:Name="DebtText" Text="0 đ" Foreground="#92400E" FontWeight="Bold" />
-                        </StackPanel>
-                    </Border>
                     <Button Content="Đóng" Click="Close_Click" Width="86" Height="34" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <TabControl Grid.Row="1" x:Name="DetailTabs">
+        <TabControl Grid.Row="1" x:Name="DetailTabs" SelectionChanged="DetailTabs_SelectionChanged">
             <TabItem Header="Thông tin lớp" FontWeight="SemiBold">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="18">
@@ -150,7 +138,6 @@
                                     <RowDefinition Height="42" />
                                     <RowDefinition Height="42" />
                                     <RowDefinition Height="42" />
-                                    <RowDefinition Height="42" />
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="Mã lớp" Style="{StaticResource FieldLabel}" />
                                 <TextBlock x:Name="ClassCodeText" Grid.Column="1" Style="{StaticResource FieldValue}" />
@@ -160,22 +147,19 @@
                                 <TextBlock x:Name="ClassBatchText" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldValue}" />
                                 <TextBlock Text="Lịch học" Grid.Row="1" Grid.Column="2" Style="{StaticResource FieldLabel}" />
                                 <TextBlock x:Name="ClassScheduleText" Grid.Row="1" Grid.Column="3" Style="{StaticResource FieldValue}" />
-                                <TextBlock Text="Học phí / học viên" Grid.Row="2" Style="{StaticResource FieldLabel}" />
-                                <TextBlock x:Name="ClassTuitionText" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldValue}" />
-                                <TextBlock Text="Trạng thái" Grid.Row="2" Grid.Column="2" Style="{StaticResource FieldLabel}" />
-                                <TextBlock x:Name="ClassStatusText" Grid.Row="2" Grid.Column="3" Style="{StaticResource FieldValue}" />
-                                <TextBlock Text="Ngày bắt đầu" Grid.Row="3" Style="{StaticResource FieldLabel}" />
-                                <TextBlock x:Name="ClassStartDateText" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldValue}" />
-                                <TextBlock Text="Ngày kết thúc" Grid.Row="3" Grid.Column="2" Style="{StaticResource FieldLabel}" />
-                                <TextBlock x:Name="ClassEndDateText" Grid.Row="3" Grid.Column="3" Style="{StaticResource FieldValue}" />
-                                <TextBlock Text="Khóa học" Grid.Row="4" Style="{StaticResource FieldLabel}" />
-                                <TextBlock x:Name="ClassCourseText" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource FieldValue}" />
+                                <TextBlock Text="Trạng thái" Grid.Row="2" Style="{StaticResource FieldLabel}" />
+                                <TextBlock x:Name="ClassStatusText" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldValue}" />
+                                <TextBlock Text="Ngày bắt đầu" Grid.Row="2" Grid.Column="2" Style="{StaticResource FieldLabel}" />
+                                <TextBlock x:Name="ClassStartDateText" Grid.Row="2" Grid.Column="3" Style="{StaticResource FieldValue}" />
+                                <TextBlock Text="Ngày kết thúc" Grid.Row="3" Style="{StaticResource FieldLabel}" />
+                                <TextBlock x:Name="ClassEndDateText" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldValue}" />
+                                <TextBlock Text="Khóa học" Grid.Row="3" Grid.Column="2" Style="{StaticResource FieldLabel}" />
+                                <TextBlock x:Name="ClassCourseText" Grid.Row="3" Grid.Column="3" Style="{StaticResource FieldValue}" />
                             </Grid>
                         </Border>
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
                             <Button Content="✎ Sửa thông tin lớp" Click="EditClass_Click" Style="{StaticResource PrimaryButton}" />
                             <Button Content="Xóa lớp" Click="DeleteClass_Click" Style="{StaticResource DangerButton}" />
-                            <TextBlock x:Name="FinancialSummaryText" VerticalAlignment="Center" Foreground="#475569" FontSize="13" />
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>
@@ -200,17 +184,65 @@
                             <DataGridTextColumn Header="QUÊ QUÁN" Binding="{Binding Hometown}" Width="1.2*" />
                             <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" Width="1.5*" />
                             <DataGridTextColumn Header="ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" Width="120" />
-                            <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="115" />
-                            <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" Width="105" />
-                            <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
-                            <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
-                            <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
-                            <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" />
-                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding PaymentStatusLabel}" Width="105" />
                             <DataGridTextColumn Header="NGÀY VÀO" Binding="{Binding JoinedAt, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" />
                             <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" Width="1.4*" />
                         </DataGrid.Columns>
                     </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Tài chính" FontWeight="SemiBold">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Border Background="#F8FAFC" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Học phí / học viên: " Foreground="#475569" FontWeight="SemiBold" />
+                                <TextBlock x:Name="ClassTuitionText" Foreground="#0F172A" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#ECFDF5" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Đã thu: " Foreground="#059669" FontWeight="SemiBold" />
+                                <TextBlock x:Name="RevenueText" Text="0 đ" Foreground="#065F46" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#FEF3C7" CornerRadius="8" Padding="12,8" Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Còn nợ: " Foreground="#D97706" FontWeight="SemiBold" />
+                                <TextBlock x:Name="DebtText" Text="0 đ" Foreground="#92400E" FontWeight="Bold" />
+                            </StackPanel>
+                    </Border>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" x:Name="FinancialSummaryText" TextWrapping="Wrap" Foreground="#475569" FontSize="13" Margin="0,0,0,12" />
+                    <GroupBox Grid.Row="2" Header="Học phí và công nợ học viên" Margin="0,0,0,10">
+                        <DataGrid x:Name="StudentFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.5*" />
+                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="115" />
+                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" Width="105" />
+                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
+                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
+                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" Width="115" />
+                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="105" />
+                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding PaymentStatusLabel}" Width="105" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+                    <GroupBox Grid.Row="3" Header="Thù lao giáo viên">
+                        <DataGrid x:Name="TeacherFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.5*" />
+                                <DataGridTextColumn Header="VAI TRÒ" Binding="{Binding RoleInClass}" Width="1.2*" />
+                                <DataGridTextColumn Header="THÙ LAO" Binding="{Binding CompensationRate, StringFormat='{}{0:N0} đ'}" Width="140" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
 
@@ -231,7 +263,6 @@
                             <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.7*" />
                             <DataGridTextColumn Header="MÃ NHÂN SỰ" Binding="{Binding EmployeeCode}" Width="130" />
                             <DataGridTextColumn Header="VAI TRÒ" Binding="{Binding RoleInClass}" Width="1.2*" />
-                            <DataGridTextColumn Header="THÙ LAO" Binding="{Binding CompensationRate, StringFormat='{}{0:N0} đ'}" Width="140" />
                             <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" Width="2*" />
                         </DataGrid.Columns>
                     </DataGrid>
@@ -243,79 +274,49 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="218" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="+ Thêm buổi học" Click="AddSchedule_Click" Style="{StaticResource PrimaryButton}" />
-                        <Button Content="✎ Sửa buổi đã chọn" Click="EditSchedule_Click" Style="{StaticResource ToolbarButton}" />
-                        <Button Content="Xóa buổi đã chọn" Click="RemoveSchedule_Click" Style="{StaticResource DangerButton}" />
-                        <Button Content="⌂ Quản lý phòng học" Click="ManageClassrooms_Click" Style="{StaticResource ToolbarButton}" />
-                        <TextBlock Text="Mỗi buổi lặp lại hằng tuần. Chọn dòng hoặc bấm nút ngay tại buổi để sửa." VerticalAlignment="Center" Foreground="#64748B" FontSize="12" Margin="8,0,0,0" />
-                    </StackPanel>
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Lịch học cố định" FontSize="18" FontWeight="Bold" Foreground="#0F172A" />
+                            <TextBlock Text="Chọn khung giờ hằng tuần, sau đó đặt ngày bắt đầu và kết thúc để tạo các buổi học." FontSize="12" Foreground="#64748B" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="+ Thêm khung giờ" Click="AddSchedule_Click" Style="{StaticResource ToolbarButton}" />
+                            <Button Content="Thiết lập kỳ học" Click="SetupCourseSchedule_Click" Style="{StaticResource PrimaryButton}" />
+                            <Button Content="Quản lý phòng" Click="ManageClassrooms_Click" Style="{StaticResource ToolbarButton}" />
+                        </StackPanel>
+                    </Grid>
 
-                    <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,10">
+                    <Border Grid.Row="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="THỜI KHÓA BIỂU TUẦN" FontWeight="Bold" Foreground="#1E293B" />
-                                <TextBlock x:Name="ScheduleSummaryText" Foreground="#475569" FontSize="12" Margin="0,4,0,0" />
+                                <TextBlock x:Name="ScheduleSummaryText" FontWeight="SemiBold" Foreground="#312E81" />
+                                <TextBlock x:Name="ScheduleCoverageText" Foreground="#475569" FontSize="12" Margin="0,4,0,0" />
                             </StackPanel>
-                            <TextBlock x:Name="ScheduleCoverageText" Grid.Column="1" VerticalAlignment="Center" Foreground="#4F46E5" FontWeight="SemiBold" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="‹" Width="34" Click="PreviousScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần trước" />
+                                <Button Content="Hôm nay" Click="CurrentScheduleWeek_Click" Style="{StaticResource ToolbarButton}" />
+                                <Button Content="›" Width="34" Click="NextScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần sau" />
+                                <TextBlock x:Name="ScheduleWeekLabel" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#312E81" Margin="10,0,0,0" />
+                            </StackPanel>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,10">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                            <ItemsControl x:Name="WeeklyTimetableItems">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Width="172" Margin="0,0,8,0" Padding="11" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding DayLabel}" FontWeight="Bold" Foreground="#1E293B" />
-                                                <TextBlock Text="{Binding LessonCountLabel}" FontSize="11" Foreground="#64748B" Margin="0,2,0,8" />
-                                                <ItemsControl ItemsSource="{Binding Lessons}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Padding="7" Margin="0,0,0,6">
-                                                                <StackPanel>
-                                                                    <TextBlock Text="{Binding TimeLabel}" FontWeight="SemiBold" Foreground="#3730A3" />
-                                                                    <TextBlock Text="{Binding LocationLabel}" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#475569" Margin="0,2,0,0" />
-                                                                    <TextBlock Text="{Binding Notes}" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#64748B" Margin="0,2,0,0" />
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <TextBlock Text="Chưa có buổi học" FontSize="12" Foreground="#94A3B8" FontStyle="Italic">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Visibility" Value="Collapsed" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding HasLessons}" Value="False">
-                                                                    <Setter Property="Visibility" Value="Visible" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                    <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Margin="0,0,0,10" ClipToBounds="True">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <Grid x:Name="ScheduleCalendarGrid" MinWidth="1110" />
                         </ScrollViewer>
                     </Border>
 
-                    <DataGrid Grid.Row="3" x:Name="SchedulesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="48" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MouseDoubleClick="SchedulesDataGrid_MouseDoubleClick">
+                    <Expander Grid.Row="3" Header="Danh sách khung giờ cố định · Chọn dòng để sửa hoặc xóa" IsExpanded="False" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="8">
+                    <DataGrid x:Name="SchedulesDataGrid" Height="180" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MouseDoubleClick="SchedulesDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="THỨ" Binding="{Binding DayLabel}" Width="110" />
                             <DataGridTextColumn Header="KHUNG GIỜ" Binding="{Binding TimeLabel}" Width="150" />
@@ -348,61 +349,74 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+                    </Expander>
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Buổi học &amp; Điểm danh" FontWeight="SemiBold">
+            <TabItem x:Name="AttendanceReportTab" Header="Báo cáo điểm danh" FontWeight="SemiBold">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="250" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="+ Thêm buổi theo ngày" Click="AddLessonSession_Click" Style="{StaticResource PrimaryButton}" />
-                        <Button Content="⚡ Tạo từ lịch tuần" Click="GenerateLessonSessions_Click" Style="{StaticResource ToolbarButton}" />
-                        <Button Content="✎ Đổi lịch / sửa" Click="EditLessonSession_Click" Style="{StaticResource ToolbarButton}" />
-                        <Button Content="Hủy buổi" Click="CancelLessonSession_Click" Style="{StaticResource DangerButton}" />
-                        <Button Content="Xóa buổi" Click="RemoveLessonSession_Click" Style="{StaticResource DangerButton}" />
-                    </StackPanel>
-                    <DataGrid Grid.Row="1" x:Name="LessonSessionsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                              RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionChanged="LessonSessionsDataGrid_SelectionChanged" MouseDoubleClick="LessonSessionsDataGrid_MouseDoubleClick">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="NGÀY HỌC" Binding="{Binding LessonDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="120" />
-                            <DataGridTextColumn Header="KHUNG GIỜ" Binding="{Binding TimeLabel}" Width="145" />
-                            <DataGridTextColumn Header="PHÒNG / HÌNH THỨC" Binding="{Binding LocationLabel}" Width="1.6*" />
-                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="130" />
-                            <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" Width="1.7*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="11" Margin="0,12,0,10">
+                    <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="ĐIỂM DANH THEO BUỔI" FontWeight="Bold" Foreground="#1E293B" />
-                                <TextBlock x:Name="AttendanceSessionText" Text="Chọn một buổi học ở phía trên để điểm danh." Foreground="#64748B" FontSize="12" Margin="0,3,0,0" />
+                                <TextBlock Text="BÁO CÁO ĐIỂM DANH TỪ CSCA COURSE" FontWeight="Bold" Foreground="#1E40AF" />
+                                <TextBlock Text="Dữ liệu chỉ đọc, được đồng bộ sau khi giáo viên chốt điểm danh trên web. Lớp và học viên cần liên kết với web trước khi có báo cáo." TextWrapping="Wrap" Foreground="#475569" FontSize="12" Margin="0,4,0,0" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="Có mặt" Click="MarkAttendancePresent_Click" Style="{StaticResource PrimaryButton}" Height="30" Padding="10,0" />
-                                <Button Content="Đi muộn" Click="MarkAttendanceLate_Click" Style="{StaticResource ToolbarButton}" Height="30" Padding="10,0" />
-                                <Button Content="Vắng" Click="MarkAttendanceAbsent_Click" Style="{StaticResource DangerButton}" Height="30" Padding="10,0" />
-                                <Button Content="Có phép" Click="MarkAttendanceExcused_Click" Style="{StaticResource ToolbarButton}" Height="30" Padding="10,0" />
-                            </StackPanel>
+                            <Button Grid.Column="1" Content="Tải lại báo cáo" Click="RefreshAttendanceReport_Click" Style="{StaticResource ToolbarButton}" Height="34" Padding="12,0" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
-                    <DataGrid Grid.Row="3" x:Name="LessonAttendanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                              RowHeight="40" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.5*" />
-                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="135" />
-                            <DataGridTextColumn Header="GIỜ ĐIỂM DANH" Binding="{Binding CheckInAt, StringFormat='{}{0:HH:mm dd/MM}'}" Width="155" />
-                            <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" Width="2*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Từ ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
+                        <DatePicker x:Name="AttendanceReportFromDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
+                        <TextBlock Text="Đến ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
+                        <DatePicker x:Name="AttendanceReportToDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
+                        <TextBlock x:Name="AttendanceReportStatusText" Text="Mở tab để tải dữ liệu điểm danh." VerticalAlignment="Center" Foreground="#64748B" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,12">
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="20" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="20" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="12"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="20" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
+                    </UniformGrid>
+                    <GroupBox Grid.Row="3" Header="Thống kê theo buổi học từ web" Margin="0,0,0,10">
+                        <DataGrid x:Name="AttendanceReportSessionsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="NGÀY HỌC" Binding="{Binding DateLabel}" Width="120" />
+                                <DataGridTextColumn Header="GIỜ HỌC" Binding="{Binding TimeLabel}" Width="130" />
+                                <DataGridTextColumn Header="ĐÃ GHI NHẬN" Binding="{Binding TotalRecords}" Width="120" />
+                                <DataGridTextColumn Header="CÓ MẶT" Binding="{Binding PresentCount}" Width="100" />
+                                <DataGridTextColumn Header="ĐI MUỘN" Binding="{Binding LateCount}" Width="100" />
+                                <DataGridTextColumn Header="VẮNG" Binding="{Binding AbsentCount}" Width="90" />
+                                <DataGridTextColumn Header="CÓ PHÉP" Binding="{Binding ExcusedCount}" Width="100" />
+                                <DataGridTextColumn Header="ĐỒNG BỘ LÚC" Binding="{Binding SyncLabel}" Width="150" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+                    <GroupBox Grid.Row="4" Header="Thống kê theo học viên">
+                        <DataGrid x:Name="AttendanceReportStudentsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="2*" />
+                                <DataGridTextColumn Header="SỐ BUỔI" Binding="{Binding TotalRecords}" Width="100" />
+                                <DataGridTextColumn Header="CÓ MẶT" Binding="{Binding PresentCount}" Width="100" />
+                                <DataGridTextColumn Header="ĐI MUỘN" Binding="{Binding LateCount}" Width="100" />
+                                <DataGridTextColumn Header="VẮNG" Binding="{Binding AbsentCount}" Width="90" />
+                                <DataGridTextColumn Header="CÓ PHÉP" Binding="{Binding ExcusedCount}" Width="100" />
+                                <DataGridTextColumn Header="TỶ LỆ THAM GIA" Binding="{Binding AttendanceRatePercent, StringFormat='{}{0:0.#}%'}" Width="135" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>

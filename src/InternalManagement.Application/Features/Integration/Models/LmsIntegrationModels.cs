@@ -10,7 +10,16 @@ public static class LmsOutboxEventTypes
 {
     public const string StudentProvisionRequested = "lms.student.provision.requested";
     public const string StudentAccessRequested = "lms.student.access.requested";
+    public const string ManagementEventRequested = "lms.management.event.requested";
 }
+
+/// <summary>Event accepted by the CSCA Course LMS management ingress.</summary>
+public sealed record LmsManagementEvent(
+    string EventId,
+    string EventType,
+    DateTime OccurredAt,
+    string Source,
+    object Payload);
 
 /// <summary>
 /// Snapshot of a CSCA enrollment used to calculate the LMS entitlement. It is

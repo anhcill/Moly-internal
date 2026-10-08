@@ -186,6 +186,42 @@ public sealed partial class ApiClient
         DateTime? CheckInAt,
         string? Notes);
 
+    public sealed record CscaClassAttendanceReportItem(
+        Guid ClassId,
+        int TotalStudents,
+        int TotalSessions,
+        int TotalRecords,
+        int PresentCount,
+        int LateCount,
+        int AbsentCount,
+        int ExcusedCount,
+        decimal AttendanceRatePercent,
+        DateTime? LastSyncedAt,
+        IReadOnlyList<CscaAttendanceSessionSummaryItem> Sessions,
+        IReadOnlyList<CscaStudentAttendanceSummaryItem> Students);
+
+    public sealed record CscaAttendanceSessionSummaryItem(
+        Guid SessionId,
+        DateOnly LessonDate,
+        TimeSpan StartTime,
+        TimeSpan EndTime,
+        int TotalRecords,
+        int PresentCount,
+        int LateCount,
+        int AbsentCount,
+        int ExcusedCount,
+        DateTime? LastSyncedAt);
+
+    public sealed record CscaStudentAttendanceSummaryItem(
+        Guid StudentId,
+        string StudentName,
+        int TotalRecords,
+        int PresentCount,
+        int LateCount,
+        int AbsentCount,
+        int ExcusedCount,
+        decimal AttendanceRatePercent);
+
     public sealed record ClassFinancialItem(
         Guid ClassId,
         string ClassCode,

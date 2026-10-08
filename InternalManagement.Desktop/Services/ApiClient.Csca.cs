@@ -331,6 +331,20 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
+    public async Task<CscaClassAttendanceReportItem?> GetCscaAttendanceReportAsync(
+        Guid classId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default)
+    {
+        var url = $"api/v1/csca/classes/{classId}/attendance-report";
+        var parameters = new List<string>();
+        if (fromDate.HasValue) parameters.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+        if (toDate.HasValue) parameters.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+        if (parameters.Count > 0) url += "?" + string.Join("&", parameters);
+        using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync(url, ct), ct);
+        if (!response.IsSuccessStatusCode) return null;
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<CscaClassAttendanceReportItem>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
     public async Task<bool> UpsertCscaLessonAttendanceAsync(
         Guid classId,
         Guid sessionId,

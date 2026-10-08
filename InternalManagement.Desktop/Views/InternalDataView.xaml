@@ -18,7 +18,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Grid Width="250" Height="36">
                         <TextBox x:Name="InternalDataSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="InternalDataSearch_TextChanged" />
-                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm kiếm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Tìm kiếm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -31,9 +31,9 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải lại" Click="RefreshInternalData_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="8,0,0,0" />
+                    <Button Click="RefreshInternalData_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="8,0,0,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải lại" VerticalAlignment="Center"/></StackPanel></Button>
                     <Button x:Name="EditInternalDataButton" Content="✎ Sửa" Click="EditInternalData_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="8,0,0,0" />
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="DeleteInternalDataButton" Content="&#xE74D; Xóa" Click="DeleteInternalData_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="8,0,0,0" />
+                    <Button x:Name="DeleteInternalDataButton"  Click="DeleteInternalData_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="8,0,0,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Xóa" VerticalAlignment="Center"/></StackPanel></Button>
                     <Button x:Name="CreateInternalDataButton" Content="+ Thêm mới" Click="CreateInternalData_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="8,0,0,0" />
                 </StackPanel>
             </Grid>

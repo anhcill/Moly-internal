@@ -27,12 +27,12 @@
                             <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE774;" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Text="Đồng bộ Khóa học &amp; Cấp quyền Web CSCA Course" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" VerticalAlignment="Center" />
                             <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="12" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE73E; Đang kết nối CSCA Course LMS" FontSize="11" FontWeight="SemiBold" Foreground="#065F46" />
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#065F46"><Run FontFamily="Segoe MDL2 Assets" Text="&#xE73E;"/><Run Text=" Đang kết nối CSCA Course LMS"/></TextBlock>
                             </Border>
                         </StackPanel>
                         <TextBlock Text="Tự động tạo tài khoản và kích hoạt khóa học trên Website CSCA Course khi học viên hoàn thành học phí. Dữ liệu được bảo mật và truyền an toàn." Margin="26,3,0,0" FontSize="12" Foreground="#475569" TextWrapping="Wrap" />
                     </StackPanel>
-                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Grid.Column="1" Content="&#xE895; Làm mới dữ liệu" Click="RefreshLmsIntegration_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" VerticalAlignment="Center" />
+                    <Button Grid.Column="1"  Click="RefreshLmsIntegration_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" VerticalAlignment="Center"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Làm mới dữ liệu" VerticalAlignment="Center"/></StackPanel></Button>
                 </Grid>
 
                 <!-- Bottom: 3-step workflow guide -->
@@ -195,8 +195,8 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" MinHeight="140" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Margin="0,0,0,10">
                         <TextBlock Text="Thiết lập liên kết Khóa học sang Web Course" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
@@ -204,7 +204,7 @@
                     </StackPanel>
 
                     <!-- FORM CONFIGURATION CARD -->
-                    <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="14,12" Margin="0,0,0,12" BorderBrush="#E2E8F0" BorderThickness="1">
+                    <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="10" Padding="14,12" Margin="0,10,0,0" BorderBrush="#E2E8F0" BorderThickness="1">
                         <StackPanel>
                             <!-- Selected Course Banner -->
                             <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,10">
@@ -214,11 +214,11 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8F1; ĐANG CHỌN:" FontSize="11" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <TextBlock FontSize="11" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center" Margin="0,0,8,0"><Run FontFamily="Segoe MDL2 Assets" Text="&#xE8F1;"/><Run Text=" ĐANG CHỌN:"/></TextBlock>
                                         <TextBlock x:Name="LmsSelectedCourseText" Text="Chọn một khóa học từ bảng bên dưới" FontSize="13" FontWeight="Bold" Foreground="#1E3A8A" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <Border Grid.Column="1" x:Name="LmsSelectedCourseStatusBadgeBorder" Background="#F1F5F9" CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
-                                        <TextBlock x:Name="LmsSelectedCourseStatusBadge" Text="⚪ Chưa chọn khóa học" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" />
+                                        <TextBlock x:Name="LmsSelectedCourseStatusBadge" Text="Chưa chọn khóa học" FontSize="10.5" FontWeight="Bold" Foreground="#64748B" />
                                     </Border>
                                 </Grid>
                             </Border>
@@ -265,18 +265,19 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel VerticalAlignment="Center">
                                         <CheckBox x:Name="LmsEnableAccessCheckBox" Content="Kích hoạt tự động cấp quyền học trên Web CSCA Course" FontSize="12" FontWeight="Bold" Foreground="#166534" VerticalAlignment="Center" />
-                                        <TextBlock Text="Khi bật: Học viên hoàn thành học phí sẽ tự động được tạo tài khoản và mở khóa học này trên Web ngay lập tức." FontSize="11" Foreground="#15803D" Margin="22,3,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="Khi bật: gửi giáo viên, khóa học, lớp và học viên có email sang Web. Sau khi Web nhận dữ liệu, học viên đủ học phí được cấp quyền học." FontSize="11" Foreground="#15803D" Margin="22,3,0,0" TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="SaveLmsMappingButton" Grid.Column="1" Content="&#xE74E; Lưu &amp; Kích hoạt liên kết" Click="SaveLmsMapping_Click" Style="{StaticResource PrimaryGradientButton}" Height="34" Padding="16,0" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                    <Button x:Name="SaveLmsMappingButton" Grid.Column="1"  Click="SaveLmsMapping_Click" Style="{StaticResource PrimaryGradientButton}" Height="34" Padding="16,0" VerticalAlignment="Center" Margin="10,0,0,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74E;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Lưu &amp; Kích hoạt liên kết" VerticalAlignment="Center"/></StackPanel></Button>
                                 </Grid>
                             </Border>
                         </StackPanel>
                     </Border>
 
                     <!-- Course Table -->
-                    <DataGrid Grid.Row="2" x:Name="LmsCourseMappingsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="LmsCourseMappingsDataGrid_SelectionChanged" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="40">
+                    <DataGrid Grid.Row="1" x:Name="LmsCourseMappingsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="LmsCourseMappingsDataGrid_SelectionChanged" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="40">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.5*" MinWidth="130" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                            <DataGridTextColumn Header="CÁC LỚP" Binding="{Binding ClassSummary}" Width="1.6*" MinWidth="150" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
                             <DataGridTextColumn Header="MÃ NỘI BỘ" Binding="{Binding CourseSourceId}" Width="1*" MinWidth="95" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
                             <DataGridTextColumn Header="ĐƯỜNG DẪN WEB (SLUG)" Binding="{Binding DisplaySlug}" Width="1.2*" MinWidth="105" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
                             <DataGridTextColumn Header="ID WEB" Binding="{Binding DisplayLmsId}" Width="65" MinWidth="55" ElementStyle="{StaticResource DataGridTextCellStyle}" />
@@ -303,7 +304,7 @@
                             <TextBlock Text="Theo dõi tài khoản học viên và dữ liệu được đồng bộ sang Web." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="RetryLmsOutboxButton" Content="&#xE895; Thử lại" Click="RetryLmsOutbox_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="10,0" Margin="0,0,6,0" ToolTip="Đưa các lệnh bị lỗi trở lại hàng chờ để gửi lại" />
+                            <Button x:Name="RetryLmsOutboxButton"  Click="RetryLmsOutbox_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="10,0" Margin="0,0,6,0" ToolTip="Đưa các lệnh bị lỗi trở lại hàng chờ để gửi lại"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Thử lại" VerticalAlignment="Center"/></StackPanel></Button>
                             <Button x:Name="DispatchLmsOutboxButton" Content="⚡ Đồng bộ ngay" Click="DispatchLmsOutbox_Click" Style="{StaticResource PrimaryGradientButton}" Height="32" Padding="12,0" ToolTip="Gửi ngay tất cả lệnh đang chờ sang Web Course mà không cần đợi lịch tự động" />
                         </StackPanel>
                     </Grid>

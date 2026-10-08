@@ -289,6 +289,18 @@ public class CscaController : BaseApiController
         return Ok(ApiResponse<IReadOnlyList<CscaLessonAttendanceDto>>.Ok(result.Value!, "Lấy điểm danh buổi học thành công."));
     }
 
+    [HttpGet("classes/{id:guid}/attendance-report")]
+    [HasPermission(Permissions.CscaClassesView)]
+    public async Task<IActionResult> GetAttendanceReport(Guid id, [FromQuery] DateOnly? fromDate,
+        [FromQuery] DateOnly? toDate, CancellationToken ct)
+    {
+        var result = await _cscaService.GetAttendanceReportAsync(id, fromDate, toDate, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaClassAttendanceReportDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Lấy báo cáo điểm danh thất bại."));
+        return Ok(ApiResponse<CscaClassAttendanceReportDto>.Ok(result.Value!, "Lấy báo cáo điểm danh từ Web CSCA thành công."));
+    }
+
     [HttpPut("classes/{id:guid}/sessions/{sessionId:guid}/attendance")]
     [HasPermission(Permissions.CscaStudentsManage)]
     public async Task<IActionResult> UpsertLessonAttendance(Guid id, Guid sessionId, [FromBody] UpsertCscaLessonAttendanceRequest request, CancellationToken ct)

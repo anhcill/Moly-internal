@@ -170,6 +170,8 @@ public sealed partial class CscaService
         {
             return Result<CscaClassDto>.Failure("Mã lớp và tên lớp là bắt buộc.");
         }
+        if (request.StartDate.HasValue && request.EndDate.HasValue && request.EndDate.Value.Date < request.StartDate.Value.Date)
+            return Result<CscaClassDto>.Failure("Ngày kết thúc lớp phải sau hoặc bằng ngày bắt đầu.");
 
         var codeUpper = request.Code.Trim().ToUpper();
         var exists = await _db.CscaClasses.AnyAsync(c => c.CompanyId == companyId && c.Code == codeUpper && !c.IsDeleted, ct);
@@ -192,8 +194,8 @@ public sealed partial class CscaService
             Batch = request.Batch?.Trim() ?? string.Empty,
             Schedule = request.Schedule?.Trim() ?? string.Empty,
             TuitionFee = request.TuitionFee,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
+            StartDate = NormalizeClassDate(request.StartDate),
+            EndDate = NormalizeClassDate(request.EndDate),
             Status = string.IsNullOrWhiteSpace(request.Status) ? "Active" : request.Status.Trim(),
             CreatedAt = DateTime.UtcNow,
             CreatedBy = _currentUser.Username ?? "System"
@@ -247,6 +249,8 @@ public sealed partial class CscaService
 
         if (request.TuitionFee < 0)
             return Result<CscaClassDto>.Failure("Học phí phải là số không âm.");
+        if (request.StartDate.HasValue && request.EndDate.HasValue && request.EndDate.Value.Date < request.StartDate.Value.Date)
+            return Result<CscaClassDto>.Failure("Ngày kết thúc lớp phải sau hoặc bằng ngày bắt đầu.");
         if (cls.Students.Any(student => student.DiscountAmount > request.TuitionFee))
             return Result<CscaClassDto>.Failure("Học phí mới không được thấp hơn mức giảm giá đã áp dụng cho học viên.");
 
@@ -266,8 +270,8 @@ public sealed partial class CscaService
             ? request.Schedule?.Trim() ?? string.Empty
             : FormatScheduleSummary(cls.Schedules);
         cls.TuitionFee = request.TuitionFee;
-        cls.StartDate = request.StartDate;
-        cls.EndDate = request.EndDate;
+        cls.StartDate = NormalizeClassDate(request.StartDate);
+        cls.EndDate = NormalizeClassDate(request.EndDate);
         cls.Status = request.Status;
         cls.UpdatedAt = DateTime.UtcNow;
         cls.UpdatedBy = _currentUser.Username ?? "System";
@@ -298,6 +302,9 @@ public sealed partial class CscaService
 
         return Result<CscaClassDto>.Success(dto);
     }
+
+    private static DateTime? NormalizeClassDate(DateTime? value)
+        => value.HasValue ? DateTime.SpecifyKind(value.Value.Date, DateTimeKind.Utc) : null;
 
     public async Task<Result<bool>> DeleteClassAsync(Guid id, CancellationToken ct)
     {

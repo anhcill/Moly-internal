@@ -27,6 +27,38 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
         _configuration = configuration;
     }
 
+    public async Task SendManagementEventAsync(
+        LmsManagementEvent command,
+        LmsOutboundRequestContext context,
+        CancellationToken ct)
+    {
+        using var response = await SendAsync(HttpMethod.Post, "/api/integrations/v1/events", command, context, ct);
+        // The event endpoint acknowledges durable enqueue (202), not projection.
+        // Do not release paid access until the LMS worker actually applies it.
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1), ct);
+            using var statusResponse = await SendAsync(
+                HttpMethod.Post,
+                "/api/integrations/v1/events/status",
+                new { command.EventId },
+                context,
+                ct);
+            using var document = JsonDocument.Parse(await statusResponse.Content.ReadAsStringAsync(ct));
+            if (!TryGetProperty(document.RootElement, "data", out var data) ||
+                !TryGetProperty(data, "status", out var statusValue))
+                throw new LmsIntegrationConfigurationException("CSCA Course LMS returned an invalid event status.");
+            var status = statusValue.GetString();
+            if (string.Equals(status, "SUCCESS", StringComparison.OrdinalIgnoreCase)) return;
+            if (string.Equals(status, "DEAD_LETTER", StringComparison.OrdinalIgnoreCase))
+                throw new LmsIntegrationConfigurationException(
+                    $"CSCA Course LMS rejected management event '{command.EventType}'; inspect the LMS sync queue.");
+        }
+        throw new LmsIntegrationHttpException(
+            "CSCA Course LMS has not completed the management event yet.",
+            HttpStatusCode.RequestTimeout);
+    }
+
     public async Task<LmsProvisionResult> ProvisionStudentAsync(
         LmsProvisionCommand command,
         LmsOutboundRequestContext context,

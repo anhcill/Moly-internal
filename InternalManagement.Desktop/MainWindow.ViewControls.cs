@@ -8,8 +8,10 @@ public partial class MainWindow
     private System.Windows.Controls.TextBlock CourseSearchPlaceholder => ViewCoursesContainer.CourseSearchPlaceholder;
     private System.Windows.Controls.DataGrid CoursesDataGrid => ViewCoursesContainer.CoursesDataGrid;
     private System.Windows.Controls.TabItem TabItemClasses => ViewCoursesContainer.TabItemClasses;
+    private System.Windows.Controls.TabItem TabItemClassFinance => ViewCoursesContainer.TabItemClassFinance;
     private System.Windows.Controls.Border CscaCourseFilterBanner => ViewCoursesContainer.CscaCourseFilterBanner;
     private System.Windows.Controls.TextBlock CscaCourseFilterText => ViewCoursesContainer.CscaCourseFilterText;
+    private System.Windows.Controls.TextBlock CscaFinanceScopeText => ViewCoursesContainer.CscaFinanceScopeText;
     private System.Windows.Controls.TextBlock MetricCscaClassCount => ViewCoursesContainer.MetricCscaClassCount;
     private System.Windows.Controls.TextBlock MetricCscaStudentCount => ViewCoursesContainer.MetricCscaStudentCount;
     private System.Windows.Controls.TextBlock MetricCscaRevenue => ViewCoursesContainer.MetricCscaRevenue;
@@ -18,7 +20,9 @@ public partial class MainWindow
     private System.Windows.Controls.TextBox CscaSearchBox => ViewCoursesContainer.CscaSearchBox;
     private System.Windows.Controls.TextBlock CscaSearchPlaceholder => ViewCoursesContainer.CscaSearchPlaceholder;
     private System.Windows.Controls.ComboBox CscaCourseFilterComboBox => ViewCoursesContainer.CscaCourseFilterComboBox;
+    private System.Windows.Controls.ComboBox CscaFinanceCourseFilterComboBox => ViewCoursesContainer.CscaFinanceCourseFilterComboBox;
     private System.Windows.Controls.DataGrid CscaClassesDataGrid => ViewCoursesContainer.CscaClassesDataGrid;
+    private System.Windows.Controls.DataGrid CscaFinanceDataGrid => ViewCoursesContainer.CscaFinanceDataGrid;
     private System.Windows.Controls.DataGrid CscaMaterialsDataGrid => ViewCoursesContainer.CscaMaterialsDataGrid;
     private System.Windows.Controls.DataGrid CscaVocabularyDataGrid => ViewCoursesContainer.CscaVocabularyDataGrid;
     private System.Windows.Controls.DataGrid CscaPostsDataGrid => ViewCoursesContainer.CscaPostsDataGrid;

@@ -42,6 +42,7 @@ public partial class MainWindow : Window, IDisposable
     private List<ApiClient.CourseItem> _cachedCourses = new();
     private List<ApiClient.SalesOrderSummaryItem> _allSalesOrders = new();
     private List<ApiClient.CscaClassItem> _allCscaClasses = new();
+    private List<ApiClient.CscaClassItem> _allCscaFinanceClasses = new();
     private Guid? _selectedCourseFilterId;
     private string? _selectedCourseFilterTitle;
 

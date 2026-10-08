@@ -97,6 +97,8 @@ public sealed record LmsCourseMappingDto
     public Guid CourseId { get; init; }
     public string CourseSourceId { get; init; } = string.Empty;
     public string CourseTitle { get; init; } = string.Empty;
+    public string ClassSummary { get; init; } = string.Empty;
+    public int ClassCount { get; init; }
     public string? CourseSlug { get; init; }
     public Guid? MappingId { get; init; }
     public string? ExternalCourseId { get; init; }
@@ -109,8 +111,8 @@ public sealed record LmsCourseMappingDto
 }
 
 /// <summary>
-/// Saving a mapping as enabled deliberately marks it ready for paid access.
-/// A numeric LMS course ID or LMS slug is required as a second confirmation.
+/// Enabling a mapping queues course, class, and enrollment projections. Paid
+/// access becomes ready only after the LMS worker confirms those projections.
 /// </summary>
 public sealed record UpsertLmsCourseMappingRequest(
     string? ExternalCourseId,

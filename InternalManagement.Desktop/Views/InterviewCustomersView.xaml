@@ -17,11 +17,11 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBox x:Name="InterviewSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Margin="0,0,12,0" TextChanged="InterviewSearch_TextChanged" />
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm ứng viên, gói mock..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-270,0,0,0" VerticalAlignment="Center" x:Name="InterviewSearchPlaceholder" />
+                                    <TextBlock Text="Tìm ứng viên, gói mock..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-270,0,0,0" VerticalAlignment="Center" x:Name="InterviewSearchPlaceholder" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE774; Đồng bộ website" Click="SyncInterviewFromWebsite_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshInterview_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                                    <Button Click="SyncInterviewFromWebsite_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Đồng bộ website" VerticalAlignment="Center"/></StackPanel></Button>
+                                    <Button Click="RefreshInterview_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Lại" VerticalAlignment="Center"/></StackPanel></Button>
                                     <Button Content="+ Đặt Lịch Mock Mới" Click="CreateInterviewCustomerDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="16,0" />
                                 </StackPanel>
                             </Grid>
