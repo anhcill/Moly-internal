@@ -165,7 +165,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext,
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedAt = utcNow;
+                    // Management LMS events use CreatedAt to preserve their
+                    // dependency order within a batch. Keep that explicit value.
+                    if (entry.Entity is not IntegrationOutbox || entry.Entity.CreatedAt == default)
+                        entry.Entity.CreatedAt = utcNow;
                     entry.Entity.CreatedBy = currentUsername;
                     break;
                 case EntityState.Modified:

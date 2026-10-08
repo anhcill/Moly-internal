@@ -25,6 +25,11 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        var timeoutSeconds = Math.Clamp(
+            configuration.GetValue<int?>("Integrations:CscaCourseLms:TimeoutSeconds") ?? 30,
+            1,
+            120);
+        _httpClient.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
     }
 
     public async Task SendManagementEventAsync(
@@ -162,8 +167,6 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
             throw new LmsIntegrationConfigurationException(
                 "CSCA Course LMS requires ServiceToken, IntegrationKey and HmacSecret from secret configuration.");
 
-        var timeoutSeconds = Math.Clamp(section.GetValue<int?>("TimeoutSeconds") ?? 30, 1, 120);
-        _httpClient.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
         return new LmsClientOptions(baseUri, serviceToken, integrationKey, hmacSecret);
     }
 
