@@ -34,6 +34,8 @@ public partial class MainWindow
     private System.Windows.Controls.TextBlock LmsSelectedCourseText => ViewLmsContainer.LmsSelectedCourseText;
     private System.Windows.Controls.Border LmsSelectedCourseStatusBadgeBorder => ViewLmsContainer.LmsSelectedCourseStatusBadgeBorder;
     private System.Windows.Controls.TextBlock LmsSelectedCourseStatusBadge => ViewLmsContainer.LmsSelectedCourseStatusBadge;
+    private System.Windows.Controls.Border LmsSelectedCourseErrorBorder => ViewLmsContainer.LmsSelectedCourseErrorBorder;
+    private System.Windows.Controls.TextBlock LmsSelectedCourseErrorText => ViewLmsContainer.LmsSelectedCourseErrorText;
     private System.Windows.Controls.TextBox LmsCourseSlugBox => ViewLmsContainer.LmsCourseSlugBox;
     private System.Windows.Controls.TextBox LmsCourseIdBox => ViewLmsContainer.LmsCourseIdBox;
     private System.Windows.Controls.TextBox LmsExternalCourseIdBox => ViewLmsContainer.LmsExternalCourseIdBox;
