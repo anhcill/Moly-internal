@@ -274,7 +274,7 @@ public partial class MainWindow
                 var model = new ApiClient.UpdateEmployeeModel(value.FullName, value.Email, value.Phone, value.Position, value.BaseSalary, value.DepartmentId, value.BusinessUnitId, value.JoinedDate, value.Status, value.EmploymentType, value.PartTimeCalculationMethod, value.PartTimeUnitRate, value.CvUrlOrPath, value.ProfessionalSummary, value.Skills, value.Experience, BankName: value.BankName ?? string.Empty, BankAccountNumber: value.BankAccountNumber ?? string.Empty, BankAccountHolder: value.BankAccountHolder ?? string.Empty);
                 saved = await _apiClient.UpdateEmployeeAsync(employee.Id, model);
             }
-            if (saved is null) { ShowToast("Không lưu được hồ sơ nhân sự. Vui lòng kiểm tra dữ liệu và quyền quản lý.", true); return; }
+            if (saved is null) { ShowToast(_apiClient.LastManagementOperationError ?? "Không lưu được hồ sơ nhân sự: phản hồi máy chủ thiếu dữ liệu. Hãy tải lại rồi thử tiếp.", true); return; }
             ShowToast(employee is null ? "Đã tạo hồ sơ nhân sự." : "Đã cập nhật hồ sơ nhân sự.");
             await LoadEmployeesAsync();
         });
@@ -313,7 +313,7 @@ public partial class MainWindow
         if (MessageBox.Show(this, $"Xóa hồ sơ nhân sự “{employee.FullName}”?", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         await RunWithBusyAsync("Đang xóa hồ sơ nhân sự...", async () =>
         {
-            if (!await _apiClient.DeleteEmployeeAsync(employee.Id)) { ShowToast("Xóa nhân sự thất bại. Vui lòng kiểm tra ràng buộc dữ liệu và quyền quản lý.", true); return; }
+            if (!await _apiClient.DeleteEmployeeAsync(employee.Id)) { ShowToast(_apiClient.LastManagementOperationError ?? "Xóa nhân sự thất bại: phản hồi máy chủ không rõ nguyên nhân.", true); return; }
             ShowToast("Đã xóa hồ sơ nhân sự.");
             await LoadEmployeesAsync();
         });
@@ -374,7 +374,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật trạng thái nghỉ việc. Vui lòng kiểm tra quyền quản trị.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật trạng thái nghỉ việc: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -417,7 +417,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể khôi phục nhân sự. Vui lòng kiểm tra quyền quản trị.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể khôi phục nhân sự: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -472,7 +472,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật danh sách Blacklist. Vui lòng kiểm tra quyền quản trị.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật Blacklist: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -531,7 +531,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật thông tin nghỉ việc.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật thông tin nghỉ việc: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -590,7 +590,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật thông tin Blacklist.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật Blacklist: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -638,7 +638,7 @@ public partial class MainWindow
             var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
             if (updated is null)
             {
-                ShowToast("Không thể gán tệp CV cho nhân sự.", true);
+                ShowToast(_apiClient.LastManagementOperationError ?? "Không thể gán tệp CV: phản hồi máy chủ thiếu dữ liệu.", true);
                 return;
             }
 
@@ -687,7 +687,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật liên kết CV.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật liên kết CV: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -738,7 +738,7 @@ public partial class MainWindow
         var updated = await _apiClient.UpdateEmployeeAsync(employee.Id, updateModel);
         if (updated is null)
         {
-            ShowToast("Không thể cập nhật hồ sơ chuyên môn.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không thể cập nhật hồ sơ chuyên môn: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 

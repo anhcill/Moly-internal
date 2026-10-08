@@ -311,8 +311,14 @@
                 </Border>
             </Border>
 
-            <Border x:Name="GlobalToastBanner" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,24" MaxWidth="480" Visibility="Collapsed" Panel.ZIndex="101" CornerRadius="10" Padding="16,12" Background="#0F172A">
-                <TextBlock x:Name="GlobalToastText" TextWrapping="Wrap" FontSize="13" Foreground="White" />
+            <Border x:Name="GlobalToastBanner" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,24" MaxWidth="720" Visibility="Collapsed" Panel.ZIndex="101" CornerRadius="10" Padding="16,12" Background="#0F172A">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">
+                        <TextBlock x:Name="GlobalToastText" TextWrapping="Wrap" FontSize="13" Foreground="White" />
+                    </ScrollViewer>
+                    <Button x:Name="GlobalToastCloseButton" Grid.Column="1" Content="×" ToolTip="Đóng thông báo" Click="GlobalToastClose_Click" Visibility="Collapsed" Width="28" Height="28" Margin="12,0,0,0" VerticalAlignment="Top" Background="Transparent" BorderThickness="0" Foreground="White" FontSize="17" />
+                </Grid>
             </Border>
         </Grid>
     </Grid>

@@ -104,17 +104,10 @@ public partial class MainWindow
 
         await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
-            var success = await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId);
-            if (success)
-            {
-                MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadCscaClassesAsync();
-                await LoadCoursesAsync();
-            }
-            else
-            {
-                MessageBox.Show("Tạo lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId);
+            await LoadCscaClassesAsync();
+            await LoadCoursesAsync();
+            MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
@@ -147,16 +140,9 @@ public partial class MainWindow
 
         await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
-            var success = await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"]);
-            if (success)
-            {
-                MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadCscaClassesAsync();
-            }
-            else
-            {
-                MessageBox.Show("Cập nhật lớp thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"]);
+            await LoadCscaClassesAsync();
+            MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
@@ -178,17 +164,10 @@ public partial class MainWindow
 
         await RunWithBusyAsync("Đang xóa lớp học...", async () =>
         {
-            var success = await _apiClient.DeleteCscaClassAsync(cls.Id);
-            if (success)
-            {
-                MessageBox.Show($"Đã xóa thành công lớp học: '{cls.Code}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadCscaClassesAsync();
-                await LoadCoursesAsync();
-            }
-            else
-            {
-                MessageBox.Show("Xóa lớp học thất bại. Bạn cần có quyền CscaClasses.Manage.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            await _apiClient.DeleteCscaClassAsync(cls.Id);
+            await LoadCscaClassesAsync();
+            await LoadCoursesAsync();
+            MessageBox.Show($"Đã xóa thành công lớp học: '{cls.Code}'.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 

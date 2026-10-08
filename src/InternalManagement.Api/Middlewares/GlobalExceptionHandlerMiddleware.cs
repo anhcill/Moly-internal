@@ -33,15 +33,34 @@ public class GlobalExceptionHandlerMiddleware
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
+        var cause = exception.GetBaseException();
+        var (errorCode, suggestion) = cause switch
+        {
+            TimeoutException or TaskCanceledException =>
+                ("TIMEOUT", "Yêu cầu quá thời gian. Thử lại; nếu vẫn xảy ra, cung cấp mã yêu cầu cho quản trị viên."),
+            HttpRequestException =>
+                ("UPSTREAM_CONNECTION_ERROR", "Kiểm tra kết nối tới dịch vụ liên kết rồi thử lại."),
+            UnauthorizedAccessException =>
+                ("ACCESS_DENIED", "Kiểm tra quyền của tài khoản đối với thao tác này."),
+            _ when cause.GetType().Name == "PostgresException" =>
+                ("DATABASE_ERROR", "Kiểm tra dữ liệu nhập và trạng thái bản ghi liên quan; cung cấp mã yêu cầu nếu vẫn lỗi."),
+            _ =>
+                ("UNHANDLED_ERROR", "Cung cấp mã yêu cầu cho quản trị viên để tra log máy chủ.")
+        };
+
         var problemDetails = new ProblemDetails
         {
             Status = context.Response.StatusCode,
-            Title = "An error occurred while processing your request.",
+            Title = "Không thể hoàn tất thao tác trên máy chủ.",
             Detail = exception.Message,
             Instance = context.Request.Path
         };
 
         problemDetails.Extensions["correlationId"] = context.TraceIdentifier;
+        problemDetails.Extensions["operation"] = $"{context.Request.Method} {context.Request.Path}";
+        problemDetails.Extensions["errorCode"] = errorCode;
+        problemDetails.Extensions["cause"] = $"{cause.GetType().Name}: {cause.Message}";
+        problemDetails.Extensions["suggestion"] = suggestion;
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonOptions));

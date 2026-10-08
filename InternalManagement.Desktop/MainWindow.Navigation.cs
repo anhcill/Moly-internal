@@ -99,15 +99,26 @@ public partial class MainWindow
 
     private async Task RunWithBusyAsync(string message, Func<Task> operation, string? subMessage = null)
     {
+        _apiClient.ClearLastApiError();
         SetBusy(true, message, subMessage);
         try
         {
             await operation();
+            var apiError = _apiClient.TakeLastApiError();
+            if (!string.IsNullOrWhiteSpace(apiError))
+            {
+                SetViewStatus($"Lỗi khi {message}: {apiError}", isError: true);
+                ShowToast($"BƯỚC LỖI: {message}\nCHI TIẾT API: {apiError}", isError: true);
+            }
         }
         catch (Exception ex)
         {
-            SetViewStatus($"Lỗi: {ToFriendlyError(ex)}", isError: true);
-            ShowToast($"Không thể hoàn tất thao tác. {ToFriendlyError(ex)}", isError: true);
+            var detail = ToFriendlyError(ex);
+            var apiError = _apiClient.TakeLastApiError();
+            if (!string.IsNullOrWhiteSpace(apiError) && !detail.Contains(apiError, StringComparison.Ordinal))
+                detail += $"\nChi tiết API: {apiError}";
+            SetViewStatus($"Lỗi khi {message}: {detail}", isError: true);
+            ShowToast($"BƯỚC LỖI: {message}\nCHI TIẾT: {detail}", isError: true);
         }
         finally
         {
@@ -217,6 +228,7 @@ public partial class MainWindow
     private void SetViewStatus(string message, bool isError = false)
     {
         ViewHeaderStatusText.Text = message;
+        ViewHeaderStatusText.ToolTip = message;
         ViewHeaderStatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isError ? "#DC2626" : "#64748B"));
     }
 
@@ -246,12 +258,23 @@ public partial class MainWindow
         GlobalToastText.Text = message;
         GlobalToastBanner.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isError ? "#991B1B" : "#0F172A"));
         GlobalToastBanner.Visibility = Visibility.Visible;
+        GlobalToastCloseButton.Visibility = isError ? Visibility.Visible : Visibility.Collapsed;
+
+        // Keep failures visible until dismissed so the full server detail can
+        // be read; success notifications may disappear after a short delay.
+        if (isError) return;
 
         await Task.Delay(TimeSpan.FromSeconds(4));
         if (sequence == _toastSequence)
         {
             GlobalToastBanner.Visibility = Visibility.Collapsed;
         }
+    }
+
+    private void GlobalToastClose_Click(object sender, RoutedEventArgs e)
+    {
+        Interlocked.Increment(ref _toastSequence);
+        GlobalToastBanner.Visibility = Visibility.Collapsed;
     }
 
     private void SegmentSelector_Checked(object sender, RoutedEventArgs e)

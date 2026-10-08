@@ -50,7 +50,7 @@ public partial class MainWindow
         var cancelled = await _apiClient.CancelPayrollPeriodAsync(period.Id, "Hủy kỳ lương nháp từ Desktop");
         if (cancelled is null)
         {
-            ShowToast("Không hủy được kỳ lương. Kỳ có thể đã được tính hoặc bạn chưa có quyền tính lương.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không hủy được kỳ lương: phản hồi máy chủ thiếu dữ liệu.", true);
             return;
         }
 
@@ -131,7 +131,7 @@ public partial class MainWindow
             }
             else
             {
-                MessageBox.Show("Tính lương thất bại. Vui lòng kiểm tra quyền Permissions.Payroll.Calculate.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_apiClient.LastManagementOperationError ?? "Tính lương thất bại: phản hồi máy chủ thiếu kết quả.", "Lỗi tính lương", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
@@ -167,7 +167,7 @@ public partial class MainWindow
         }
         else
         {
-            MessageBox.Show("Gửi duyệt thất bại. Vui lòng kiểm tra trạng thái kỳ lương.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(_apiClient.LastManagementOperationError ?? "Gửi duyệt thất bại: phản hồi máy chủ thiếu kết quả.", "Lỗi gửi duyệt", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -184,7 +184,7 @@ public partial class MainWindow
         }
         else
         {
-            MessageBox.Show("Phê duyệt thất bại. Vui lòng kiểm tra quyền Permissions.Payroll.Approve.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(_apiClient.LastManagementOperationError ?? "Phê duyệt thất bại: phản hồi máy chủ thiếu kết quả.", "Lỗi phê duyệt", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -201,7 +201,7 @@ public partial class MainWindow
         }
         else
         {
-            MessageBox.Show("Xác nhận chi lương thất bại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(_apiClient.LastManagementOperationError ?? "Xác nhận chi lương thất bại: phản hồi máy chủ thiếu kết quả.", "Lỗi xác nhận chi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -218,7 +218,7 @@ public partial class MainWindow
         }
         else
         {
-            MessageBox.Show("Phát hành thất bại. Vui lòng kiểm tra quyền Permissions.Payroll.Publish.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(_apiClient.LastManagementOperationError ?? "Phát hành phiếu lương thất bại: phản hồi máy chủ thiếu kết quả.", "Lỗi phát hành", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

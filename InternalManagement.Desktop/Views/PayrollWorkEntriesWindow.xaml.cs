@@ -150,7 +150,7 @@ public partial class PayrollWorkEntriesWindow : Window
             var created = await _apiClient.AddPayrollWorkEntryAsync(_period.Id, model);
             if (created is null)
             {
-                ShowError("Không ghi được đầu việc. Kiểm tra mã tham chiếu trùng, ngày hoàn thành, quyền hoặc trạng thái kỳ lương.");
+                ShowError(_apiClient.LastManagementOperationError ?? "Không ghi được đầu việc: phản hồi máy chủ thiếu dữ liệu.");
                 return;
             }
 
@@ -184,7 +184,7 @@ public partial class PayrollWorkEntriesWindow : Window
         {
             if (!await _apiClient.VoidPayrollWorkEntryAsync(entry.Id))
             {
-                ShowError("Không hủy được đầu việc. Kỳ lương có thể đã được gửi duyệt.");
+                ShowError(_apiClient.LastManagementOperationError ?? "Không hủy được đầu việc: phản hồi máy chủ không rõ nguyên nhân.");
                 return;
             }
             Changed = true;

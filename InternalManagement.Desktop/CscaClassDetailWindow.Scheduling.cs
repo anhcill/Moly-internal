@@ -25,10 +25,10 @@ public partial class CscaClassDetailWindow
             else if (sessions.Count > 0)
                 ScheduleCoverageText.Text += $"  •  {sessions.Count} buổi đã tạo; sửa lịch tuần không đổi các buổi đã tạo";
         }
-        catch
+        catch (Exception ex)
         {
             _calendarSessions = [];
-            ScheduleCoverageText.Text += "  •  Chưa tải được buổi học theo ngày";
+            ScheduleCoverageText.Text += $"  •  Lỗi tải buổi học theo ngày: {ex.Message}";
         }
         RenderScheduleCalendar(SchedulesDataGrid.ItemsSource as IReadOnlyList<ScheduleRow> ?? []);
     }

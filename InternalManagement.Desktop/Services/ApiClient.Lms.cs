@@ -91,13 +91,29 @@ public sealed partial class ApiClient
     {
         var body = await response.Content.ReadAsStringAsync(ct);
         string? detail = null;
+        string? requestId = null;
+        string? suggestion = null;
         try
         {
             using var document = JsonDocument.Parse(body);
-            if (document.RootElement.TryGetProperty("message", out var message) &&
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("message", out var message) &&
                 message.ValueKind == JsonValueKind.String)
                 detail = message.GetString();
-            if (document.RootElement.TryGetProperty("errors", out var errors) &&
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("detail", out var problemDetail) &&
+                problemDetail.ValueKind == JsonValueKind.String)
+                detail = problemDetail.GetString();
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("correlationId", out var correlationId) &&
+                correlationId.ValueKind == JsonValueKind.String)
+                requestId = correlationId.GetString();
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("suggestion", out var suggestionValue) &&
+                suggestionValue.ValueKind == JsonValueKind.String)
+                suggestion = suggestionValue.GetString();
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("errors", out var errors) &&
                 errors.ValueKind == JsonValueKind.Array)
             {
                 var errorDetails = errors.EnumerateArray()
@@ -116,7 +132,12 @@ public sealed partial class ApiClient
         }
 
         detail = string.IsNullOrWhiteSpace(detail) ? response.ReasonPhrase : detail.Trim();
-        return $"{operation} thất bại (HTTP {(int)response.StatusCode}): {detail}";
+        if (string.IsNullOrWhiteSpace(requestId) &&
+            response.Headers.TryGetValues("X-Correlation-ID", out var values))
+            requestId = values.FirstOrDefault();
+        return $"{operation} thất bại (HTTP {(int)response.StatusCode}): {detail}" +
+            (string.IsNullOrWhiteSpace(suggestion) ? string.Empty : $". Cách xử lý: {suggestion}") +
+            (string.IsNullOrWhiteSpace(requestId) ? string.Empty : $". Mã yêu cầu: {requestId}");
     }
 
 }

@@ -16,7 +16,9 @@ public partial class CscaClassDetailWindow
         {
             if (!await action())
             {
-                MessageBox.Show(this, "Lưu dữ liệu thất bại. Vui lòng kiểm tra lại thông tin nhập hoặc quyền tài khoản.", "Không thể lưu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(this,
+                    $"Bước lỗi: {successMessage.TrimEnd('.')}\nChi tiết: Máy chủ từ chối thao tác nhưng không trả nguyên nhân.\nCách xử lý: Tải lại lớp, kiểm tra dữ liệu và quyền tài khoản rồi thử lại.",
+                    "Không thể lưu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -25,7 +27,9 @@ public partial class CscaClassDetailWindow
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"Không thể lưu dữ liệu:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(this,
+                $"Bước lỗi: {successMessage.TrimEnd('.')}\nChi tiết: {ex.Message}\nCách xử lý: Sửa theo thông báo máy chủ, tải lại lớp rồi thử lại. Nếu là lỗi 500, đối chiếu log API.",
+                "Không thể lưu", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {

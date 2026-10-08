@@ -124,21 +124,61 @@ public sealed partial class ApiClient : IDisposable
         var response = await send();
         if (response.StatusCode != HttpStatusCode.Unauthorized || string.IsNullOrWhiteSpace(CurrentRefreshToken))
         {
+            await RememberApiFailureAsync(response, ct);
             return response;
         }
 
         response.Dispose();
         if (!string.Equals(CurrentAccessToken, accessTokenUsed, StringComparison.Ordinal))
         {
-            return await send();
+            response = await send();
+            await RememberApiFailureAsync(response, ct);
+            return response;
         }
 
         if (!await RefreshTokenAsync(force: true, ct: ct))
         {
-            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            await RememberApiFailureAsync(response, ct);
+            return response;
         }
 
-        return await send();
+        response = await send();
+        await RememberApiFailureAsync(response, ct);
+        return response;
+    }
+
+    private sealed class ApiFailureScope
+    {
+        public string? Message { get; set; }
+    }
+
+    private readonly AsyncLocal<ApiFailureScope?> _lastApiError = new();
+
+    public void ClearLastApiError() => _lastApiError.Value = new ApiFailureScope();
+
+    public string? TakeLastApiError()
+    {
+        var error = _lastApiError.Value?.Message;
+        if (_lastApiError.Value is { } scope) scope.Message = null;
+        return error;
+    }
+
+    private async Task RememberApiFailureAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        if (response.IsSuccessStatusCode) return;
+
+        var method = response.RequestMessage?.Method.Method ?? "API";
+        var uri = response.RequestMessage?.RequestUri;
+        var path = uri is null ? "phiên đăng nhập" :
+            uri.IsAbsoluteUri ? uri.AbsolutePath : uri.ToString();
+        var detail = await TryExtractErrorMessageAsync(response, ct);
+        if (string.IsNullOrWhiteSpace(detail))
+            detail = response.StatusCode == HttpStatusCode.Unauthorized
+                ? "Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử thao tác."
+                : response.ReasonPhrase ?? "Máy chủ không trả chi tiết lỗi.";
+        (_lastApiError.Value ??= new ApiFailureScope()).Message =
+            $"{method} {path} → HTTP {(int)response.StatusCode}: {detail}";
     }
 
     public async Task<HealthResult> CheckHealthAsync(CancellationToken cancellationToken = default)

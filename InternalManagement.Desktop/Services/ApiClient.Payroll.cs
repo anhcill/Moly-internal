@@ -27,7 +27,7 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PostAsJsonAsync("api/v1/payroll/periods", model, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Tạo kỳ lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -37,7 +37,7 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/cancel", new { Comments = comments }, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Hủy kỳ lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -70,7 +70,7 @@ public sealed partial class ApiClient
     public async Task<PayrollCalculationResultItem?> CalculatePayrollAsync(Guid periodId, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsync($"api/v1/payroll/periods/{periodId}/calculate", null, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Tính lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollCalculationResultItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -102,7 +102,7 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/adjustments", model, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Thêm điều chỉnh lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollAdjustmentItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -111,13 +111,13 @@ public sealed partial class ApiClient
     public async Task<bool> DeletePayrollAdjustmentAsync(Guid adjustmentId, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.DeleteAsync($"api/v1/payroll/adjustments/{adjustmentId}", ct), ct);
-        return response.IsSuccessStatusCode;
+        return await CheckManagementResponseAsync(response, "Xóa điều chỉnh lương", ct);
     }
 
     public async Task<PayrollPeriodItem?> SubmitPayrollForReviewAsync(Guid periodId, string? comments = null, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/submit-review", new { Comments = comments }, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Gửi duyệt kỳ lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -126,7 +126,7 @@ public sealed partial class ApiClient
     public async Task<PayrollPeriodItem?> ApprovePayrollAsync(Guid periodId, string? comments = null, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/approve", new { Comments = comments }, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Phê duyệt kỳ lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -135,7 +135,7 @@ public sealed partial class ApiClient
     public async Task<PayrollPeriodItem?> MarkPayrollPaidAsync(Guid periodId, string? comments = null, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/mark-paid", new { Comments = comments }, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Xác nhận chi lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -144,7 +144,7 @@ public sealed partial class ApiClient
     public async Task<PayrollPeriodItem?> PublishPayrollAsync(Guid periodId, string? comments = null, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/publish", new { Comments = comments }, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Phát hành phiếu lương", ct)) return null;
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollPeriodItem>>(_jsonOptions, ct);
         return envelope?.Data;

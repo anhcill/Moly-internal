@@ -19,7 +19,7 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(() =>
             _httpClient.PostAsJsonAsync($"api/v1/payroll/periods/{periodId}/work-entries", model, _jsonOptions, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!await CheckManagementResponseAsync(response, "Ghi công việc tính lương", ct)) return null;
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PayrollWorkEntryItem>>(_jsonOptions, ct);
         return envelope?.Data;
     }
@@ -28,6 +28,6 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(() =>
             _httpClient.PostAsync($"api/v1/payroll/work-entries/{entryId}/void", null, ct), ct);
-        return response.IsSuccessStatusCode;
+        return await CheckManagementResponseAsync(response, "Hủy công việc tính lương", ct);
     }
 }

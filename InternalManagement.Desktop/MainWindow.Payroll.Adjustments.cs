@@ -66,7 +66,7 @@ public partial class MainWindow
         {
             if (!await _apiClient.DeletePayrollAdjustmentAsync(adjustmentToDelete.Value))
             {
-                ShowToast("Không xóa được khoản điều chỉnh. Kỳ lương có thể đã bị khóa.", true);
+                ShowToast(_apiClient.LastManagementOperationError ?? "Không xóa được khoản điều chỉnh: phản hồi máy chủ không rõ nguyên nhân.", true);
                 return;
             }
         }
@@ -81,7 +81,7 @@ public partial class MainWindow
                     newAdjustment.Reason));
             if (created is null)
             {
-                ShowToast("Không ghi được khoản điều chỉnh. Hãy kiểm tra quyền hoặc trạng thái kỳ lương.", true);
+                ShowToast(_apiClient.LastManagementOperationError ?? "Không ghi được khoản điều chỉnh: phản hồi máy chủ thiếu dữ liệu.", true);
                 return;
             }
         }
@@ -89,7 +89,7 @@ public partial class MainWindow
         var recalculated = await _apiClient.CalculatePayrollAsync(payslip.PayrollPeriodId);
         if (recalculated is null)
         {
-            ShowToast("Khoản điều chỉnh đã lưu nhưng chưa tính lại được bảng lương.", true);
+            ShowToast($"Khoản điều chỉnh đã lưu nhưng chưa tính lại được bảng lương. {_apiClient.LastManagementOperationError}", true);
             return;
         }
 
@@ -190,13 +190,13 @@ public partial class MainWindow
 
         if (!await _apiClient.DeletePayrollAdjustmentAsync(adjustment.Id))
         {
-            ShowToast("Không xóa được khoản điều chỉnh. Kỳ lương có thể đã gửi duyệt.", true);
+            ShowToast(_apiClient.LastManagementOperationError ?? "Không xóa được khoản điều chỉnh: phản hồi máy chủ không rõ nguyên nhân.", true);
             return;
         }
 
         if (await _apiClient.CalculatePayrollAsync(payslip.PayrollPeriodId) is null)
         {
-            ShowToast("Đã xóa khoản điều chỉnh nhưng chưa tính lại được bảng lương.", true);
+            ShowToast($"Đã xóa khoản điều chỉnh nhưng chưa tính lại được bảng lương. {_apiClient.LastManagementOperationError}", true);
             return;
         }
 

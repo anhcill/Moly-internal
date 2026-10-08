@@ -213,6 +213,7 @@ public sealed partial class ApiClient
             "Success" => "Thành công",
             "Failed" => "Thử lại sau",
             "DeadLetter" => "Cần rà soát",
+            "Skipped" => "Đã được thay thế",
             _ => Status
         };
 

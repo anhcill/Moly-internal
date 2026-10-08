@@ -155,7 +155,7 @@ public partial class MainWindow
 
             if (created is null)
             {
-                ShowToast("Không tạo được kỳ lương. Kiểm tra quyền tính lương hoặc dữ liệu ngày.", isError: true);
+                ShowToast(_apiClient.LastManagementOperationError ?? "Không tạo được kỳ lương: phản hồi máy chủ thiếu dữ liệu.", isError: true);
                 return;
             }
 

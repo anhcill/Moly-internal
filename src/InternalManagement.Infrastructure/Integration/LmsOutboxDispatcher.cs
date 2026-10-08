@@ -242,6 +242,21 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
             link.Status = IntegrationStatus.Success;
             link.LastSyncedAt = DateTime.UtcNow;
             link.LastSyncError = null;
+            var superseded = await _db.IntegrationOutboxes
+                .Where(other => other.CompanyId == item.CompanyId &&
+                    other.AggregateType == nameof(LmsCourseLink) &&
+                    other.AggregateId == item.AggregateId &&
+                    other.CorrelationId != item.CorrelationId &&
+                    other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                    other.Status == IntegrationStatus.DeadLetter &&
+                    other.CreatedAt < item.CreatedAt)
+                .ToListAsync(ct);
+            foreach (var previous in superseded)
+            {
+                previous.Status = IntegrationStatus.Skipped;
+                previous.LastError = $"Đã được lần đồng bộ mới thay thế. Lỗi cũ: {previous.LastError}";
+                await ResolveOutboxDeadLettersAsync(previous, ct);
+            }
             if (_accessLifecycle is not null)
             {
                 var classes = await _db.CscaClasses.AsNoTracking()
