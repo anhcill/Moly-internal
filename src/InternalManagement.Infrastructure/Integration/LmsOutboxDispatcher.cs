@@ -409,6 +409,6 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
     {
         LmsIntegrationHttpException http => http.Message,
         LmsIntegrationConfigurationException configuration => configuration.Message,
-        _ => "Unexpected LMS outbox delivery failure."
+        _ => $"Lỗi khi gửi sự kiện sang Web ({exception.GetType().Name}): {exception.Message}"
     };
 }

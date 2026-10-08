@@ -317,32 +317,44 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
+            }
 
-                foreach (var student in cls.Students.Where(student =>
+            var validStudents = classes.SelectMany(cls => cls.Students.Where(student =>
                     IsValidLmsEmail(student.Email) &&
                     !string.IsNullOrWhiteSpace(student.StudentName) &&
-                    student.StudentName.Length <= 120))
+                    student.StudentName.Length <= 120)
+                .Select(student => (Class: cls, Student: student))).ToList();
+
+            // A class enrollment is not a student identity. One Party may be
+            // enrolled in several classes and must keep one LMS account.
+            foreach (var group in validStudents.GroupBy(item => item.Student.PartyId ?? item.Student.Id))
+            {
+                var primary = group.First().Student;
+                var paidInAnyClass = group.Any(item =>
+                    item.Student.PaymentStatus == PaymentStatus.Paid &&
+                    item.Student.PaidAmount >= Math.Max(0, item.Class.TuitionFee - item.Student.DiscountAmount));
+                QueueManagementEvent(existing, "student.provisioned", new
                 {
-                    var paidInFull = student.PaymentStatus == PaymentStatus.Paid &&
-                        student.PaidAmount >= Math.Max(0, cls.TuitionFee - student.DiscountAmount);
-                    QueueManagementEvent(existing, "student.provisioned", new
-                    {
-                        StudentSourceId = student.Id.ToString("N"),
-                        FullName = student.StudentName,
-                        student.Email,
-                        Phone = student.PhoneNumber,
-                        AccountStatus = paidInFull ? "active" : "pending_payment",
-                        SourceUpdatedAt = now
-                    }, correlationId, now, actor);
-                    QueueManagementEvent(existing, "class.membership.changed", new
-                    {
-                        MembershipSourceId = student.Id.ToString("N"),
-                        ClassSourceId = cls.Id.ToString("N"),
-                        StudentSourceId = student.Id.ToString("N"),
-                        Status = "active",
-                        SourceUpdatedAt = now
-                    }, correlationId, now, actor);
-                }
+                    StudentSourceId = group.Key.ToString("N"),
+                    LegacyStudentSourceIds = group.Select(item => item.Student.Id.ToString("N")).Distinct().ToArray(),
+                    FullName = primary.StudentName,
+                    primary.Email,
+                    Phone = primary.PhoneNumber,
+                    AccountStatus = paidInAnyClass ? "active" : "pending_payment",
+                    SourceUpdatedAt = now
+                }, correlationId, now, actor);
+            }
+
+            foreach (var item in validStudents)
+            {
+                QueueManagementEvent(existing, "class.membership.changed", new
+                {
+                    MembershipSourceId = item.Student.Id.ToString("N"),
+                    ClassSourceId = item.Class.Id.ToString("N"),
+                    StudentSourceId = (item.Student.PartyId ?? item.Student.Id).ToString("N"),
+                    Status = "active",
+                    SourceUpdatedAt = now
+                }, correlationId, now, actor);
             }
         }
         await _db.SaveChangesAsync(ct);

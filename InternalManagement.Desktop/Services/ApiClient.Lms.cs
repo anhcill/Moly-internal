@@ -14,7 +14,8 @@ public sealed partial class ApiClient
     public async Task<LmsIntegrationOverviewItem?> GetLmsIntegrationOverviewAsync(CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync("api/v1/lms-integration/overview", ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Tải tổng quan đồng bộ", ct));
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsIntegrationOverviewItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -29,7 +30,8 @@ public sealed partial class ApiClient
         {
             using var response = await SendWithRefreshAsync(
                 () => _httpClient.GetAsync($"api/v1/lms-integration/course-mappings?pageIndex={page}&pageSize=200", ct), ct);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+                throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Tải danh sách khóa học đồng bộ", ct));
             var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PaginatedData<LmsCourseMappingItem>>>(_jsonOptions, ct);
             if (envelope?.Data is null) return null;
             totalCount = envelope.Data.TotalCount;
@@ -49,10 +51,7 @@ public sealed partial class ApiClient
             () => _httpClient.PutAsJsonAsync($"api/v1/lms-integration/course-mappings/{courseId}", request, _jsonOptions, ct),
             ct);
         if (!response.IsSuccessStatusCode)
-        {
-            var failure = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsCourseMappingItem>>(_jsonOptions, ct);
-            throw new InvalidOperationException(failure?.Message ?? "Không lưu được cấu hình đồng bộ Web CSCA Course.");
-        }
+            throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Lưu liên kết khóa học", ct));
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsCourseMappingItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -61,7 +60,8 @@ public sealed partial class ApiClient
     public async Task<PaginatedData<LmsOutboxItem>?> GetLmsOutboxAsync(CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync("api/v1/lms-integration/outbox?pageSize=100", ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Tải tiến trình đồng bộ", ct));
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PaginatedData<LmsOutboxItem>>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -71,17 +71,52 @@ public sealed partial class ApiClient
     {
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PostAsync($"api/v1/lms-integration/outbox/{outboxId}/retry", null, ct), ct);
-        return response.IsSuccessStatusCode;
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Thử lại lệnh đồng bộ", ct));
+        return true;
     }
 
     public async Task<LmsOutboxDispatchResultItem?> DispatchLmsOutboxAsync(int batchSize = 20, CancellationToken ct = default)
     {
         using var response = await SendWithRefreshAsync(
             () => _httpClient.PostAsync($"api/v1/lms-integration/outbox/dispatch?batchSize={Math.Clamp(batchSize, 1, 100)}", null, ct), ct);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException(await ReadLmsFailureAsync(response, "Gửi dữ liệu sang Web Course", ct));
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LmsOutboxDispatchResultItem>>(_jsonOptions, ct);
         return envelope?.Data;
+    }
+
+    private static async Task<string> ReadLmsFailureAsync(HttpResponseMessage response, string operation, CancellationToken ct)
+    {
+        var body = await response.Content.ReadAsStringAsync(ct);
+        string? detail = null;
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            if (document.RootElement.TryGetProperty("message", out var message) &&
+                message.ValueKind == JsonValueKind.String)
+                detail = message.GetString();
+            if (document.RootElement.TryGetProperty("errors", out var errors) &&
+                errors.ValueKind == JsonValueKind.Array)
+            {
+                var errorDetails = errors.EnumerateArray()
+                    .Where(item => item.ValueKind == JsonValueKind.String)
+                    .Select(item => item.GetString())
+                    .Where(item => !string.IsNullOrWhiteSpace(item));
+                var joined = string.Join("; ", errorDetails);
+                if (!string.IsNullOrWhiteSpace(joined))
+                    detail = string.IsNullOrWhiteSpace(detail) ? joined : $"{detail} {joined}";
+            }
+        }
+        catch (JsonException)
+        {
+            if (response.Content.Headers.ContentType?.MediaType == "text/plain")
+                detail = body;
+        }
+
+        detail = string.IsNullOrWhiteSpace(detail) ? response.ReasonPhrase : detail.Trim();
+        return $"{operation} thất bại (HTTP {(int)response.StatusCode}): {detail}";
     }
 
 }

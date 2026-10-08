@@ -37,6 +37,8 @@ public partial class MainWindow
             LmsSelectedCourseStatusBadge.Text = "Chưa chọn khóa học";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+            LmsSelectedCourseErrorBorder.Visibility = Visibility.Collapsed;
+            LmsSelectedCourseErrorText.Text = string.Empty;
             LmsExternalCourseIdBox.Text = string.Empty;
             LmsCourseSlugBox.Text = string.Empty;
             LmsCourseIdBox.Text = string.Empty;
@@ -45,6 +47,10 @@ public partial class MainWindow
         }
 
         LmsSelectedCourseText.Text = mapping.CourseTitle;
+        LmsSelectedCourseErrorText.Text = mapping.LastSyncError ?? string.Empty;
+        LmsSelectedCourseErrorBorder.Visibility = string.IsNullOrWhiteSpace(mapping.LastSyncError)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
         LmsExternalCourseIdBox.Text = mapping.ExternalCourseId ?? mapping.CourseSourceId;
 
         var existingSlug = mapping.LmsCourseSlug ?? mapping.CourseSlug;

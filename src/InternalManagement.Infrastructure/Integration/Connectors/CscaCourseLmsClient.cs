@@ -56,8 +56,14 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
             var status = statusValue.GetString();
             if (string.Equals(status, "SUCCESS", StringComparison.OrdinalIgnoreCase)) return;
             if (string.Equals(status, "DEAD_LETTER", StringComparison.OrdinalIgnoreCase))
+            {
+                var detail = TryGetProperty(data, "lastError", out var lastError) &&
+                    lastError.ValueKind == JsonValueKind.String
+                    ? lastError.GetString()
+                    : null;
                 throw new LmsIntegrationConfigurationException(
-                    $"CSCA Course LMS rejected management event '{command.EventType}'; inspect the LMS sync queue.");
+                    $"Web CSCA Course từ chối sự kiện '{command.EventType}': {detail ?? "không có chi tiết lỗi từ Web"}.");
+            }
         }
         throw new LmsIntegrationHttpException(
             "CSCA Course LMS has not completed the management event yet.",
@@ -148,9 +154,23 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
             return response;
 
         var statusCode = response.StatusCode;
+        var responseBody = await response.Content.ReadAsStringAsync(ct);
+        string? detail = null;
+        try
+        {
+            using var document = JsonDocument.Parse(responseBody);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                TryGetProperty(document.RootElement, "message", out var message) &&
+                message.ValueKind == JsonValueKind.String)
+                detail = message.GetString();
+        }
+        catch (JsonException)
+        {
+            // Non-JSON upstream responses do not contain a trusted user-facing detail.
+        }
         response.Dispose();
         throw new LmsIntegrationHttpException(
-            $"CSCA Course LMS returned HTTP {(int)statusCode}.",
+            $"Web CSCA Course trả HTTP {(int)statusCode}: {detail ?? "không có chi tiết lỗi từ Web"}.",
             statusCode);
     }
 

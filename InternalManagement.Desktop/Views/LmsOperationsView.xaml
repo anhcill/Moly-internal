@@ -170,6 +170,13 @@
                                 </Grid>
                             </Border>
 
+                            <Border x:Name="LmsSelectedCourseErrorBorder" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="7" Padding="8,6" Margin="0,0,0,6">
+                                <StackPanel>
+                                    <TextBlock Text="LỖI ĐỒNG BỘ GẦN NHẤT" FontSize="10.5" FontWeight="Bold" Foreground="#991B1B" />
+                                    <TextBlock x:Name="LmsSelectedCourseErrorText" TextWrapping="Wrap" FontSize="11" Foreground="#7F1D1D" Margin="0,3,0,0" />
+                                </StackPanel>
+                            </Border>
+
                             <!-- Input Fields Grid -->
                             <Grid Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
