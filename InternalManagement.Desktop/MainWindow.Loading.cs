@@ -100,7 +100,7 @@ public partial class MainWindow
                 filtered = filtered.Where(c => string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
             }
             CscaCourseFilterBanner.Visibility = Visibility.Visible;
-            CscaCourseFilterText.Text = $"🎯 Đang lọc các lớp thuộc khóa học: {title} ({filtered.Count()} lớp)";
+            CscaCourseFilterText.Text = $"Đang lọc các lớp thuộc khóa học: {title} ({filtered.Count()} lớp)";
         }
         else
         {

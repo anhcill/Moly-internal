@@ -59,6 +59,7 @@ public partial class MainWindow : Window, IDisposable
         _dashboardViewModel = new DashboardViewModel(_apiClient);
         _sessionStore = new SessionStore();
         InitializeComponent();
+        ApplySidebarNavigationContent(false);
         ViewEmployeesContainer.SetViewModel(new EmployeesViewModel(_apiClient));
         LoginContainer.ActionRequested += DispatchFeatureViewAction;
         ViewDashboardContainer.DataContext = _dashboardViewModel;
@@ -107,6 +108,7 @@ public partial class MainWindow : Window, IDisposable
         ViewAttendanceContainer.RefreshRequested += RefreshAttendance_Click;
         ViewAttendanceContainer.DownloadTemplateRequested += DownloadAttendanceTemplate_Click;
         ViewAttendanceContainer.ImportRequested += ImportAttendance_Click;
+        ViewAttendanceContainer.RecordRequested += RecordAttendance_Click;
         ViewCompanyFinanceContainer.RefreshRequested += RefreshCompanyFinance_Click;
         ViewCoursesContainer.ActionRequested += DispatchFeatureViewAction;
         ViewEmployeesContainer.BlacklistRequested += BlacklistEmployee_Click;

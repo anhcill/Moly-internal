@@ -29,7 +29,7 @@
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SẢN PHẨM" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                  <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                     <TextBlock Text="👗" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE719;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionProductsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -54,7 +54,7 @@
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ BIẾN THỂ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                  <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                     <TextBlock Text="🏷️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8EC;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionVariantsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -79,7 +79,7 @@
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG TỒN KHO" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                  <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                     <TextBlock Text="📦" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7B8;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionTotalOnHand" Text="0" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -104,7 +104,7 @@
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="NHÀ CUNG CẤP &amp; PHIẾU NHẬP" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                  <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                     <TextBlock Text="🏭" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE80A;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionSuppliersCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -128,13 +128,13 @@
                                 <TextBlock Text="Chọn một sản phẩm để xem các biến thể SKU ở tab kế bên." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,8" />
                                 <Grid Width="300" Height="36" HorizontalAlignment="Left">
                                     <TextBox x:Name="FashionProductSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="FashionProductSearch_TextChanged" />
-                                    <TextBlock Text="🔍  Tìm mã hoặc tên sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="FashionProductSearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721;  Tìm mã hoặc tên sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="FashionProductSearchPlaceholder" />
                                 </Grid>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                <Button Content="🔄 Tải Lại" Click="RefreshFashionProducts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshFashionProducts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="✎ Sửa" Click="EditFashionProductDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="🗑 Xóa" Click="DeleteFashionProduct_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteFashionProduct_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
                                 <Button Content="+ Tạo Sản Phẩm Mới" Click="CreateProductDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
@@ -175,9 +175,9 @@
                                 <TextBlock x:Name="FashionVariantContextText" Text="Chưa chọn sản phẩm" FontSize="11.5" Foreground="#6366F1" Margin="0,6,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                                <Button Content="🔄 Tải Lại" Click="RefreshFashionVariants_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshFashionVariants_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="✎ Sửa" Click="EditFashionVariantDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="🗑 Xóa" Click="DeleteFashionVariant_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteFashionVariant_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
                                 <Button Content="+ Thêm SKU" Click="AddVariantDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
@@ -222,11 +222,11 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Grid Width="250" Height="36" Margin="0,0,10,0">
                                     <TextBox x:Name="SupplierSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="SupplierSearch_TextChanged" />
-                                    <TextBlock Text="🔍 Tìm nhà cung cấp..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SupplierSearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm nhà cung cấp..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SupplierSearchPlaceholder" />
                                 </Grid>
-                                <Button Content="🔄 Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="✎ Sửa" Click="EditSupplierDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="🗑 Xóa" Click="DeleteSupplier_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteSupplier_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
                                 <Button Content="+ Thêm nhà cung cấp" Click="CreateSupplierDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
@@ -269,12 +269,12 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Grid Width="250" Height="36" Margin="0,0,10,0">
                                     <TextBox x:Name="ReceiptSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="ReceiptSearch_TextChanged" />
-                                    <TextBlock Text="🔍 Tìm mã phiếu..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="ReceiptSearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm mã phiếu..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="ReceiptSearchPlaceholder" />
                                 </Grid>
-                                <Button Content="🔄 Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshReceipts_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="✎ Sửa thông tin" Click="EditPurchaseReceiptDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="↩ Hủy / hoàn kho" Click="CancelPurchaseReceipt_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="📥 Lập phiếu nhập" Click="CreateReceiptDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE896; Lập phiếu nhập" Click="CreateReceiptDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -327,12 +327,12 @@
                                 </StackPanel>
                                 <Grid Width="300" Height="36" HorizontalAlignment="Left">
                                     <TextBox x:Name="InventorySearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="InventorySearch_TextChanged" />
-                                    <TextBlock Text="🔍  Tìm SKU hoặc sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="InventorySearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721;  Tìm SKU hoặc sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="InventorySearchPlaceholder" />
                                 </Grid>
                                 <TextBlock x:Name="InventorySelectedContextText" Text="Chọn một SKU để xem nhật ký giao dịch của SKU đó ở tab Nhật ký giao dịch." FontSize="11" Foreground="#64748B" Margin="0,5,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                <Button Content="🔄 Tải Lại" Click="RefreshInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="⬇ Xuất CSV" Click="ExportInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="⚡ Điều Chỉnh Kiểm Kê Kho" Click="StockAdjustmentDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" />
                             </StackPanel>
@@ -379,7 +379,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="↺ Xem toàn bộ" Click="RefreshInventoryMovements_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="🔄 Tải theo SKU đã chọn" Click="RefreshSelectedInventoryMovements_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải theo SKU đã chọn" Click="RefreshSelectedInventoryMovements_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -420,7 +420,7 @@
                                 <TextBlock x:Name="ManufacturingStatusText" Text="Đang tải dữ liệu..." FontSize="11.5" Foreground="#64748B" Margin="0,5,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="🔄 Tải Lại" Click="RefreshManufacturing_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshManufacturing_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -450,7 +450,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="NGUYÊN VẬT LIỆU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                                 <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                                    <TextBlock Text="🧵" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D5;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingMaterialsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -474,7 +474,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="BOM ĐANG DÙNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                                 <Border Grid.Row="0" Grid.Column="1" Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                                    <TextBlock Text="📐" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE809;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingBomsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#7C3AED" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -602,7 +602,7 @@
                                             </ComboBox>
                                             <Grid Width="200" Height="36">
                                                 <TextBox x:Name="ProductionOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="ProductionOrderSearch_TextChanged" />
-                                                <TextBlock x:Name="ProductionOrderSearchPlaceholder" Text="🔍 Search..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                                <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="ProductionOrderSearchPlaceholder" Text="&#xE721; Search..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
                                             </Grid>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -690,9 +690,9 @@
                                 <TextBlock Text="Nhấp đúp một dòng để sửa thông tin kho. Kho mặc định được ưu tiên gán khi tạo phiếu nhập mới." TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="🔄 Tải Lại" Click="RefreshWarehouses_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshWarehouses_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
                                 <Button Content="✎ Sửa" Click="EditWarehouseDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" />
-                                <Button Content="🗑 Xóa" Click="DeleteWarehouse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteWarehouse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Margin="0,0,8,0" Height="36" />
                                 <Button Content="+ Thêm kho" Click="CreateWarehouseDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
                             </StackPanel>
                         </Grid>
@@ -723,7 +723,7 @@
                                 <TextBlock Text="Nhấp đúp để xem/sửa đơn. Hủy đơn tự động hoàn trả tồn kho đang giữ; đơn đã giao xử lý đổi trả đúng quy trình." TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,8" />
                                 <Grid Width="300" Height="36" HorizontalAlignment="Left">
                                     <TextBox x:Name="SalesOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="SalesOrderSearch_TextChanged" />
-                                    <TextBlock Text="🔍 Tìm mã đơn, khách hàng, SĐT..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SalesOrderSearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm mã đơn, khách hàng, SĐT..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="SalesOrderSearchPlaceholder" />
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                     <ComboBox x:Name="SalesOrderChannelFilter" Width="175" Height="36" SelectedIndex="0" SelectedValuePath="Tag" SelectionChanged="SalesOrderFilter_SelectionChanged" VerticalContentAlignment="Center">
@@ -747,13 +747,13 @@
                                 <TextBlock x:Name="SalesOrderSummaryText" Text="Chưa có dữ liệu đơn hàng." FontSize="11.5" Foreground="#2563EB" Margin="0,6,0,0" />
                             </StackPanel>
                             <WrapPanel Grid.Column="1" Width="580" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Button Content="🔄 Tải Lại" Click="RefreshSalesOrders_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshSalesOrders_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
                                 <Button Content="⌕ Chi tiết" Click="ViewSalesOrderDetails_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
                                 <Button Content="✎ Sửa" Click="EditSalesOrderDialog_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
                                 <Button Content="↩ Hủy đơn" Click="CancelSalesOrder_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
-                                <Button Content="🚚 Giao phần còn lại" Click="DeliverSalesOrder_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
-                                <Button Content="💳 Ghi nhận thu" Click="RecordSalesOrderPayment_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
-                                <Button Content="🧾 Hóa đơn" Click="IssueSalesOrderDocument_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE7F4; Giao phần còn lại" Click="DeliverSalesOrder_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8D4; Ghi nhận thu" Click="RecordSalesOrderPayment_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8A5; Hóa đơn" Click="IssueSalesOrderDocument_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,6" Height="36" />
                                 <Button Content="+ Tạo đơn" Click="CreateSalesOrderDialog_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,0,6" />
                             </WrapPanel>
                         </Grid>

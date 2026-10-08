@@ -146,6 +146,14 @@ public sealed partial class ApiClient
         };
     }
 
+    public sealed record RecordAttendanceModel(
+        Guid EmployeeId,
+        DateOnly Date,
+        TimeOnly? CheckInTime,
+        TimeOnly? CheckOutTime,
+        decimal WorkHours,
+        string Status);
+
     public sealed record AttendanceSummaryItem(
         int TotalRecords,
         int PresentCount,

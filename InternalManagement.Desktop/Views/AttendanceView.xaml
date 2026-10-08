@@ -24,7 +24,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG LƯỢT CHẤM CÔNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                        <TextBlock Text="📋" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8A5;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
@@ -124,12 +124,13 @@
                     <DatePicker x:Name="AttendanceFromDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
                     <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
                     <DatePicker x:Name="AttendanceToDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
-                    <Button Content="🔍 Lọc" Click="FilterAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE721; Lọc" Click="FilterAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Content="Nhập giờ công" Click="RecordAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,8,0" />
                     <Button Content="⬇ Tải mẫu Excel" Click="DownloadAttendanceTemplate_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                    <Button Content="📂 Import File Excel / CSV" Click="ImportAttendance_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,8,0" />
-                    <Button Content="🔄 Tải Lại" Click="RefreshAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" />
+                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE8B7; Import File Excel / CSV" Click="ImportAttendance_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,8,0" />
+                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" />
                 </StackPanel>
             </Grid>
         </Border>

@@ -66,11 +66,12 @@ public static class PayrollWorkTypes
     public const string SalesCommission = "SALES_COMMISSION";
     public const string StudentReferral = "STUDENT_REFERRAL";
     public const string Marketing = "MARKETING";
+    public const string MarketingReferral = "MARKETING_REFERRAL";
     public const string Other = "OTHER";
 
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
-        QuestionPosted, QuestionCompleted, Project, SalesCommission, StudentReferral, Marketing, Other
+        QuestionPosted, QuestionCompleted, Project, SalesCommission, StudentReferral, Marketing, MarketingReferral, Other
     };
 }
 

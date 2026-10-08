@@ -56,13 +56,13 @@ public partial class MainWindow
 
         if (isActive)
         {
-            LmsSelectedCourseStatusBadge.Text = "🟢 ĐÃ KÍCH HOẠT CẤP QUYỀN";
+            LmsSelectedCourseStatusBadge.Text = "ĐÃ KÍCH HOẠT CẤP QUYỀN";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
         }
         else if (string.Equals(mapping.Status, "Pending", StringComparison.OrdinalIgnoreCase))
         {
-            LmsSelectedCourseStatusBadge.Text = "🟡 ĐÃ LIÊN KẾT (CHƯA BẬT)";
+            LmsSelectedCourseStatusBadge.Text = "ĐÃ LIÊN KẾT (CHƯA BẬT)";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(254, 243, 199));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(146, 64, 14));
         }

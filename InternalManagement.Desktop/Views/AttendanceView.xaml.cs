@@ -15,6 +15,7 @@ public partial class AttendanceView : UserControl
     public event RoutedEventHandler? RefreshRequested;
     public event RoutedEventHandler? DownloadTemplateRequested;
     public event RoutedEventHandler? ImportRequested;
+    public event RoutedEventHandler? RecordRequested;
 
     public DateOnly? FromDate => AttendanceFromDatePicker.SelectedDate is { } date
         ? DateOnly.FromDateTime(date) : null;
@@ -41,4 +42,5 @@ public partial class AttendanceView : UserControl
     private void RefreshAttendance_Click(object sender, RoutedEventArgs e) => RefreshRequested?.Invoke(sender, e);
     private void DownloadAttendanceTemplate_Click(object sender, RoutedEventArgs e) => DownloadTemplateRequested?.Invoke(sender, e);
     private void ImportAttendance_Click(object sender, RoutedEventArgs e) => ImportRequested?.Invoke(sender, e);
+    private void RecordAttendance_Click(object sender, RoutedEventArgs e) => RecordRequested?.Invoke(sender, e);
 }

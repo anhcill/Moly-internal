@@ -9,7 +9,7 @@ public partial class CompanyFinanceView : UserControl
     public CompanyFinanceView()
     {
         InitializeComponent();
-        FinanceFromDatePicker.SelectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        FinanceFromDatePicker.SelectedDate = new DateTime(DateTime.Today.Year, 1, 1);
         FinanceToDatePicker.SelectedDate = DateTime.Today;
     }
 

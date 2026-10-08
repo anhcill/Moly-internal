@@ -145,7 +145,7 @@ Trường mở rộng trong hồ sơ nhân viên:
 | Trường | Ý nghĩa |
 |---|---|
 | `employmentType` | Enum: `0 = FULL_TIME`, `1 = PART_TIME` |
-| `partTimeCalculationMethod` | Với part-time: `0 = HOURLY`, `1 = SHIFT` |
+| `partTimeCalculationMethod` | Với part-time: `0 = HOURLY`, `1 = SHIFT`, `2 = OUTPUT` |
 | `partTimeUnitRate` | Đơn giá theo giờ hoặc theo ca; bắt buộc lớn hơn 0 với part-time |
 | `cvUrlOrPath` | URL/đường dẫn CV |
 | `professionalSummary` | Tóm tắt chuyên môn |
@@ -158,9 +158,10 @@ Mã khoản lương từ `GET /api/v1/payroll/component-types`: `ALLOWANCE`, `KP
 
 Công thức hiện hành:
 
-- Full-time: lương công = `baseSalary × actualWorkDays / 22`; nếu kỳ hoàn toàn chưa có chấm công, hành vi tương thích hiện tại mặc định 22 ngày.
+- Full-time: lương công = `baseSalary × actualWorkDays / 22`; nếu kỳ hoàn toàn chưa có chấm công, API từ chối tính lương và yêu cầu nhập chấm công.
 - Part-time theo giờ: `partTimeUnitRate × actualWorkHours`; theo ca: `partTimeUnitRate × actualShifts`. Không có chấm công thì số giờ/ca bằng 0.
-- Tổng thu nhập = lương công + trợ cấp + KPI + thưởng khác + làm thêm giờ.
+- Theo đầu việc: cộng các dòng `payroll_work_entries` chưa hủy; mỗi dòng = `quantity × unitRate`. Loại `MARKETING_REFERRAL` và `STUDENT_REFERRAL` yêu cầu `quantity` là số người nguyên dương.
+- Tổng thu nhập = lương công + tiền công đầu việc + trợ cấp + KPI + thưởng khác + làm thêm giờ.
 - Tổng khấu trừ = BHYT + khấu trừ khác; thực lĩnh = `max(0, tổng thu nhập - tổng khấu trừ)`.
 
 ### 2.5 Khách hàng & kho thông tin nội bộ (`/api/v1/noi-bo`)

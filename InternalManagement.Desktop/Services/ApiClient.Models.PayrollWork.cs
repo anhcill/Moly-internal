@@ -27,6 +27,7 @@ public sealed partial class ApiClient
             "SALES_COMMISSION" => "Hoa hồng sale",
             "STUDENT_REFERRAL" => "Học viên giới thiệu / tuyển được",
             "MARKETING" => "Marketing",
+            "MARKETING_REFERRAL" => "Marketing — người giới thiệu",
             _ => "Đầu việc khác"
         };
 

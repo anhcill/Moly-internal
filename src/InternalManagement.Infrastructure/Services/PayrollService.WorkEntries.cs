@@ -52,6 +52,9 @@ public sealed partial class PayrollService
             decimal.Round(request.UnitRate, 2) != request.UnitRate ||
             request.WorkDate > period.EndDate)
             return Result<PayrollWorkEntryDto>.Failure("Số lượng, đơn giá hoặc ngày hoàn thành không hợp lệ.");
+        if (workType is (PayrollWorkTypes.StudentReferral or PayrollWorkTypes.MarketingReferral) &&
+            request.Quantity != decimal.Truncate(request.Quantity))
+            return Result<PayrollWorkEntryDto>.Failure("Số người giới thiệu phải là số nguyên dương.");
         if (request.EvidenceUrl?.Length > 1000)
             return Result<PayrollWorkEntryDto>.Failure("Đường dẫn chứng từ quá dài.");
 

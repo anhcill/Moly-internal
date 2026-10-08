@@ -388,68 +388,91 @@ public partial class MainWindow
     {
         var navigationItems = new[]
         {
-            (Item: NavDashboard, Expanded: "⌂   Tổng quan", Compact: "⌂"),
-            (Item: NavCompanyFinance, Expanded: "₫   Dòng tiền & lợi nhuận", Compact: "₫"),
-            (Item: NavSync, Expanded: "◌   Nhật ký hệ thống", Compact: "◌"),
-            (Item: NavCustomers, Expanded: "♧   Học viên & khách hàng", Compact: "♧"),
-            (Item: NavCourses, Expanded: "▤   Khóa học & lớp học", Compact: "▤"),
-            (Item: NavCsca, Expanded: "▦   Lớp học CSCA", Compact: "▦"),
-            (Item: NavLms, Expanded: "◈   Đồng bộ Web CSCA", Compact: "◈"),
-            (Item: NavInterview, Expanded: "◉   Mock Interview", Compact: "◉"),
-            (Item: NavQuestions, Expanded: "☷   Ngân hàng đề & câu hỏi", Compact: "☷"),
-            (Item: NavTechResources, Expanded: "▤   Kho đề & tài liệu", Compact: "▤"),
-            (Item: NavTechInternalCustomers, Expanded: "♧   Đối tác & khách hàng nội bộ", Compact: "♧"),
-            (Item: NavTechEmployees, Expanded: "♙   Nhân sự & CV", Compact: "♙"),
-            (Item: NavTechEmployeesWorking, Expanded: "1   Đang làm việc", Compact: "1"),
-            (Item: NavTechEmployeesProfiles, Expanded: "2   Hồ sơ & CV", Compact: "2"),
-            (Item: NavTechEmployeesMissingCv, Expanded: "3   Thiếu CV", Compact: "3"),
-            (Item: NavTechEmployeesResigned, Expanded: "4   Đã nghỉ việc", Compact: "4"),
-            (Item: NavTechEmployeesBlacklist, Expanded: "5   Blacklist", Compact: "5"),
-            (Item: NavTechAttendance, Expanded: "◷   Chấm công", Compact: "◷"),
-            (Item: NavTechPayroll, Expanded: "▣   Bảng lương", Compact: "▣"),
-            (Item: NavTechPayrollCreate, Expanded: "1   Tạo kỳ lương", Compact: "1"),
-            (Item: NavTechPayrollTable, Expanded: "2   Tính & phiếu lương", Compact: "2"),
-            (Item: NavTechPayrollAdjustments, Expanded: "3   Chỉnh lương · thưởng/phạt", Compact: "3"),
-            (Item: NavTechPayrollReview, Expanded: "4   Xem xét & gửi duyệt", Compact: "4"),
-            (Item: NavTechPayrollWorkflow, Expanded: "5   Duyệt · chi · phát hành", Compact: "5"),
-            (Item: NavTechPayrollMonthly, Expanded: "6   Tổng hợp theo tháng", Compact: "6"),
-            (Item: NavFashionResources, Expanded: "✎   Kế hoạch & mẫu thiết kế", Compact: "✎"),
-            (Item: NavFashion, Expanded: "▧   Sản phẩm · kho · đơn hàng", Compact: "▧"),
-            (Item: NavFashionProducts, Expanded: "1   Sản phẩm", Compact: "1"),
-            (Item: NavFashionVariants, Expanded: "2   Biến thể & SKU", Compact: "2"),
-            (Item: NavFashionSuppliers, Expanded: "3   Nhà cung cấp", Compact: "3"),
-            (Item: NavFashionReceipts, Expanded: "4   Phiếu nhập kho", Compact: "4"),
-            (Item: NavFashionManufacturing, Expanded: "5   Sản xuất & giá thành", Compact: "5"),
-            (Item: NavFashionBalances, Expanded: "6   Tồn kho", Compact: "6"),
-            (Item: NavFashionMovements, Expanded: "7   Nhật ký kho", Compact: "7"),
-            (Item: NavFashionWarehouses, Expanded: "8   Danh mục kho", Compact: "8"),
-            (Item: NavFashionOrders, Expanded: "9   Đơn hàng", Compact: "9"),
-            (Item: NavFashionInternalCustomers, Expanded: "♧   Khách hàng & đối tác nội bộ", Compact: "♧"),
-            (Item: NavFashionEmployees, Expanded: "♙   Nhân sự & CV", Compact: "♙"),
-            (Item: NavFashionEmployeesWorking, Expanded: "1   Đang làm việc", Compact: "1"),
-            (Item: NavFashionEmployeesProfiles, Expanded: "2   Hồ sơ & CV", Compact: "2"),
-            (Item: NavFashionEmployeesMissingCv, Expanded: "3   Thiếu CV", Compact: "3"),
-            (Item: NavFashionEmployeesResigned, Expanded: "4   Đã nghỉ việc", Compact: "4"),
-            (Item: NavFashionEmployeesBlacklist, Expanded: "5   Blacklist", Compact: "5"),
-            (Item: NavFashionAttendance, Expanded: "◷   Chấm công", Compact: "◷"),
-            (Item: NavFashionPayroll, Expanded: "▣   Bảng lương", Compact: "▣"),
-            (Item: NavFashionPayrollCreate, Expanded: "1   Tạo kỳ lương", Compact: "1"),
-            (Item: NavFashionPayrollTable, Expanded: "2   Tính & phiếu lương", Compact: "2"),
-            (Item: NavFashionPayrollAdjustments, Expanded: "3   Chỉnh lương · thưởng/phạt", Compact: "3"),
-            (Item: NavFashionPayrollReview, Expanded: "4   Xem xét & gửi duyệt", Compact: "4"),
-            (Item: NavFashionPayrollWorkflow, Expanded: "5   Duyệt · chi · phát hành", Compact: "5"),
-            (Item: NavFashionPayrollMonthly, Expanded: "6   Tổng hợp theo tháng", Compact: "6")
+            (Item: NavDashboard, Label: "Tổng quan"),
+            (Item: NavCompanyFinance, Label: "Dòng tiền & lợi nhuận"),
+            (Item: NavSync, Label: "Nhật ký hệ thống"),
+            (Item: NavCustomers, Label: "Học viên & khách hàng"),
+            (Item: NavCourses, Label: "Khóa học & lớp học"),
+            (Item: NavCsca, Label: "Lớp học CSCA"),
+            (Item: NavLms, Label: "Đồng bộ Web CSCA"),
+            (Item: NavInterview, Label: "Mock Interview"),
+            (Item: NavQuestions, Label: "Ngân hàng đề & câu hỏi"),
+            (Item: NavTechResources, Label: "Kho đề & tài liệu"),
+            (Item: NavTechInternalCustomers, Label: "Đối tác & khách hàng nội bộ"),
+            (Item: NavTechEmployees, Label: "Nhân sự & CV"),
+            (Item: NavTechEmployeesWorking, Label: "Đang làm việc"),
+            (Item: NavTechEmployeesProfiles, Label: "Hồ sơ & CV"),
+            (Item: NavTechEmployeesMissingCv, Label: "Thiếu CV"),
+            (Item: NavTechEmployeesResigned, Label: "Đã nghỉ việc"),
+            (Item: NavTechEmployeesBlacklist, Label: "Blacklist"),
+            (Item: NavTechAttendance, Label: "Chấm công"),
+            (Item: NavTechPayroll, Label: "Bảng lương"),
+            (Item: NavTechPayrollCreate, Label: "Tạo kỳ lương"),
+            (Item: NavTechPayrollTable, Label: "Tính & phiếu lương"),
+            (Item: NavTechPayrollAdjustments, Label: "Chỉnh lương · thưởng/phạt"),
+            (Item: NavTechPayrollReview, Label: "Xem xét & gửi duyệt"),
+            (Item: NavTechPayrollWorkflow, Label: "Duyệt · chi · phát hành"),
+            (Item: NavTechPayrollMonthly, Label: "Tổng hợp theo tháng"),
+            (Item: NavFashionResources, Label: "Kế hoạch & mẫu thiết kế"),
+            (Item: NavFashion, Label: "Sản phẩm · kho · đơn hàng"),
+            (Item: NavFashionProducts, Label: "Sản phẩm"),
+            (Item: NavFashionVariants, Label: "Biến thể & SKU"),
+            (Item: NavFashionSuppliers, Label: "Nhà cung cấp"),
+            (Item: NavFashionReceipts, Label: "Phiếu nhập kho"),
+            (Item: NavFashionManufacturing, Label: "Sản xuất & giá thành"),
+            (Item: NavFashionBalances, Label: "Tồn kho"),
+            (Item: NavFashionMovements, Label: "Nhật ký kho"),
+            (Item: NavFashionWarehouses, Label: "Danh mục kho"),
+            (Item: NavFashionOrders, Label: "Đơn hàng"),
+            (Item: NavFashionInternalCustomers, Label: "Khách hàng & đối tác nội bộ"),
+            (Item: NavFashionEmployees, Label: "Nhân sự & CV"),
+            (Item: NavFashionEmployeesWorking, Label: "Đang làm việc"),
+            (Item: NavFashionEmployeesProfiles, Label: "Hồ sơ & CV"),
+            (Item: NavFashionEmployeesMissingCv, Label: "Thiếu CV"),
+            (Item: NavFashionEmployeesResigned, Label: "Đã nghỉ việc"),
+            (Item: NavFashionEmployeesBlacklist, Label: "Blacklist"),
+            (Item: NavFashionAttendance, Label: "Chấm công"),
+            (Item: NavFashionPayroll, Label: "Bảng lương"),
+            (Item: NavFashionPayrollCreate, Label: "Tạo kỳ lương"),
+            (Item: NavFashionPayrollTable, Label: "Tính & phiếu lương"),
+            (Item: NavFashionPayrollAdjustments, Label: "Chỉnh lương · thưởng/phạt"),
+            (Item: NavFashionPayrollReview, Label: "Xem xét & gửi duyệt"),
+            (Item: NavFashionPayrollWorkflow, Label: "Duyệt · chi · phát hành"),
+            (Item: NavFashionPayrollMonthly, Label: "Tổng hợp theo tháng")
         };
 
         foreach (var navigationItem in navigationItems)
         {
-            navigationItem.Item.Content = isCollapsed ? navigationItem.Compact : navigationItem.Expanded;
-            navigationItem.Item.ToolTip = isCollapsed ? navigationItem.Expanded.Trim() : null;
+            var expandedLabel = navigationItem.Label;
+            navigationItem.Item.Tag = NavigationIconGlyph(navigationItem.Item.Name);
+            navigationItem.Item.Content = isCollapsed ? string.Empty : expandedLabel;
+            navigationItem.Item.ToolTip = isCollapsed ? expandedLabel : null;
             navigationItem.Item.HorizontalContentAlignment = isCollapsed ? HorizontalAlignment.Center : HorizontalAlignment.Left;
             navigationItem.Item.Padding = isCollapsed ? new Thickness(0) : new Thickness(11, 0, 11, 0);
             navigationItem.Item.FontSize = isCollapsed ? 14 : 12;
         }
     }
+
+    private static string NavigationIconGlyph(string name) => name switch
+    {
+        "NavDashboard" => "\uE80F",
+        "NavCompanyFinance" => "\uE9F9",
+        "NavSync" => "\uE895",
+        "NavCustomers" or "NavTechInternalCustomers" or "NavFashionInternalCustomers" => "\uE716",
+        "NavCourses" or "NavCsca" => "\uE7BE",
+        "NavLms" => "\uE71B",
+        "NavInterview" => "\uE77B",
+        "NavQuestions" => "\uE8FD",
+        "NavTechResources" or "NavFashionResources" => "\uE8B7",
+        "NavTechEmployees" or "NavFashionEmployees" => "\uE77B",
+        "NavTechAttendance" or "NavFashionAttendance" => "\uE823",
+        "NavTechPayroll" or "NavFashionPayroll" => "\uE8EF",
+        "NavFashion" => "\uE719",
+        _ when name.Contains("Employees") => "\uE8D4",
+        _ when name.Contains("Payroll") => "\uE8A5",
+        _ when name.Contains("Fashion") => "\uE7B8",
+        _ => "\uE8A5"
+    };
 
     private bool _isEmployeeFunctionSelectionSyncing;
 

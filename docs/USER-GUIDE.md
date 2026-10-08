@@ -36,16 +36,16 @@ Luôn kiểm tra tên mảng hoặc Business Unit đang chọn trước khi tạ
 1. Chọn đúng mảng rồi mở danh sách nhân sự.
 2. Tạo/cập nhật hồ sơ, gán Business Unit và phòng ban.
 3. Chọn loại làm việc: **Toàn thời gian** (`FULL_TIME`) hoặc **Bán thời gian** (`PART_TIME`).
-4. Với nhân sự bán thời gian, bắt buộc chọn **Theo giờ** (`HOURLY`) hoặc **Theo ca** (`SHIFT`) và nhập đơn giá lớn hơn 0.
+4. Với nhân sự bán thời gian, chọn **Theo giờ** (`HOURLY`), **Theo ca** (`SHIFT`) hoặc **Theo đầu việc** (`OUTPUT`). Theo giờ/ca cần nhập đơn giá lớn hơn 0; theo đầu việc nhập đơn giá ở từng đề, dự án hoặc khoản hoa hồng.
 5. Bổ sung CV bằng đường dẫn/tệp tham chiếu, tóm tắt chuyên môn, kỹ năng và kinh nghiệm.
-6. Ghi hoặc nhập chấm công trong đúng mảng; kiểm tra tổng giờ, ngày công và số ca trước khi tính lương.
+6. Mở **Chấm công → Nhập giờ công**, chọn nhân sự, ngày và số giờ thực làm; hoặc import Excel/CSV. Kiểm tra tổng giờ, ngày công và số ca trước khi tính lương. Mỗi nhân sự có một bản ghi mỗi ngày, nhập lại ngày cũ sẽ cập nhật giờ công.
 
 CV hiện được lưu qua trường đường dẫn `cvUrlOrPath` và các trường mô tả; không nhập CV vào mảng khác chỉ để tiện tìm kiếm.
 
 ## 5. Tính và duyệt lương
 
 1. Tạo kỳ lương và chọn `businessUnitId`; kỳ đó chỉ tính nhân viên và chấm công thuộc Business Unit tương ứng.
-2. Với nhân sự part-time/cộng tác viên theo sản phẩm, chọn cách tính **Theo đầu việc** trong hồ sơ; có thể lưu ngân hàng, số tài khoản và tên chủ tài khoản để phục vụ chi trả. Thêm từng đề đã đăng/đã hoàn thành, dự án, hoa hồng sale, học viên giới thiệu/tuyển được, marketing hoặc đầu việc khác bằng mã tham chiếu, tên việc, số lượng, đơn giá và chứng từ nếu có. Với khoản học viên, nhập mã học viên hoặc mã ghi danh làm tham chiếu và kiểm tra chứng từ trước khi chốt lương; hiện hệ thống chưa tự đối soát nguồn giới thiệu từ hồ sơ học viên. Tiền công tự cộng ngay khi nhập vào kỳ đã tính; kỳ nháp được cộng lúc tính lương. Mã tham chiếu không được ghi trùng cho cùng nhân sự và loại việc.
+2. Với nhân sự part-time/cộng tác viên theo sản phẩm, chọn cách tính **Theo đầu việc** trong hồ sơ; có thể lưu ngân hàng, số tài khoản và tên chủ tài khoản để phục vụ chi trả. Thêm từng đề đã đăng/đã hoàn thành, dự án, hoa hồng sale, học viên giới thiệu/tuyển được, **marketing — người giới thiệu**, marketing theo đầu việc khác hoặc hạng mục khác bằng mã tham chiếu, tên việc, số lượng, đơn giá và chứng từ nếu có. Màn hình sẽ đổi nhãn số lượng thành số đề, số dự án, số đơn hoặc số người theo loại việc; số người giới thiệu phải là số nguyên. Với khoản giới thiệu, dùng mã chiến dịch/đợt duy nhất và kiểm tra chứng từ trước khi chốt lương; hệ thống chưa tự đối soát nguồn giới thiệu từ hồ sơ học viên. Tiền công tự cộng ngay khi nhập vào kỳ đã tính; kỳ nháp được cộng lúc tính lương. Mã tham chiếu không được ghi trùng cho cùng nhân sự và loại việc.
 3. Thêm các khoản điều chỉnh nếu có: Trợ cấp, thưởng KPI, thưởng khác, làm thêm giờ, BHYT hoặc khấu trừ khác.
 4. Chạy **Tính lương**, kiểm tra tiền công đầu việc riêng trên từng phiếu rồi thực hiện **Gửi duyệt → Phê duyệt → Đã chi → Phát hành**. Nếu nhập sai đầu việc trước khi gửi duyệt, dùng **Hủy** để đảo tiền công và giữ lịch sử; không xóa hẳn.
 5. Nhân viên chỉ xem được phiếu cá nhân sau khi phiếu đã phát hành. Số tài khoản chỉ được trả qua mục thông tin thanh toán dành cho người có quyền quản lý nhân sự, không nằm trong danh sách nhân sự thông thường.
@@ -54,6 +54,7 @@ Cách tính hiện tại:
 
 - Toàn thời gian: lương công theo ngày công trên chuẩn 22 ngày. Nếu hoàn toàn chưa có chấm công trong kỳ, hệ thống chặn tính lương và yêu cầu nhập/chốt chấm công.
 - Bán thời gian: theo giờ, ca hoặc đầu việc. Theo giờ/ca không có chấm công thì lương công bằng 0; theo đầu việc cộng các dòng việc chưa hủy, không tự áp một đơn giá chung cho mọi loại việc.
+- Nếu sửa giờ công sau khi đã tính kỳ lương nháp, chạy **Tính lương** lại trước khi gửi duyệt.
 - BHYT là khoản khấu trừ nhập bằng mã `HEALTH_INSURANCE`, chưa tự tính theo tỷ lệ.
 - Thực lĩnh không âm: tổng thu nhập trừ BHYT và các khoản khấu trừ khác, tối thiểu bằng 0.
 
@@ -94,6 +95,7 @@ Không nhập áo dài tự may như hàng mua xưởng để làm giảm giả 
 - Dùng Thu/Chi với reference/idempotency; không tạo lại giao dịch khi retry.
 - Gán đúng Business Unit cho từng phiếu thu/chi để dòng tiền đi vào đúng mảng.
 - Xem **Bảng tổng công ty** để đối chiếu Công nghệ - Giáo dục, Thời trang và tổng hai mảng trong cùng kỳ.
+- Màn hình **Dòng tiền & lợi nhuận** mặc định lọc từ ngày 01/01 của năm hiện tại. Khi lọc riêng một tháng, khoản đã thu ở tháng trước sẽ không nằm trong tổng tháng đó. Học viên đang học nhưng chưa thanh toán không tạo dòng tiền; kiểm tra học phí lớp, số đã thu và trạng thái thanh toán nếu thấy 0 đ.
 - Giao dịch chưa gán đúng mảng nằm ở mục **Dòng tiền chưa phân loại**, không được tính vào tổng hai mảng; phải phân loại trước khi chốt báo cáo.
 - Xem báo cáo theo Business Unit, mẫu, size, production batch, kênh và đơn.
 - Phân biệt `STANDARD_COST`, `ESTIMATED_COST`, `ACTUAL_COST`.

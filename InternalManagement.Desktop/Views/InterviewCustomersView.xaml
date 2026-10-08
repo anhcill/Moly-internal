@@ -17,11 +17,11 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBox x:Name="InterviewSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Margin="0,0,12,0" TextChanged="InterviewSearch_TextChanged" />
-                                    <TextBlock Text="🔍 Tìm ứng viên, gói mock..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-270,0,0,0" VerticalAlignment="Center" x:Name="InterviewSearchPlaceholder" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721; Tìm ứng viên, gói mock..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="-270,0,0,0" VerticalAlignment="Center" x:Name="InterviewSearchPlaceholder" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <Button Content="🌐 Đồng bộ website" Click="SyncInterviewFromWebsite_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                    <Button Content="🔄 Tải Lại" Click="RefreshInterview_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE774; Đồng bộ website" Click="SyncInterviewFromWebsite_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
+                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshInterview_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
                                     <Button Content="+ Đặt Lịch Mock Mới" Click="CreateInterviewCustomerDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="16,0" />
                                 </StackPanel>
                             </Grid>
@@ -43,7 +43,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ ỨNG VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                        <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding CustomerCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
                                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Khách hàng đăng ký" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -64,7 +64,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ BUỔI PHỎNG VẤN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                        <TextBlock Text="📅" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding SessionCount}" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
                                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Lịch mock phỏng vấn" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -85,7 +85,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                        <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding RevenueText}" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
                                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />

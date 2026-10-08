@@ -156,12 +156,12 @@ public sealed partial class ApiClient
     {
         public string StatusLabel => Status switch
         {
-            "Success" => "🟢 Sẵn sàng cấp quyền",
-            "Pending" => "🟡 Đã liên kết (chưa bật)",
-            "Processing" => "🔄 Đang xử lý",
-            "Failed" => "🔴 Lỗi đồng bộ",
-            "DeadLetter" => "⚠️ Cần rà soát",
-            _ => "⚪ Chưa liên kết Web"
+            "Success" => "Sẵn sàng cấp quyền",
+            "Pending" => "Đã liên kết (chưa bật)",
+            "Processing" => "Đang xử lý",
+            "Failed" => "Lỗi đồng bộ",
+            "DeadLetter" => "Cần rà soát",
+            _ => "Chưa liên kết Web"
         };
 
         public string DisplaySlug => !string.IsNullOrWhiteSpace(LmsCourseSlug)
@@ -193,23 +193,23 @@ public sealed partial class ApiClient
     {
         public string EventDisplayName => EventType switch
         {
-            "lms.student.provision.requested" or "student.provisioned" => "👤 Cấp tài khoản học viên",
-            "course.upserted" => "📚 Đồng bộ khóa học",
-            "class.upserted" => "🏫 Đồng bộ lớp học",
-            "class.teacher.assigned" => "👨‍🏫 Phân công giảng viên",
-            "teacher.upserted" => "👨‍🏫 Đồng bộ giảng viên",
-            "entitlement.changed" => "🔑 Cập nhật quyền học",
-            "payment.refunded" => "↩️ Hoàn tiền / Khóa quyền",
+            "lms.student.provision.requested" or "student.provisioned" => "Cấp tài khoản học viên",
+            "course.upserted" => "Đồng bộ khóa học",
+            "class.upserted" => "Đồng bộ lớp học",
+            "class.teacher.assigned" => "Phân công giảng viên",
+            "teacher.upserted" => "Đồng bộ giảng viên",
+            "entitlement.changed" => "Cập nhật quyền học",
+            "payment.refunded" => "Hoàn tiền / Khóa quyền",
             _ => EventType
         };
 
         public string StatusLabel => Status switch
         {
-            "Pending" => "⏳ Chờ gửi",
-            "Processing" => "🔄 Đang gửi...",
-            "Success" => "🟢 Thành công",
-            "Failed" => "🔴 Thử lại sau",
-            "DeadLetter" => "⚠️ Cần rà soát",
+            "Pending" => "Chờ gửi",
+            "Processing" => "Đang gửi...",
+            "Success" => "Thành công",
+            "Failed" => "Thử lại sau",
+            "DeadLetter" => "Cần rà soát",
             _ => Status
         };
 

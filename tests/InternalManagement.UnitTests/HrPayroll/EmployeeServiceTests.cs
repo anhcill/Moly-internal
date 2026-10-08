@@ -62,6 +62,29 @@ public class EmployeeServiceTests
     }
 
     [Fact]
+    public async Task CreateAndUpdateEmployee_WithLocalCalendarDate_ShouldStoreUtcWithoutChangingTheDay()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+        var joined = new DateTime(2026, 10, 8, 0, 0, 0, DateTimeKind.Local);
+        var created = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-DATE", "Nhân sự ngày vào làm", "date@moli.local", null, null, 0,
+            JoinedDate: joined), CancellationToken.None);
+
+        created.Succeeded.Should().BeTrue();
+        var employee = await db.Employees.SingleAsync(x => x.Id == created.Value!.Id);
+        employee.JoinedDate!.Value.Kind.Should().Be(DateTimeKind.Utc);
+        employee.JoinedDate.Value.Date.Should().Be(joined.Date);
+
+        var changed = new DateTime(2026, 10, 9, 0, 0, 0, DateTimeKind.Unspecified);
+        var updated = await service.UpdateEmployeeAsync(employee.Id, new UpdateEmployeeRequest(
+            employee.FullName, employee.Email, null, null, 0, JoinedDate: changed), CancellationToken.None);
+        updated.Succeeded.Should().BeTrue();
+        employee.JoinedDate!.Value.Kind.Should().Be(DateTimeKind.Utc);
+        employee.JoinedDate.Value.Date.Should().Be(changed.Date);
+    }
+
+    [Fact]
     public async Task CreateEmployee_WithDuplicateCode_ShouldFail()
     {
         // Arrange

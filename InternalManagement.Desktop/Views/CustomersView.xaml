@@ -20,7 +20,7 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBox x:Name="CustomerSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm tên, SĐT, email..." Margin="0,0,10,0" TextChanged="CustomerSearch_TextChanged" />
-                                    <Button Content="🔄 Tải Lại" Click="RefreshCustomers_Click" Style="{StaticResource OutlineButton}" Height="36" />
+                                    <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải Lại" Click="RefreshCustomers_Click" Style="{StaticResource OutlineButton}" Height="36" />
                                 </StackPanel>
                             </Grid>
                         </Border>

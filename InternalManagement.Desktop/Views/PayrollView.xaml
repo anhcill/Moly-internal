@@ -42,7 +42,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG KỲ LƯƠNG" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                        <TextBlock Text="📅" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricPayrollTotalPeriods" Text="0" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,4,0,0" />
                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đã thiết lập trong hệ thống" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -63,7 +63,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="QUỸ LƯƠNG GROSS (KỲ HIỆN TẠI)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                        <TextBlock Text="💼" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricPayrollTotalGross" Text="0 đ" FontSize="22" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0" />
                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Tổng chi phí lương trước giảm trừ" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -84,7 +84,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="THỰC CHI LƯƠNG NET" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                        <TextBlock Text="💰" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricPayrollTotalNet" Text="0 đ" FontSize="22" FontWeight="Bold" Foreground="#059669" Margin="0,4,0,0" />
                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Tổng thực chi tài khoản nhân sự" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -105,7 +105,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ PHIẾU LƯƠNG ĐÃ TÍNH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#FAF5FF" CornerRadius="8" Width="30" Height="30" HorizontalAlignment="Right">
-                        <TextBlock Text="📑" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8A5;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricPayrollPayslipsCount" Text="0" FontSize="22" FontWeight="Bold" Foreground="#7C3AED" Margin="0,4,0,0" />
                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Bản ghi phiếu lương snapshot" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
@@ -139,7 +139,7 @@
                     <Button x:Name="BtnCancelPayroll" Content="Hủy bản nháp" Click="CancelPayroll_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="12,0" Margin="8,0,0,0" Visibility="Collapsed" />
                     <Button x:Name="BtnExportPayroll" Content="⬇ Xuất Excel" Click="ExportPayrollExcel_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Margin="8,0,0,0" Visibility="Collapsed" />
                 </StackPanel>
-                <Button Grid.Column="5" Content="🔄 Tải lại" Click="RefreshPayroll_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" />
+                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Grid.Column="5" Content="&#xE895; Tải lại" Click="RefreshPayroll_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" />
 
                 <Border Grid.Row="1" Grid.ColumnSpan="6" Background="#F8FAFC" CornerRadius="8" Padding="12,8" Margin="0,12,0,0" BorderBrush="#E2E8F0" BorderThickness="1">
                     <Grid>
@@ -152,7 +152,7 @@
                         <TextBlock Text="Lọc phiếu lương" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
                         <Grid Grid.Column="1" Height="32" Margin="0,0,10,0">
                             <TextBox x:Name="PayrollSearchBox" Height="32" Style="{StaticResource ModernTextBox}" TextChanged="PayrollSearch_TextChanged" AutomationProperties.Name="Tìm phiếu lương theo mã nhân viên hoặc họ tên" />
-                            <TextBlock x:Name="PayrollSearchPlaceholder" Text="🔍 Tìm mã nhân viên, họ tên..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="PayrollSearchPlaceholder" Text="&#xE721; Tìm mã nhân viên, họ tên..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                         <ComboBox x:Name="PayrollDeptFilterCombo" Grid.Column="2" Height="32" VerticalContentAlignment="Center" SelectionChanged="PayrollDeptFilter_SelectionChanged" AutomationProperties.Name="Lọc phiếu lương theo phòng ban">
                             <ComboBoxItem Content="-- Tất cả phòng ban --" IsSelected="True" />
@@ -236,7 +236,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button x:Name="BtnApprovePayrollMain" Content="Phê duyệt kỳ lương" Click="ApprovePayroll_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" Margin="0,0,8,0" Visibility="Collapsed" />
-                            <Button x:Name="BtnExportPayrollMain" Content="📄 Xuất Excel" Click="ExportPayrollExcel_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,8,0" />
+                            <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="BtnExportPayrollMain" Content="&#xE8A5; Xuất Excel" Click="ExportPayrollExcel_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,8,0" />
                             <Button x:Name="BtnViewPayslipDetailMain" Content="Xem phiếu chi tiết" Click="ViewPayslipDetail_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" />
                         </StackPanel>
                     </Grid>
@@ -391,7 +391,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem x:Name="PayrollMonthlySummaryTab" Header="📆 Tổng hợp theo tháng" FontWeight="SemiBold">
+            <TabItem FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="PayrollMonthlySummaryTab" Header="&#xE787; Tổng hợp theo tháng" FontWeight="SemiBold">
                 <Grid Margin="12,14,12,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -410,7 +410,7 @@
                             <TextBlock Text="Năm báo cáo:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <ComboBox x:Name="PayrollSummaryYearCombo" Grid.Column="1" Height="34" VerticalContentAlignment="Center" SelectionChanged="PayrollSummaryYear_SelectionChanged" />
                             <TextBlock x:Name="PayrollMonthlySummaryText" Grid.Column="2" Text="Chọn một tháng để xem danh sách người nhận lương." FontSize="11.5" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="14,0,10,0" TextWrapping="Wrap" />
-                            <Button Grid.Column="3" Content="🔄 Tải báo cáo" Click="RefreshPayrollMonthlySummary_Click" Style="{StaticResource OutlineButton}" Height="34" Padding="12,0" />
+                            <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Grid.Column="3" Content="&#xE895; Tải báo cáo" Click="RefreshPayrollMonthlySummary_Click" Style="{StaticResource OutlineButton}" Height="34" Padding="12,0" />
                         </Grid>
                     </Border>
 
@@ -451,7 +451,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem x:Name="PayrollReviewTab" Header="🔍 Xem xét &amp; gửi duyệt" FontWeight="SemiBold">
+            <TabItem FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="PayrollReviewTab" Header="&#xE721; Xem xét &amp; gửi duyệt" FontWeight="SemiBold">
                 <Grid Margin="12,14,12,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -530,8 +530,8 @@
 
                     <WrapPanel Grid.Row="1" Margin="0,12,0,12" HorizontalAlignment="Left">
                         <Button x:Name="BtnApprovePayroll" Content="✅ Phê Duyệt" Click="ApprovePayroll_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0" Visibility="Collapsed" />
-                        <Button x:Name="BtnMarkPaid" Content="💳 Đã Chi Lương" Click="MarkPaid_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0" Visibility="Collapsed" />
-                        <Button x:Name="BtnPublishPayroll" Content="📢 Phát Hành" Click="PublishPayroll_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Visibility="Collapsed" />
+                        <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="BtnMarkPaid" Content="&#xE8D4; Đã Chi Lương" Click="MarkPaid_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36" Padding="12,0" Visibility="Collapsed" />
+                        <Button FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="BtnPublishPayroll" Content="&#xE789; Phát Hành" Click="PublishPayroll_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Visibility="Collapsed" />
                     </WrapPanel>
 
                     <UniformGrid Grid.Row="2" Columns="5" VerticalAlignment="Top">
@@ -554,7 +554,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="📘 Hướng dẫn nghiệp vụ" FontWeight="SemiBold">
+            <TabItem FontFamily="Segoe MDL2 Assets, Segoe UI" Header="&#xE8F1; Hướng dẫn nghiệp vụ" FontWeight="SemiBold">
                 <views:PayrollGuideView x:Name="PayrollGuideView" />
             </TabItem>
         </TabControl>

@@ -9,6 +9,15 @@ namespace InternalManagement.Desktop.Services;
 
 public sealed partial class ApiClient
 {
+    public async Task<AttendanceItem?> RecordAttendanceAsync(RecordAttendanceModel model, CancellationToken ct = default)
+    {
+        using var response = await SendWithRefreshAsync(() =>
+            _httpClient.PostAsJsonAsync("api/v1/attendance", model, _jsonOptions, ct), ct);
+        if (!response.IsSuccessStatusCode) return null;
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<AttendanceItem>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
     public async Task<PaginatedData<AttendanceItem>?> GetAttendanceRecordsAsync(DateOnly? fromDate = null, DateOnly? toDate = null, Guid? departmentId = null, string? businessSegment = null, CancellationToken ct = default)
     {
         var url = "api/v1/attendance?pageSize=100";

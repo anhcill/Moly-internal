@@ -287,9 +287,9 @@ public sealed class EmployeeService : IEmployeeService
             ProfessionalSummary = NormalizeOptional(request.ProfessionalSummary),
             Skills = NormalizeOptional(request.Skills),
             Experience = NormalizeOptional(request.Experience),
-            JoinedDate = request.JoinedDate ?? DateTime.UtcNow,
+            JoinedDate = NormalizeCalendarDate(request.JoinedDate) ?? DateTime.UtcNow,
             Status = employeeStatus,
-            StatusChangedAt = request.StatusChangedAt ?? (employeeStatus == "Active" ? null : DateTime.UtcNow),
+            StatusChangedAt = NormalizeInstant(request.StatusChangedAt) ?? (employeeStatus == "Active" ? null : DateTime.UtcNow),
             StatusReason = NormalizeOptional(request.StatusReason),
             CreatedBy = _currentUser.Username ?? "system",
             CreatedAt = DateTime.UtcNow
@@ -413,17 +413,17 @@ public sealed class EmployeeService : IEmployeeService
         if (request.Experience != null) emp.Experience = NormalizeOptional(request.Experience);
         emp.DepartmentId = request.DepartmentId;
         emp.BusinessUnitId = request.BusinessUnitId;
-        if (request.JoinedDate.HasValue) emp.JoinedDate = request.JoinedDate.Value;
+        if (request.JoinedDate.HasValue) emp.JoinedDate = NormalizeCalendarDate(request.JoinedDate);
         var requestedStatus = NormalizeEmployeeStatus(request.Status);
         if (!string.Equals(emp.Status, requestedStatus, StringComparison.OrdinalIgnoreCase))
         {
             emp.Status = requestedStatus;
-            emp.StatusChangedAt = request.StatusChangedAt ?? DateTime.UtcNow;
+            emp.StatusChangedAt = NormalizeInstant(request.StatusChangedAt) ?? DateTime.UtcNow;
             emp.StatusReason = NormalizeOptional(request.StatusReason);
         }
         else
         {
-            if (request.StatusChangedAt.HasValue) emp.StatusChangedAt = request.StatusChangedAt;
+            if (request.StatusChangedAt.HasValue) emp.StatusChangedAt = NormalizeInstant(request.StatusChangedAt);
             if (request.StatusReason != null) emp.StatusReason = NormalizeOptional(request.StatusReason);
         }
         emp.UpdatedAt = DateTime.UtcNow;
@@ -490,6 +490,19 @@ public sealed class EmployeeService : IEmployeeService
         await _db.SaveChangesAsync(ct);
         return Result<bool>.Success(true);
     }
+
+    // The UI sends a calendar day from DatePicker. Preserve that day when storing it in UTC.
+    private static DateTime? NormalizeCalendarDate(DateTime? value) => value.HasValue
+        ? DateTime.SpecifyKind(value.Value.Date, DateTimeKind.Utc)
+        : null;
+
+    private static DateTime? NormalizeInstant(DateTime? value) => value?.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.Value.ToUniversalTime(),
+        DateTimeKind.Unspecified => DateTime.SpecifyKind(value.Value, DateTimeKind.Utc),
+        _ => null
+    };
 
     private static string? ValidateCompensation(
         EmploymentType employmentType,

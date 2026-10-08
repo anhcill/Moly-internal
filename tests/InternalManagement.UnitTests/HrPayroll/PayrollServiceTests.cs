@@ -185,26 +185,39 @@ public class PayrollServiceTests
                 "DE-001", "Đề Toán số 1", new DateOnly(2026, 8, 10), 1, 150_000m), CancellationToken.None);
         duplicate.Succeeded.Should().BeFalse();
 
+        var invalidReferral = await service.AddWorkEntryAsync(period.Value.Id,
+            new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.MarketingReferral,
+                "CAMPAIGN-001", "Người được marketing giới thiệu", new DateOnly(2026, 8, 12),
+                1.5m, 100_000m), CancellationToken.None);
+        invalidReferral.Succeeded.Should().BeFalse();
+
+        var referral = await service.AddWorkEntryAsync(period.Value.Id,
+            new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.MarketingReferral,
+                "CAMPAIGN-001", "Người được marketing giới thiệu", new DateOnly(2026, 8, 12),
+                3, 100_000m), CancellationToken.None);
+        referral.Succeeded.Should().BeTrue();
+        referral.Value!.Amount.Should().Be(300_000m);
+
         var calculated = await service.CalculatePayrollAsync(period.Value.Id, CancellationToken.None);
         calculated.Succeeded.Should().BeTrue();
-        calculated.Value!.Payslips.Single(p => p.EmployeeId == employeeId).WorkEarnings.Should().Be(300_000m);
+        calculated.Value!.Payslips.Single(p => p.EmployeeId == employeeId).WorkEarnings.Should().Be(600_000m);
 
         var second = await service.AddWorkEntryAsync(period.Value.Id,
             new CreatePayrollWorkEntryRequest(employeeId, PayrollWorkTypes.SalesCommission,
                 "ORDER-002", "Hoa hồng đơn hàng", new DateOnly(2026, 8, 20), 1, 250_000m), CancellationToken.None);
         second.Succeeded.Should().BeTrue();
         var updatedSlip = await db.Payslips.SingleAsync(p => p.PayrollPeriodId == period.Value.Id && p.EmployeeId == employeeId);
-        updatedSlip.WorkEarnings.Should().Be(550_000m);
-        updatedSlip.NetSalary.Should().Be(550_000m);
+        updatedSlip.WorkEarnings.Should().Be(850_000m);
+        updatedSlip.NetSalary.Should().Be(850_000m);
 
         var voided = await service.VoidWorkEntryAsync(first.Value.Id, CancellationToken.None);
         voided.Succeeded.Should().BeTrue();
-        updatedSlip.WorkEarnings.Should().Be(250_000m);
-        updatedSlip.NetSalary.Should().Be(250_000m);
+        updatedSlip.WorkEarnings.Should().Be(550_000m);
+        updatedSlip.NetSalary.Should().Be(550_000m);
         var history = await service.GetWorkEntriesAsync(period.Value.Id, CancellationToken.None);
-        history.Value.Should().HaveCount(2);
+        history.Value.Should().HaveCount(3);
         history.Value.Should().ContainSingle(entry => entry.ReferenceCode == "DE-001" && entry.IsVoided);
-        (await db.PayrollPeriods.SingleAsync(p => p.Id == period.Value.Id)).TotalNetAmount.Should().Be(250_000m);
+        (await db.PayrollPeriods.SingleAsync(p => p.Id == period.Value.Id)).TotalNetAmount.Should().Be(550_000m);
     }
 
     [Fact]

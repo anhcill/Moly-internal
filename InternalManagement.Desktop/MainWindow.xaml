@@ -52,7 +52,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel x:Name="SidebarBrandContainer" Orientation="Horizontal" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
-                                <Image x:Name="SidebarBrandLogo" Source="Assets/app-icon.png" Width="34" Height="34" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                <Image x:Name="SidebarBrandLogo" Source="Assets/app-icon.ico" Width="34" Height="34" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Left" />
                                 <StackPanel x:Name="SidebarBrandDetails" VerticalAlignment="Center" Margin="10,0,0,0">
                                     <TextBlock Text="MOLY" FontSize="15" FontWeight="Bold" Foreground="#FFFFFF" />
                                     <TextBlock Text="INTERNAL MANAGEMENT" FontSize="8.5" FontWeight="SemiBold" Foreground="#818CF8" Margin="0,1,0,0" />
@@ -83,13 +83,13 @@
                                 </Grid.ColumnDefinitions>
                                 <RadioButton x:Name="SegmentTechnologyButton" Grid.Column="0" GroupName="SegmentSwitcher" Style="{StaticResource SegmentPillRadioButton}" Tag="cong-nghe-giao-duc" Checked="SegmentSelector_Checked" ToolTip="Phân hệ Công nghệ - Giáo dục" Margin="0,0,2,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Text="🎓" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="&#xE7BE;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
                                         <TextBlock Text="Công nghệ" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton x:Name="SegmentFashionButton" Grid.Column="1" GroupName="SegmentSwitcher" Style="{StaticResource SegmentPillRadioButton}" Tag="thoi-trang" Checked="SegmentSelector_Checked" ToolTip="Phân hệ Thời trang" Margin="2,0,0,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Text="👗" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="&#xE719;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
                                         <TextBlock Text="Thời trang" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
@@ -102,74 +102,74 @@
                         <StackPanel>
                             <StackPanel x:Name="CompanyNavigationGroup">
                                 <TextBlock x:Name="CompanyNavigationLabel" Text="TỔNG HỢP TOÀN CÔNG TY" Style="{StaticResource SidebarSectionLabel}" Margin="8,2,0,4" />
-                                <RadioButton x:Name="NavDashboard" GroupName="MainNavigation" Content="⌂   Tổng quan" Style="{StaticResource NavRadioButton}" IsChecked="True" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCompanyFinance" GroupName="MainNavigation" Content="₫   Dòng tiền &amp; lợi nhuận" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavSync" GroupName="MainNavigation" Content="◌   Nhật ký hệ thống" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavDashboard" GroupName="MainNavigation" Content="Tổng quan" Style="{StaticResource NavRadioButton}" IsChecked="True" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavCompanyFinance" GroupName="MainNavigation" Content="Dòng tiền &amp; lợi nhuận" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavSync" GroupName="MainNavigation" Content="Nhật ký hệ thống" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                             </StackPanel>
 
                             <StackPanel x:Name="TechnologyNavigationGroup" Visibility="Collapsed">
                                 <TextBlock x:Name="TechnologyNavigationLabel" Text="CÔNG NGHỆ - GIÁO DỤC" Style="{StaticResource SidebarSectionLabel}" />
-                                <RadioButton x:Name="NavCustomers" GroupName="MainNavigation" Content="♧   Học viên &amp; khách hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCourses" GroupName="MainNavigation" Content="▤   Khóa học &amp; lớp học" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCsca" GroupName="MainNavigation" Content="▦   Lớp học CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Visibility="Collapsed" />
-                                <RadioButton x:Name="NavLms" GroupName="MainNavigation" Content="◈   Đồng bộ Web CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavInterview" GroupName="MainNavigation" Content="◉   Mock Interview" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavQuestions" GroupName="MainNavigation" Content="☷   Ngân hàng đề &amp; câu hỏi" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavTechResources" GroupName="MainNavigation" Content="▤   Kho đề &amp; tài liệu" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavTechInternalCustomers" GroupName="MainNavigation" Content="♧   Đối tác &amp; khách hàng nội bộ" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavTechEmployees" GroupName="MainNavigation" Content="♙   Nhân sự &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="EmployeesNavigationParent_Click" />
+                                <RadioButton x:Name="NavCustomers" GroupName="MainNavigation" Content="Học viên &amp; khách hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavCourses" GroupName="MainNavigation" Content="Khóa học &amp; lớp học" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavCsca" GroupName="MainNavigation" Content="Lớp học CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Visibility="Collapsed" />
+                                <RadioButton x:Name="NavLms" GroupName="MainNavigation" Content="Đồng bộ Web CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavInterview" GroupName="MainNavigation" Content="Mock Interview" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavQuestions" GroupName="MainNavigation" Content="Ngân hàng đề &amp; câu hỏi" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavTechResources" GroupName="MainNavigation" Content="Kho đề &amp; tài liệu" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavTechInternalCustomers" GroupName="MainNavigation" Content="Đối tác &amp; khách hàng nội bộ" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavTechEmployees" GroupName="MainNavigation" Content="Nhân sự &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="EmployeesNavigationParent_Click" />
                                 <StackPanel x:Name="TechnologyEmployeesSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
-                                    <RadioButton x:Name="NavTechEmployeesWorking" GroupName="TechnologyEmployeesNavigation" Content="1   Đang làm việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechEmployeesProfiles" GroupName="TechnologyEmployeesNavigation" Content="2   Hồ sơ &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechEmployeesMissingCv" GroupName="TechnologyEmployeesNavigation" Content="3   Thiếu CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechEmployeesResigned" GroupName="TechnologyEmployeesNavigation" Content="4   Đã nghỉ việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechEmployeesBlacklist" GroupName="TechnologyEmployeesNavigation" Content="5   Blacklist" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechEmployeesWorking" GroupName="TechnologyEmployeesNavigation" Content="Đang làm việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechEmployeesProfiles" GroupName="TechnologyEmployeesNavigation" Content="Hồ sơ &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechEmployeesMissingCv" GroupName="TechnologyEmployeesNavigation" Content="Thiếu CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechEmployeesResigned" GroupName="TechnologyEmployeesNavigation" Content="Đã nghỉ việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechEmployeesBlacklist" GroupName="TechnologyEmployeesNavigation" Content="Blacklist" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
-                                <RadioButton x:Name="NavTechAttendance" GroupName="MainNavigation" Content="◷   Chấm công" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavTechPayroll" GroupName="MainNavigation" Content="▣   Bảng lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="PayrollNavigationParent_Click" />
+                                <RadioButton x:Name="NavTechAttendance" GroupName="MainNavigation" Content="Chấm công" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavTechPayroll" GroupName="MainNavigation" Content="Bảng lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="PayrollNavigationParent_Click" />
                                 <StackPanel x:Name="TechnologyPayrollSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
-                                    <RadioButton x:Name="NavTechPayrollCreate" GroupName="TechnologyPayrollNavigation" Content="1   Tạo kỳ lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechPayrollTable" GroupName="TechnologyPayrollNavigation" Content="2   Tính &amp; phiếu lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechPayrollAdjustments" GroupName="TechnologyPayrollNavigation" Content="3   Chỉnh lương · thưởng/phạt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechPayrollReview" GroupName="TechnologyPayrollNavigation" Content="4   Xem xét &amp; gửi duyệt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechPayrollWorkflow" GroupName="TechnologyPayrollNavigation" Content="5   Duyệt · chi · phát hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavTechPayrollMonthly" GroupName="TechnologyPayrollNavigation" Content="6   Tổng hợp theo tháng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollCreate" GroupName="TechnologyPayrollNavigation" Content="Tạo kỳ lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollTable" GroupName="TechnologyPayrollNavigation" Content="Tính &amp; phiếu lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollAdjustments" GroupName="TechnologyPayrollNavigation" Content="Chỉnh lương · thưởng/phạt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollReview" GroupName="TechnologyPayrollNavigation" Content="Xem xét &amp; gửi duyệt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollWorkflow" GroupName="TechnologyPayrollNavigation" Content="Duyệt · chi · phát hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavTechPayrollMonthly" GroupName="TechnologyPayrollNavigation" Content="Tổng hợp theo tháng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
                             </StackPanel>
 
                             <StackPanel x:Name="FashionNavigationGroup" Visibility="Collapsed">
                                 <TextBlock x:Name="FashionNavigationLabel" Text="THỜI TRANG" Style="{StaticResource SidebarSectionLabel}" />
-                                <RadioButton x:Name="NavFashionResources" GroupName="MainNavigation" Content="✎   Kế hoạch &amp; mẫu thiết kế" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavFashion" GroupName="MainNavigation" Content="▧   Sản phẩm · kho · đơn hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="FashionNavigationParent_Click" Visibility="Collapsed" />
+                                <RadioButton x:Name="NavFashionResources" GroupName="MainNavigation" Content="Kế hoạch &amp; mẫu thiết kế" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavFashion" GroupName="MainNavigation" Content="Sản phẩm · kho · đơn hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="FashionNavigationParent_Click" Visibility="Collapsed" />
                                 <StackPanel x:Name="FashionInventorySubmenu" Margin="14,0,0,5" Visibility="Collapsed">
-                                    <RadioButton x:Name="NavFashionProducts" GroupName="FashionInventoryNavigation" Content="1   Sản phẩm" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionVariants" GroupName="FashionInventoryNavigation" Content="2   Biến thể &amp; SKU" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionSuppliers" GroupName="FashionInventoryNavigation" Content="3   Nhà cung cấp" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionReceipts" GroupName="FashionInventoryNavigation" Content="4   Phiếu nhập kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionManufacturing" GroupName="FashionInventoryNavigation" Content="5   Sản xuất &amp; giá thành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionBalances" GroupName="FashionInventoryNavigation" Content="6   Tồn kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionMovements" GroupName="FashionInventoryNavigation" Content="7   Nhật ký kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionWarehouses" GroupName="FashionInventoryNavigation" Content="8   Danh mục kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionOrders" GroupName="FashionInventoryNavigation" Content="9   Đơn hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionProducts" GroupName="FashionInventoryNavigation" Content="Sản phẩm" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionVariants" GroupName="FashionInventoryNavigation" Content="Biến thể &amp; SKU" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionSuppliers" GroupName="FashionInventoryNavigation" Content="Nhà cung cấp" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionReceipts" GroupName="FashionInventoryNavigation" Content="Phiếu nhập kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionManufacturing" GroupName="FashionInventoryNavigation" Content="Sản xuất &amp; giá thành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionBalances" GroupName="FashionInventoryNavigation" Content="Tồn kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionMovements" GroupName="FashionInventoryNavigation" Content="Nhật ký kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionWarehouses" GroupName="FashionInventoryNavigation" Content="Danh mục kho" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionOrders" GroupName="FashionInventoryNavigation" Content="Đơn hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
-                                <RadioButton x:Name="NavFashionInternalCustomers" GroupName="MainNavigation" Content="♧   Khách hàng &amp; đối tác nội bộ" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavFashionEmployees" GroupName="MainNavigation" Content="♙   Nhân sự &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="EmployeesNavigationParent_Click" />
+                                <RadioButton x:Name="NavFashionInternalCustomers" GroupName="MainNavigation" Content="Khách hàng &amp; đối tác nội bộ" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavFashionEmployees" GroupName="MainNavigation" Content="Nhân sự &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="EmployeesNavigationParent_Click" />
                                 <StackPanel x:Name="FashionEmployeesSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
-                                    <RadioButton x:Name="NavFashionEmployeesWorking" GroupName="FashionEmployeesNavigation" Content="1   Đang làm việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionEmployeesProfiles" GroupName="FashionEmployeesNavigation" Content="2   Hồ sơ &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionEmployeesMissingCv" GroupName="FashionEmployeesNavigation" Content="3   Thiếu CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionEmployeesResigned" GroupName="FashionEmployeesNavigation" Content="4   Đã nghỉ việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionEmployeesBlacklist" GroupName="FashionEmployeesNavigation" Content="5   Blacklist" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionEmployeesWorking" GroupName="FashionEmployeesNavigation" Content="Đang làm việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionEmployeesProfiles" GroupName="FashionEmployeesNavigation" Content="Hồ sơ &amp; CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionEmployeesMissingCv" GroupName="FashionEmployeesNavigation" Content="Thiếu CV" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionEmployeesResigned" GroupName="FashionEmployeesNavigation" Content="Đã nghỉ việc" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionEmployeesBlacklist" GroupName="FashionEmployeesNavigation" Content="Blacklist" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
-                                <RadioButton x:Name="NavFashionAttendance" GroupName="MainNavigation" Content="◷   Chấm công" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavFashionPayroll" GroupName="MainNavigation" Content="▣   Bảng lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="PayrollNavigationParent_Click" />
+                                <RadioButton x:Name="NavFashionAttendance" GroupName="MainNavigation" Content="Chấm công" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavFashionPayroll" GroupName="MainNavigation" Content="Bảng lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="PayrollNavigationParent_Click" />
                                 <StackPanel x:Name="FashionPayrollSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
-                                    <RadioButton x:Name="NavFashionPayrollCreate" GroupName="FashionPayrollNavigation" Content="1   Tạo kỳ lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionPayrollTable" GroupName="FashionPayrollNavigation" Content="2   Tính &amp; phiếu lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionPayrollAdjustments" GroupName="FashionPayrollNavigation" Content="3   Chỉnh lương · thưởng/phạt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionPayrollReview" GroupName="FashionPayrollNavigation" Content="4   Xem xét &amp; gửi duyệt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionPayrollWorkflow" GroupName="FashionPayrollNavigation" Content="5   Duyệt · chi · phát hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavFashionPayrollMonthly" GroupName="FashionPayrollNavigation" Content="6   Tổng hợp theo tháng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollCreate" GroupName="FashionPayrollNavigation" Content="Tạo kỳ lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollTable" GroupName="FashionPayrollNavigation" Content="Tính &amp; phiếu lương" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollAdjustments" GroupName="FashionPayrollNavigation" Content="Chỉnh lương · thưởng/phạt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollReview" GroupName="FashionPayrollNavigation" Content="Xem xét &amp; gửi duyệt" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollWorkflow" GroupName="FashionPayrollNavigation" Content="Duyệt · chi · phát hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavFashionPayrollMonthly" GroupName="FashionPayrollNavigation" Content="Tổng hợp theo tháng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -196,7 +196,7 @@
                                     <TextBlock x:Name="UserRoleBadge" Text="SystemAdmin" FontSize="9.5" FontWeight="Bold" Foreground="#C7D2FE" />
                                 </Border>
                             </StackPanel>
-                            <Button x:Name="LogoutButton" Grid.Row="0" Grid.Column="2" Content="🚪" ToolTip="Đăng xuất" Click="LogoutButton_Click" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="16" Cursor="Hand" Padding="6" />
+                            <Button x:Name="LogoutButton" Grid.Row="0" Grid.Column="2" Content="&#xE8AC;" FontFamily="Segoe MDL2 Assets" ToolTip="Đăng xuất" Click="LogoutButton_Click" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" FontSize="16" Cursor="Hand" Padding="6" />
                         </Grid>
                     </Border>
                 </Grid>

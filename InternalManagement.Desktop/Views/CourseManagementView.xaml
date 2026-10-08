@@ -19,17 +19,17 @@
                              <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                                  <Grid Width="240" Height="36" Margin="0,2,8,2">
                                      <TextBox x:Name="CourseSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CourseSearch_TextChanged" />
-                                     <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721;" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
                                      <TextBlock x:Name="CourseSearchPlaceholder" Text="Tìm theo tên khóa học..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
                                  </Grid>
                              </WrapPanel>
 
                              <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
                              <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                 <Button Content="🔄 Tải lại" Click="RefreshCourses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách khóa học" />
+                                 <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải lại" Click="RefreshCourses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách khóa học" />
                                  <Button Content="▦ Xem các lớp" Click="ViewCourseClasses_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xem danh sách lớp của khóa học đã chọn" />
                                  <Button Content="✎ Sửa" Click="EditCourseDialog_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin khóa học" />
-                                 <Button Content="🗑️ Xóa" Click="DeleteCourse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xóa khóa học đã chọn" />
+                                 <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteCourse_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xóa khóa học đã chọn" />
                                  <Button Content="+ Tạo khóa học mới" Click="CreateCourseDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
                              </WrapPanel>
                          </DockPanel>
@@ -74,7 +74,7 @@
                                 <Border Background="#4F46E5" CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
                                     <TextBlock Text="LỌC" FontSize="10" FontWeight="Bold" Foreground="White" />
                                 </Border>
-                                <TextBlock x:Name="CscaCourseFilterText" Text="🎯 Đang lọc các lớp thuộc khóa học: ..." FontWeight="SemiBold" Foreground="#3730A3" FontSize="12.5" />
+                                <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" x:Name="CscaCourseFilterText" Text="&#xE81E; Đang lọc các lớp thuộc khóa học: ..." FontWeight="SemiBold" Foreground="#3730A3" FontSize="12.5" />
                             </StackPanel>
                             <Button Grid.Column="1" Content="✕ Xem tất cả các lớp" Click="ClearCscaCourseFilter_Click" Style="{StaticResource OutlineButton}" Height="30" FontSize="11" Padding="10,2" />
                         </Grid>
@@ -96,7 +96,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ LỚP CSCA" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock Text="🏫" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7BE;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaClassCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
                                 <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đang vận hành" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
@@ -117,7 +117,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG HỌC VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock Text="👥" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
                                 <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Ghi danh các lớp" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
@@ -138,7 +138,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock Text="💰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaRevenue" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
                                 <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
@@ -180,7 +180,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="LỢI NHUẬN RÒNG (NET)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock Text="📈" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE9F9;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaNetProfit" Text="0 đ" FontSize="20" FontWeight="Bold" Foreground="#4F46E5" Margin="0,3,0,1" />
                                 <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Doanh thu trừ thù lao" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
@@ -196,7 +196,7 @@
                                 <!-- Search Box -->
                                 <Grid Width="200" Height="36" Margin="0,2,8,2">
                                     <TextBox x:Name="CscaSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CscaSearch_TextChanged" />
-                                    <TextBlock Text="🔍" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721;" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
                                     <TextBlock x:Name="CscaSearchPlaceholder" Text="Tìm mã lớp, tên lớp..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
                                 </Grid>
                                 <!-- Course Filter ComboBox -->
@@ -205,9 +205,9 @@
 
                             <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
                             <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button Content="🔄 Tải lại" Click="RefreshCsca_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách lớp" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE895; Tải lại" Click="RefreshCsca_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Tải lại danh sách lớp" />
                                 <Button Content="✎ Sửa" Click="EditCscaClass_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Chỉnh sửa thông tin lớp đã chọn" />
-                                <Button Content="🗑️ Xóa" Click="DeleteCscaClass_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xóa lớp đã chọn" />
+                                <Button FontFamily="Segoe MDL2 Assets, Segoe UI" Content="&#xE74D; Xóa" Click="DeleteCscaClass_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Padding="10,0" Margin="0,2,6,2" ToolTip="Xóa lớp đã chọn" />
                                 <Button Content="▣ Chi tiết" Click="ViewCscaClassDetails_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="10,0" Margin="0,2,8,2" ToolTip="Xem chi tiết lớp học" />
                                 <Button Content="+ Tạo lớp mới" Click="CreateCscaClassDialog_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" Margin="0,2,0,2" />
                             </WrapPanel>
@@ -264,7 +264,7 @@
                                 <TextBlock Text="Đồng bộ tự động từ hệ thống CSCA Web dành cho học viên và cộng đồng." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Background="#EEF2FF" CornerRadius="12" Padding="12,5" VerticalAlignment="Center">
-                                <TextBlock Text="🌐 CSCA Web Resource Hub" FontSize="11" FontWeight="Bold" Foreground="#4F46E5" />
+                                <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE774; CSCA Web Resource Hub" FontSize="11" FontWeight="Bold" Foreground="#4F46E5" />
                             </Border>
                         </Grid>
                     </Border>
@@ -347,7 +347,7 @@
                                 <TextBlock Text="Kiểm duyệt và quản lý các bài viết hỏi đáp, tương tác từ người học trên cổng CSCA." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
                             </StackPanel>
                             <Border Grid.Column="1" Background="#FEF3C7" CornerRadius="12" Padding="12,5" VerticalAlignment="Center">
-                                <TextBlock Text="💬 Forum Moderation" FontSize="11" FontWeight="Bold" Foreground="#B45309" />
+                                <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8F2; Forum Moderation" FontSize="11" FontWeight="Bold" Foreground="#B45309" />
                             </Border>
                         </Grid>
                     </Border>
