@@ -138,13 +138,23 @@ public sealed class WebhookProcessor : IWebhookProcessor
         return processed;
     }
 
-    public async Task<int> ReplayPendingCscaAttendanceAsync(int batchSize, CancellationToken ct)
+    public async Task<int> ReplayPendingCscaLmsAsync(int batchSize, CancellationToken ct)
     {
         var pending = await _db.IntegrationInboxes
-            .Where(item => item.Status == IntegrationStatus.Pending &&
-                item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
-                item.EventType == CscaLmsAttendanceEvent)
-            .OrderBy(item => item.ReceivedAt)
+            .Where(item => item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                (item.Status == IntegrationStatus.Pending ||
+                 item.Status == IntegrationStatus.Failed && item.ErrorMessage != null &&
+                 item.ErrorMessage.Contains("sẽ thử lại")) &&
+                (item.EventType == CscaLmsScheduleUpsertedEvent ||
+                 item.EventType == CscaLmsScheduleArchivedEvent ||
+                 item.EventType == CscaLmsSessionUpsertedEvent ||
+                 item.EventType == CscaLmsSessionCancelledEvent ||
+                 item.EventType == CscaLmsAttendanceEvent))
+            .OrderBy(item => item.EventType == CscaLmsScheduleUpsertedEvent ||
+                             item.EventType == CscaLmsScheduleArchivedEvent ? 0 :
+                             item.EventType == CscaLmsSessionUpsertedEvent ||
+                             item.EventType == CscaLmsSessionCancelledEvent ? 1 : 2)
+            .ThenBy(item => item.ReceivedAt)
             .Take(Math.Clamp(batchSize, 1, 100))
             .ToListAsync(ct);
 
@@ -154,7 +164,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             ct.ThrowIfCancellationRequested();
             try
             {
-                var result = await ProjectCscaAttendanceAsync(inbox, ct);
+                var result = await ProjectCscaLmsProjectionAsync(inbox, ct);
                 if (result.Accepted) projected++;
             }
             catch (Exception ex)
@@ -163,7 +173,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
                 inbox.ErrorMessage = TruncateError(ex.Message);
                 inbox.ProcessedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync(ct);
-                _logger.LogError(ex, "CSCA LMS attendance replay failed: {EventId}", inbox.EventId);
+                _logger.LogError(ex, "CSCA LMS projection replay failed: {EventId}", inbox.EventId);
             }
         }
 

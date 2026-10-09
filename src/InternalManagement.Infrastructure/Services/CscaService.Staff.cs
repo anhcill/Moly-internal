@@ -28,6 +28,8 @@ public sealed partial class CscaService
             return Result<CscaStaffDto>.Failure("Không tìm thấy lớp học CSCA.");
         var cls = await _db.CscaClasses
             .Include(c => c.Staff)
+                .ThenInclude(item => item.Employee)
+            .Include(c => c.Students)
             .FirstOrDefaultAsync(c => c.Id == classId && !c.IsDeleted, ct);
 
         if (cls == null)
@@ -56,6 +58,7 @@ public sealed partial class CscaService
             {
                 ClassId = classId,
                 EmployeeId = request.EmployeeId,
+                Employee = employee,
                 RoleInClass = request.RoleInClass.Trim(),
                 CompensationRate = request.CompensationRate,
                 Notes = request.Notes?.Trim(),
@@ -67,6 +70,9 @@ public sealed partial class CscaService
         }
 
         await SyncClassProfitAllocationAsync(cls, ct);
+        var syncError = await QueueTeacherRosterForWebAsync(cls, employee, ct);
+        if (syncError is not null)
+            return Result<CscaStaffDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
 
         var dto = new CscaStaffDto
@@ -97,6 +103,9 @@ public sealed partial class CscaService
         var staff = await _db.CscaClassStaffs
             .Include(item => item.Class)
                 .ThenInclude(cls => cls.Staff)
+                    .ThenInclude(item => item.Employee)
+            .Include(item => item.Class)
+                .ThenInclude(cls => cls.Students)
             .Include(item => item.Employee)
             .FirstOrDefaultAsync(item => item.Id == staffId && item.ClassId == classId, ct);
         if (staff is null || staff.Employee is null)
@@ -109,7 +118,12 @@ public sealed partial class CscaService
         staff.UpdatedBy = _currentUser.Username ?? "System";
 
         if (staff.Class is not null)
+        {
             await SyncClassProfitAllocationAsync(staff.Class, ct);
+            var syncError = await QueueTeacherRosterForWebAsync(staff.Class, staff.Employee, ct);
+            if (syncError is not null)
+                return Result<CscaStaffDto>.Failure(syncError);
+        }
 
         await _db.SaveChangesAsync(ct);
         return Result<CscaStaffDto>.Success(new CscaStaffDto
@@ -132,6 +146,10 @@ public sealed partial class CscaService
         var staff = await _db.CscaClassStaffs
             .Include(s => s.Class)
                 .ThenInclude(c => c.Staff)
+                    .ThenInclude(item => item.Employee)
+            .Include(s => s.Class)
+                .ThenInclude(c => c.Students)
+            .Include(s => s.Employee)
             .FirstOrDefaultAsync(s => s.Id == staffId && s.ClassId == classId, ct);
 
         if (staff == null)
@@ -146,6 +164,9 @@ public sealed partial class CscaService
         {
             cls.Staff.Remove(staff);
             await SyncClassProfitAllocationAsync(cls, ct);
+            var syncError = await QueueTeacherRosterForWebAsync(cls, null, ct);
+            if (syncError is not null)
+                return Result<bool>.Failure(syncError);
         }
 
         await _db.SaveChangesAsync(ct);

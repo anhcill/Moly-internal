@@ -1,18 +1,22 @@
 # CSCA LMS Calendar Projection Contract
 
-Phiên bản: 1.1
-Trạng thái: LMS lưu lịch chính; Admin và Management cùng có thể yêu cầu đổi một buổi
+Phiên bản: 1.2
+Trạng thái: Liên kết khóa/lớp lần đầu bằng tay; dữ liệu vận hành sau đó tự đồng bộ
 Timezone chuẩn: lưu instant UTC; lịch lặp hiển thị theo `Asia/Ho_Chi_Minh` mặc định.
 
 ## 1. Quyết định kiến trúc
 
-LMS lưu bản lịch mà giáo viên và học viên sử dụng. Admin sửa trực tiếp một buổi trên LMS; Management gửi lệnh sửa buổi qua outbox và nhận lại phiên bản LMS qua webhook. Lịch cố định hằng tuần không đổi khi dời một buổi.
+Người vận hành chỉ dùng nút đồng bộ để tạo hoặc liên kết khóa/lớp lần đầu. Khi `LmsCourseLink.Status = Success`, thay đổi học viên, quyền học, phân công giáo viên và lịch học được đưa vào outbox tự động; không cần quay lại màn hình đồng bộ để bấm gửi lại.
+
+Lịch được đồng bộ hai chiều. Management gửi thay đổi lịch qua outbox. Web gửi thay đổi lịch cố định, từng buổi và điểm danh về webhook; worker replay tự xử lý các sự kiện đang chờ theo thứ tự lịch cố định trước, buổi học sau. LMS giữ external ID và version dùng để chống sự kiện cũ ghi đè dữ liệu mới.
 
 | Dữ liệu | Nguồn chính | Hệ thống còn lại |
 |---|---|---|
-| Lớp, học viên, giáo viên, học phí, quyền học | InternalManagement | LMS nhận mapping/quyền truy cập |
-| Lịch cố định hằng tuần, ngày bắt đầu/kết thúc, timezone | LMS | InternalManagement lưu bản chiếu chỉ đọc |
-| Buổi học theo ngày, đổi lịch, hủy, link Meet/Zoom | LMS | InternalManagement cho sửa một buổi và đồng bộ kết quả LMS |
+| Tạo/liên kết khóa và lớp lần đầu | InternalManagement, thao tác tay | LMS nhận mapping ban đầu |
+| Học viên, ghi danh, thanh toán và quyền học | InternalManagement | LMS nhận tự động sau khi khóa đã liên kết |
+| Phân công giáo viên | InternalManagement | LMS nhận tự động sau khi lớp đã liên kết |
+| Lịch cố định hằng tuần, ngày bắt đầu/kết thúc, timezone | Hai chiều | Outbox từ Management; webhook từ Web |
+| Buổi học theo ngày, đổi lịch, hủy, link Meet/Zoom | Hai chiều | Hai hệ thống dùng cùng external ID và version |
 | Điểm danh, tài liệu, bài tập, tiến độ | LMS | InternalManagement nhận bản chiếu/báo cáo |
 
 Nhân viên có thể đổi ngày/giờ của `CscaLessonSession` đã có `ExternalSource = CSCA_COURSE_LMS`. Lệnh có `LmsSessionId`, `LmsScheduleId`, `SessionSourceId`, `ExpectedLmsVersion` và lý do. LMS kiểm tra phiên bản, cập nhật đúng buổi và gửi bản mới về Management. Lịch tuần vẫn chỉ được sửa tại nơi tạo lịch đó.
@@ -40,6 +44,14 @@ Giáo viên/Admin sửa lịch trong LMS
   -> worker LMS ký HMAC và POST webhook
   -> InternalManagement xác minh HMAC, ghi inbox idempotent
   -> InternalManagement upsert bản chiếu theo external ID + version
+
+Nhân sự thêm/sửa học viên hoặc thay đổi thanh toán trong Management
+  -> transaction Management cập nhật ghi danh + ghi outbox tài khoản/thành viên/quyền học
+  -> worker tự gửi sang LMS theo đúng thứ tự phụ thuộc
+
+Nhân sự thêm/sửa/xóa phân công giáo viên trong Management
+  -> Management ghi `teacher.upserted` và `class.upserted`
+  -> worker tự cập nhật giáo viên chính của lớp trên LMS
 
 Nhân viên sửa một buổi trong Management
   -> Management lưu thay đổi và xếp hàng sự kiện `class.session.upserted`

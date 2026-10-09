@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace InternalManagement.Infrastructure.Integration;
 
 /// <summary>
-/// Opt-in recovery for attendance webhooks acknowledged before immediate LMS
-/// projection existed. New webhooks are projected by WebhookProcessor.IngestAsync.
+/// Recovers LMS calendar and attendance webhooks acknowledged before immediate
+/// projection existed. New webhooks are still projected by IngestAsync.
 /// </summary>
 public sealed class CscaAttendanceInboxReplayWorker : BackgroundService
 {
@@ -36,9 +36,9 @@ public sealed class CscaAttendanceInboxReplayWorker : BackgroundService
                     using var scope = _scopeFactory.CreateScope();
                     var processor = scope.ServiceProvider.GetRequiredService<IWebhookProcessor>();
                     var batchSize = Math.Clamp(section.GetValue<int?>("BatchSize") ?? 10, 1, 100);
-                    var projected = await processor.ReplayPendingCscaAttendanceAsync(batchSize, stoppingToken);
+                    var projected = await processor.ReplayPendingCscaLmsAsync(batchSize, stoppingToken);
                     if (projected > 0)
-                        _logger.LogInformation("Replayed {Count} pending CSCA LMS attendance inbox events.", projected);
+                        _logger.LogInformation("Replayed {Count} pending CSCA LMS projection events.", projected);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -46,7 +46,7 @@ public sealed class CscaAttendanceInboxReplayWorker : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "CSCA LMS attendance inbox replay iteration failed.");
+                    _logger.LogError(ex, "CSCA LMS inbox replay iteration failed.");
                 }
             }
 

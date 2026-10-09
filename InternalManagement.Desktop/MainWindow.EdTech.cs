@@ -63,13 +63,13 @@ public partial class MainWindow
 
         if (isActive)
         {
-            LmsSelectedCourseStatusBadge.Text = "ĐÃ KÍCH HOẠT CẤP QUYỀN";
+            LmsSelectedCourseStatusBadge.Text = "ĐÃ LIÊN KẾT - TỰ ĐỘNG";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
         }
         else if (isSending)
         {
-            LmsSelectedCourseStatusBadge.Text = "ĐANG GỬI KHÓA & LỚP SANG WEB";
+            LmsSelectedCourseStatusBadge.Text = "ĐANG TỰ ĐỒNG BỘ";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(219, 234, 254));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(30, 64, 175));
         }
@@ -78,6 +78,13 @@ public partial class MainWindow
             LmsSelectedCourseStatusBadge.Text = "ĐÃ LIÊN KẾT (CHƯA BẬT)";
             LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(254, 243, 199));
             LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(146, 64, 14));
+        }
+        else if (string.Equals(mapping.Status, "Failed", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(mapping.Status, "DeadLetter", StringComparison.OrdinalIgnoreCase))
+        {
+            LmsSelectedCourseStatusBadge.Text = "CẦN SỬA LỖI ĐỒNG BỘ";
+            LmsSelectedCourseStatusBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(254, 226, 226));
+            LmsSelectedCourseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28));
         }
         else
         {

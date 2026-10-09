@@ -145,6 +145,101 @@ public sealed class LmsOutboxDispatcherTests
         (await db.LmsAccountLinks.SingleAsync()).Status.Should().Be(LmsAccountStatus.Active);
     }
 
+    [Fact]
+    public async Task DispatchManagement_WhenOldBatchIsBlocked_ShouldSkipItAndSendNewBatch()
+    {
+        await using var db = CreateInMemoryDb();
+        var link = new LmsCourseLink
+        {
+            CompanyId = Guid.NewGuid(), CourseId = Guid.NewGuid(), ExternalCourseId = "course-001",
+            Status = IntegrationStatus.Processing
+        };
+        db.LmsCourseLinks.Add(link);
+        var startedAt = DateTime.UtcNow.AddMinutes(-5);
+        AddManagementOutbox(db, link, "class.session.upserted", "old-batch", startedAt,
+            IntegrationStatus.DeadLetter, new { lessonDate = "0001-01-01", startTime = "00:00:00", endTime = "00:00:00" });
+        AddManagementOutbox(db, link, "class.upserted", "old-batch", startedAt.AddMilliseconds(1));
+        AddManagementOutbox(db, link, "course.upserted", "new-batch", startedAt.AddMinutes(1));
+        await db.SaveChangesAsync();
+        var delivered = new List<string>();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.SendManagementEventAsync(
+                It.IsAny<LmsManagementEvent>(), It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Callback<LmsManagementEvent, LmsOutboundRequestContext, CancellationToken>((command, _, _) =>
+                delivered.Add(command.EventType))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Succeeded.Should().Be(1);
+        delivered.Should().Equal("course.upserted");
+        var oldBatch = await db.IntegrationOutboxes.Where(item => item.CorrelationId == "old-batch").ToListAsync();
+        oldBatch.Single(item => item.LastError?.Contains("lệnh trước") == true).Status
+            .Should().Be(IntegrationStatus.Skipped);
+        (await db.IntegrationOutboxes.SingleAsync(item => item.CorrelationId == "new-batch")).Status
+            .Should().Be(IntegrationStatus.Success);
+    }
+
+    [Fact]
+    public async Task DispatchManagement_WhenSessionPayloadIsInvalid_ShouldSkipItAndContinueBatch()
+    {
+        await using var db = CreateInMemoryDb();
+        var link = new LmsCourseLink
+        {
+            CompanyId = Guid.NewGuid(), CourseId = Guid.NewGuid(), ExternalCourseId = "course-001",
+            Status = IntegrationStatus.Success
+        };
+        db.LmsCourseLinks.Add(link);
+        var startedAt = DateTime.UtcNow.AddMinutes(-2);
+        AddManagementOutbox(db, link, "class.session.upserted", "batch-001", startedAt,
+            payload: new { lessonDate = "0001-01-01", startTime = "00:00:00", endTime = "00:00:00" });
+        AddManagementOutbox(db, link, "class.upserted", "batch-001", startedAt.AddMilliseconds(1));
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.SendManagementEventAsync(
+                It.IsAny<LmsManagementEvent>(), It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Processed.Should().Be(2);
+        result.Succeeded.Should().Be(1);
+        var items = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        items[0].Status.Should().Be(IntegrationStatus.Skipped);
+        items[0].LastError.Should().Contain("chưa có ngày");
+        items[1].Status.Should().Be(IntegrationStatus.Success);
+    }
+
+    [Fact]
+    public async Task DispatchRoutineCalendarEvent_WhenLinkIsAlreadySuccessful_ShouldKeepLinkSuccessful()
+    {
+        await using var db = CreateInMemoryDb();
+        var link = new LmsCourseLink
+        {
+            CompanyId = Guid.NewGuid(),
+            CourseId = Guid.NewGuid(),
+            ExternalCourseId = "course-001",
+            Status = IntegrationStatus.Success,
+            LastSyncedAt = DateTime.UtcNow.AddHours(-1)
+        };
+        db.LmsCourseLinks.Add(link);
+        AddManagementOutbox(db, link, "class.schedule.upserted", "calendar-update", DateTime.UtcNow,
+            payload: new { classSourceId = Guid.NewGuid().ToString("N"), dayOfWeek = 2 });
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.SendManagementEventAsync(
+                It.IsAny<LmsManagementEvent>(), It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Succeeded.Should().Be(1);
+        (await db.LmsCourseLinks.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
+    }
+
     private static LmsAccountLink AddProvisionOutbox(ApplicationDbContext db)
     {
         var account = new LmsAccountLink
@@ -182,6 +277,35 @@ public sealed class LmsOutboxDispatcherTests
             NextAttemptAt = DateTime.UtcNow.AddMinutes(-1)
         });
         return account;
+    }
+
+    private static void AddManagementOutbox(
+        ApplicationDbContext db,
+        LmsCourseLink link,
+        string managementEventType,
+        string correlationId,
+        DateTime createdAt,
+        IntegrationStatus status = IntegrationStatus.Pending,
+        object? payload = null)
+    {
+        var eventId = Guid.NewGuid().ToString("N");
+        var command = new LmsManagementEvent(eventId, managementEventType, createdAt,
+            "internal-management", payload ?? new { sourceUpdatedAt = createdAt });
+        db.IntegrationOutboxes.Add(new IntegrationOutbox
+        {
+            CompanyId = link.CompanyId,
+            SourceSystem = LmsIntegrationSourceSystems.CscaCourseLms,
+            EventId = eventId,
+            EventType = LmsOutboxEventTypes.ManagementEventRequested,
+            AggregateType = nameof(LmsCourseLink),
+            AggregateId = link.Id.ToString("N"),
+            IdempotencyKey = $"management:{eventId}",
+            CorrelationId = correlationId,
+            PayloadJson = JsonSerializer.Serialize(command, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+            Status = status,
+            NextAttemptAt = status == IntegrationStatus.DeadLetter ? null : createdAt,
+            CreatedAt = createdAt
+        });
     }
 
     private static ApplicationDbContext CreateInMemoryDb()

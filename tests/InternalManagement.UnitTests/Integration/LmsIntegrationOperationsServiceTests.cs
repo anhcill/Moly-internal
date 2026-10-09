@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using InternalManagement.Application.Common.Interfaces;
 using InternalManagement.Application.Features.Integration.DTOs;
@@ -59,6 +60,34 @@ public sealed class LmsIntegrationOperationsServiceTests
         result.Succeeded.Should().BeFalse();
         result.Errors.Should().ContainSingle().Which.Should().Contain("giáo viên");
         (await db.LmsCourseLinks.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UpsertCourseMapping_WhenLessonSessionIsEmpty_ShouldSkipInvalidSession()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var course = AddCourse(db, companyId, "csca-foundation");
+        var teacher = new Employee { CompanyId = companyId, EmployeeCode = "T001", FullName = "Teacher One", Email = "teacher@example.com" };
+        var cls = new CscaClass { CompanyId = companyId, CourseId = course.Id, Code = "CSCA-01", Name = "CSCA Class 01" };
+        db.Employees.Add(teacher);
+        db.CscaClasses.Add(cls);
+        db.CscaClassStaffs.Add(new CscaClassStaff { ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher" });
+        db.CscaLessonSessions.Add(new CscaLessonSession
+        {
+            ClassId = cls.Id, LessonDate = default, StartTime = TimeSpan.Zero, EndTime = TimeSpan.Zero, Status = "Scheduled"
+        });
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(course.Id,
+            new UpsertLmsCourseMappingRequest(null, 101L, "csca-foundation", true), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var eventTypes = (await db.IntegrationOutboxes.ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString())
+            .ToList();
+        eventTypes.Should().NotContain("class.session.upserted");
     }
 
     [Fact]

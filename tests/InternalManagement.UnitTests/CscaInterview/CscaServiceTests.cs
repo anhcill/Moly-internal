@@ -1,12 +1,17 @@
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using InternalManagement.Application.Features.CscaInterview.DTOs;
+using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Identity;
 using InternalManagement.Domain.Entities.Documents;
 using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.EdTech;
+using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
+using InternalManagement.Infrastructure.Integration;
 using InternalManagement.Infrastructure.Persistence;
 using InternalManagement.Infrastructure.Services;
 
@@ -305,6 +310,137 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task AssignTeacher_ToLinkedClass_ShouldQueueAutomaticTeacherAndClassSync()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-linked", Title = "CSCA Linked" };
+        var cls = new CscaClass
+        {
+            Course = course,
+            CourseId = course.Id,
+            Code = "CSCA-LINKED",
+            Name = "Lớp đã liên kết"
+        };
+        var link = new LmsCourseLink
+        {
+            Course = course,
+            CourseId = course.Id,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success,
+            LastSyncedAt = DateTime.UtcNow
+        };
+        var teacher = new Employee
+        {
+            EmployeeCode = "GV-LINKED",
+            FullName = "Giáo viên đồng bộ",
+            Email = "teacher.linked@example.com"
+        };
+        db.AddRange(course, cls, link, teacher);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+
+        var result = await service.AssignStaffAsync(cls.Id,
+            new AssignStaffRequest(teacher.Id, "Teacher", 200_000m), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        (await db.LmsCourseLinks.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
+        var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        commands.Should().HaveCount(2);
+        commands.Select(GetManagementEventType).Should().Equal("teacher.upserted", "class.upserted");
+        commands.Select(item => item.CorrelationId).Distinct().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task RemoveLastTeacher_FromLinkedClass_ShouldBeRejected()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-linked", Title = "CSCA Linked" };
+        var cls = new CscaClass
+        {
+            Course = course,
+            CourseId = course.Id,
+            Code = "CSCA-LINKED",
+            Name = "Lớp đã liên kết"
+        };
+        var teacher = new Employee
+        {
+            EmployeeCode = "GV-ONLY",
+            FullName = "Giáo viên duy nhất",
+            Email = "teacher.only@example.com"
+        };
+        var assignment = new CscaClassStaff
+        {
+            Class = cls,
+            ClassId = cls.Id,
+            Employee = teacher,
+            EmployeeId = teacher.Id,
+            RoleInClass = "Teacher"
+        };
+        cls.Staff.Add(assignment);
+        db.AddRange(course, cls, teacher, assignment, new LmsCourseLink
+        {
+            Course = course,
+            CourseId = course.Id,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+
+        var result = await service.RemoveStaffAsync(cls.Id, assignment.Id, CancellationToken.None);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().ContainSingle(error => error.Contains("ít nhất một giáo viên"));
+        (await db.IntegrationOutboxes.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task EnrollStudent_InLinkedClass_ShouldQueueAutomaticRosterAndAccessSync()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-linked", Title = "CSCA Linked" };
+        var cls = new CscaClass
+        {
+            Course = course,
+            CourseId = course.Id,
+            Code = "CSCA-LINKED",
+            Name = "Lớp đã liên kết",
+            TuitionFee = 2_000_000m
+        };
+        db.AddRange(course, cls, new LmsCourseLink
+        {
+            Course = course,
+            CourseId = course.Id,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var accessLifecycle = new LmsAccessLifecycleService(db, NullLogger<LmsAccessLifecycleService>.Instance);
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            lmsAccessLifecycleService: accessLifecycle, integrationDb: db);
+
+        var result = await service.EnrollStudentAsync(cls.Id,
+            new EnrollStudentRequest("Học viên tự đồng bộ", "student.sync@example.com", "0901234567",
+                2_000_000m, PaymentStatus.Paid), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        (await db.IntegrationOutboxes.Select(item => item.EventType).ToListAsync()).Should().BeEquivalentTo([
+            LmsOutboxEventTypes.StudentProvisionRequested,
+            LmsOutboxEventTypes.ManagementEventRequested,
+            LmsOutboxEventTypes.ManagementEventRequested,
+            LmsOutboxEventTypes.StudentAccessRequested
+        ]);
+        var rosterCommands = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+            .OrderBy(item => item.CreatedAt)
+            .ToListAsync();
+        rosterCommands.Select(GetManagementEventType)
+            .Should().Equal("student.provisioned", "class.membership.changed");
+    }
+
+    [Fact]
     public async Task EnrollStudent_SameStudentInSecondClass_WithPartyResolver_ShouldSucceed()
     {
         using var db = CreateInMemoryDb();
@@ -388,4 +524,7 @@ public class CscaServiceTests
         duplicate.Succeeded.Should().BeFalse();
         duplicate.Errors.Should().ContainSingle(error => error.Contains("Email") && error.Contains("Học viên một"));
     }
+
+    private static string? GetManagementEventType(IntegrationOutbox item) =>
+        JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString();
 }

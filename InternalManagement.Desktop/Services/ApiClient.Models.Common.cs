@@ -198,6 +198,10 @@ public sealed partial class ApiClient
             "lms.student.provision.requested" or "student.provisioned" => "Cấp tài khoản học viên",
             "course.upserted" => "Đồng bộ khóa học",
             "class.upserted" => "Đồng bộ lớp học",
+            "class.schedule.upserted" => "Cập nhật lịch cố định",
+            "class.schedule.archived" => "Ngừng lịch cố định",
+            "class.session.upserted" => "Cập nhật buổi học",
+            "class.session.cancelled" => "Hủy buổi học",
             "class.membership.changed" => "Ghi danh học viên vào lớp",
             "class.teacher.assigned" => "Phân công giảng viên",
             "teacher.upserted" => "Đồng bộ giảng viên",
@@ -224,7 +228,9 @@ public sealed partial class ApiClient
             : (string.Equals(Status, "Success", StringComparison.OrdinalIgnoreCase)
                 ? "Đã đồng bộ sang Web Course"
                 : (string.Equals(Status, "Pending", StringComparison.OrdinalIgnoreCase)
-                    ? "Đang chờ gửi theo lịch"
+                    ? NextAttemptAt is { } nextAttempt && nextAttempt > DateTime.UtcNow
+                        ? $"Tự gửi lại lúc {nextAttempt.ToLocalTime():HH:mm}"
+                        : "Đã xếp hàng, hệ thống sẽ tự gửi"
                     : "Đang xử lý"));
     }
 

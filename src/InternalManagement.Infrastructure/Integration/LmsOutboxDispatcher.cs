@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Globalization;
 using InternalManagement.Application.Common.Interfaces;
 using InternalManagement.Application.Features.Integration.Interfaces;
 using InternalManagement.Application.Features.Integration.Models;
@@ -44,13 +45,15 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
     {
         var now = DateTime.UtcNow;
         var safeBatchSize = Math.Clamp(batchSize, 1, 100);
+        await SkipCommandsBlockedByTerminalPredecessorAsync(now, ct);
+        var candidateWindow = Math.Max(500, safeBatchSize * 20);
         var items = await _db.IntegrationOutboxes
             .Where(item => item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms
                            && (item.Status == IntegrationStatus.Pending || item.Status == IntegrationStatus.Failed)
                            && (item.NextAttemptAt == null || item.NextAttemptAt <= now))
             .OrderBy(item => item.CreatedAt)
             .ThenBy(item => item.Id)
-            .Take(safeBatchSize)
+            .Take(candidateWindow)
             .ToListAsync(ct);
 
         var processed = 0;
@@ -60,6 +63,7 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
         foreach (var item in items)
         {
             ct.ThrowIfCancellationRequested();
+            if (processed >= safeBatchSize) break;
             if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
             {
                 // Another dispatcher may be handling the preceding teacher/course
@@ -70,7 +74,8 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                     other.CorrelationId == item.CorrelationId &&
                     other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
                     other.CreatedAt < item.CreatedAt &&
-                    other.Status != IntegrationStatus.Success, ct);
+                    other.Status != IntegrationStatus.Success &&
+                    other.Status != IntegrationStatus.Skipped, ct);
                 if (predecessorPending) continue;
             }
             if (item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
@@ -81,10 +86,22 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                     other.EventType == LmsOutboxEventTypes.StudentProvisionRequested &&
                     other.AggregateId == grant.LmsAccountLinkId.ToString("N") &&
                     other.CreatedAt <= item.CreatedAt &&
-                    other.Status != IntegrationStatus.Success, ct);
+                    other.Status != IntegrationStatus.Success &&
+                    other.Status != IntegrationStatus.Skipped, ct);
                 if (provisionPending) continue;
             }
             processed++;
+            if (TryGetInvalidCalendarCommandReason(item, out var skipReason))
+            {
+                item.Status = IntegrationStatus.Skipped;
+                item.NextAttemptAt = null;
+                item.LastError = skipReason;
+                item.UpdatedAt = now;
+                item.UpdatedBy = "lms-outbox-dispatcher";
+                await ResolveOutboxDeadLettersAsync(item, ct);
+                await _db.SaveChangesAsync(ct);
+                continue;
+            }
             item.Status = IntegrationStatus.Processing;
             item.AttemptCount++;
             item.LastError = null;
@@ -209,7 +226,8 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                 var link = await GetAggregateAsync<LmsCourseLink>(_db.LmsCourseLinks, item.AggregateId, ct);
                 if (await IsCurrentManagementBatchAsync(item, link, ct))
                 {
-                    link.Status = status;
+                    if (link.Status != IntegrationStatus.Success)
+                        link.Status = status;
                     link.LastSyncError = error;
                 }
                 break;
@@ -238,12 +256,19 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
     {
         var link = await GetAggregateAsync<LmsCourseLink>(_db.LmsCourseLinks, item.AggregateId, ct);
         if (!await IsCurrentManagementBatchAsync(item, link, ct)) return;
+        if (link.Status == IntegrationStatus.Success)
+        {
+            link.LastSyncedAt = DateTime.UtcNow;
+            link.LastSyncError = null;
+            return;
+        }
         var hasRemaining = await _db.IntegrationOutboxes.AnyAsync(other =>
             other.Id != item.Id &&
             other.CompanyId == item.CompanyId &&
             other.CorrelationId == item.CorrelationId &&
             other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
-            other.Status != IntegrationStatus.Success, ct);
+            other.Status != IntegrationStatus.Success &&
+            other.Status != IntegrationStatus.Skipped, ct);
         if (!hasRemaining)
         {
             link.Status = IntegrationStatus.Success;
@@ -385,6 +410,69 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
             deadLetter.Resolved = true;
             deadLetter.ResolvedAt = resolvedAt;
             deadLetter.ResolvedBy = "lms-outbox-dispatcher";
+        }
+    }
+
+    private async Task SkipCommandsBlockedByTerminalPredecessorAsync(DateTime now, CancellationToken ct)
+    {
+        var blocked = await _db.IntegrationOutboxes
+            .Where(item => item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                item.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                (item.Status == IntegrationStatus.Pending || item.Status == IntegrationStatus.Failed) &&
+                _db.IntegrationOutboxes.Any(previous =>
+                    previous.CompanyId == item.CompanyId &&
+                    previous.CorrelationId == item.CorrelationId &&
+                    previous.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                    previous.CreatedAt < item.CreatedAt &&
+                    previous.Status == IntegrationStatus.DeadLetter))
+            .ToListAsync(ct);
+
+        foreach (var item in blocked)
+        {
+            item.Status = IntegrationStatus.Skipped;
+            item.NextAttemptAt = null;
+            item.LastError = "Không gửi vì một lệnh trước trong cùng đợt đồng bộ cần được kiểm tra lại.";
+            item.UpdatedAt = now;
+            item.UpdatedBy = "lms-outbox-dispatcher";
+        }
+
+        if (blocked.Count > 0)
+            await _db.SaveChangesAsync(ct);
+    }
+
+    private static bool TryGetInvalidCalendarCommandReason(IntegrationOutbox item, out string reason)
+    {
+        reason = string.Empty;
+        if (item.EventType != LmsOutboxEventTypes.ManagementEventRequested)
+            return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(item.PayloadJson);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("eventType", out var eventTypeElement)) return false;
+            var eventType = eventTypeElement.GetString();
+            if (eventType is not ("class.session.upserted" or "class.session.cancelled")) return false;
+            if (!root.TryGetProperty("payload", out var payload)) return false;
+
+            var hasValidDate = payload.TryGetProperty("lessonDate", out var lessonDateElement) &&
+                DateOnly.TryParseExact(lessonDateElement.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var lessonDate) && lessonDate != DateOnly.MinValue;
+            var start = TimeSpan.Zero;
+            var end = TimeSpan.Zero;
+            var hasValidStart = payload.TryGetProperty("startTime", out var startElement) &&
+                TimeSpan.TryParse(startElement.GetString(), CultureInfo.InvariantCulture, out start);
+            var hasValidEnd = payload.TryGetProperty("endTime", out var endElement) &&
+                TimeSpan.TryParse(endElement.GetString(), CultureInfo.InvariantCulture, out end);
+            if (hasValidDate && hasValidStart && hasValidEnd && end > start)
+                return false;
+
+            reason = "Đã bỏ qua buổi học chưa có ngày hoặc khung giờ hợp lệ.";
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
         }
     }
 

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
@@ -43,10 +44,15 @@ public sealed partial class CscaService
     }
 
     private void QueueCalendarEvent(LmsCourseLink link, string eventType, object payload, DateTime now)
+        => QueueLinkedEvent(link, eventType, payload, now, Guid.NewGuid().ToString("N"));
+
+    private void QueueLinkedEvent(
+        LmsCourseLink link, string eventType, object payload, DateTime now, string correlationId)
     {
         if (_integrationDb is null) return;
         var eventId = Guid.NewGuid().ToString("N");
-        var correlationId = Guid.NewGuid().ToString("N");
+        var sequence = _integrationDb.IntegrationOutboxes.Local.Count(item =>
+            item.CorrelationId == correlationId);
         var command = new LmsManagementEvent(eventId, eventType, now, "internal-management", payload);
         _integrationDb.IntegrationOutboxes.Add(new IntegrationOutbox
         {
@@ -62,13 +68,62 @@ public sealed partial class CscaService
             PayloadJson = JsonSerializer.Serialize(command, CalendarJsonOptions),
             Status = IntegrationStatus.Pending,
             NextAttemptAt = now,
-            CreatedAt = now,
+            CreatedAt = now.AddMilliseconds(sequence),
             CreatedBy = _currentUser.Username ?? "System"
         });
-        link.Status = IntegrationStatus.Processing;
+        if (link.Status != IntegrationStatus.Success)
+            link.Status = IntegrationStatus.Processing;
         link.LastSyncError = null;
         link.LastSyncedAt = null;
         link.UpdatedAt = now;
         link.UpdatedBy = _currentUser.Username ?? "System";
+    }
+
+    private async Task<string?> QueueTeacherRosterForWebAsync(
+        CscaClass cls, Employee? changedEmployee, CancellationToken ct)
+    {
+        var link = await GetCalendarLinkAsync(cls, ct);
+        if (link is null) return null;
+
+        var lead = cls.Staff.FirstOrDefault(item =>
+            string.Equals(item.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+            item.Employee is { IsDeleted: false } &&
+            !string.Equals(item.Employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(item.Employee.Email));
+        if (lead is null)
+            return "Lớp đã liên kết Web nên phải có ít nhất một giáo viên với email hợp lệ. Hãy phân công giáo viên thay thế trước.";
+
+        var now = DateTime.UtcNow;
+        var correlationId = Guid.NewGuid().ToString("N");
+        if (changedEmployee is not null &&
+            cls.Staff.Any(item => item.EmployeeId == changedEmployee.Id &&
+                string.Equals(item.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase)) &&
+            !changedEmployee.IsDeleted &&
+            !string.Equals(changedEmployee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(changedEmployee.Email))
+        {
+            QueueLinkedEvent(link, "teacher.upserted", new
+            {
+                TeacherSourceId = changedEmployee.Id.ToString("N"),
+                changedEmployee.FullName,
+                changedEmployee.Email,
+                AccountStatus = "active",
+                SourceUpdatedAt = now
+            }, now, correlationId);
+        }
+
+        QueueLinkedEvent(link, "class.upserted", new
+        {
+            ClassSourceId = cls.Id.ToString("N"),
+            CourseSourceId = link.ExternalCourseId,
+            Title = cls.Name,
+            Description = cls.Batch,
+            MaxStudents = Math.Max(30, cls.Students.Count),
+            Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
+                string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
+            LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
+            SourceUpdatedAt = now
+        }, now, correlationId);
+        return null;
     }
 }

@@ -248,6 +248,7 @@ public partial class MainWindow
 
     private async Task LoadLmsIntegrationAsync()
     {
+        var selectedCourseId = (LmsCourseMappingsDataGrid.SelectedItem as ApiClient.LmsCourseMappingItem)?.CourseId;
         var overviewTask = _apiClient.GetLmsIntegrationOverviewAsync();
         var mappingsTask = _apiClient.GetLmsCourseMappingsAsync();
         var outboxTask = _apiClient.GetLmsOutboxAsync();
@@ -271,6 +272,8 @@ public partial class MainWindow
         LmsPendingOutboxMetricText.Text = overview.PendingOutbox.ToString("N0", CultureInfo.InvariantCulture);
         LmsFailedOutboxMetricText.Text = (overview.FailedOutbox + overview.DeadLetterOutbox).ToString("N0", CultureInfo.InvariantCulture);
         LmsCourseMappingsDataGrid.ItemsSource = mappings.Items;
+        LmsCourseMappingsDataGrid.SelectedItem = mappings.Items.FirstOrDefault(item => item.CourseId == selectedCourseId)
+            ?? mappings.Items.FirstOrDefault();
         LmsOutboxDataGrid.ItemsSource = outbox.Items;
         SetLoadedStatus("CSCA LMS", mappings.Items.Count + outbox.Items.Count);
     }

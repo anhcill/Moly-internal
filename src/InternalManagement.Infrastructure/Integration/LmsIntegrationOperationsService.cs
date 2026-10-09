@@ -290,6 +290,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 return Result<LmsCourseMappingDto>.Failure(
                     $"Lớp {scheduleWithoutDates.Class.Code} có lịch cố định nhưng thiếu ngày bắt đầu hoặc kết thúc. Hãy đặt thời hạn lớp trước khi đồng bộ lịch lên Web.");
 
+            await SupersedeIncompleteCourseSyncAsync(existing, now, actor, ct);
             var correlationId = Guid.NewGuid().ToString("N");
             foreach (var teacher in teachers)
                 QueueManagementEvent(existing, "teacher.upserted", new
@@ -339,7 +340,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                         string.Equals(schedule.Status, "Archived", StringComparison.OrdinalIgnoreCase)
                             ? "class.schedule.archived" : "class.schedule.upserted",
                         LmsCalendarEventFactory.Schedule(cls, schedule, now), correlationId, now, actor);
-                foreach (var session in cls.LessonSessions)
+                foreach (var session in cls.LessonSessions.Where(LmsCalendarEventFactory.IsValidSession))
                     QueueManagementEvent(existing,
                         string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
                             ? "class.session.cancelled" : "class.session.upserted",
@@ -495,6 +496,47 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             CreatedAt = now.AddMilliseconds(_db.IntegrationOutboxes.Local.Count(item => item.CorrelationId == correlationId)),
             CreatedBy = actor
         });
+    }
+
+    private async Task SupersedeIncompleteCourseSyncAsync(
+        LmsCourseLink link, DateTime now, string actor, CancellationToken ct)
+    {
+        var superseded = await _db.IntegrationOutboxes
+            .Where(item => item.CompanyId == link.CompanyId &&
+                item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                item.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                item.AggregateType == nameof(LmsCourseLink) &&
+                item.AggregateId == link.Id.ToString("N") &&
+                (item.Status == IntegrationStatus.Pending ||
+                 item.Status == IntegrationStatus.Failed ||
+                 item.Status == IntegrationStatus.DeadLetter))
+            .ToListAsync(ct);
+        if (superseded.Count == 0) return;
+
+        var deadLetterSourceIds = superseded
+            .Where(item => item.Status == IntegrationStatus.DeadLetter)
+            .Select(item => item.Id.ToString("N"))
+            .ToList();
+        foreach (var item in superseded)
+        {
+            item.Status = IntegrationStatus.Skipped;
+            item.NextAttemptAt = null;
+            item.LastError = "Đã được lần đồng bộ khóa học mới hơn thay thế.";
+            item.UpdatedAt = now;
+            item.UpdatedBy = actor;
+        }
+
+        if (deadLetterSourceIds.Count == 0) return;
+        var deadLetters = await _db.IntegrationDeadLetters
+            .Where(item => item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                deadLetterSourceIds.Contains(item.SourceId) && !item.Resolved)
+            .ToListAsync(ct);
+        foreach (var deadLetter in deadLetters)
+        {
+            deadLetter.Resolved = true;
+            deadLetter.ResolvedAt = now;
+            deadLetter.ResolvedBy = actor;
+        }
     }
 
     private static string NormalizeClassStatus(string? status) =>

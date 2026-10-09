@@ -8,6 +8,13 @@ internal static class LmsCalendarEventFactory
 {
     private const string Timezone = "Asia/Ho_Chi_Minh";
 
+    internal static bool IsValidSession(CscaLessonSession session) =>
+        session.LessonDate != default &&
+        session.StartTime >= TimeSpan.Zero &&
+        session.StartTime < TimeSpan.FromDays(1) &&
+        session.EndTime > session.StartTime &&
+        session.EndTime <= TimeSpan.FromDays(1);
+
     internal static bool HasEffectiveDates(CscaClass cls, CscaClassSchedule schedule)
     {
         var start = schedule.StartDate ?? ToDate(cls.StartDate);

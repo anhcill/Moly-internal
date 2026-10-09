@@ -254,6 +254,36 @@ public class WebhookProcessorTests
         sessions[0].LessonDate.Should().Be(new DateOnly(2026, 9, 22));
     }
 
+    [Fact]
+    public async Task ReplayPendingCscaLms_ShouldApplyScheduleBeforeDependentSession()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-REPLAY", Name = "CSCA Replay", IsDeleted = false });
+        db.IntegrationInboxes.AddRange(
+            new IntegrationInbox
+            {
+                SourceSystem = "CSCA_COURSE_LMS", EventId = "replay-session", EventType = "lms.session.upserted",
+                PayloadJson = CalendarSessionPayload(classId, 1, "scheduled", "2026-09-20T09:00:00.000Z"),
+                Status = IntegrationStatus.Pending, ReceivedAt = DateTime.UtcNow.AddMinutes(-2)
+            },
+            new IntegrationInbox
+            {
+                SourceSystem = "CSCA_COURSE_LMS", EventId = "replay-schedule", EventType = "lms.schedule.upserted",
+                PayloadJson = CalendarSchedulePayload(classId, 1, "active"),
+                Status = IntegrationStatus.Pending, ReceivedAt = DateTime.UtcNow.AddMinutes(-1)
+            });
+        await db.SaveChangesAsync();
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+
+        var projected = await processor.ReplayPendingCscaLmsAsync(10, CancellationToken.None);
+
+        projected.Should().Be(2);
+        (await db.IntegrationInboxes.ToListAsync()).Should().OnlyContain(item => item.Status == IntegrationStatus.Success);
+        var session = await db.CscaLessonSessions.SingleAsync();
+        session.ScheduleId.Should().Be((await db.CscaClassSchedules.SingleAsync()).Id);
+    }
+
     private static string AttendancePayload(Guid classId, Guid studentId, string status) =>
         $$"""{"schemaVersion":1,"managementClassId":"{{classId}}","lmsSession":{"id":"lms-session-101","title":"Buổi 1","startTime":"2026-09-21T09:00:00.000Z","endTime":"2026-09-21T10:30:00.000Z","status":"scheduled"},"attendance":[{"managementStudentId":"{{studentId}}","status":"{{status}}","checkedAt":"2026-09-21T09:05:00.000Z","note":""}]}""";
 
