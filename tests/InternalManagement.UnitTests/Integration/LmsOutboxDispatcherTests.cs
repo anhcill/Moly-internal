@@ -17,6 +17,54 @@ namespace InternalManagement.UnitTests.Integration;
 public sealed class LmsOutboxDispatcherTests
 {
     [Fact]
+    public async Task DispatchStudentAndMembershipEvents_UsesAccountAggregateInOrder()
+    {
+        await using var db = CreateInMemoryDb();
+        var account = new LmsAccountLink
+        {
+            CompanyId = Guid.NewGuid(),
+            ExternalStudentId = "party-001",
+            LmsEmail = "student@example.com",
+            Status = LmsAccountStatus.Active
+        };
+        db.LmsAccountLinks.Add(account);
+        var eventTypes = new[] { "student.provisioned", "class.membership.changed" };
+        for (var index = 0; index < eventTypes.Length; index++)
+        {
+            var command = new LmsManagementEvent($"evt-{index}", eventTypes[index],
+                DateTime.UtcNow, "internal-management", new { StudentSourceId = "party-001" });
+            db.IntegrationOutboxes.Add(new IntegrationOutbox
+            {
+                CompanyId = account.CompanyId,
+                EventId = command.EventId,
+                EventType = LmsOutboxEventTypes.ManagementEventRequested,
+                AggregateType = nameof(LmsAccountLink),
+                AggregateId = account.Id.ToString("N"),
+                IdempotencyKey = $"event:{index}",
+                CorrelationId = "student-membership-001",
+                PayloadJson = JsonSerializer.Serialize(command, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                CreatedAt = DateTime.UtcNow.AddSeconds(index),
+                NextAttemptAt = DateTime.UtcNow.AddMinutes(-1)
+            });
+        }
+        await db.SaveChangesAsync();
+        var delivered = new List<string>();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.SendManagementEventAsync(
+                It.IsAny<LmsManagementEvent>(), It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Callback<LmsManagementEvent, LmsOutboundRequestContext, CancellationToken>((command, _, _) =>
+                delivered.Add(command.EventType))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Should().Be(new LmsOutboxDispatchResult(2, 2, 0, 0));
+        delivered.Should().ContainInOrder(eventTypes);
+        (await db.IntegrationOutboxes.CountAsync(item => item.Status == IntegrationStatus.Success)).Should().Be(2);
+    }
+
+    [Fact]
     public async Task DispatchProvision_WhenLmsAccepts_ShouldMarkOutboxAndAccountSynchronized()
     {
         await using var db = CreateInMemoryDb();

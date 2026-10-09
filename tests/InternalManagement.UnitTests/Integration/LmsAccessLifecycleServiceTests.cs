@@ -31,8 +31,81 @@ public sealed class LmsAccessLifecycleServiceTests
         (await db.IntegrationOutboxes.Select(item => item.EventType).ToListAsync())
             .Should().BeEquivalentTo([
                 LmsOutboxEventTypes.StudentProvisionRequested,
+                LmsOutboxEventTypes.ManagementEventRequested,
+                LmsOutboxEventTypes.ManagementEventRequested,
                 LmsOutboxEventTypes.StudentAccessRequested
             ]);
+        var membershipEvents = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+            .OrderBy(item => item.CreatedAt)
+            .ToListAsync();
+        membershipEvents[0].PayloadJson.Should().Contain("student.provisioned");
+        membershipEvents[1].PayloadJson.Should().Contain("class.membership.changed");
+        membershipEvents.Select(item => item.CorrelationId).Distinct().Should().ContainSingle();
+        membershipEvents[1].PayloadJson.Should().Contain(setup.StudentId.ToString("N"));
+    }
+
+    [Fact]
+    public async Task PaidFreeClass_WithParty_ShouldMigrateLegacyStudentIdentityAndQueuePartyId()
+    {
+        await using var db = CreateInMemoryDb();
+        var setup = await AddMappedCourseAsync(db);
+        var partyId = Guid.NewGuid();
+        var legacyId = setup.StudentId.ToString("N");
+        db.LmsAccountLinks.Add(new LmsAccountLink
+        {
+            CompanyId = setup.CompanyId,
+            PartyId = partyId,
+            CscaClassStudentId = setup.StudentId,
+            ExternalStudentId = legacyId,
+            LmsEmail = "student@example.com",
+            Status = LmsAccountStatus.PendingPayment
+        });
+        await db.SaveChangesAsync();
+        var service = new LmsAccessLifecycleService(db, NullLogger<LmsAccessLifecycleService>.Instance);
+
+        var request = CreateRequest(setup, PaymentStatus.Paid, paidAmount: 0m) with
+        {
+            PartyId = partyId,
+            TuitionFee = 0m
+        };
+        await service.ReconcileStudentAccessAsync(request, CancellationToken.None);
+        await db.SaveChangesAsync();
+
+        var account = await db.LmsAccountLinks.SingleAsync();
+        account.ExternalStudentId.Should().Be(partyId.ToString("N"));
+        account.Status.Should().Be(LmsAccountStatus.Active);
+        (await db.IntegrationOutboxes.Where(item => item.EventType == LmsOutboxEventTypes.StudentProvisionRequested)
+            .Select(item => item.PayloadJson).SingleAsync()).Should().Contain(partyId.ToString("N"));
+        (await db.LmsAccessGrants.SingleAsync()).Status.Should().Be(LmsAccessGrantStatus.Active);
+    }
+
+    [Fact]
+    public async Task UnpaidSecondClass_ShouldNotRevokePartyWithAnotherPaidClass()
+    {
+        await using var db = CreateInMemoryDb();
+        var setup = await AddMappedCourseAsync(db);
+        var partyId = Guid.NewGuid();
+        var service = new LmsAccessLifecycleService(db, NullLogger<LmsAccessLifecycleService>.Instance);
+
+        await service.ReconcileStudentAccessAsync(
+            CreateRequest(setup, PaymentStatus.Paid, paidAmount: 5_000_000m) with { PartyId = partyId },
+            CancellationToken.None);
+        await db.SaveChangesAsync();
+        await service.ReconcileStudentAccessAsync(
+            CreateRequest(setup with { StudentId = Guid.NewGuid() }, PaymentStatus.Cancelled, paidAmount: 0m,
+                sourceUpdatedAt: DateTime.UtcNow.AddMinutes(1)) with { PartyId = partyId },
+            CancellationToken.None);
+        await db.SaveChangesAsync();
+
+        (await db.LmsAccountLinks.SingleAsync()).Status.Should().Be(LmsAccountStatus.Active);
+        (await db.LmsAccessGrants.CountAsync(grant => grant.Status == LmsAccessGrantStatus.Active)).Should().Be(1);
+        (await db.IntegrationOutboxes.Where(item => item.EventType == LmsOutboxEventTypes.StudentProvisionRequested)
+            .OrderByDescending(item => item.CreatedAt).Select(item => item.PayloadJson).FirstAsync())
+            .Should().Contain("Active");
+        (await db.IntegrationOutboxes.Where(item => item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
+            .OrderByDescending(item => item.CreatedAt).Select(item => item.PayloadJson).FirstAsync())
+            .Should().Contain("Active");
     }
 
     [Fact]
@@ -49,9 +122,10 @@ public sealed class LmsAccessLifecycleServiceTests
 
         (await db.LmsAccountLinks.SingleAsync()).Status.Should().Be(LmsAccountStatus.PendingPayment);
         (await db.LmsAccessGrants.SingleAsync()).Status.Should().Be(LmsAccessGrantStatus.PendingPayment);
-        (await db.IntegrationOutboxes.Select(item => item.EventType).ToListAsync())
-            .Should().ContainSingle()
-            .Which.Should().Be(LmsOutboxEventTypes.StudentProvisionRequested);
+        (await db.IntegrationOutboxes.CountAsync(item => item.EventType == LmsOutboxEventTypes.StudentProvisionRequested))
+            .Should().Be(1);
+        (await db.IntegrationOutboxes.CountAsync(item => item.EventType == LmsOutboxEventTypes.StudentAccessRequested))
+            .Should().Be(0);
     }
 
     [Fact]

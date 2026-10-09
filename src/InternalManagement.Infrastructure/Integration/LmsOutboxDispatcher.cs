@@ -98,7 +98,8 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                 item.NextAttemptAt = null;
                 item.LastError = null;
                 await ResolveOutboxDeadLettersAsync(item, ct);
-                if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+                if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                    item.AggregateType == nameof(LmsCourseLink))
                     await UpdateCourseLinkDeliveryAsync(item, ct);
                 succeeded++;
             }
@@ -199,6 +200,12 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
         {
             case LmsOutboxEventTypes.ManagementEventRequested:
             {
+                if (item.AggregateType == nameof(LmsAccountLink))
+                {
+                    var account = await GetAggregateAsync<LmsAccountLink>(_db.LmsAccountLinks, item.AggregateId, ct);
+                    account.LastSyncError = error;
+                    break;
+                }
                 var link = await GetAggregateAsync<LmsCourseLink>(_db.LmsCourseLinks, item.AggregateId, ct);
                 if (await IsCurrentManagementBatchAsync(item, link, ct))
                 {

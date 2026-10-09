@@ -32,7 +32,10 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
 
     public async Task ReconcileStudentAccessAsync(LmsAccessEvaluationRequest request, CancellationToken ct)
     {
-        var externalStudentId = request.StudentId.ToString("N");
+        // The Management event stream identifies a learner by PartyId when one
+        // exists. The direct provision/access API must use the same identity.
+        var legacyStudentId = request.StudentId.ToString("N");
+        var externalStudentId = request.PartyId?.ToString("N") ?? legacyStudentId;
         if (string.IsNullOrWhiteSpace(request.Email))
         {
             await AddManualReviewAsync(
@@ -53,7 +56,6 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
         if (account is null && request.PartyId.HasValue)
         {
             var existingPartyAccount = await _db.LmsAccountLinks
-                .AsNoTracking()
                 .FirstOrDefaultAsync(link =>
                     link.CompanyId == request.CompanyId &&
                     link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
@@ -61,14 +63,22 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                     ct);
 
             if (existingPartyAccount is not null)
-            {
-                await AddManualReviewAsync(
-                    request.StudentId,
-                    "LMS_PARTY_IDENTITY_CONFLICT",
-                    "Party đã được liên kết với một external student ID khác; cần rà soát thủ công.",
-                    ct);
-                return;
-            }
+                account = existingPartyAccount;
+        }
+
+        if (account is null && externalStudentId != legacyStudentId)
+        {
+            account = await _db.LmsAccountLinks.FirstOrDefaultAsync(link =>
+                link.CompanyId == request.CompanyId &&
+                link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                link.ExternalStudentId == legacyStudentId, ct);
+        }
+
+        if (account is not null && account.PartyId.HasValue && account.PartyId != request.PartyId)
+        {
+            await AddManualReviewAsync(request.StudentId, "LMS_PARTY_IDENTITY_CONFLICT",
+                "Tài khoản LMS đã liên kết với Party khác; cần rà soát thủ công.", ct);
+            return;
         }
 
         var courseLink = await _db.LmsCourseLinks
@@ -89,7 +99,17 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
             or PaymentStatus.Cancelled
             or PaymentStatus.Failed;
 
-        var desiredAccountStatus = hasUsableCourseLink && isEligibleForAccess
+        var hasOtherActiveGrant = account is not null &&
+            (await _db.LmsAccessGrants.AnyAsync(grant =>
+                 grant.LmsAccountLinkId == account.Id &&
+                 grant.CscaClassStudentId != request.StudentId &&
+                 grant.Status == LmsAccessGrantStatus.Active, ct)
+             || _db.LmsAccessGrants.Local.Any(grant =>
+                 grant.LmsAccountLinkId == account.Id &&
+                 grant.CscaClassStudentId != request.StudentId &&
+                 grant.Status == LmsAccessGrantStatus.Active));
+
+        var desiredAccountStatus = hasOtherActiveGrant || hasUsableCourseLink && isEligibleForAccess
             ? LmsAccountStatus.Active
             : isTerminalPaymentState
                 ? LmsAccountStatus.Revoked
@@ -115,9 +135,11 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
         {
             var normalizedEmail = request.Email.Trim();
             accountChanged = account.Status != desiredAccountStatus
+                             || !string.Equals(account.ExternalStudentId, externalStudentId, StringComparison.OrdinalIgnoreCase)
                              || !string.Equals(account.LmsEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase)
                              || (request.PartyId.HasValue && account.PartyId != request.PartyId);
             account.BusinessUnitId = request.BusinessUnitId;
+            account.ExternalStudentId = externalStudentId;
             account.PartyId ??= request.PartyId;
             account.CscaClassStudentId ??= request.StudentId;
             account.LmsEmail = normalizedEmail;
@@ -164,6 +186,30 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
 
         var mappedCourseLink = courseLink!;
 
+        // Keep the LMS class roster current when a learner is added or edited.
+        // Both events share a correlation so the dispatcher delivers the identity
+        // before the membership; the LMS still applies its enrollment review.
+        var membershipCorrelationId = Guid.NewGuid().ToString("N");
+        await QueueManagementEventAsync(account, request, "student.provisioned", new
+        {
+            StudentSourceId = externalStudentId,
+            LegacyStudentSourceIds = new[] { legacyStudentId },
+            FullName = request.StudentName,
+            Email = request.Email.Trim(),
+            Phone = request.PhoneNumber,
+            AccountStatus = desiredAccountStatus == LmsAccountStatus.Active ? "active" :
+                desiredAccountStatus == LmsAccountStatus.Revoked ? "revoked" : "pending_payment",
+            SourceUpdatedAt = request.SourceUpdatedAt
+        }, membershipCorrelationId, ct);
+        await QueueManagementEventAsync(account, request, "class.membership.changed", new
+        {
+            MembershipSourceId = legacyStudentId,
+            ClassSourceId = request.ClassId.ToString("N"),
+            StudentSourceId = externalStudentId,
+            Status = "active",
+            SourceUpdatedAt = request.SourceUpdatedAt
+        }, membershipCorrelationId, ct);
+
         var grant = await _db.LmsAccessGrants
             .FirstOrDefaultAsync(item =>
                 item.CscaClassStudentId == request.StudentId &&
@@ -171,6 +217,18 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 ct);
 
         var desiredGrantStatus = GetDesiredGrantStatus(grant?.Status, isEligibleForAccess, isTerminalPaymentState);
+        var hasOtherActiveGrantForCourse = await _db.LmsAccessGrants.AnyAsync(item =>
+            item.LmsAccountLinkId == account.Id &&
+            item.LmsCourseLinkId == mappedCourseLink.Id &&
+            item.CscaClassStudentId != request.StudentId &&
+            item.Status == LmsAccessGrantStatus.Active, ct)
+            || _db.LmsAccessGrants.Local.Any(item =>
+                item.LmsAccountLinkId == account.Id &&
+                item.LmsCourseLinkId == mappedCourseLink.Id &&
+                item.CscaClassStudentId != request.StudentId &&
+                item.Status == LmsAccessGrantStatus.Active);
+        var effectiveGrantStatus = hasOtherActiveGrantForCourse
+            ? LmsAccessGrantStatus.Active : desiredGrantStatus;
         var grantWasCreated = grant is null;
         var grantChanged = grantWasCreated;
         if (grant is null)
@@ -208,12 +266,12 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
 
         // A new PendingPayment grant needs no access call; provisioning carries
         // the pending state. Any active/suspended/revoked change is sent later.
-        if (grantChanged && desiredGrantStatus != LmsAccessGrantStatus.PendingPayment)
+        if (grantChanged && effectiveGrantStatus != LmsAccessGrantStatus.PendingPayment)
         {
             var correlationId = Guid.NewGuid().ToString("N");
             var access = new LmsAccessCommand(
-                desiredGrantStatus.ToString(),
-                BuildAccessReason(request.PaymentStatus, desiredGrantStatus),
+                effectiveGrantStatus.ToString(),
+                BuildAccessReason(request.PaymentStatus, effectiveGrantStatus),
                 request.SourcePaymentId,
                 grant.ValidFrom,
                 grant.ValidUntil,
@@ -224,7 +282,7 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 LmsOutboxEventTypes.StudentAccessRequested,
                 nameof(LmsAccessGrant),
                 grant.Id,
-                $"lms-access:{grant.Id:N}:{desiredGrantStatus}:{request.SourceUpdatedAt.Ticks}",
+                $"lms-access:{grant.Id:N}:{effectiveGrantStatus}:{request.SourceUpdatedAt.Ticks}",
                 correlationId,
                 new LmsAccessOutboxPayload(account.ExternalStudentId, access),
                 ct);
@@ -271,8 +329,23 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
             CorrelationId = correlationId,
             PayloadJson = JsonSerializer.Serialize(payload, JsonOptions),
             Status = IntegrationStatus.Pending,
-            NextAttemptAt = DateTime.UtcNow
+            NextAttemptAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow.AddMilliseconds(_db.IntegrationOutboxes.Local.Count(item =>
+                item.CorrelationId == correlationId))
         });
+    }
+
+    private async Task QueueManagementEventAsync(LmsAccountLink account,
+        LmsAccessEvaluationRequest request, string eventType, object payload,
+        string correlationId, CancellationToken ct)
+    {
+        var idempotencyKey = $"management-event:{eventType}:{request.StudentId:N}:{request.SourceUpdatedAt.Ticks}";
+        var eventId = Guid.NewGuid().ToString("N");
+        await QueueAsync(request.CompanyId, request.BusinessUnitId,
+            LmsOutboxEventTypes.ManagementEventRequested, nameof(LmsAccountLink), account.Id,
+            idempotencyKey, correlationId,
+            new LmsManagementEvent(eventId, eventType, request.SourceUpdatedAt,
+                "internal-management", payload), ct);
     }
 
     private async Task AddManualReviewAsync(
