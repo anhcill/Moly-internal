@@ -99,6 +99,8 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                 item.UpdatedAt = now;
                 item.UpdatedBy = "lms-outbox-dispatcher";
                 await ResolveOutboxDeadLettersAsync(item, ct);
+                if (item.AggregateType == nameof(LmsCourseLink))
+                    await UpdateCourseLinkDeliveryAsync(item, ct);
                 await _db.SaveChangesAsync(ct);
                 continue;
             }
@@ -136,6 +138,18 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                         item.Id,
                         item.AttemptCount,
                         maxAttempts);
+                }
+                else if (IsNonBlockingRosterCommand(item))
+                {
+                    item.Status = IntegrationStatus.Skipped;
+                    item.NextAttemptAt = null;
+                    deadLettered++;
+                    await AddDeadLetterAsync(item, item.LastError, ct);
+                    if (item.AggregateType == nameof(LmsCourseLink))
+                        await UpdateCourseLinkDeliveryAsync(item, ct);
+                    _logger.LogWarning(
+                        "LMS roster command {OutboxId} requires review but will not block the remaining course sync.",
+                        item.Id);
                 }
                 else
                 {
@@ -469,6 +483,24 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
 
             reason = "Đã bỏ qua buổi học chưa có ngày hoặc khung giờ hợp lệ.";
             return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsNonBlockingRosterCommand(IntegrationOutbox item)
+    {
+        if (item.EventType != LmsOutboxEventTypes.ManagementEventRequested)
+            return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(item.PayloadJson);
+            if (!document.RootElement.TryGetProperty("eventType", out var eventTypeElement))
+                return false;
+            return eventTypeElement.GetString() is "student.provisioned" or "class.membership.changed";
         }
         catch (JsonException)
         {

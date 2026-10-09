@@ -240,6 +240,41 @@ public sealed class LmsOutboxDispatcherTests
         (await db.LmsCourseLinks.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
     }
 
+    [Fact]
+    public async Task DispatchManagement_WhenOneStudentNeedsReview_ShouldContinueTheCourseBatch()
+    {
+        await using var db = CreateInMemoryDb();
+        var link = new LmsCourseLink
+        {
+            CompanyId = Guid.NewGuid(),
+            CourseId = Guid.NewGuid(),
+            ExternalCourseId = "course-001",
+            Status = IntegrationStatus.Processing
+        };
+        db.LmsCourseLinks.Add(link);
+        var startedAt = DateTime.UtcNow.AddMinutes(-1);
+        AddManagementOutbox(db, link, "student.provisioned", "roster-batch", startedAt);
+        AddManagementOutbox(db, link, "class.membership.changed", "roster-batch", startedAt.AddMilliseconds(1));
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.SendManagementEventAsync(
+                It.IsAny<LmsManagementEvent>(), It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Returns<LmsManagementEvent, LmsOutboundRequestContext, CancellationToken>((command, _, _) =>
+                command.EventType == "student.provisioned"
+                    ? Task.FromException(new LmsIntegrationConfigurationException("Học viên cần rà soát."))
+                    : Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Should().Be(new LmsOutboxDispatchResult(2, 1, 0, 1));
+        var items = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        items[0].Status.Should().Be(IntegrationStatus.Skipped);
+        items[1].Status.Should().Be(IntegrationStatus.Success);
+        (await db.LmsCourseLinks.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
+        (await db.IntegrationDeadLetters.SingleAsync()).ErrorMessage.Should().Contain("rà soát");
+    }
+
     private static LmsAccountLink AddProvisionOutbox(ApplicationDbContext db)
     {
         var account = new LmsAccountLink
