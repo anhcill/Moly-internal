@@ -280,10 +280,11 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="ĐIỀU CHỈNH LƯƠNG THEO NHÂN VIÊN" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                                <TextBlock Text="Chọn nhân viên ở bảng dưới. Có thể đổi mức lương hồ sơ hoặc thêm trợ cấp, thưởng, làm thêm và khấu trừ cho riêng kỳ đang chọn." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,4,12,0" />
+                                <TextBlock Text="Chọn nhân sự ở bảng dưới. Giáo viên theo giờ lấy giờ từ buổi học; chấm công theo ngày sẽ sửa giờ thực dạy. Đề và số người marketing nhập ở Đầu việc / hoa hồng." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,4,12,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button x:Name="BtnEditPayrollBaseSalary" Content="₫ Chỉnh mức lương" Click="EditPayrollBaseSalary_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Margin="0,0,8,0" IsEnabled="False" />
+                                <Button Content="◷ Sửa giờ dạy" Click="EditPayrollTeachingHours_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Margin="0,0,8,0" />
                                 <Button Content="▦ Đầu việc / hoa hồng" Click="OpenPayrollWorkEntries_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="12,0" Margin="0,0,8,0" />
                                 <Button x:Name="BtnAddPayrollAdjustment" Content="＋ Thêm thưởng / phạt" Click="AddPayrollAdjustment_Click" Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="14,0" IsEnabled="False" />
                             </StackPanel>

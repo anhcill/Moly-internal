@@ -137,6 +137,7 @@ public partial class MainWindow : Window, IDisposable
         ViewPayrollContainer.CreatePayrollPeriodRequested += CreatePayrollPeriod_Click;
         ViewPayrollContainer.DeleteSelectedPayrollAdjustmentRequested += DeleteSelectedPayrollAdjustment_Click;
         ViewPayrollContainer.EditPayrollBaseSalaryRequested += EditPayrollBaseSalary_Click;
+        ViewPayrollContainer.EditPayrollTeachingHoursRequested += EditPayrollTeachingHours_Click;
         ViewPayrollContainer.ExportPayrollExcelRequested += ExportPayrollExcel_Click;
         ViewPayrollContainer.MarkPaidRequested += MarkPaid_Click;
         ViewPayrollContainer.OpenPayrollWorkEntriesRequested += OpenPayrollWorkEntries_Click;

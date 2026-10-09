@@ -16,6 +16,55 @@ namespace InternalManagement.Desktop;
 
 public partial class MainWindow
 {
+    private async void EditPayrollTeachingHours_Click(object sender, RoutedEventArgs e)
+    {
+        var period = GetSelectedPayrollPeriod();
+        if (period is null || period.Status >= 2 ||
+            PayrollAdjustmentEmployeesDataGrid.SelectedItem is not ApiClient.PayslipItem payslip)
+        {
+            ShowToast("Hãy chọn giáo viên và kỳ lương chưa gửi duyệt.", true);
+            return;
+        }
+        if (payslip.EmploymentType != 1 || payslip.PartTimeCalculationMethod != 0)
+        {
+            ShowToast("Chức năng này dành cho giáo viên/cộng tác viên tính lương theo giờ.", true);
+            return;
+        }
+
+        var defaultDate = DateOnly.FromDateTime(DateTime.Today);
+        if (defaultDate < period.StartDate) defaultDate = period.StartDate;
+        if (defaultDate > period.EndDate) defaultDate = period.EndDate;
+        if (!PromptDialog.TryShow(this, $"Sửa giờ dạy — {payslip.EmployeeName}", new[]
+            {
+                new PromptField("date", "Ngày dạy (dd/MM/yyyy)", defaultDate.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"))),
+                new PromptField("hours", "Số giờ thực dạy trong ngày (0–24)", "0")
+            }, out var values)) return;
+        if (!DateOnly.TryParseExact(values["date"], "dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"),
+                DateTimeStyles.None, out var date) || date < period.StartDate || date > period.EndDate ||
+            !(decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.GetCultureInfo("vi-VN"), out var hours) ||
+              decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.InvariantCulture, out hours)) ||
+            hours is < 0 or > 24 || decimal.Round(hours, 2) != hours)
+        {
+            ShowToast("Ngày phải thuộc kỳ lương; giờ dạy từ 0 đến 24 và có tối đa 2 chữ số thập phân.", true);
+            return;
+        }
+
+        var saved = await _apiClient.RecordAttendanceAsync(new ApiClient.RecordAttendanceModel(
+            payslip.EmployeeId, date, null, null, hours, hours == 0 ? "Absent" : "Present"));
+        if (saved is null)
+        {
+            ShowToast("Không lưu được giờ dạy. Hãy kiểm tra quyền chấm công.", true);
+            return;
+        }
+        if (await _apiClient.CalculatePayrollAsync(period.Id) is null)
+        {
+            ShowToast($"Đã lưu giờ dạy nhưng chưa tính lại được lương. {_apiClient.LastManagementOperationError}", true);
+            return;
+        }
+        await RefreshPayrollAfterChangeAsync(period.Id, payslip.EmployeeId, 1);
+        ShowToast($"Đã cập nhật {hours:0.##} giờ dạy ngày {date:dd/MM/yyyy} và tính lại lương.");
+    }
+
     private async void OpenPayrollWorkEntries_Click(object sender, RoutedEventArgs e)
     {
         var period = GetSelectedPayrollPeriod();

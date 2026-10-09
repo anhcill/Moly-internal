@@ -50,7 +50,7 @@ public sealed partial class PayrollService
             decimal.Round(request.Quantity, 2) != request.Quantity ||
             request.UnitRate <= 0 || request.UnitRate > 1_000_000_000_000m ||
             decimal.Round(request.UnitRate, 2) != request.UnitRate ||
-            request.WorkDate > period.EndDate)
+            request.WorkDate < period.StartDate || request.WorkDate > period.EndDate)
             return Result<PayrollWorkEntryDto>.Failure("Số lượng, đơn giá hoặc ngày hoàn thành không hợp lệ.");
         if (workType is (PayrollWorkTypes.StudentReferral or PayrollWorkTypes.MarketingReferral) &&
             request.Quantity != decimal.Truncate(request.Quantity))

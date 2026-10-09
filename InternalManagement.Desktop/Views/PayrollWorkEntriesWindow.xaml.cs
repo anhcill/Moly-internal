@@ -25,8 +25,10 @@ public partial class PayrollWorkEntriesWindow : Window
         InitializeComponent();
 
         PeriodText.Text = $"{period.Name} · {period.StartDate:dd/MM/yyyy}–{period.EndDate:dd/MM/yyyy}";
-        WorkDatePicker.SelectedDate = DateTime.Today <= period.EndDate.ToDateTime(TimeOnly.MinValue)
-            ? DateTime.Today : period.EndDate.ToDateTime(TimeOnly.MinValue);
+        WorkDatePicker.SelectedDate = DateTime.Today < period.StartDate.ToDateTime(TimeOnly.MinValue)
+            ? period.StartDate.ToDateTime(TimeOnly.MinValue)
+            : DateTime.Today <= period.EndDate.ToDateTime(TimeOnly.MinValue)
+                ? DateTime.Today : period.EndDate.ToDateTime(TimeOnly.MinValue);
         WorkTypeCombo.ItemsSource = new[]
         {
             new WorkTypeOption("QUESTION_POSTED", "Đề đã đăng"),
@@ -39,6 +41,7 @@ public partial class PayrollWorkEntriesWindow : Window
             new WorkTypeOption("OTHER", "Đầu việc khác")
         };
         WorkTypeCombo.SelectedIndex = 0;
+        PromptDialog.AttachCurrencyFormatting(UnitRateBox);
         AddButton.IsEnabled = _canEdit;
         VoidButton.IsEnabled = _canEdit;
 
@@ -103,11 +106,11 @@ public partial class PayrollWorkEntriesWindow : Window
         var (unit, reference, hint) = workType switch
         {
             "QUESTION_POSTED" or "QUESTION_COMPLETED" =>
-                ("số đề", "Mã đề", "Nhập số đề đã làm và đơn giá mỗi đề. Dùng mã đề hoặc mã lô duy nhất để tránh trả trùng."),
+                ("số đề", "Mã đề", "Nhập số đề giáo viên đã làm và đơn giá mỗi đề. Dùng mã đề hoặc mã lô duy nhất để tránh trả trùng."),
             "PROJECT" =>
                 ("số dự án / hạng mục", "Mã dự án / hạng mục", "Nhập số dự án hoặc hạng mục đã hoàn thành và đơn giá tương ứng."),
             "STUDENT_REFERRAL" or "MARKETING_REFERRAL" =>
-                ("số người", "Mã chiến dịch / đợt giới thiệu", "Nhập số người giới thiệu thành công, đơn giá mỗi người và mã đợt duy nhất. Có thể gắn chứng từ đối soát."),
+                ("số người", "Mã chiến dịch / đợt giới thiệu", "Nhập số người marketing kiếm được, đơn giá mỗi người và mã đợt duy nhất. Có thể gắn chứng từ đối soát."),
             "SALES_COMMISSION" =>
                 ("số đơn", "Mã đơn hàng", "Nhập số đơn được hưởng hoa hồng và đơn giá hoa hồng mỗi đơn."),
             _ => ("số lượng", "Mã đầu việc", "Nhập số lượng hoàn thành và đơn giá của đầu việc này.")
@@ -116,6 +119,15 @@ public partial class PayrollWorkEntriesWindow : Window
         QuantityLabel.Text = $"{unit} *";
         UnitRateLabel.Text = $"Đơn giá (đồng/{unit}) *";
         EntryHintText.Text = hint;
+    }
+
+    private void AmountInput_Changed(object sender, TextChangedEventArgs e)
+    {
+        if (AmountPreviewText is null || QuantityBox is null || UnitRateBox is null) return;
+        AmountPreviewText.Text = TryAmount(QuantityBox.Text, out var quantity) &&
+            TryAmount(UnitRateBox.Text, out var rate) && quantity > 0 && rate > 0
+            ? $"Thành tiền dự kiến: {quantity * rate:N0} đ"
+            : "Thành tiền dự kiến: —";
     }
 
     private async void SearchEmployees_Click(object sender, RoutedEventArgs e) =>

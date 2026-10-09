@@ -15,6 +15,7 @@ public partial class PayrollView : UserControl
     public event RoutedEventHandler? CreatePayrollPeriodRequested;
     public event RoutedEventHandler? DeleteSelectedPayrollAdjustmentRequested;
     public event RoutedEventHandler? EditPayrollBaseSalaryRequested;
+    public event RoutedEventHandler? EditPayrollTeachingHoursRequested;
     public event RoutedEventHandler? ExportPayrollExcelRequested;
     public event RoutedEventHandler? MarkPaidRequested;
     public event RoutedEventHandler? OpenPayrollWorkEntriesRequested;
@@ -41,6 +42,7 @@ public partial class PayrollView : UserControl
     private void CreatePayrollPeriod_Click(object sender, RoutedEventArgs e) => CreatePayrollPeriodRequested?.Invoke(sender, e);
     private void DeleteSelectedPayrollAdjustment_Click(object sender, RoutedEventArgs e) => DeleteSelectedPayrollAdjustmentRequested?.Invoke(sender, e);
     private void EditPayrollBaseSalary_Click(object sender, RoutedEventArgs e) => EditPayrollBaseSalaryRequested?.Invoke(sender, e);
+    private void EditPayrollTeachingHours_Click(object sender, RoutedEventArgs e) => EditPayrollTeachingHoursRequested?.Invoke(sender, e);
     private void ExportPayrollExcel_Click(object sender, RoutedEventArgs e) => ExportPayrollExcelRequested?.Invoke(sender, e);
     private void MarkPaid_Click(object sender, RoutedEventArgs e) => MarkPaidRequested?.Invoke(sender, e);
     private void OpenPayrollWorkEntries_Click(object sender, RoutedEventArgs e) => OpenPayrollWorkEntriesRequested?.Invoke(sender, e);

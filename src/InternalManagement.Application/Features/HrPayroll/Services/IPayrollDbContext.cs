@@ -1,4 +1,5 @@
 using InternalManagement.Domain.Entities.HrPayroll;
+using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace InternalManagement.Application.Features.HrPayroll.Services;
 public interface IPayrollDbContext
 {
     DbSet<AttendanceRecord> AttendanceRecords { get; }
+    DbSet<CscaLessonSession> CscaLessonSessions { get; }
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<BusinessUnit> BusinessUnits { get; }
     DbSet<Company> Companies { get; }

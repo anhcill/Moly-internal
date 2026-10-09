@@ -54,11 +54,11 @@
                 <UniformGrid Columns="3">
                     <StackPanel Margin="0,0,12,8">
                         <TextBlock x:Name="QuantityLabel" Text="Số lượng *" Margin="0,0,0,4" />
-                        <TextBox x:Name="QuantityBox" Text="1" Height="34" Style="{StaticResource ModernTextBox}" />
+                        <TextBox x:Name="QuantityBox" Text="1" TextChanged="AmountInput_Changed" Height="34" Style="{StaticResource ModernTextBox}" />
                     </StackPanel>
                     <StackPanel Margin="0,0,12,8">
                         <TextBlock x:Name="UnitRateLabel" Text="Đơn giá (đồng) *" Margin="0,0,0,4" />
-                        <TextBox x:Name="UnitRateBox" Height="34" Style="{StaticResource ModernTextBox}" />
+                        <TextBox x:Name="UnitRateBox" TextChanged="AmountInput_Changed" Height="34" Style="{StaticResource ModernTextBox}" />
                     </StackPanel>
                     <StackPanel Margin="0,0,0,8">
                         <TextBlock Text="Liên kết chứng từ (nếu có)" Margin="0,0,0,4" />
@@ -67,6 +67,8 @@
                 </UniformGrid>
                 <TextBlock x:Name="EntryHintText" Text="Chọn loại việc để xem đơn vị tính và cách ghi mã tham chiếu."
                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6" />
+                <TextBlock x:Name="AmountPreviewText" Text="Thành tiền dự kiến: —" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,6" />
                 <DockPanel LastChildFill="False" Margin="0,4,0,0">
                     <Button x:Name="AddButton" Content="＋ Ghi nhận và cộng lương" DockPanel.Dock="Right" Click="Add_Click"
                             Style="{StaticResource PrimaryGradientButton}" Height="36" Padding="18,0" />

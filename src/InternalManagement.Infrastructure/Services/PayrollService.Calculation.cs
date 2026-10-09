@@ -59,6 +59,23 @@ public sealed partial class PayrollService
 
         var attendances = await attendanceQuery.ToListAsync(ct);
 
+        // Lesson sessions are the source of planned teaching hours for hourly teachers.
+        // A daily attendance record replaces that day's planned hours when HR records
+        // the hours actually taught (including an Absent/Leave record with zero hours).
+        var lessonHours = await _db.CscaLessonSessions.AsNoTracking()
+            .Where(s => s.LessonDate >= period.StartDate && s.LessonDate <= period.EndDate &&
+                s.Class.CompanyId == companyId && !s.Class.IsDeleted &&
+                s.Class.Status != "Cancelled" && s.Status != "Cancelled" &&
+                (!period.BusinessUnitId.HasValue || s.Class.BusinessUnitId == period.BusinessUnitId))
+            .SelectMany(s => s.Class.Staff.Where(st => st.RoleInClass == "Teacher"),
+                (s, st) => new { st.EmployeeId, s.LessonDate, s.StartTime, s.EndTime })
+            .ToListAsync(ct);
+        var lessonHoursByEmployee = lessonHours
+            .GroupBy(s => s.EmployeeId)
+            .ToDictionary(g => g.Key, g => g.GroupBy(s => s.LessonDate)
+                .ToDictionary(day => day.Key,
+                    day => day.Sum(s => (decimal)(s.EndTime - s.StartTime).TotalHours)));
+
         var missingAttendanceEmployees = employees
             .Where(employee => employee.EmploymentType == EmploymentType.FULL_TIME &&
                                !attendances.Any(attendance => attendance.EmployeeId == employee.Id))
@@ -110,6 +127,21 @@ public sealed partial class PayrollService
                 actualWorkDays = 0;
                 actualWorkHours = 0;
                 actualShifts = 0;
+            }
+
+            if (emp.EmploymentType == EmploymentType.PART_TIME &&
+                emp.PartTimeCalculationMethod == PartTimeCalculationMethod.HOURLY &&
+                lessonHoursByEmployee.TryGetValue(emp.Id, out var dailyLessonHours))
+            {
+                var attendanceByDate = empAttendances
+                    .GroupBy(a => a.Date)
+                    .ToDictionary(g => g.Key, g => g.Sum(a => IsWorkedShift(a) ? Math.Max(0, a.WorkHours) : 0));
+                actualWorkHours = dailyLessonHours.Sum(day =>
+                    attendanceByDate.TryGetValue(day.Key, out var recordedHours) ? recordedHours : day.Value);
+                actualWorkHours += attendanceByDate
+                    .Where(day => !dailyLessonHours.ContainsKey(day.Key)).Sum(day => day.Value);
+                actualWorkDays = Math.Round(actualWorkHours / 8.0m, 2);
+                actualShifts = dailyLessonHours.Keys.Union(attendanceByDate.Keys).Count();
             }
 
             var empAdjustments = adjustments.Where(a => a.EmployeeId == emp.Id).ToList();

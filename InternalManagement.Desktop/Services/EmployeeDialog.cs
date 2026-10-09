@@ -111,6 +111,8 @@ public static class EmployeeDialog
         var salaryPanel = new StackPanel();
         var fullTimePanel = new StackPanel();
         var baseSalary = TextField(fullTimePanel, "Lương cơ bản theo tháng *", employee?.BaseSalary.ToString(CultureInfo.InvariantCulture) ?? "0");
+        PromptDialog.AttachCurrencyFormatting(baseSalary);
+        baseSalary.Text = employee?.BaseSalary.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ?? "0";
         salaryPanel.Children.Add(fullTimePanel);
 
         var partTimePanel = new StackPanel { Visibility = Visibility.Collapsed };
@@ -127,9 +129,11 @@ public static class EmployeeDialog
             _ => Guid.Empty
         });
         var unitRate = TextField(partRow.Right, "Đơn giá (đồng/giờ hoặc ca) *", employee?.PartTimeUnitRate?.ToString(CultureInfo.InvariantCulture) ?? "0");
+        PromptDialog.AttachCurrencyFormatting(unitRate);
+        unitRate.Text = employee?.PartTimeUnitRate?.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ?? "0";
         partTimePanel.Children.Add(new TextBlock
         {
-            Text = "Theo giờ/ca: chấm công × đơn giá. Theo đầu việc: nhập từng đề hoặc hạng mục trong kỳ lương; số tiền được cộng ngay khi ghi nhận.",
+            Text = "Theo giờ: buổi học đã tạo × số giờ mỗi buổi × đơn giá; có thể sửa giờ thực dạy bằng chấm công theo ngày. Theo đầu việc: nhập từng đề, dự án hoặc số người marketing trong kỳ lương.",
             FontSize = 10.5,
             Foreground = Brush("#64748B"),
             Margin = new Thickness(0, 0, 0, 8),

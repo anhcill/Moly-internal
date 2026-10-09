@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System.IO.Compression;
 using InternalManagement.Application.Features.HrPayroll.DTOs;
 using InternalManagement.Domain.Entities.HrPayroll;
+using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.Identity;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
@@ -422,6 +423,55 @@ public class PayrollServiceTests
         payslip.ActualWorkHours.Should().Be(4m);
         payslip.TotalIncome.Should().Be(400000m);
         payslip.NetSalary.Should().Be(400000m);
+    }
+
+    [Fact]
+    public async Task CalculatePayroll_ForHourlyTeacher_ShouldUseLessonHoursAndDailyOverride()
+    {
+        using var db = await CreateInMemoryDbWithSeedDataAsync();
+        var teacher = await db.Employees.FirstAsync(e => e.EmployeeCode == "EMP-002");
+        teacher.EmploymentType = EmploymentType.PART_TIME;
+        teacher.PartTimeCalculationMethod = PartTimeCalculationMethod.HOURLY;
+        teacher.PartTimeUnitRate = 200000m;
+        var cls = new CscaClass
+        {
+            CompanyId = teacher.CompanyId, CourseId = Guid.NewGuid(), Code = "TEST-CLASS",
+            Name = "Lớp thử", Status = "Active"
+        };
+        db.CscaClasses.Add(cls);
+        db.CscaClassStaffs.Add(new CscaClassStaff
+        {
+            ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher"
+        });
+        for (var day = 11; day <= 20; day++)
+            db.CscaLessonSessions.Add(new CscaLessonSession
+            {
+                ClassId = cls.Id, LessonDate = new DateOnly(2026, 8, day),
+                StartTime = new TimeSpan(8, 0, 0), EndTime = new TimeSpan(10, 0, 0),
+                Status = "Scheduled"
+            });
+        db.CscaLessonSessions.Add(new CscaLessonSession
+        {
+            ClassId = cls.Id, LessonDate = new DateOnly(2026, 8, 21),
+            StartTime = new TimeSpan(8, 0, 0), EndTime = new TimeSpan(10, 0, 0),
+            Status = "Cancelled"
+        });
+        db.AttendanceRecords.Add(new AttendanceRecord
+        {
+            CompanyId = teacher.CompanyId, EmployeeId = teacher.Id,
+            Date = new DateOnly(2026, 8, 11), WorkHours = 3, Status = "Present"
+        });
+        await db.SaveChangesAsync();
+
+        var service = new PayrollService(db, new CurrentUserService(null!), NullLogger<PayrollService>.Instance);
+        var period = await service.CreatePayrollPeriodAsync(
+            new CreatePayrollPeriodRequest("Lương giáo viên tháng 08", new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 31)),
+            CancellationToken.None);
+        var result = await service.CalculatePayrollAsync(period.Value!.Id, CancellationToken.None);
+
+        var payslip = result.Value!.Payslips.Single(p => p.EmployeeId == teacher.Id);
+        payslip.ActualWorkHours.Should().Be(21m);
+        payslip.NetSalary.Should().Be(4_200_000m);
     }
 
     [Fact]

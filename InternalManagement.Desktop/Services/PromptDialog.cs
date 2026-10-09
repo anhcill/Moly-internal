@@ -213,7 +213,7 @@ public static class PromptDialog
             || label.Contains("học phí") || label.Contains("tiền") || label.Contains("giá") || label.Contains("lương") || label.Contains("chi phí");
     }
 
-    private static void AttachCurrencyFormatting(TextBox box)
+    internal static void AttachCurrencyFormatting(TextBox box)
     {
         var isFormatting = false;
         box.TextChanged += (_, _) =>
