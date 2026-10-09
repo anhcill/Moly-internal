@@ -323,9 +323,9 @@ public sealed partial class ApiClient
         return await EnsureCscaSuccessAsync(response, "Tạo buổi học thất bại", ct);
     }
 
-    public async Task<bool> UpdateCscaLessonSessionAsync(Guid classId, Guid sessionId, DateOnly lessonDate, TimeSpan startTime, TimeSpan endTime, Guid? classroomId, string? meetingUrl, string? notes, string status, CancellationToken ct = default)
+    public async Task<bool> UpdateCscaLessonSessionAsync(Guid classId, Guid sessionId, DateOnly lessonDate, TimeSpan startTime, TimeSpan endTime, Guid? classroomId, string? meetingUrl, string? notes, string status, string? changeReason = null, CancellationToken ct = default)
     {
-        var req = new { LessonDate = lessonDate, StartTime = startTime, EndTime = endTime, ClassroomId = classroomId, MeetingUrl = meetingUrl, Notes = notes, Status = status };
+        var req = new { LessonDate = lessonDate, StartTime = startTime, EndTime = endTime, ClassroomId = classroomId, MeetingUrl = meetingUrl, Notes = notes, Status = status, ChangeReason = changeReason };
         using var response = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync($"api/v1/csca/classes/{classId}/sessions/{sessionId}", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(response, "Cập nhật buổi học thất bại", ct);
     }

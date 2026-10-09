@@ -1,21 +1,21 @@
 # CSCA LMS Calendar Projection Contract
 
-Phiên bản: 1.0  
-Trạng thái: triển khai backend — LMS là nguồn lịch chính  
+Phiên bản: 1.1
+Trạng thái: LMS lưu lịch chính; Admin và Management cùng có thể yêu cầu đổi một buổi
 Timezone chuẩn: lưu instant UTC; lịch lặp hiển thị theo `Asia/Ho_Chi_Minh` mặc định.
 
 ## 1. Quyết định kiến trúc
 
-Lịch học không được có hai nơi cùng cho phép sửa.
+LMS lưu bản lịch mà giáo viên và học viên sử dụng. Admin sửa trực tiếp một buổi trên LMS; Management gửi lệnh sửa buổi qua outbox và nhận lại phiên bản LMS qua webhook. Lịch cố định hằng tuần không đổi khi dời một buổi.
 
 | Dữ liệu | Nguồn chính | Hệ thống còn lại |
 |---|---|---|
 | Lớp, học viên, giáo viên, học phí, quyền học | InternalManagement | LMS nhận mapping/quyền truy cập |
 | Lịch cố định hằng tuần, ngày bắt đầu/kết thúc, timezone | LMS | InternalManagement lưu bản chiếu chỉ đọc |
-| Buổi học theo ngày, đổi lịch, hủy, link Meet/Zoom | LMS | InternalManagement lưu bản chiếu chỉ đọc |
+| Buổi học theo ngày, đổi lịch, hủy, link Meet/Zoom | LMS | InternalManagement cho sửa một buổi và đồng bộ kết quả LMS |
 | Điểm danh, tài liệu, bài tập, tiến độ | LMS | InternalManagement nhận bản chiếu/báo cáo |
 
-Vì vậy nhân viên không sửa `CscaClassSchedule` hoặc `CscaLessonSession` đã có `ExternalSource = CSCA_COURSE_LMS` từ màn CRUD Management. Mọi sửa lịch đi qua LMS, sau đó worker gửi webhook để Management cập nhật.
+Nhân viên có thể đổi ngày/giờ của `CscaLessonSession` đã có `ExternalSource = CSCA_COURSE_LMS`. Lệnh có `LmsSessionId`, `LmsScheduleId`, `SessionSourceId`, `ExpectedLmsVersion` và lý do. LMS kiểm tra phiên bản, cập nhật đúng buổi và gửi bản mới về Management. Lịch tuần vẫn chỉ được sửa tại nơi tạo lịch đó.
 
 ## 2. Mapping định danh
 
@@ -40,6 +40,12 @@ Giáo viên/Admin sửa lịch trong LMS
   -> worker LMS ký HMAC và POST webhook
   -> InternalManagement xác minh HMAC, ghi inbox idempotent
   -> InternalManagement upsert bản chiếu theo external ID + version
+
+Nhân viên sửa một buổi trong Management
+  -> Management lưu thay đổi và xếp hàng sự kiện `class.session.upserted`
+  -> LMS kiểm tra ID và phiên bản, sửa buổi tương ứng
+  -> LMS gửi `lms.session.upserted` cùng `managementSessionSourceId`
+  -> Management cập nhật cùng một buổi theo GUID và phiên bản LMS
 ```
 
 Sửa một lịch cố định sẽ materialize buổi học theo ngày trong LMS. Các buổi cũ chưa diễn ra bị hủy có audit reason; các buổi thay thế được tạo mới. Management nhận cả event series và event từng buổi, không tự generate thêm buổi riêng.
@@ -116,7 +122,7 @@ Thời gian buổi học là UTC instant. Management đổi sang timezone Việt
 - Worker claim job bằng `FOR UPDATE SKIP LOCKED`, timeout/409/429/5xx retry tối đa 12 lần với exponential backoff; 4xx dữ liệu không hợp lệ vào dead letter.
 - Nếu session đến trước schedule, Management trả `409 DEPENDENCY_PENDING`; LMS retry sau. Không tự đoán schedule ID.
 - Inbox unique theo `(sourceSystem, eventId)`. Gửi lại cùng `eventId` và cùng payload là thành công idempotent.
-- `ExternalVersion` chống sự kiện cũ ghi đè bản chiếu mới.
+- `ExternalVersion` chống sự kiện cũ ghi đè bản chiếu mới. Nếu `ExpectedLmsVersion` từ Management đã cũ, LMS giữ bản mới hơn và gửi lại bản đó để Management tự sửa bản chiếu.
 
 ## 7. Biến môi trường LMS
 
@@ -134,4 +140,4 @@ Trong giai đoạn chuyển tiếp, worker dùng `MANAGEMENT_ATTENDANCE_WEBHOOK_
 3. Xác nhận `live_classes.management_class_source_id` là GUID hợp lệ với lớp Management.
 4. Tạo một lịch thử nghiệm, kiểm tra calendar outbox chuyển `SUCCESS` và Management có schedule/session external ID tương ứng.
 5. Đổi một buổi, kiểm tra version tăng và lịch học viên trên LMS thay đổi ngay; Management chỉ phản ánh kết quả.
-6. Không bật thao tác sửa lịch trực tiếp trong Management cho dữ liệu có external source.
+6. Kiểm tra thao tác dời một buổi từ cả Admin và Management; hai chiều phải cùng ID và không sinh buổi trùng.

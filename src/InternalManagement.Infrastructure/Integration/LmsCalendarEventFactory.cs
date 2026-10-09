@@ -1,5 +1,6 @@
 using System.Globalization;
 using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.Integration;
 
 namespace InternalManagement.Infrastructure.Integration;
 
@@ -40,12 +41,16 @@ internal static class LmsCalendarEventFactory
         };
     }
 
-    internal static object Session(CscaLessonSession session, DateTime updatedAt) => new
+    internal static object Session(CscaLessonSession session, DateTime updatedAt, string? changeReason = null) => new
     {
         ClassSourceId = session.ClassId.ToString("N"),
         SessionSourceId = session.Id.ToString("N"),
         LmsSessionId = session.ExternalSessionId,
-        ScheduleSourceId = session.ScheduleId?.ToString("N"),
+        ExpectedLmsVersion = session.ExternalVersion > 0 ? session.ExternalVersion : (int?)null,
+        ScheduleSourceId = session.Schedule?.ExternalSource == LmsIntegrationSourceSystems.CscaCourseLms
+            ? null : session.ScheduleId?.ToString("N"),
+        LmsScheduleId = session.Schedule?.ExternalSource == LmsIntegrationSourceSystems.CscaCourseLms
+            ? session.Schedule.ExternalScheduleId : null,
         LessonDate = session.LessonDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         StartTime = Clock(session.StartTime),
         EndTime = Clock(session.EndTime),
@@ -53,6 +58,7 @@ internal static class LmsCalendarEventFactory
         Status = string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
             ? "ended" : session.Status.Trim().ToLowerInvariant(),
         session.MeetingUrl,
+        ChangeReason = changeReason,
         SourceUpdatedAt = updatedAt
     };
 

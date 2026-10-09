@@ -162,7 +162,8 @@ public sealed record UpdateCscaLessonSessionRequest(
     Guid? ClassroomId = null,
     string? MeetingUrl = null,
     string? Notes = null,
-    string Status = "Scheduled");
+    string Status = "Scheduled",
+    string? ChangeReason = null);
 
 public sealed record GenerateCscaLessonSessionsRequest(DateOnly FromDate, DateOnly ToDate);
 

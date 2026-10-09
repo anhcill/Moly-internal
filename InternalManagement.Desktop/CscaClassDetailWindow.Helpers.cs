@@ -81,6 +81,7 @@ public partial class CscaClassDetailWindow
             new PromptField("classroomId", "Phòng học", session?.ClassroomId?.ToString(), IsRequired: false, Options: BuildClassroomOptions(rooms, session?.ClassroomId)),
             new PromptField("status", "Trạng thái", session?.Status ?? "Scheduled", Options: LessonStatusOptions()),
             new PromptField("meetingUrl", "Link học trực tuyến (https://...)", session?.MeetingUrl, IsRequired: false),
+            new PromptField("changeReason", "Lý do đổi ngày/giờ buổi học", IsRequired: false),
             new PromptField("notes", "Ghi chú", session?.Notes, IsRequired: false)
         };
     }

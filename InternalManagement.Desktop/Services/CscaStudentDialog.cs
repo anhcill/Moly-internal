@@ -509,18 +509,10 @@ public static class CscaStudentDialog
                 isUpdatingInternally = true;
                 try
                 {
-                    if (paid >= payable && payable > 0)
-                    {
-                        statusCombo.SelectedValue = 2; // Paid
-                    }
-                    else if (paid == 0)
-                    {
-                        statusCombo.SelectedValue = 0; // Pending
-                    }
-                    else
-                    {
-                        statusCombo.SelectedValue = 1; // Partial
-                    }
+                    statusCombo.SelectedValue = ResolveAutomaticPaymentStatus(
+                        payable,
+                        paid,
+                        statusCombo.SelectedValue is int currentStatus ? currentStatus : 0);
                 }
                 finally
                 {
@@ -743,6 +735,17 @@ public static class CscaStudentDialog
         var accepted = dialog.ShowDialog() == true;
         result = submitted;
         return accepted;
+    }
+
+    public static int ResolveAutomaticPaymentStatus(decimal payableAmount, decimal paidAmount, int currentStatus)
+    {
+        // A free class can still be explicitly marked Paid. Do not immediately
+        // overwrite that selection just because both payable and paid are zero.
+        if (payableAmount <= 0)
+            return currentStatus;
+        if (paidAmount >= payableAmount)
+            return 2;
+        return paidAmount <= 0 ? 0 : 1;
     }
 
     private static string FormatMoneyInput(decimal value) =>

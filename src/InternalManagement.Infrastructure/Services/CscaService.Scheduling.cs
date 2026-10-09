@@ -317,12 +317,18 @@ public sealed partial class CscaService
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
 
-        var session = await _db.CscaLessonSessions.Include(item => item.Class).Include(item => item.Classroom)
+        var session = await _db.CscaLessonSessions.Include(item => item.Class).Include(item => item.Schedule).Include(item => item.Classroom)
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
-        if (IsLmsCalendarProjection(session.ExternalSource))
-            return Result<CscaLessonSessionDto>.Failure("Buổi học này được quản lý trên LMS. Hãy chỉnh sửa tại LMS.");
+        if (IsLmsCalendarProjection(session.ExternalSource) && await GetCalendarLinkAsync(session.Class, ct) is null)
+            return Result<CscaLessonSessionDto>.Failure("Lớp chưa kết nối LMS để đồng bộ thay đổi buổi học.");
+        var timeChanged = session.LessonDate != request.LessonDate || session.StartTime != request.StartTime || session.EndTime != request.EndTime;
+        if (timeChanged && (string.IsNullOrWhiteSpace(request.ChangeReason) || request.ChangeReason.Length > 2000))
+            return Result<CscaLessonSessionDto>.Failure("Vui lòng nhập lý do đổi lịch (tối đa 2000 ký tự).");
+        if (timeChanged && (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)))
+            return Result<CscaLessonSessionDto>.Failure("Không thể đổi lịch buổi đã kết thúc hoặc đã hủy.");
         var validation = ValidateLessonSession(request.LessonDate, request.StartTime, request.EndTime, request.Status)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
@@ -339,13 +345,14 @@ public sealed partial class CscaService
         session.LessonDate = request.LessonDate;
         session.StartTime = request.StartTime;
         session.EndTime = request.EndTime;
-        session.Status = request.Status.Trim();
+        session.Status = timeChanged && string.Equals(request.Status, "Scheduled", StringComparison.OrdinalIgnoreCase)
+            ? "Rescheduled" : request.Status.Trim();
         session.MeetingUrl = request.MeetingUrl?.Trim();
         session.Notes = request.Notes?.Trim();
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
         await QueueSessionForWebAsync(session.Class, session,
-            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct);
+            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, request.ChangeReason?.Trim());
         await _db.SaveChangesAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }

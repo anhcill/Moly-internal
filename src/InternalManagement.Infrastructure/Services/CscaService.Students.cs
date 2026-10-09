@@ -46,14 +46,22 @@ public sealed partial class CscaService
             return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {cls.TuitionFee:N0} đ.");
         }
 
+        var email = CleanStudentContact(request.Email);
+        var phoneNumber = CleanStudentContact(request.PhoneNumber);
+        var duplicateError = ValidateUniqueStudentContact(cls.Students, null, email, phoneNumber);
+        if (duplicateError is not null)
+        {
+            return Result<CscaStudentDto>.Failure(duplicateError);
+        }
+
         var student = new CscaClassStudent
         {
             ClassId = classId,
             StudentName = request.StudentName.Trim(),
             Age = request.Age,
             Hometown = request.Hometown?.Trim(),
-            Email = request.Email?.Trim(),
-            PhoneNumber = request.PhoneNumber?.Trim(),
+            Email = email,
+            PhoneNumber = phoneNumber,
             DiscountAmount = request.DiscountAmount,
             DiscountNote = request.DiscountNote?.Trim(),
             PaidAmount = request.PaidAmount,
@@ -127,6 +135,15 @@ public sealed partial class CscaService
             return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {student.Class.TuitionFee:N0} đ.");
         }
 
+        var updatedEmail = request.Email is null ? student.Email : CleanStudentContact(request.Email);
+        var updatedPhoneNumber = request.PhoneNumber is null ? student.PhoneNumber : CleanStudentContact(request.PhoneNumber);
+        var duplicateError = ValidateUniqueStudentContact(
+            student.Class.Students, student.Id, updatedEmail, updatedPhoneNumber);
+        if (duplicateError is not null)
+        {
+            return Result<CscaStudentDto>.Failure(duplicateError);
+        }
+
         student.PaidAmount = request.PaidAmount;
         student.PaymentStatus = request.PaymentStatus;
         student.DiscountAmount = request.DiscountAmount;
@@ -139,9 +156,9 @@ public sealed partial class CscaService
             student.StudentName = request.StudentName.Trim();
         }
         if (request.Email != null)
-            student.Email = request.Email.Trim();
+            student.Email = updatedEmail;
         if (request.PhoneNumber != null)
-            student.PhoneNumber = request.PhoneNumber.Trim();
+            student.PhoneNumber = updatedPhoneNumber;
         if (request.Age.HasValue)
             student.Age = request.Age;
         if (request.Hometown != null)
@@ -313,6 +330,48 @@ public sealed partial class CscaService
 
     private static decimal GetPayableTuition(decimal tuitionFee, decimal discountAmount) =>
         Math.Max(0, tuitionFee - discountAmount);
+
+    private static string? CleanStudentContact(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeStudentEmail(string? email) =>
+        CleanStudentContact(email)?.ToUpperInvariant();
+
+    private static string? NormalizeStudentPhone(string? phoneNumber)
+    {
+        var cleaned = CleanStudentContact(phoneNumber);
+        if (cleaned is null)
+            return null;
+        var digits = new string(cleaned.Where(char.IsDigit).ToArray());
+        return digits.Length == 0 ? cleaned.ToUpperInvariant() : digits;
+    }
+
+    private static string? ValidateUniqueStudentContact(
+        IEnumerable<CscaClassStudent> students,
+        Guid? excludedStudentId,
+        string? email,
+        string? phoneNumber)
+    {
+        var normalizedEmail = NormalizeStudentEmail(email);
+        if (normalizedEmail is not null)
+        {
+            var duplicate = students.FirstOrDefault(student =>
+                student.Id != excludedStudentId && NormalizeStudentEmail(student.Email) == normalizedEmail);
+            if (duplicate is not null)
+                return $"Email '{email}' đã được dùng bởi học viên '{duplicate.StudentName}' trong lớp này.";
+        }
+
+        var normalizedPhone = NormalizeStudentPhone(phoneNumber);
+        if (normalizedPhone is not null)
+        {
+            var duplicate = students.FirstOrDefault(student =>
+                student.Id != excludedStudentId && NormalizeStudentPhone(student.PhoneNumber) == normalizedPhone);
+            if (duplicate is not null)
+                return $"Số điện thoại '{phoneNumber}' đã được dùng bởi học viên '{duplicate.StudentName}' trong lớp này.";
+        }
+
+        return null;
+    }
 
     private static BusinessDocumentStatus ToDocumentStatus(PaymentStatus status) => status switch
     {

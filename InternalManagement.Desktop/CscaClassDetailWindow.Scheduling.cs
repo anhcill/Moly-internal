@@ -210,8 +210,8 @@ public partial class CscaClassDetailWindow
             if (!PromptDialog.TryShow(this, $"Buổi học {row.LessonDate:dd/MM/yyyy}", await LessonSessionFieldsAsync(row), out var values)) return;
             if (!TryLessonSessionValues(values, out var lessonDate, out var startTime, out var endTime, out var classroomId)) return;
             await SaveAsync(() => _apiClient.UpdateCscaLessonSessionAsync(_classId, row.Id, lessonDate,
-                startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"]),
-                "Đã cập nhật buổi học.");
+                startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"], Null(values["changeReason"])),
+                "Đã lưu thay đổi buổi học.");
         }
     }
 

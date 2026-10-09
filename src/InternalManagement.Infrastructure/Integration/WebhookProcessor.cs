@@ -450,8 +450,14 @@ public sealed class WebhookProcessor : IWebhookProcessor
         var source = LmsIntegrationSourceSystems.CscaCourseLms;
         var session = await _db.CscaLessonSessions.FirstOrDefaultAsync(item =>
             item.ExternalSource == source && item.ExternalSessionId == incoming.Id, ct);
+        if (session is null && Guid.TryParse(incoming.ManagementSessionSourceId, out var managementSessionId))
+            session = await _db.CscaLessonSessions.FirstOrDefaultAsync(item =>
+                item.Id == managementSessionId && item.ClassId == classId, ct);
         if (session is not null && session.ClassId != classId)
             throw new CscaLmsValidationException("lmsSession.id đang được liên kết với một lớp khác.");
+        if (session is not null && !string.IsNullOrWhiteSpace(session.ExternalSessionId)
+            && !string.Equals(session.ExternalSessionId, incoming.Id, StringComparison.OrdinalIgnoreCase))
+            throw new CscaLmsValidationException("Buổi Management đã liên kết với một buổi LMS khác.");
         if (session is not null && incoming.Version <= session.ExternalVersion) return;
 
         if (session is null)
@@ -738,6 +744,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
         string? ScheduleId = null,
         string? MeetingUrl = null,
         string? ChangeReason = null,
+        string? ManagementSessionSourceId = null,
         int Version = 1);
 
     private sealed record CscaLmsAttendanceItem(

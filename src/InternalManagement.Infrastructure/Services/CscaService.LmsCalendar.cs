@@ -33,14 +33,13 @@ public sealed partial class CscaService
         return null;
     }
 
-    private async Task QueueSessionForWebAsync(CscaClass cls, CscaLessonSession session, bool cancelled, CancellationToken ct)
+    private async Task QueueSessionForWebAsync(CscaClass cls, CscaLessonSession session, bool cancelled, CancellationToken ct, string? changeReason = null)
     {
-        if (IsLmsCalendarProjection(session.ExternalSource)) return;
         var link = await GetCalendarLinkAsync(cls, ct);
         if (link is null) return;
         var now = DateTime.UtcNow;
         QueueCalendarEvent(link, cancelled ? "class.session.cancelled" : "class.session.upserted",
-            LmsCalendarEventFactory.Session(session, now), now);
+            LmsCalendarEventFactory.Session(session, now, changeReason), now);
     }
 
     private void QueueCalendarEvent(LmsCourseLink link, string eventType, object payload, DateTime now)

@@ -212,6 +212,48 @@ public class WebhookProcessorTests
         (await db.CscaClassSchedules.SingleAsync()).Status.Should().Be("Archived");
     }
 
+    [Fact]
+    public async Task Ingest_RescheduledManagementSession_ShouldReuseItsGuidInsteadOfCreatingDuplicate()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        const string secret = "test-webhook-secret";
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-EDIT", Name = "CSCA Edit", IsDeleted = false });
+        db.CscaLessonSessions.Add(new CscaLessonSession
+        {
+            Id = sessionId, ClassId = classId, LessonDate = new DateOnly(2026, 9, 20),
+            StartTime = new TimeSpan(16, 0, 0), EndTime = new TimeSpan(17, 30, 0), Status = "Scheduled"
+        });
+        db.IntegrationSources.Add(new IntegrationSource
+        {
+            CompanyId = Guid.NewGuid(), Code = "CSCA_COURSE_LMS", Name = "CSCA Course LMS",
+            BaseUrl = "https://lms.example.test", AuthType = "HMAC", CredentialReference = secret, IsActive = true
+        });
+        await db.SaveChangesAsync();
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1, managementClassId = classId.ToString(),
+            lmsSession = new
+            {
+                id = "lms-session-202", liveClassId = "12", scheduleId = (string?)null,
+                managementSessionSourceId = sessionId.ToString("N"),
+                title = "Buổi đã dời", startTime = "2026-09-22T09:00:00.000Z",
+                endTime = "2026-09-22T10:30:00.000Z", status = "rescheduled", version = 2
+            }
+        });
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+        (await processor.IngestAsync("CSCA_COURSE_LMS", "calendar-management-edit-1",
+            "lms.session.upserted", payload, Sign(payload, secret), CancellationToken.None)).Accepted.Should().BeTrue();
+
+        var sessions = await db.CscaLessonSessions.ToListAsync();
+        sessions.Should().ContainSingle();
+        sessions[0].Id.Should().Be(sessionId);
+        sessions[0].ExternalSessionId.Should().Be("lms-session-202");
+        sessions[0].LessonDate.Should().Be(new DateOnly(2026, 9, 22));
+    }
+
     private static string AttendancePayload(Guid classId, Guid studentId, string status) =>
         $$"""{"schemaVersion":1,"managementClassId":"{{classId}}","lmsSession":{"id":"lms-session-101","title":"Buổi 1","startTime":"2026-09-21T09:00:00.000Z","endTime":"2026-09-21T10:30:00.000Z","status":"scheduled"},"attendance":[{"managementStudentId":"{{studentId}}","status":"{{status}}","checkedAt":"2026-09-21T09:05:00.000Z","note":""}]}""";
 

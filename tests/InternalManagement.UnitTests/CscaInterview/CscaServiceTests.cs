@@ -336,4 +336,56 @@ public class CscaServiceTests
         (await db.Parties.CountAsync()).Should().Be(1);
         (await db.PartyExternalIdentities.CountAsync()).Should().Be(2);
     }
+
+    [Fact]
+    public async Task EnrollStudent_WithDuplicateEmailOrPhoneInSameClass_ShouldFail()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var classResult = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-DUP", "Lớp chống trùng", "Batch 1", string.Empty, 0),
+            CancellationToken.None);
+
+        var first = await service.EnrollStudentAsync(classResult.Value!.Id,
+            new EnrollStudentRequest("Học viên đầu", "Student@Test.com", "0901 234 567", 0, PaymentStatus.Paid),
+            CancellationToken.None);
+        var duplicateEmail = await service.EnrollStudentAsync(classResult.Value.Id,
+            new EnrollStudentRequest("Trùng email", " student@test.com ", "0988000000"),
+            CancellationToken.None);
+        var duplicatePhone = await service.EnrollStudentAsync(classResult.Value.Id,
+            new EnrollStudentRequest("Trùng điện thoại", "other@test.com", "0901-234-567"),
+            CancellationToken.None);
+
+        first.Succeeded.Should().BeTrue();
+        first.Value!.PaymentStatus.Should().Be(PaymentStatus.Paid);
+        first.Value.PaidAmount.Should().Be(0);
+        duplicateEmail.Succeeded.Should().BeFalse();
+        duplicateEmail.Errors.Should().ContainSingle(error => error.Contains("Email") && error.Contains("trong lớp này"));
+        duplicatePhone.Succeeded.Should().BeFalse();
+        duplicatePhone.Errors.Should().ContainSingle(error => error.Contains("Số điện thoại") && error.Contains("trong lớp này"));
+        (await db.CscaClassStudents.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task UpdateStudent_ToDuplicateContactInSameClass_ShouldFail()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var classResult = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-DUP-UPD", "Lớp sửa chống trùng", "Batch 1", string.Empty, 1_000_000m),
+            CancellationToken.None);
+        var first = await service.EnrollStudentAsync(classResult.Value!.Id,
+            new EnrollStudentRequest("Học viên một", "one@test.com", "0911111111"), CancellationToken.None);
+        var second = await service.EnrollStudentAsync(classResult.Value.Id,
+            new EnrollStudentRequest("Học viên hai", "two@test.com", "0922222222"), CancellationToken.None);
+
+        var duplicate = await service.UpdateStudentPaymentAsync(classResult.Value.Id, second.Value!.Id,
+            new UpdateStudentPaymentRequest(0, PaymentStatus.Pending,
+                StudentName: "Học viên hai", Email: "ONE@test.com", PhoneNumber: "0922222222"),
+            CancellationToken.None);
+
+        first.Succeeded.Should().BeTrue();
+        duplicate.Succeeded.Should().BeFalse();
+        duplicate.Errors.Should().ContainSingle(error => error.Contains("Email") && error.Contains("Học viên một"));
+    }
 }
