@@ -88,22 +88,22 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="22">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="14,11" Margin="0,0,0,9">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock x:Name="ClassTitleText" Text="Chi tiết lớp" FontSize="22" FontWeight="Bold" Foreground="#0F172A" />
-                    <TextBlock x:Name="ClassSubtitleText" Text="Đang tải dữ liệu..." FontSize="12" Foreground="#64748B" Margin="0,5,0,0" />
+                    <TextBlock x:Name="ClassTitleText" Text="Chi tiết lớp" FontSize="20" FontWeight="Bold" Foreground="#0F172A" />
+                    <TextBlock x:Name="ClassSubtitleText" Text="Đang tải dữ liệu..." FontSize="12" Foreground="#64748B" Margin="0,3,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#EEF2FF" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
@@ -117,7 +117,8 @@
             </Grid>
         </Border>
 
-        <TabControl Grid.Row="1" x:Name="DetailTabs" SelectionChanged="DetailTabs_SelectionChanged">
+        <TabControl Grid.Row="1" x:Name="DetailTabs" SelectionChanged="DetailTabs_SelectionChanged"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="Thông tin lớp" FontWeight="SemiBold">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="18">
@@ -269,7 +270,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Thời khóa biểu" FontWeight="SemiBold">
+            <TabItem x:Name="ScheduleTab" Header="Thời khóa biểu" FontWeight="SemiBold">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -304,15 +305,38 @@
                                 <Button Content="‹" Width="34" Click="PreviousScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần trước" />
                                 <Button Content="Hôm nay" Click="CurrentScheduleWeek_Click" Style="{StaticResource ToolbarButton}" />
                                 <Button Content="›" Width="34" Click="NextScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần sau" />
-                                <TextBlock x:Name="ScheduleWeekLabel" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#312E81" Margin="10,0,0,0" />
+                                <TextBlock x:Name="ScheduleWeekLabel" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#312E81" Margin="10,0,14,0" />
+                                <Border Width="1" Height="22" Background="#CBD5E1" Margin="0,0,10,0" />
+                                <Button Content="🌙 Ca tối" Click="ScrollToEvening_Click" Style="{StaticResource ToolbarButton}" ToolTip="Cuộn nhanh xuống ca tối (17:00 – 22:00)" Padding="10,0" />
+                                <Button Content="☀️ Ca sáng" Click="ScrollToMorning_Click" Style="{StaticResource ToolbarButton}" ToolTip="Cuộn nhanh lên ca sáng (06:00 – 12:00)" Margin="6,0,0,0" Padding="10,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
                     <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Margin="0,0,0,10" ClipToBounds="True">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                            <Grid x:Name="ScheduleCalendarGrid" MinWidth="1110" />
-                        </ScrollViewer>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Cố định hàng thứ (Thứ 2 - Chủ nhật) ở trên cùng khi cuộn dọc -->
+                            <ScrollViewer x:Name="ScheduleHeaderScrollViewer" Grid.Row="0"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          Focusable="False"
+                                          PreviewMouseWheel="ScheduleHeaderScrollViewer_PreviewMouseWheel">
+                                <Grid x:Name="ScheduleHeaderGrid" MinWidth="1110" />
+                            </ScrollViewer>
+
+                            <!-- Thân thời khóa biểu hiển thị các giờ và các buổi học (tự động cuộn xuống ca tối) -->
+                            <ScrollViewer x:Name="ScheduleCalendarScrollViewer" Grid.Row="1"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto"
+                                          ScrollChanged="ScheduleCalendarScrollViewer_ScrollChanged">
+                                <Grid x:Name="ScheduleCalendarGrid" MinWidth="1110" />
+                            </ScrollViewer>
+                        </Grid>
                     </Border>
 
                     <Expander Grid.Row="3" Header="Danh sách khung giờ cố định · Chọn dòng để sửa hoặc xóa" IsExpanded="False" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="8">
@@ -359,10 +383,11 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="0.8*" MinHeight="120" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="1.2*" MinHeight="170" />
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,12">
+                    <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,0,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -375,20 +400,20 @@
                             <Button Grid.Column="1" Content="Tải lại báo cáo" Click="RefreshAttendanceReport_Click" Style="{StaticResource ToolbarButton}" Height="34" Padding="12,0" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Từ ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
                         <DatePicker x:Name="AttendanceReportFromDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
                         <TextBlock Text="Đến ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
                         <DatePicker x:Name="AttendanceReportToDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
                         <TextBlock x:Name="AttendanceReportStatusText" Text="Mở tab để tải dữ liệu điểm danh." VerticalAlignment="Center" Foreground="#64748B" TextWrapping="Wrap" />
                     </StackPanel>
-                    <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,12">
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="20" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="20" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="12"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="20" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
+                    <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,8">
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
+                        <Border Background="White" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="10,7"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="18" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
                     </UniformGrid>
                     <GroupBox Grid.Row="3" Header="Thống kê theo buổi học từ web" Margin="0,0,0,10">
                         <DataGrid x:Name="AttendanceReportSessionsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
@@ -404,7 +429,9 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </GroupBox>
-                    <GroupBox Grid.Row="4" Header="Thống kê theo học viên">
+                    <GridSplitter Grid.Row="4" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="#CBD5E1" Cursor="SizeNS" />
+                    <GroupBox Grid.Row="5" Header="Thống kê theo học viên">
                         <DataGrid x:Name="AttendanceReportStudentsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="2*" />

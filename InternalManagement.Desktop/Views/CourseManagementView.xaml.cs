@@ -7,6 +7,18 @@ public partial class CourseManagementView : UserControl
 {
     public CourseManagementView() => InitializeComponent();
 
+    public int SelectedTabIndex
+    {
+        get => CourseModuleTabControl.SelectedIndex;
+        set
+        {
+            if (value >= 0 && value < CourseModuleTabControl.Items.Count)
+            {
+                CourseModuleTabControl.SelectedIndex = value;
+            }
+        }
+    }
+
     public event EventHandler<FeatureViewActionEventArgs>? ActionRequested;
 
     private void ClearCscaCourseFilter_Click(object sender, RoutedEventArgs e) =>

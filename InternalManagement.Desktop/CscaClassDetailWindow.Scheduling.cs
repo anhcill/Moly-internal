@@ -13,6 +13,7 @@ public partial class CscaClassDetailWindow
     private DateTime _calendarWeekStart;
     private bool _calendarInitialized;
     private IReadOnlyList<ApiClient.CscaLessonSessionItem> _calendarSessions = [];
+    private double _preferredCalendarVerticalOffset;
 
     private async Task LoadScheduleCalendarSessionsAsync()
     {
@@ -56,18 +57,41 @@ public partial class CscaClassDetailWindow
         const double hourHeight = 52;
         var calendarHeight = (lastHour - firstHour) * hourHeight;
 
+        // 1. Cấu hình hàng Header cố định (Thứ 2 - Chủ nhật)
+        ScheduleHeaderGrid.Children.Clear();
+        ScheduleHeaderGrid.ColumnDefinitions.Clear();
+        ScheduleHeaderGrid.RowDefinitions.Clear();
+        ScheduleHeaderGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(48) });
+        ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) });
+        for (var day = 0; day < 7; day++)
+            ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+
+        var corner = new Border
+        {
+            Background = Brush("#F8FAFC"),
+            BorderBrush = Brush("#E2E8F0"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Child = new TextBlock
+            {
+                Text = "GIỜ",
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = Brush("#94A3B8"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+        Grid.SetColumn(corner, 0);
+        ScheduleHeaderGrid.Children.Add(corner);
+
+        // 2. Cấu hình thân thời khóa biểu (các giờ và ô buổi học theo từng ngày)
         ScheduleCalendarGrid.Children.Clear();
         ScheduleCalendarGrid.ColumnDefinitions.Clear();
         ScheduleCalendarGrid.RowDefinitions.Clear();
+        ScheduleCalendarGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(calendarHeight) });
         ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) });
         for (var day = 0; day < 7; day++)
             ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
-        ScheduleCalendarGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(48) });
-        ScheduleCalendarGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(calendarHeight) });
-
-        var corner = new Border { Background = Brush("#F8FAFC"), BorderBrush = Brush("#E2E8F0"), BorderThickness = new Thickness(0, 0, 1, 1) };
-        Grid.SetRow(corner, 0);
-        ScheduleCalendarGrid.Children.Add(corner);
 
         var gutter = new Canvas { Height = calendarHeight, Background = Brushes.White };
         for (var hour = firstHour; hour <= lastHour; hour++)
@@ -77,8 +101,15 @@ public partial class CscaClassDetailWindow
             Canvas.SetLeft(label, 8);
             gutter.Children.Add(label);
         }
-        Grid.SetRow(gutter, 1);
-        ScheduleCalendarGrid.Children.Add(gutter);
+        var gutterBorder = new Border
+        {
+            Child = gutter,
+            BorderBrush = Brush("#E2E8F0"),
+            BorderThickness = new Thickness(0, 0, 1, 0),
+            Background = Brushes.White
+        };
+        Grid.SetColumn(gutterBorder, 0);
+        ScheduleCalendarGrid.Children.Add(gutterBorder);
 
         for (var dayIndex = 0; dayIndex < 7; dayIndex++)
         {
@@ -90,7 +121,8 @@ public partial class CscaClassDetailWindow
             var header = new Border
             {
                 Background = isToday ? Brush("#EEF2FF") : Brushes.White,
-                BorderBrush = Brush("#E2E8F0"), BorderThickness = new Thickness(0, 0, 1, 1),
+                BorderBrush = Brush("#E2E8F0"),
+                BorderThickness = new Thickness(0, 0, 1, 1),
                 Child = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -102,9 +134,8 @@ public partial class CscaClassDetailWindow
                     }
                 }
             };
-            Grid.SetRow(header, 0);
             Grid.SetColumn(header, dayIndex + 1);
-            ScheduleCalendarGrid.Children.Add(header);
+            ScheduleHeaderGrid.Children.Add(header);
 
             var canvas = new Canvas { Height = calendarHeight, Background = dateIsInCourse ? Brushes.White : Brush("#F8FAFC") };
             for (var hour = firstHour; hour <= lastHour; hour++)
@@ -138,10 +169,30 @@ public partial class CscaClassDetailWindow
                     }
             }
             var dayBorder = new Border { Child = canvas, BorderBrush = Brush("#E2E8F0"), BorderThickness = new Thickness(0, 0, 1, 0) };
-            Grid.SetRow(dayBorder, 1);
             Grid.SetColumn(dayBorder, dayIndex + 1);
             ScheduleCalendarGrid.Children.Add(dayBorder);
         }
+
+        // Tính vị trí cuộn tối ưu cho ca tối (mặc định ~16:30 hoặc 1 giờ trước buổi tối sớm nhất)
+        double targetHour = 16.5;
+        var eveningTimes = schedules
+            .Where(s => s.StartTime.TotalHours >= 16.0)
+            .Select(s => s.StartTime.TotalHours)
+            .Concat(_calendarSessions
+                .Where(s => s.StartTime.TotalHours >= 16.0)
+                .Select(s => s.StartTime.TotalHours))
+            .ToList();
+
+        if (eveningTimes.Count > 0)
+        {
+            var earliestEvening = eveningTimes.Min();
+            targetHour = Math.Max(firstHour, earliestEvening - 1.0);
+        }
+
+        _preferredCalendarVerticalOffset = Math.Max(0, (targetHour - firstHour) * hourHeight);
+
+        // Tự động cuộn xuống ca tối
+        ScrollCalendarToEvening();
     }
 
     private void AddCalendarEvent(Canvas canvas, TimeSpan start, TimeSpan end, string time,
@@ -195,6 +246,62 @@ public partial class CscaClassDetailWindow
     {
         _calendarWeekStart = _calendarWeekStart.AddDays(7);
         RenderScheduleCalendar(SchedulesDataGrid.ItemsSource as IReadOnlyList<ScheduleRow> ?? []);
+    }
+
+    public void ScrollCalendarToEvening()
+    {
+        if (ScheduleCalendarScrollViewer == null) return;
+
+        void ApplyScroll()
+        {
+            if (ScheduleCalendarScrollViewer == null) return;
+            var offset = _preferredCalendarVerticalOffset > 0 ? _preferredCalendarVerticalOffset : 546;
+            ScheduleCalendarScrollViewer.ScrollToVerticalOffset(offset);
+            if (ScheduleHeaderScrollViewer != null)
+            {
+                ScheduleHeaderScrollViewer.ScrollToHorizontalOffset(ScheduleCalendarScrollViewer.HorizontalOffset);
+            }
+        }
+
+        ApplyScroll();
+        Dispatcher.BeginInvoke((Action)ApplyScroll, System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    public void ScrollCalendarToMorning()
+    {
+        if (ScheduleCalendarScrollViewer == null) return;
+        ScheduleCalendarScrollViewer.ScrollToVerticalOffset(0);
+        if (ScheduleHeaderScrollViewer != null)
+        {
+            ScheduleHeaderScrollViewer.ScrollToHorizontalOffset(ScheduleCalendarScrollViewer.HorizontalOffset);
+        }
+    }
+
+    private void ScrollToEvening_Click(object sender, RoutedEventArgs e)
+    {
+        ScrollCalendarToEvening();
+    }
+
+    private void ScrollToMorning_Click(object sender, RoutedEventArgs e)
+    {
+        ScrollCalendarToMorning();
+    }
+
+    private void ScheduleCalendarScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (e.HorizontalChange != 0 && ScheduleHeaderScrollViewer != null)
+        {
+            ScheduleHeaderScrollViewer.ScrollToHorizontalOffset(e.HorizontalOffset);
+        }
+    }
+
+    private void ScheduleHeaderScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (ScheduleCalendarScrollViewer != null)
+        {
+            ScheduleCalendarScrollViewer.ScrollToVerticalOffset(ScheduleCalendarScrollViewer.VerticalOffset - e.Delta);
+            e.Handled = true;
+        }
     }
 
     private async void ScheduleCalendarEvent_Click(object sender, RoutedEventArgs e)

@@ -569,6 +569,7 @@ public partial class MainWindow
             {
                 _ = LoadCscaFinanceAsync();
             }
+            SyncCourseNavigationSelection(tabControl.SelectedIndex);
         }
     }
 

@@ -276,7 +276,7 @@
             </TabItem>
 
             <!-- SUB-TAB 4: TÀI LIỆU WEB -->
-            <TabItem Header="Tài liệu web" FontWeight="SemiBold">
+            <TabItem x:Name="TabItemMaterials" Header="Tài liệu web" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -317,8 +317,8 @@
                 </Grid>
             </TabItem>
 
-            <!-- SUB-TAB 4: TỪ VỰNG WEB -->
-            <TabItem Header="Từ vựng web" FontWeight="SemiBold">
+            <!-- SUB-TAB 5: TỪ VỰNG WEB -->
+            <TabItem x:Name="TabItemVocabulary" Header="Từ vựng web" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -358,8 +358,8 @@
                 </Grid>
             </TabItem>
 
-            <!-- SUB-TAB 5: CỘNG ĐỒNG WEB -->
-            <TabItem Header="Cộng đồng web" FontWeight="SemiBold">
+            <!-- SUB-TAB 6: CỘNG ĐỒNG WEB -->
+            <TabItem x:Name="TabItemCommunity" Header="Cộng đồng web" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

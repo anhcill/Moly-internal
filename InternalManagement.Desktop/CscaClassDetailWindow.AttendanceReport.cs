@@ -11,10 +11,17 @@ public partial class CscaClassDetailWindow
 
     private async void DetailTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.Source != DetailTabs || DetailTabs.SelectedItem != AttendanceReportTab || _detail is null)
+        if (e.Source != DetailTabs)
             return;
 
-        await LoadAttendanceReportAsync();
+        if (DetailTabs.SelectedItem == AttendanceReportTab && _detail is not null)
+        {
+            await LoadAttendanceReportAsync();
+        }
+        else if (DetailTabs.SelectedItem == ScheduleTab)
+        {
+            ScrollCalendarToEvening();
+        }
     }
 
     private async void RefreshAttendanceReport_Click(object sender, RoutedEventArgs e)

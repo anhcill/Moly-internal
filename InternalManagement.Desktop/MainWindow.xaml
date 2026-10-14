@@ -110,8 +110,14 @@
                             <StackPanel x:Name="TechnologyNavigationGroup" Visibility="Collapsed">
                                 <TextBlock x:Name="TechnologyNavigationLabel" Text="CÔNG NGHỆ - GIÁO DỤC" Style="{StaticResource SidebarSectionLabel}" />
                                 <RadioButton x:Name="NavCustomers" GroupName="MainNavigation" Content="Học viên &amp; khách hàng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCourses" GroupName="MainNavigation" Content="Khóa học &amp; lớp học" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCsca" GroupName="MainNavigation" Content="Lớp học CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Visibility="Collapsed" />
+                                <RadioButton x:Name="NavCourses" GroupName="MainNavigation" Content="Khóa học ▾" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="CoursesNavigationParent_Click" />
+                                <StackPanel x:Name="TechnologyCoursesSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
+                                    <RadioButton x:Name="NavCourseClasses" GroupName="TechnologyCoursesNavigation" Content="Lớp học" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseFinance" GroupName="TechnologyCoursesNavigation" Content="Tài chính" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseMaterials" GroupName="TechnologyCoursesNavigation" Content="Tài liệu" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseVocabulary" GroupName="TechnologyCoursesNavigation" Content="Từ vựng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseCommunity" GroupName="TechnologyCoursesNavigation" Content="Cộng đồng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                </StackPanel>
                                 <RadioButton x:Name="NavLms" GroupName="MainNavigation" Content="Đồng bộ Web CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavInterview" GroupName="MainNavigation" Content="Mock Interview" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavQuestions" GroupName="MainNavigation" Content="Ngân hàng đề &amp; câu hỏi" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />

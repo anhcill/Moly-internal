@@ -46,14 +46,48 @@ public static class CscaStudentDialog
         ApiClient.CscaStudentItem? student = null,
         ApiClient? apiClient = null)
     {
+        return TryShow(owner, classCode, className, classTuitionFee, out result, out _, student, apiClient, null, null);
+    }
+
+    public static bool TryShow(
+        Window owner,
+        string classCode,
+        string className,
+        decimal classTuitionFee,
+        out CscaStudentDialogResult? result,
+        out Guid selectedClassId,
+        ApiClient.CscaStudentItem? student = null,
+        ApiClient? apiClient = null,
+        IReadOnlyList<ApiClient.CscaClassItem>? availableClasses = null,
+        Guid? defaultClassId = null)
+    {
         result = null;
+        selectedClassId = defaultClassId ?? student?.ClassId ?? Guid.Empty;
         CscaStudentDialogResult? submitted = null;
         var isEditing = student != null;
+        var currentTuitionFee = classTuitionFee;
+        var currentClassCode = classCode;
+        var currentClassName = className;
+        var currentSelectedClassId = selectedClassId;
+
+        if (availableClasses != null && availableClasses.Count > 0 && !isEditing)
+        {
+            var matched = (defaultClassId.HasValue && defaultClassId.Value != Guid.Empty)
+                ? availableClasses.FirstOrDefault(c => c.Id == defaultClassId.Value)
+                : availableClasses[0];
+            if (matched != null)
+            {
+                currentSelectedClassId = matched.Id;
+                currentClassCode = matched.Code;
+                currentClassName = matched.Name;
+                currentTuitionFee = matched.TuitionFee;
+            }
+        }
 
         var dialog = new Window
         {
             Owner = owner,
-            Title = isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : $"Thêm học viên vào lớp {classCode}",
+            Title = isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : (string.IsNullOrWhiteSpace(currentClassCode) ? "Thêm học viên mới" : $"Thêm học viên vào lớp {currentClassCode}"),
             Width = 680,
             Height = 740,
             MinWidth = 620,
@@ -92,13 +126,14 @@ public static class CscaStudentDialog
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42))
         });
-        titlePanel.Children.Add(new TextBlock
+        var classSubtitleText = new TextBlock
         {
-            Text = $"Lớp: {classCode} — {className}",
+            Text = string.IsNullOrWhiteSpace(currentClassCode) ? "Chọn lớp học bên dưới để ghi danh" : $"Lớp: {currentClassCode} — {currentClassName}",
             FontSize = 11.5,
             Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
             Margin = new Thickness(0, 2, 0, 0)
-        });
+        };
+        titlePanel.Children.Add(classSubtitleText);
         Grid.SetColumn(titlePanel, 0);
         headerGrid.Children.Add(titlePanel);
 
@@ -119,13 +154,14 @@ public static class CscaStudentDialog
             FontWeight = FontWeights.SemiBold,
             Foreground = new SolidColorBrush(Color.FromRgb(67, 56, 202))
         });
-        tuitionPanel.Children.Add(new TextBlock
+        var tuitionValueText = new TextBlock
         {
-            Text = $"{classTuitionFee:N0} đ",
+            Text = $"{currentTuitionFee:N0} đ",
             FontSize = 13,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(49, 46, 129))
-        });
+        };
+        tuitionPanel.Children.Add(tuitionValueText);
         tuitionBadge.Child = tuitionPanel;
         Grid.SetColumn(tuitionBadge, 1);
         headerGrid.Children.Add(tuitionBadge);
@@ -141,6 +177,56 @@ public static class CscaStudentDialog
             Margin = new Thickness(0, 0, 0, 10)
         };
         var formPanel = new StackPanel();
+
+        // ── 1.9 CLASS SELECTION (WHEN MULTIPLE CLASSES AVAILABLE) ──
+        Action? onClassChanged = null;
+        if (availableClasses != null && availableClasses.Count > 0 && !isEditing)
+        {
+            var classCard = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(14, 10, 14, 10),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            var classPanel = new StackPanel();
+            var classCombo = new ComboBox
+            {
+                Height = 36,
+                FontSize = 13,
+                ItemsSource = availableClasses.Select(c => new
+                {
+                    c.Id,
+                    DisplayText = $"{c.Code} — {c.Name} (Học phí: {c.TuitionFee:N0} đ)"
+                }).ToList(),
+                DisplayMemberPath = "DisplayText",
+                SelectedValuePath = "Id",
+                SelectedValue = currentSelectedClassId
+            };
+            AddFormField(classPanel, "Chọn lớp học đăng ký *", classCombo);
+            classCard.Child = classPanel;
+            formPanel.Children.Add(classCard);
+
+            classCombo.SelectionChanged += (_, _) =>
+            {
+                if (classCombo.SelectedValue is Guid cId)
+                {
+                    var chosen = availableClasses.FirstOrDefault(c => c.Id == cId);
+                    if (chosen != null)
+                    {
+                        currentSelectedClassId = chosen.Id;
+                        currentClassCode = chosen.Code;
+                        currentClassName = chosen.Name;
+                        currentTuitionFee = chosen.TuitionFee;
+                        classSubtitleText.Text = $"Lớp: {currentClassCode} — {currentClassName}";
+                        tuitionValueText.Text = $"{currentTuitionFee:N0} đ";
+                        onClassChanged?.Invoke();
+                    }
+                }
+            };
+        }
 
         // ── 2.0 AUTO-FILL LOOKUP FROM EXISTING STUDENTS/CUSTOMERS ──
         var existingCandidates = new List<ExistingStudentCandidate>();
@@ -393,13 +479,13 @@ public static class CscaStudentDialog
         };
         var btnFull = CreatePresetButton("Đóng đủ 100%", () =>
         {
-            var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+            var payable = Math.Max(0, currentTuitionFee - ParseMoney(discountBox.Text));
             paidAmountBox.Text = FormatMoneyInput(payable);
             statusCombo.SelectedValue = 2;
         });
         var btnHalf = CreatePresetButton("Đóng 50%", () =>
         {
-            var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+            var payable = Math.Max(0, currentTuitionFee - ParseMoney(discountBox.Text));
             paidAmountBox.Text = FormatMoneyInput(Math.Round(payable / 2));
             statusCombo.SelectedValue = 1;
         });
@@ -437,7 +523,7 @@ public static class CscaStudentDialog
         });
         var debtCalcFormulaText = new TextBlock
         {
-            Text = $"Học phí {classTuitionFee:N0} đ - Giảm {initialDiscount:N0} đ - Đã đóng {initialPaid:N0} đ",
+            Text = $"Học phí {currentTuitionFee:N0} đ - Giảm {initialDiscount:N0} đ - Đã đóng {initialPaid:N0} đ",
             FontSize = 11,
             Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
             Margin = new Thickness(0, 2, 0, 0)
@@ -448,7 +534,7 @@ public static class CscaStudentDialog
 
         var debtValueText = new TextBlock
         {
-            Text = $"{Math.Max(0, classTuitionFee - initialDiscount - initialPaid):N0} đ",
+            Text = $"{Math.Max(0, currentTuitionFee - initialDiscount - initialPaid):N0} đ",
             FontSize = 18,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
@@ -486,9 +572,9 @@ public static class CscaStudentDialog
         {
             var paid = ParseMoney(paidAmountBox.Text);
             var discount = ParseMoney(discountBox.Text);
-            var payable = Math.Max(0, classTuitionFee - discount);
+            var payable = Math.Max(0, currentTuitionFee - discount);
             var debt = Math.Max(0, payable - paid);
-            debtCalcFormulaText.Text = $"Học phí {classTuitionFee:N0} đ - Giảm {discount:N0} đ - Đã đóng {paid:N0} đ";
+            debtCalcFormulaText.Text = $"Học phí {currentTuitionFee:N0} đ - Giảm {discount:N0} đ - Đã đóng {paid:N0} đ";
             debtValueText.Text = $"{debt:N0} đ";
 
             if (debt <= 0)
@@ -521,6 +607,8 @@ public static class CscaStudentDialog
             }
         }
 
+        onClassChanged = UpdateDebtCalculation;
+
         // Attach Real-Time Dot Formatting for currency boxes
         AttachCurrencyFormatting(paidAmountBox, UpdateDebtCalculation);
         AttachCurrencyFormatting(discountBox, UpdateDebtCalculation);
@@ -535,7 +623,7 @@ public static class CscaStudentDialog
                 {
                     if (statusVal == 2) // Paid
                     {
-                        paidAmountBox.Text = FormatMoneyInput(Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text)));
+                        paidAmountBox.Text = FormatMoneyInput(Math.Max(0, currentTuitionFee - ParseMoney(discountBox.Text)));
                     }
                     else if (statusVal == 0) // Pending
                     {
@@ -544,7 +632,7 @@ public static class CscaStudentDialog
                     else if (statusVal == 1) // Partial
                     {
                         var currentPaid = ParseMoney(paidAmountBox.Text);
-                        var payable = Math.Max(0, classTuitionFee - ParseMoney(discountBox.Text));
+                        var payable = Math.Max(0, currentTuitionFee - ParseMoney(discountBox.Text));
                         if (currentPaid <= 0 || currentPaid >= payable)
                         {
                             paidAmountBox.Text = FormatMoneyInput(Math.Round(payable / 2));
@@ -618,10 +706,16 @@ public static class CscaStudentDialog
                 age = parsedAge;
             }
 
-            var discountAmount = ParseMoney(discountBox.Text);
-            if (discountAmount < 0 || discountAmount > classTuitionFee)
+            if (currentSelectedClassId == Guid.Empty && !isEditing)
             {
-                MessageBox.Show(dialog, $"Giảm giá phải là số từ 0 đến {classTuitionFee:N0} đ.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(dialog, "Vui lòng chọn lớp học cho học viên.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var discountAmount = ParseMoney(discountBox.Text);
+            if (discountAmount < 0 || discountAmount > currentTuitionFee)
+            {
+                MessageBox.Show(dialog, $"Giảm giá phải là số từ 0 đến {currentTuitionFee:N0} đ.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
                 discountBox.Focus();
                 return;
             }
@@ -734,6 +828,7 @@ public static class CscaStudentDialog
         dialog.Content = rootGrid;
         var accepted = dialog.ShowDialog() == true;
         result = submitted;
+        selectedClassId = currentSelectedClassId;
         return accepted;
     }
 

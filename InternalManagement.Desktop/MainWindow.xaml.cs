@@ -94,6 +94,9 @@ public partial class MainWindow : Window, IDisposable
         };
         ViewCustomersContainer.RefreshRequested += (_, _) =>
             _ = RunWithBusyAsync("Đang tải danh sách học viên & khách hàng...", () => LoadCustomersAsync(ViewCustomersContainer.SearchText));
+        ViewCustomersContainer.CreateStudentRequested += CreateCustomerStudent_Click;
+        ViewCustomersContainer.EditStudentRequested += EditCustomerStudent_Click;
+        ViewCustomersContainer.DeleteStudentRequested += DeleteCustomerStudent_Click;
         ViewSyncContainer.SyncCoursesRequested += TriggerSyncCourses_Click;
         ViewSyncContainer.SyncCustomersRequested += TriggerSyncCustomers_Click;
         ViewSyncContainer.RefreshRunsRequested += RefreshSyncRuns_Click;

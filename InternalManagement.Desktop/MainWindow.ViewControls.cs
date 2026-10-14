@@ -7,8 +7,12 @@ public partial class MainWindow
     private System.Windows.Controls.TextBox CourseSearchBox => ViewCoursesContainer.CourseSearchBox;
     private System.Windows.Controls.TextBlock CourseSearchPlaceholder => ViewCoursesContainer.CourseSearchPlaceholder;
     private System.Windows.Controls.DataGrid CoursesDataGrid => ViewCoursesContainer.CoursesDataGrid;
+    private System.Windows.Controls.TabItem TabItemCourses => ViewCoursesContainer.TabItemCourses;
     private System.Windows.Controls.TabItem TabItemClasses => ViewCoursesContainer.TabItemClasses;
     private System.Windows.Controls.TabItem TabItemClassFinance => ViewCoursesContainer.TabItemClassFinance;
+    private System.Windows.Controls.TabItem TabItemMaterials => ViewCoursesContainer.TabItemMaterials;
+    private System.Windows.Controls.TabItem TabItemVocabulary => ViewCoursesContainer.TabItemVocabulary;
+    private System.Windows.Controls.TabItem TabItemCommunity => ViewCoursesContainer.TabItemCommunity;
     private System.Windows.Controls.Border CscaCourseFilterBanner => ViewCoursesContainer.CscaCourseFilterBanner;
     private System.Windows.Controls.TextBlock CscaCourseFilterText => ViewCoursesContainer.CscaCourseFilterText;
     private System.Windows.Controls.TextBlock CscaFinanceScopeText => ViewCoursesContainer.CscaFinanceScopeText;
