@@ -146,6 +146,74 @@ public sealed class LmsOutboxDispatcherTests
     }
 
     [Fact]
+    public async Task DispatchAccess_WhenLatestProvisionSucceeded_ShouldIgnoreOlderDeadLetter()
+    {
+        await using var db = CreateInMemoryDb();
+        var account = AddProvisionOutbox(db);
+        var oldProvision = db.IntegrationOutboxes.Local.Single();
+        oldProvision.Status = IntegrationStatus.DeadLetter;
+        oldProvision.LastError = "Old identity conflict";
+        oldProvision.NextAttemptAt = null;
+        oldProvision.CreatedAt = DateTime.UtcNow.AddMinutes(-2);
+        db.IntegrationOutboxes.Add(new IntegrationOutbox
+        {
+            CompanyId = account.CompanyId,
+            SourceSystem = LmsIntegrationSourceSystems.CscaCourseLms,
+            EventId = "evt-provision-success",
+            EventType = LmsOutboxEventTypes.StudentProvisionRequested,
+            AggregateType = nameof(LmsAccountLink),
+            AggregateId = account.Id.ToString("N"),
+            IdempotencyKey = "provision:student-001:success",
+            CorrelationId = "corr-provision-success",
+            PayloadJson = oldProvision.PayloadJson,
+            Status = IntegrationStatus.Success,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-1),
+            PublishedAt = DateTime.UtcNow.AddMinutes(-1)
+        });
+        var access = AddAccessOutbox(db, account, DateTime.UtcNow);
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.UpdateStudentAccessAsync(
+                "student-001", It.IsAny<LmsAccessCommand>(), It.IsAny<LmsOutboundRequestContext>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Should().Be(new LmsOutboxDispatchResult(1, 1, 0, 0));
+        access.Status.Should().Be(IntegrationStatus.Success);
+        client.Verify(value => value.UpdateStudentAccessAsync(
+            "student-001", It.IsAny<LmsAccessCommand>(), It.IsAny<LmsOutboundRequestContext>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DispatchAccess_WhenLatestProvisionDeadLettered_ShouldSkipTerminallyBlockedCommand()
+    {
+        await using var db = CreateInMemoryDb();
+        var account = AddProvisionOutbox(db);
+        var provision = db.IntegrationOutboxes.Local.Single();
+        provision.Status = IntegrationStatus.DeadLetter;
+        provision.LastError = "Identity requires review";
+        provision.NextAttemptAt = null;
+        provision.CreatedAt = DateTime.UtcNow.AddMinutes(-1);
+        var access = AddAccessOutbox(db, account, DateTime.UtcNow);
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Should().Be(new LmsOutboxDispatchResult(1, 0, 0, 0));
+        access.Status.Should().Be(IntegrationStatus.Skipped);
+        access.LastError.Should().Contain("Identity requires review");
+        client.Verify(value => value.UpdateStudentAccessAsync(
+            It.IsAny<string>(), It.IsAny<LmsAccessCommand>(), It.IsAny<LmsOutboundRequestContext>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task DispatchManagement_WhenOldBatchIsBlocked_ShouldSkipItAndSendNewBatch()
     {
         await using var db = CreateInMemoryDb();
@@ -312,6 +380,40 @@ public sealed class LmsOutboxDispatcherTests
             NextAttemptAt = DateTime.UtcNow.AddMinutes(-1)
         });
         return account;
+    }
+
+    private static IntegrationOutbox AddAccessOutbox(
+        ApplicationDbContext db, LmsAccountLink account, DateTime createdAt)
+    {
+        var grant = new LmsAccessGrant
+        {
+            CompanyId = account.CompanyId,
+            LmsAccountLinkId = account.Id,
+            LmsCourseLinkId = Guid.NewGuid(),
+            CscaClassStudentId = account.CscaClassStudentId ?? Guid.NewGuid(),
+            ExternalGrantId = "grant-001",
+            Status = LmsAccessGrantStatus.Active
+        };
+        var payload = new LmsAccessOutboxPayload(account.ExternalStudentId, new LmsAccessCommand(
+            "active", "Paid", null, createdAt, null, ["csca-foundation"]));
+        var item = new IntegrationOutbox
+        {
+            CompanyId = account.CompanyId,
+            SourceSystem = LmsIntegrationSourceSystems.CscaCourseLms,
+            EventId = $"evt-access-{Guid.NewGuid():N}",
+            EventType = LmsOutboxEventTypes.StudentAccessRequested,
+            AggregateType = nameof(LmsAccessGrant),
+            AggregateId = grant.Id.ToString("N"),
+            IdempotencyKey = $"access:{grant.Id:N}",
+            CorrelationId = $"corr-access-{grant.Id:N}",
+            PayloadJson = JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+            Status = IntegrationStatus.Pending,
+            NextAttemptAt = createdAt.AddMinutes(-1),
+            CreatedAt = createdAt
+        };
+        db.LmsAccessGrants.Add(grant);
+        db.IntegrationOutboxes.Add(item);
+        return item;
     }
 
     private static void AddManagementOutbox(

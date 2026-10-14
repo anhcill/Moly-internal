@@ -284,8 +284,14 @@ public sealed partial class CscaService
         var classroomResult = await ResolveClassroomAsync(request.ClassroomId, cls.CompanyId, cls.BusinessUnitId, ct);
         if (!classroomResult.Succeeded)
             return Result<CscaLessonSessionDto>.Failure(classroomResult.Errors.FirstOrDefault() ?? "Phòng học không hợp lệ.");
-        if (request.ScheduleId.HasValue && !await _db.CscaClassSchedules.AnyAsync(schedule => schedule.Id == request.ScheduleId.Value && schedule.ClassId == classId, ct))
-            return Result<CscaLessonSessionDto>.Failure("Lịch tuần gốc không thuộc lớp này.");
+        CscaClassSchedule? sourceSchedule = null;
+        if (request.ScheduleId.HasValue)
+        {
+            sourceSchedule = await _db.CscaClassSchedules.FirstOrDefaultAsync(
+                schedule => schedule.Id == request.ScheduleId.Value && schedule.ClassId == classId, ct);
+            if (sourceSchedule == null)
+                return Result<CscaLessonSessionDto>.Failure("Lịch tuần gốc không thuộc lớp này.");
+        }
         var conflict = await ValidateDatedSessionAvailabilityAsync(request.ClassroomId, classId, request.LessonDate, request.StartTime, request.EndTime, null, request.Status, ct);
         if (conflict != null)
             return Result<CscaLessonSessionDto>.Failure(conflict);
@@ -299,12 +305,19 @@ public sealed partial class CscaService
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Status = request.Status.Trim(),
-            MeetingUrl = request.MeetingUrl?.Trim(),
             Notes = request.Notes?.Trim(),
             CreatedAt = DateTime.UtcNow,
             CreatedBy = _currentUser.Username ?? "System",
             Classroom = classroomResult.Value
         };
+        var requestedMeetingUrl = string.IsNullOrWhiteSpace(request.MeetingUrl)
+            ? sourceSchedule?.MeetingUrl
+            : request.MeetingUrl;
+        var isOnlineSession = !request.ClassroomId.HasValue
+            && sourceSchedule?.ClassroomId is null
+            && string.IsNullOrWhiteSpace(sourceSchedule?.Room);
+        session.MeetingUrl = ResolveNewLessonMeetingUrl(
+            requestedMeetingUrl, isOnlineSession, session.Id);
         _db.CscaLessonSessions.Add(session);
         await QueueSessionForWebAsync(cls, session, false, ct);
         await _db.SaveChangesAsync(ct);
@@ -347,7 +360,11 @@ public sealed partial class CscaService
         session.EndTime = request.EndTime;
         session.Status = timeChanged && string.Equals(request.Status, "Scheduled", StringComparison.OrdinalIgnoreCase)
             ? "Rescheduled" : request.Status.Trim();
-        session.MeetingUrl = request.MeetingUrl?.Trim();
+        var isOnlineSession = !request.ClassroomId.HasValue
+            && session.Schedule?.ClassroomId is null
+            && string.IsNullOrWhiteSpace(session.Schedule?.Room);
+        session.MeetingUrl = ResolveUpdatedLessonMeetingUrl(
+            request.MeetingUrl, session.MeetingUrl, isOnlineSession, session.Id);
         session.Notes = request.Notes?.Trim();
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
@@ -412,7 +429,7 @@ public sealed partial class CscaService
                 if (hasRoomConflict)
                     return Result<int>.Failure($"Phòng đã có lớp khác dùng vào {date:dd/MM/yyyy}, {schedule.StartTime:hh\\:mm} - {schedule.EndTime:hh\\:mm}.");
 
-                generated.Add(new CscaLessonSession
+                var session = new CscaLessonSession
                 {
                     ClassId = classId,
                     ScheduleId = schedule.Id,
@@ -421,11 +438,13 @@ public sealed partial class CscaService
                     StartTime = schedule.StartTime,
                     EndTime = schedule.EndTime,
                     Status = "Scheduled",
-                    MeetingUrl = schedule.MeetingUrl,
                     Notes = schedule.Notes,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = _currentUser.Username ?? "System"
-                });
+                };
+                var isOnlineSession = !schedule.ClassroomId.HasValue && string.IsNullOrWhiteSpace(schedule.Room);
+                session.MeetingUrl = ResolveNewLessonMeetingUrl(schedule.MeetingUrl, isOnlineSession, session.Id);
+                generated.Add(session);
             }
         }
 

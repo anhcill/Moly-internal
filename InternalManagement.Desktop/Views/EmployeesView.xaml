@@ -10,141 +10,137 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- SECTION TITLE & SUBTITLE -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <!-- COMPACT HEADER STRIP -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="12,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock x:Name="EmployeesHeaderTitle" Text="Quản lý Nhân sự &amp; Hồ sơ CV" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                    <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự đang công tác, hồ sơ CV, thiếu hồ sơ, nhân sự đã nghỉ việc và danh sách Blacklist." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="EmployeesHeaderTitle" Text="Quản lý Nhân sự &amp; Hồ sơ CV" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                    <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự công tác, hồ sơ CV, thiếu hồ sơ, đã nghỉ việc &amp; Blacklist" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Click="RefreshEmployees_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải lại dữ liệu" VerticalAlignment="Center"/></StackPanel></Button>
-                    <Button Content="+ Thêm nhân sự mới" Click="CreateEmployee_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                    <Button Click="RefreshEmployees_Click" Style="{StaticResource OutlineButton}" Height="28" Padding="10,0" Margin="0,0,6,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Tải lại dữ liệu" FontSize="11.5" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Content="+ Thêm nhân sự mới" Click="CreateEmployee_Click" Style="{StaticResource ModernPrimaryButton}" Height="28" FontSize="11.5" Padding="12,0" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 5 BUSINESS TABS -->
+        <!-- 5 BUSINESS TABS WITH DISTINCT ICONS & COMPACT HEIGHT -->
         <TabControl x:Name="EmployeesTabs" Grid.Row="1" Background="Transparent" BorderThickness="0" SelectionChanged="EmployeesTabs_SelectionChanged">
 
             <!-- TAB 1: ĐANG LÀM VIỆC -->
-            <TabItem Header="Đang làm việc" FontWeight="SemiBold">
-                <Grid Margin="0,12,0,0">
+            <TabItem FontWeight="SemiBold" Padding="12,6">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE716;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#059669" />
+                        <TextBlock Text="Đang làm việc" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- KPI SUMMARY CARDS -->
-                    <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
+                    <!-- COMPACT KPI STAT STRIP -->
+                    <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,6">
                         <!-- Card 1: Total -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG NHÂN SỰ" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding TotalCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
-                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                    <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
-                                        <TextBlock Text="Toàn bộ hồ sơ nhân sự" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
-                                    </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalCount}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,1,0,0" />
                                 </StackPanel>
+                                <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                    <TextBlock Text="Toàn bộ" FontSize="9" FontWeight="SemiBold" Foreground="#4F46E5" />
+                                </Border>
                             </Grid>
                         </Border>
 
                         <!-- Card 2: Active -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐANG LÀM VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="12" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding ActiveCount}" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
-                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                    <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
-                                        <TextBlock Text="Chính thức · Thử việc" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
-                                    </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="ĐANG LÀM VIỆC" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding ActiveCount}" FontSize="14" FontWeight="Bold" Foreground="#059669" Margin="0,1,0,0" />
                                 </StackPanel>
+                                <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                    <TextBlock Text="Chính thức" FontSize="9" FontWeight="SemiBold" Foreground="#059669" />
+                                </Border>
                             </Grid>
                         </Border>
 
                         <!-- Card 3: Resigned -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÃ NGHỈ VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8AC;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7E8;" FontSize="12" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding ResignedCount}" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
-                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                    <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
-                                        <TextBlock Text="Đã hoàn tất thủ tục" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
-                                    </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="ĐÃ NGHỈ VIỆC" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding ResignedCount}" FontSize="14" FontWeight="Bold" Foreground="#D97706" Margin="0,1,0,0" />
                                 </StackPanel>
+                                <Border Grid.Column="2" Background="#FEF3C7" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                    <TextBlock Text="Đã hoàn tất" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
+                                </Border>
                             </Grid>
                         </Border>
 
                         <!-- Card 4: Blacklist -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                        <Border Background="White" CornerRadius="8" Padding="10,5" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="BLACKLIST" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE711;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE711;" FontSize="12" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding BlacklistedCount}" FontSize="20" FontWeight="Bold" Foreground="#DC2626" Margin="0,3,0,3" />
-                                <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                    <Border Background="#FEE2E2" CornerRadius="6" Padding="6,1.5" BorderBrush="#FECACA" BorderThickness="1">
-                                        <TextBlock Text="Vi phạm kỷ luật / Cấm tái tuyển" FontSize="10" FontWeight="SemiBold" Foreground="#B91C1C" />
-                                    </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="BLACKLIST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding BlacklistedCount}" FontSize="14" FontWeight="Bold" Foreground="#DC2626" Margin="0,1,0,0" />
                                 </StackPanel>
+                                <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                    <TextBlock Text="Cấm tái tuyển" FontSize="9" FontWeight="SemiBold" Foreground="#B91C1C" />
+                                </Border>
                             </Grid>
                         </Border>
                     </UniformGrid>
 
-                    <!-- TOOLBAR & SEARCH -->
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <!-- TOOLBAR & SEARCH (COMPACT UNIFIED ROW) -->
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -152,23 +148,33 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBox Width="260" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm mã NV, tên, email..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextChanged="EmployeeSearch_TextChanged" />
-                            <ComboBox Grid.Column="1" Width="180" Height="36" Margin="12,0,0,0" SelectionChanged="EmployeeDeptFilter_SelectionChanged" VerticalContentAlignment="Center"
+                            <TextBox Width="220" Height="28" FontSize="11.5" Style="{StaticResource ModernTextBox}" Tag="Tìm mã NV, tên, email..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextChanged="EmployeeSearch_TextChanged" VerticalContentAlignment="Center" />
+                            <ComboBox Grid.Column="1" Width="170" Height="28" FontSize="11.5" Margin="8,0,0,0" SelectionChanged="EmployeeDeptFilter_SelectionChanged" VerticalContentAlignment="Center"
                                       ItemsSource="{Binding DepartmentOptions}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SelectedDepartmentId, Mode=TwoWay}" />
-                            <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                <Button Content="Mở CV" Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button Content="Sửa hồ sơ" Click="EditEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button Click="ResignEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8AC;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Chuyển nghỉ việc" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Đưa vào Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Content="Xóa" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="Mở CV" Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0" />
+                                <Button Content="Sửa hồ sơ" Click="EditEmployee_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0" />
+                                <Button Click="ResignEmployee_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8AC;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Chuyển nghỉ việc" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Đưa vào Blacklist" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Content="Xóa" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="28" FontSize="11.5" Padding="8,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
                     <!-- WORKING DATAGRID -->
-                    <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesWorkingDataGrid" ItemsSource="{Binding WorkingEmployees}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesWorkingDataGrid" ItemsSource="{Binding WorkingEmployees}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -181,40 +187,52 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự đang làm việc." Visibility="{Binding IsWorkingEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                            <TextBlock Text="Không có nhân sự đang làm việc." Visibility="{Binding IsWorkingEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
             </TabItem>
 
             <!-- TAB 2: HỒ SƠ & CV -->
-            <TabItem Header="Hồ sơ &amp; CV" FontWeight="SemiBold">
-                <Grid Margin="0,12,0,0">
+            <TabItem FontWeight="SemiBold" Padding="12,6">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#4F46E5" />
+                        <TextBlock Text="Hồ sơ &amp; CV" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Hồ sơ năng lực &amp; CV nhân sự" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                                <TextBlock Text="Xem xét năng lực chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV của nhân sự." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Hồ sơ năng lực &amp; CV nhân sự" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Xem xét chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV nhân sự" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Mở tệp/link CV" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Content="⚡ Cập nhật CV / Hồ sơ" Click="QuickUpdateProfile_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B7;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Mở tệp/link CV" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Content="⚡ Cập nhật CV / Hồ sơ" Click="QuickUpdateProfile_Click" Style="{StaticResource ModernPrimaryButton}" Height="28" FontSize="11.5" Padding="10,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesProfilesDataGrid" ItemsSource="{Binding Profiles}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesProfilesDataGrid" ItemsSource="{Binding Profiles}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -226,40 +244,57 @@
                                     <DataGridTextColumn Header="KINH NGHIỆM" Binding="{Binding Experience}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Chưa có hồ sơ nhân sự để hiển thị." Visibility="{Binding IsProfilesEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                            <TextBlock Text="Chưa có hồ sơ nhân sự để hiển thị." Visibility="{Binding IsProfilesEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
             </TabItem>
 
             <!-- TAB 3: THIẾU CV -->
-            <TabItem Header="Thiếu CV" FontWeight="SemiBold">
-                <Grid Margin="0,12,0,0">
+            <TabItem FontWeight="SemiBold" Padding="12,6">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BA;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#D97706" />
+                        <TextBlock Text="Thiếu CV" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="12" Padding="18,14" Margin="0,0,0,16">
+                    <Border Grid.Row="0" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Danh sách nhân sự chưa cập nhật CV" FontSize="15" FontWeight="Bold" Foreground="#991B1B" />
-                                <TextBlock Text="Các nhân sự đang làm việc nhưng chưa có đường dẫn hoặc tệp CV lưu trữ trong hệ thống." FontSize="12.5" Foreground="#B91C1C" Margin="0,4,0,0" />
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Nhân sự chưa có CV" FontSize="12.5" FontWeight="Bold" Foreground="#991B1B" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="#FECACA" Margin="10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Đang công tác nhưng chưa lưu đường dẫn hoặc tệp CV" FontSize="11" Foreground="#B91C1C" VerticalAlignment="Center" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Click="QuickAssignCvFile_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B8;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Gán tệp CV ngay" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Click="QuickAssignCvUrl_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71B;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Nhập link CV" VerticalAlignment="Center"/></StackPanel></Button>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Click="QuickAssignCvFile_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8B8;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Gán tệp CV ngay" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Click="QuickAssignCvUrl_Click" Style="{StaticResource ModernPrimaryButton}" Height="28" FontSize="11.5" Padding="10,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE71B;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Nhập link CV" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesMissingCvDataGrid" ItemsSource="{Binding MissingCv}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesMissingCvDataGrid" ItemsSource="{Binding MissingCv}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -271,42 +306,59 @@
                                     <DataGridTextColumn Header="TÌNH TRẠNG CV" Binding="{Binding CvDisplay}" Width="1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapAmberTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Tuyệt vời! Tất cả nhân sự đang làm việc đều đã có hồ sơ CV đầy đủ." Visibility="{Binding IsMissingCvEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669" FontSize="14" FontWeight="SemiBold" />
+                            <TextBlock Text="Tuyệt vời! Tất cả nhân sự đang làm việc đều đã có hồ sơ CV đầy đủ." Visibility="{Binding IsMissingCvEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669" FontSize="13" FontWeight="SemiBold" />
                         </Grid>
                     </Border>
                 </Grid>
             </TabItem>
 
             <!-- TAB 4: ĐÃ NGHỈ VIỆC -->
-            <TabItem Header="Đã nghỉ việc" FontWeight="SemiBold">
-                <Grid Margin="0,12,0,0">
+            <TabItem FontWeight="SemiBold" Padding="12,6">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7E8;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#64748B" />
+                        <TextBlock Text="Đã nghỉ việc" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Nhân sự đã nghỉ việc / chấm dứt hợp đồng" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                                <TextBlock Text="Theo dõi hồ sơ nhân sự cũ, ngày nghỉ việc, lý do nghỉ việc và hỗ trợ khôi phục công tác khi cần." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Nhân sự đã nghỉ việc" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Theo dõi hồ sơ nhân sự cũ, ngày nghỉ việc, lý do nghỉ &amp; khôi phục công tác" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Content="↩ Khôi phục làm việc" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button Click="UpdateResignedReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Sửa lý do nghỉ" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Chuyển sang Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="↩ Khôi phục làm việc" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0" />
+                                <Button Click="UpdateResignedReason_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Sửa lý do nghỉ" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Click="BlacklistEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Chuyển Blacklist" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="28" FontSize="11.5" Padding="8,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesResignedDataGrid" ItemsSource="{Binding Resigned}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesResignedDataGrid" ItemsSource="{Binding Resigned}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -318,41 +370,53 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.85*" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự đã nghỉ việc." Visibility="{Binding IsResignedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                            <TextBlock Text="Không có nhân sự đã nghỉ việc." Visibility="{Binding IsResignedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
             </TabItem>
 
             <!-- TAB 5: BLACKLIST -->
-            <TabItem Header="Blacklist" FontWeight="SemiBold">
-                <Grid Margin="0,12,0,0">
+            <TabItem FontWeight="SemiBold" Padding="12,6">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE711;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#DC2626" />
+                        <TextBlock Text="Blacklist" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="12" Padding="18,14" Margin="0,0,0,16">
+                    <Border Grid.Row="0" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Danh sách vi phạm &amp; Không tiếp nhận lại (Blacklist)" FontSize="15" FontWeight="Bold" Foreground="#BE123C" />
-                                <TextBlock Text="Ghi nhận các trường hợp vi phạm kỷ luật nghiêm trọng hoặc không phù hợp để tái tuyển dụng." FontSize="12.5" Foreground="#E11D48" Margin="0,4,0,0" />
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Danh sách vi phạm &amp; Blacklist" FontSize="12.5" FontWeight="Bold" Foreground="#BE123C" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="#FECDD3" Margin="10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Vi phạm kỷ luật nghiêm trọng hoặc không phù hợp để tái tuyển dụng" FontSize="11" Foreground="#E11D48" VerticalAlignment="Center" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Content="↩ Bỏ khỏi Blacklist / Khôi phục" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0" />
-                                <Button Click="UpdateBlacklistReason_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Cập nhật lý do Blacklist" VerticalAlignment="Center"/></StackPanel></Button>
-                                <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="36" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="↩ Khôi phục làm việc" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0" />
+                                <Button Click="UpdateBlacklistReason_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Cập nhật lý do" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Content="Xóa hẳn" Click="DeleteEmployee_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="28" FontSize="11.5" Padding="8,0" />
                             </StackPanel>
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesBlacklistDataGrid" ItemsSource="{Binding Blacklisted}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesBlacklistDataGrid" ItemsSource="{Binding Blacklisted}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -364,7 +428,7 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridRedTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự trong danh sách Blacklist." Visibility="{Binding IsBlacklistedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                            <TextBlock Text="Không có nhân sự trong danh sách Blacklist." Visibility="{Binding IsBlacklistedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>

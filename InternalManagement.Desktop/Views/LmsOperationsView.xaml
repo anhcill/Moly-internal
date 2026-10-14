@@ -4,278 +4,269 @@
     <Grid Background="#F7F9FC">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="#0F2A43" CornerRadius="10" Padding="14,7" Margin="0,0,0,7">
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ROW 0: THẺ ĐIỀU HÀNH & CHỈ SỐ ĐỒNG BỘ THU GỌN (HEIGHT ~38PX)        -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" BorderBrush="#DCE5EE" BorderThickness="1" Padding="10,5" Margin="0,0,0,6">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Đồng bộ CSCA Course" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
-                    <TextBlock Text="Liên kết một lần, sau đó học viên, giáo viên và lịch học tự cập nhật giữa hai hệ thống."
-                               Grid.Column="1" FontSize="10.5" Foreground="#C9D8E6" Margin="14,1,12,0"
-                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                </Grid>
-                <Button Grid.Column="1" Click="RefreshLmsIntegration_Click" Style="{StaticResource OutlineButton}"
-                        Height="30" Padding="11,0" Background="White" VerticalAlignment="Center">
+
+                <!-- Tiêu đề phân hệ CSCA Web Sync -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#0F2A43" CornerRadius="6" Padding="7,3" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" FontSize="11" Foreground="White" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="CSCA LMS" FontSize="11" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Đồng bộ tự động" FontSize="11" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 4 Chỉ số tóm tắt ghép gọn trên 1 hàng ngang -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,10,0">
+                    <!-- 1. Khóa liên kết -->
+                    <Border Background="#F0F7FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Khóa liên kết: " FontSize="11" Foreground="#0369A1" />
+                            <TextBlock x:Name="LmsReadyMappingsMetricText" Text="—" FontSize="12" FontWeight="Bold" Foreground="#0284C7" />
+                            <TextBlock Text=" " FontSize="11" />
+                            <TextBlock x:Name="LmsTotalCoursesMetricText" Text="trên — khóa học" FontSize="10.5" Foreground="#0284C7" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 2. Học viên trên Web -->
+                    <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Học viên Web: " FontSize="11" Foreground="#15803D" />
+                            <TextBlock x:Name="LmsActiveGrantsMetricText" Text="—" FontSize="12" FontWeight="Bold" Foreground="#16A34A" />
+                            <TextBlock Text=" đang học" FontSize="10.5" Foreground="#15803D" Margin="2,0,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 3. Đang chờ gửi -->
+                    <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Chờ gửi: " FontSize="11" Foreground="#B45309" />
+                            <TextBlock x:Name="LmsPendingOutboxMetricText" Text="—" FontSize="12" FontWeight="Bold" Foreground="#D97706" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 4. Cần xử lý -->
+                    <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="6" Padding="8,3">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BA;" FontSize="11" Foreground="#DC2626" Margin="0,0,4,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Cần xử lý: " FontSize="11" FontWeight="SemiBold" Foreground="#B91C1C" />
+                            <TextBlock x:Name="LmsFailedOutboxMetricText" Text="—" FontSize="12" FontWeight="Bold" Foreground="#DC2626" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Nút Cập nhật trạng thái -->
+                <Button Grid.Column="2" Click="RefreshLmsIntegration_Click" Style="{StaticResource OutlineButton}"
+                        Height="28" Padding="10,0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Margin="0,0,6,0" VerticalAlignment="Center" />
-                        <TextBlock Text="Cập nhật trạng thái" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Cập nhật trạng thái" FontSize="11" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Margin="0,0,0,7">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" Background="White" CornerRadius="9" Padding="10,6" Margin="0,0,7,0"
-                    BorderBrush="#DCE5EE" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="KHÓA ĐÃ LIÊN KẾT" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                        <TextBlock x:Name="LmsReadyMappingsMetricText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#1663C7" />
-                        <TextBlock x:Name="LmsTotalCoursesMetricText" Text="trên — khóa học" FontSize="10" Foreground="#64748B" />
-                    </StackPanel>
-                    <Border Grid.Column="1" Width="30" Height="30" Background="#EAF3FF" CornerRadius="8">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" FontSize="15" Foreground="#1663C7"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="1" Background="White" CornerRadius="9" Padding="10,6" Margin="0,0,7,0"
-                    BorderBrush="#DCE5EE" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="HỌC VIÊN TRÊN WEB" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                        <TextBlock x:Name="LmsActiveGrantsMetricText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#07845B" />
-                        <TextBlock Text="đang có quyền học" FontSize="10" Foreground="#64748B" />
-                    </StackPanel>
-                    <Border Grid.Column="1" Width="30" Height="30" Background="#E8F8F1" CornerRadius="8">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BE;" FontSize="15" Foreground="#07845B"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="2" Background="White" CornerRadius="9" Padding="10,6" Margin="0,0,7,0"
-                    BorderBrush="#DCE5EE" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="ĐANG CHỜ GỬI" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                        <TextBlock x:Name="LmsPendingOutboxMetricText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#C66A09" />
-                        <TextBlock Text="tự xử lý trong nền" FontSize="10" Foreground="#64748B" />
-                    </StackPanel>
-                    <Border Grid.Column="1" Width="30" Height="30" Background="#FFF5DE" CornerRadius="8">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE823;" FontSize="15" Foreground="#C66A09"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="3" Background="White" CornerRadius="9" Padding="10,6"
-                    BorderBrush="#DCE5EE" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="CẦN XỬ LÝ" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                        <TextBlock x:Name="LmsFailedOutboxMetricText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#C93636" />
-                        <TextBlock Text="lệnh lỗi cần xem lại" FontSize="10" Foreground="#64748B" />
-                    </StackPanel>
-                    <Border Grid.Column="1" Width="30" Height="30" Background="#FEECEC" CornerRadius="8">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7BA;" FontSize="15" Foreground="#C93636"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid Grid.Row="2">
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ROW 1: PHẦN NỘI DUNG CHÍNH (KHÓA HỌC THU GỌN + NHẬT KÝ OUTBOX RỘNG) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="8" />
-                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="White" CornerRadius="12" BorderBrush="#DCE5EE" BorderThickness="1" Padding="12">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid Margin="0,0,0,7">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="1. Chọn khóa học cần liên kết" FontSize="13.5" FontWeight="Bold" Foreground="#18324A" />
-                            <TextBlock Text="Lần đầu cần chọn khóa và bấm Đồng bộ ngay. Các thay đổi sau đó được gửi tự động."
-                                       FontSize="11" Foreground="#64748B" Margin="0,2,0,0" />
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="#EAF7F1" CornerRadius="12" Padding="10,4" VerticalAlignment="Center">
-                            <TextBlock Text="Tự động sau khi liên kết" FontSize="10.5" FontWeight="Bold" Foreground="#087451" />
-                        </Border>
-                    </Grid>
-
-                    <Grid Grid.Row="1">
+            <!-- ── KHỐI 1: LIÊN KẾT KHÓA HỌC (DÙNG EXPANDER THU GỌN ĐƯỢC) ── -->
+            <Expander Grid.Row="0" IsExpanded="True" Background="White" BorderBrush="#DCE5EE" BorderThickness="1" Padding="8" Margin="0,0,0,2">
+                <Expander.Header>
+                    <Grid HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="1.05*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
-                        <DataGrid Grid.Column="0" x:Name="LmsCourseMappingsDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
-                                  SelectionMode="Single" SelectionChanged="LmsCourseMappingsDataGrid_SelectionChanged"
-                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF1F5"
-                                  Background="White" BorderBrush="#E2E8F0" BorderThickness="1" MinRowHeight="38"
-                                  HorizontalScrollBarVisibility="Disabled">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.15*" MinWidth="130"
-                                                    FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
-                                <DataGridTextColumn Header="CÁC LỚP" Binding="{Binding ClassSummary}" Width="1.45*" MinWidth="170"
-                                                    ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
-                                <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="125"
-                                                    FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                        <Border Grid.Column="2" Background="#F6F9FC" BorderBrush="#DCE5EE" BorderThickness="1" CornerRadius="10" Padding="10">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="KHÓA ĐANG CHỌN" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                                        <TextBlock x:Name="LmsSelectedCourseText" Text="Chọn một khóa ở bảng bên trái" FontSize="13.5"
-                                                   FontWeight="Bold" Foreground="#18324A" TextWrapping="Wrap" Margin="0,2,8,0" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" x:Name="LmsSelectedCourseStatusBadgeBorder" Background="#E8EEF5" CornerRadius="8"
-                                            Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <TextBlock x:Name="LmsSelectedCourseStatusBadge" Text="Chưa chọn" FontSize="10.5"
-                                                   FontWeight="Bold" Foreground="#526579" />
-                                    </Border>
-                                </Grid>
-
-                                <Border Grid.Row="1" x:Name="LmsSelectedCourseErrorBorder" Visibility="Collapsed" Background="#FEECEC"
-                                        BorderBrush="#F7B9B9" BorderThickness="1" CornerRadius="8" Padding="9,7" Margin="0,9,0,0">
-                                    <StackPanel>
-                                        <TextBlock Text="CẦN SỬA TRƯỚC KHI GỬI" FontSize="10" FontWeight="Bold" Foreground="#A32222" />
-                                        <TextBlock x:Name="LmsSelectedCourseErrorText" FontSize="11" Foreground="#7F1D1D"
-                                                   TextWrapping="Wrap" Margin="0,3,0,0" />
-                                    </StackPanel>
-                                </Border>
-
-                                <Grid Grid.Row="2" Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.15*" />
-                                        <ColumnDefinition Width="10" />
-                                        <ColumnDefinition Width="0.85*" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <Grid Margin="0,0,0,4">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="ĐƯỜNG DẪN WEB" FontSize="10.5" FontWeight="Bold" Foreground="#526579" VerticalAlignment="Center" />
-                                            <Button Grid.Column="1" x:Name="AutoGenerateSlugButton" Content="Tự tạo" Click="AutoGenerateSlug_Click"
-                                                    Style="{StaticResource OutlineButton}" Height="24" Padding="7,0" FontSize="10"
-                                                    HorizontalAlignment="Right" />
-                                        </Grid>
-                                        <TextBox x:Name="LmsCourseSlugBox" Height="42" Style="{StaticResource ModernTextBox}"
-                                                 ToolTip="Ví dụ: toan-csca-thang-10" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="MÃ KHÓA TRÊN WEB" FontSize="10.5" FontWeight="Bold"
-                                                   Foreground="#526579" Margin="0,4,0,4" />
-                                        <TextBox x:Name="LmsCourseIdBox" Height="42" Style="{StaticResource ModernTextBox}"
-                                                 ToolTip="Có thể để trống" />
-                                        <TextBox x:Name="LmsExternalCourseIdBox" Visibility="Collapsed" />
-                                    </StackPanel>
-                                </Grid>
-
-                                <CheckBox Grid.Row="3" x:Name="LmsEnableAccessCheckBox" IsChecked="False"
-                                          Content="Kích hoạt liên kết và tự cấp quyền học" FontSize="11" FontWeight="SemiBold"
-                                          Foreground="#166443" VerticalAlignment="Center" Margin="0,8,0,7" />
-
-                                <Grid Grid.Row="4">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                    <Button x:Name="SaveLmsMappingButton" Click="SaveLmsMapping_Click" Style="{StaticResource OutlineButton}"
-                                            Height="38" Padding="13,0" Margin="0,0,8,0" Content="Lưu cấu hình" />
-                                    <Button Grid.Column="1" x:Name="DispatchLmsOutboxButton" Click="DispatchLmsOutbox_Click"
-                                            Style="{StaticResource PrimaryGradientButton}" Height="38" Padding="14,0"
-                                            HorizontalAlignment="Stretch" Content="Đồng bộ ngay" />
-                                </Grid>
-                            </Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="1. Liên kết khóa học cần đồng bộ" FontSize="12.5" FontWeight="Bold" Foreground="#18324A" />
+                            <TextBlock Text="· Chọn khóa, cấu hình đường dẫn và bấm Đồng bộ ngay" FontSize="11" Foreground="#64748B" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Background="#EAF7F1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="0,0,10,0">
+                            <TextBlock Text="Tự động sau khi liên kết" FontSize="10" FontWeight="SemiBold" Foreground="#087451" />
                         </Border>
                     </Grid>
+                </Expander.Header>
+
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="1.05*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Bảng khóa học -->
+                    <DataGrid Grid.Column="0" x:Name="LmsCourseMappingsDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                              SelectionMode="Single" SelectionChanged="LmsCourseMappingsDataGrid_SelectionChanged"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF1F5"
+                              Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Height="125" MinRowHeight="30" RowHeight="32"
+                              HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" Width="1.15*" MinWidth="120"
+                                                FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                            <DataGridTextColumn Header="CÁC LỚP" Binding="{Binding ClassSummary}" Width="1.45*" MinWidth="150"
+                                                ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
+                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="115"
+                                                FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Khung cấu hình khóa đang chọn -->
+                    <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Hàng 1: Tên khóa + Trạng thái -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="KHÓA: " FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="LmsSelectedCourseText" Text="Chọn một khóa ở bảng bên trái" FontSize="12"
+                                               FontWeight="Bold" Foreground="#18324A" TextTrimming="CharacterEllipsis" MaxWidth="260"
+                                               ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Border Grid.Column="1" x:Name="LmsSelectedCourseStatusBadgeBorder" Background="#E8EEF5" CornerRadius="6"
+                                        Padding="7,2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock x:Name="LmsSelectedCourseStatusBadge" Text="Chưa chọn" FontSize="9.5"
+                                               FontWeight="Bold" Foreground="#526579" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Hàng 2: Báo lỗi nếu có -->
+                            <Border Grid.Row="1" x:Name="LmsSelectedCourseErrorBorder" Visibility="Collapsed" Background="#FEECEC"
+                                    BorderBrush="#F7B9B9" BorderThickness="1" CornerRadius="6" Padding="6,4" Margin="0,4,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="CẦN SỬA TRƯỚC KHI GỬI" FontSize="9.5" FontWeight="Bold" Foreground="#A32222" />
+                                    <TextBlock x:Name="LmsSelectedCourseErrorText" FontSize="10.5" Foreground="#7F1D1D"
+                                               TextWrapping="Wrap" Margin="0,1,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Hàng 3: Ô nhập Đường dẫn Web & Mã khóa Web -->
+                            <Grid Grid.Row="2" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="0.8*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="ĐƯỜNG DẪN WEB" FontSize="10" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" x:Name="AutoGenerateSlugButton" Content="Tự tạo" Click="AutoGenerateSlug_Click"
+                                                Style="{StaticResource OutlineButton}" Height="19" Padding="5,0" FontSize="9" />
+                                    </Grid>
+                                    <TextBox x:Name="LmsCourseSlugBox" Height="28" Padding="6,2" VerticalContentAlignment="Center" FontSize="11.5"
+                                             Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
+                                             ToolTip="Ví dụ: toan-csca-thang-10" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="MÃ KHÓA TRÊN WEB" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,2" />
+                                    <TextBox x:Name="LmsCourseIdBox" Height="28" Padding="6,2" VerticalContentAlignment="Center" FontSize="11.5"
+                                             Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
+                                             ToolTip="Có thể để trống" />
+                                    <TextBox x:Name="LmsExternalCourseIdBox" Visibility="Collapsed" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Hàng 4: Checkbox và các nút thao tác -->
+                            <Grid Grid.Row="3" Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="LmsEnableAccessCheckBox" IsChecked="False"
+                                          Content="Tự cấp quyền học" FontSize="11" FontWeight="SemiBold"
+                                          Foreground="#166443" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" x:Name="SaveLmsMappingButton" Click="SaveLmsMapping_Click" Style="{StaticResource OutlineButton}"
+                                        Height="28" Padding="10,0" Margin="0,0,6,0" Content="Lưu cấu hình" FontSize="11" />
+                                <Button Grid.Column="2" x:Name="DispatchLmsOutboxButton" Click="DispatchLmsOutbox_Click"
+                                        Style="{StaticResource PrimaryGradientButton}" Height="28" Padding="12,0"
+                                        Content="⚡ Đồng bộ ngay" FontSize="11" />
+                            </Grid>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </Border>
+            </Expander>
 
+            <!-- Thanh kéo thả điều chỉnh độ cao nếu muốn -->
             <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                          ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="#DCE5EE" Cursor="SizeNS" />
+                          ResizeDirection="Rows" Background="#E2E8F0" Cursor="SizeNS" />
 
-            <Border Grid.Row="2" Background="White" CornerRadius="12" BorderBrush="#DCE5EE" BorderThickness="1" Padding="12">
+            <!-- ── KHỐI 2: NHẬT KÝ & TIẾN TRÌNH GỬI (CHIẾM TRỌN DIỆN TÍCH CÒN LẠI) ── -->
+            <Border Grid.Row="2" Background="White" CornerRadius="8" BorderBrush="#DCE5EE" BorderThickness="1" Padding="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Grid Margin="0,0,0,7">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="2. Theo dõi trạng thái gửi" FontSize="14" FontWeight="Bold" Foreground="#18324A" />
-                            <TextBlock Text="Hệ thống tự gửi trong nền. Chỉ dùng Thử lại khi một dòng báo Cần xử lý."
-                                       FontSize="11" Foreground="#64748B" Margin="0,2,0,0" />
+
+                    <!-- Tiêu đề & Nút Thử lại -->
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="2. Nhật ký &amp; Trạng thái gửi Web LMS" FontSize="13" FontWeight="Bold" Foreground="#18324A" />
+                            <TextBlock Text="· Tự động gửi trong nền. Chọn dòng lỗi để thử lại" FontSize="11" Foreground="#64748B" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                         <Button Grid.Column="1" x:Name="RetryLmsOutboxButton" Click="RetryLmsOutbox_Click"
-                                Style="{StaticResource OutlineButton}" Height="32" Padding="11,0" VerticalAlignment="Center">
+                                Style="{StaticResource OutlineButton}" Height="28" Padding="10,0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Margin="0,0,6,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Thử lại dòng đã chọn" VerticalAlignment="Center" />
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Thử lại dòng đã chọn" FontSize="11" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </Grid>
 
+                    <!-- Bảng nhật ký Outbox hiển thị rộng rãi, cuộn mượt mà -->
                     <DataGrid Grid.Row="1" x:Name="LmsOutboxDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
                               SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                               HorizontalGridLinesBrush="#EDF1F5" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
-                              MinRowHeight="38" HorizontalScrollBarVisibility="Disabled">
+                              RowHeight="36" MinRowHeight="32"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="NỘI DUNG" Binding="{Binding EventDisplayName}" Width="210" MinWidth="170"
+                            <DataGridTextColumn Header="NỘI DUNG" Binding="{Binding EventDisplayName}" Width="190" MinWidth="150"
                                                 FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="125" MinWidth="105"
+                            <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusLabel}" Width="130" MinWidth="110"
                                                 FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                            <DataGridTextColumn Header="CHI TIẾT" Binding="{Binding ResultSummary}" Width="*" MinWidth="260"
+                            <DataGridTextColumn Header="CHI TIẾT LỖI / KẾT QUẢ" Binding="{Binding ResultSummary}" Width="*" MinWidth="260"
                                                 ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                            <DataGridTextColumn Header="LẦN GỬI" Binding="{Binding DisplayAttempt}" Width="80"
+                            <DataGridTextColumn Header="LẦN GỬI" Binding="{Binding DisplayAttempt}" Width="75"
                                                 ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                            <DataGridTextColumn Header="TẠO LÚC" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" Width="105"
+                            <DataGridTextColumn Header="TẠO LÚC" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" Width="100"
                                                 ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>

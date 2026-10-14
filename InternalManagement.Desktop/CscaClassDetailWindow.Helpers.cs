@@ -65,7 +65,7 @@ public partial class CscaClassDetailWindow
             new PromptField("startTime", "Giờ bắt đầu (HH:mm)", schedule?.StartTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "18:00"),
             new PromptField("endTime", "Giờ kết thúc (HH:mm)", schedule?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00"),
             new PromptField("classroomId", "Phòng học", schedule?.ClassroomId?.ToString(), IsRequired: false, Options: roomOptions),
-            new PromptField("meetingUrl", "Link học trực tuyến (https://...)", schedule?.MeetingUrl, IsRequired: false),
+            new PromptField("meetingUrl", "Link online (để trống: mỗi buổi có Jitsi riêng; chọn phòng: không tạo link)", schedule?.MeetingUrl, IsRequired: false),
             new PromptField("notes", "Ghi chú", schedule?.Notes, IsRequired: false)
         };
     }
@@ -80,7 +80,7 @@ public partial class CscaClassDetailWindow
             new PromptField("endTime", "Giờ kết thúc (HH:mm)", session?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00"),
             new PromptField("classroomId", "Phòng học", session?.ClassroomId?.ToString(), IsRequired: false, Options: BuildClassroomOptions(rooms, session?.ClassroomId)),
             new PromptField("status", "Trạng thái", session?.Status ?? "Scheduled", Options: LessonStatusOptions()),
-            new PromptField("meetingUrl", "Link học trực tuyến (https://...)", session?.MeetingUrl, IsRequired: false),
+            new PromptField("meetingUrl", "Link online (để trống: tự tạo Jitsi; chọn phòng: không tạo link)", session?.MeetingUrl, IsRequired: false),
             new PromptField("changeReason", "Lý do đổi ngày/giờ buổi học", IsRequired: false),
             new PromptField("notes", "Ghi chú", session?.Notes, IsRequired: false)
         };

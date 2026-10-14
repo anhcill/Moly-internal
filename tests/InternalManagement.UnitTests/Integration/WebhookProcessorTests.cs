@@ -163,6 +163,67 @@ public class WebhookProcessorTests
     }
 
     [Fact]
+    public async Task Ingest_CscaLmsAttendance_ShouldResolveLegacyPartyIdToClassMembership()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var partyId = Guid.NewGuid();
+        const string secret = "test-webhook-secret";
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-PARTY", Name = "CSCA Party", IsDeleted = false });
+        db.CscaClassStudents.Add(new CscaClassStudent
+        {
+            Id = membershipId, ClassId = classId, PartyId = partyId, StudentName = "Học viên liên kết"
+        });
+        db.IntegrationSources.Add(new IntegrationSource
+        {
+            CompanyId = Guid.NewGuid(), Code = "CSCA_COURSE_LMS", Name = "CSCA Course LMS",
+            BaseUrl = "https://lms.example.test", AuthType = "HMAC", CredentialReference = secret, IsActive = true
+        });
+        await db.SaveChangesAsync();
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+        var payload = AttendancePayload(classId, partyId, "present");
+
+        var result = await processor.IngestAsync("CSCA_COURSE_LMS", "attendance-party-1",
+            "lms.attendance.recorded", payload, Sign(payload, secret), CancellationToken.None);
+
+        result.Accepted.Should().BeTrue();
+        (await db.CscaLessonAttendances.SingleAsync()).StudentId.Should().Be(membershipId);
+    }
+
+    [Fact]
+    public async Task ReplayPendingCscaLms_ShouldRetryAttendanceAfterMembershipMappingIsAvailable()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var partyId = Guid.NewGuid();
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-RETRY", Name = "CSCA Retry", IsDeleted = false });
+        db.CscaClassStudents.Add(new CscaClassStudent
+        {
+            Id = membershipId, ClassId = classId, PartyId = partyId, StudentName = "Học viên retry"
+        });
+        db.IntegrationInboxes.Add(new IntegrationInbox
+        {
+            SourceSystem = "CSCA_COURSE_LMS",
+            EventId = "attendance-retry-1",
+            EventType = "lms.attendance.recorded",
+            PayloadJson = AttendancePayload(classId, partyId, "present"),
+            Status = IntegrationStatus.Failed,
+            ErrorMessage = "Có học viên LMS chưa được liên kết với đúng lớp Management.",
+            ReceivedAt = DateTime.UtcNow.AddMinutes(-1)
+        });
+        await db.SaveChangesAsync();
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+
+        var projected = await processor.ReplayPendingCscaLmsAsync(10, CancellationToken.None);
+
+        projected.Should().Be(1);
+        (await db.IntegrationInboxes.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
+        (await db.CscaLessonAttendances.SingleAsync()).StudentId.Should().Be(membershipId);
+    }
+
+    [Fact]
     public async Task Ingest_CscaLmsCalendar_ShouldProjectScheduleAndVersionedSessions()
     {
         using var db = CreateInMemoryDb();
@@ -217,12 +278,18 @@ public class WebhookProcessorTests
     {
         using var db = CreateInMemoryDb();
         var classId = Guid.NewGuid();
+        var scheduleId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
         const string secret = "test-webhook-secret";
         db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-EDIT", Name = "CSCA Edit", IsDeleted = false });
+        db.CscaClassSchedules.Add(new CscaClassSchedule
+        {
+            Id = scheduleId, ClassId = classId, DayOfWeek = 2,
+            StartTime = new TimeSpan(16, 0, 0), EndTime = new TimeSpan(17, 30, 0), Status = "Active"
+        });
         db.CscaLessonSessions.Add(new CscaLessonSession
         {
-            Id = sessionId, ClassId = classId, LessonDate = new DateOnly(2026, 9, 20),
+            Id = sessionId, ClassId = classId, ScheduleId = scheduleId, LessonDate = new DateOnly(2026, 9, 20),
             StartTime = new TimeSpan(16, 0, 0), EndTime = new TimeSpan(17, 30, 0), Status = "Scheduled"
         });
         db.IntegrationSources.Add(new IntegrationSource
@@ -237,8 +304,9 @@ public class WebhookProcessorTests
             schemaVersion = 1, managementClassId = classId.ToString(),
             lmsSession = new
             {
-                id = "lms-session-202", liveClassId = "12", scheduleId = (string?)null,
+                id = "lms-session-202", liveClassId = "12", scheduleId = "lms-schedule-202",
                 managementSessionSourceId = sessionId.ToString("N"),
+                managementScheduleSourceId = scheduleId.ToString("N"),
                 title = "Buổi đã dời", startTime = "2026-09-22T09:00:00.000Z",
                 endTime = "2026-09-22T10:30:00.000Z", status = "rescheduled", version = 2
             }
@@ -250,8 +318,10 @@ public class WebhookProcessorTests
         var sessions = await db.CscaLessonSessions.ToListAsync();
         sessions.Should().ContainSingle();
         sessions[0].Id.Should().Be(sessionId);
+        sessions[0].ScheduleId.Should().Be(scheduleId);
         sessions[0].ExternalSessionId.Should().Be("lms-session-202");
         sessions[0].LessonDate.Should().Be(new DateOnly(2026, 9, 22));
+        (await db.CscaClassSchedules.SingleAsync()).ExternalScheduleId.Should().Be("lms-schedule-202");
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using InternalManagement.Application.Common.Interfaces;
@@ -95,6 +96,34 @@ public sealed partial class CscaService
                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
             ? null
             : "Link học trực tuyến phải bắt đầu bằng http:// hoặc https://.";
+    }
+
+    private static string? ResolveNewLessonMeetingUrl(
+        string? explicitMeetingUrl, bool isOnlineSession, Guid sessionId)
+    {
+        if (!string.IsNullOrWhiteSpace(explicitMeetingUrl))
+            return explicitMeetingUrl.Trim();
+
+        return isOnlineSession ? CreateJitsiMeetingUrl(sessionId) : null;
+    }
+
+    private static string? ResolveUpdatedLessonMeetingUrl(
+        string? requestedMeetingUrl, string? currentMeetingUrl, bool isOnlineSession, Guid sessionId)
+    {
+        if (!string.IsNullOrWhiteSpace(requestedMeetingUrl))
+            return requestedMeetingUrl.Trim();
+        if (!isOnlineSession)
+            return null;
+        if (!string.IsNullOrWhiteSpace(currentMeetingUrl))
+            return currentMeetingUrl.Trim();
+
+        return CreateJitsiMeetingUrl(sessionId);
+    }
+
+    private static string CreateJitsiMeetingUrl(Guid sessionId)
+    {
+        var secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(18)).ToLowerInvariant();
+        return $"https://meet.jit.si/csca-{sessionId:N}-{secret}";
     }
 
     private static string? ValidateClassroom(string code, string name, int? capacity)

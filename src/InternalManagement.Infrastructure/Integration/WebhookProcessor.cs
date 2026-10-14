@@ -144,7 +144,8 @@ public sealed class WebhookProcessor : IWebhookProcessor
             .Where(item => item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
                 (item.Status == IntegrationStatus.Pending ||
                  item.Status == IntegrationStatus.Failed && item.ErrorMessage != null &&
-                 item.ErrorMessage.Contains("sẽ thử lại")) &&
+                  (item.ErrorMessage.Contains("sẽ thử lại") ||
+                   item.ErrorMessage.Contains("chưa được liên kết với đúng lớp Management"))) &&
                 (item.EventType == CscaLmsScheduleUpsertedEvent ||
                  item.EventType == CscaLmsScheduleArchivedEvent ||
                  item.EventType == CscaLmsSessionUpsertedEvent ||
@@ -283,11 +284,21 @@ public sealed class WebhookProcessor : IWebhookProcessor
         // into that save when a student mapping is still missing.
         var studentIds = normalizedAttendance.Select(item => item.StudentId).ToList();
         var students = await _db.CscaClassStudents
-            .Where(student => student.ClassId == classId && studentIds.Contains(student.Id))
-            .Select(student => student.Id)
+            .Where(student => student.ClassId == classId &&
+                (studentIds.Contains(student.Id) ||
+                 (student.PartyId.HasValue && studentIds.Contains(student.PartyId.Value))))
+            .Select(student => new { student.Id, student.PartyId })
             .ToListAsync(ct);
-        if (students.Count != studentIds.Count)
+        var resolvedAttendance = normalizedAttendance.Select(item =>
+        {
+            var student = students.FirstOrDefault(candidate => candidate.Id == item.StudentId)
+                ?? students.FirstOrDefault(candidate => candidate.PartyId == item.StudentId);
+            return student is null ? null : item with { StudentId = student.Id };
+        }).ToList();
+        if (resolvedAttendance.Any(item => item is null) ||
+            resolvedAttendance.Select(item => item!.StudentId).Distinct().Count() != normalizedAttendance.Count)
             throw new CscaLmsDependencyException("Có học viên LMS chưa được liên kết với đúng lớp Management.");
+        normalizedAttendance = resolvedAttendance.Select(item => item!).ToList();
 
         var localStart = TimeZoneInfo.ConvertTime(startTime, VietnamTimeZone());
         var localEnd = TimeZoneInfo.ConvertTime(endTime, VietnamTimeZone());
@@ -493,17 +504,39 @@ public sealed class WebhookProcessor : IWebhookProcessor
         }
 
         CscaClassSchedule? schedule = null;
-        if (!string.IsNullOrWhiteSpace(incoming.ScheduleId))
+        if (Guid.TryParse(incoming.ManagementScheduleSourceId, out var managementScheduleId))
         {
             schedule = await _db.CscaClassSchedules.FirstOrDefaultAsync(item =>
+                item.Id == managementScheduleId && item.ClassId == classId, ct);
+        }
+        if (!string.IsNullOrWhiteSpace(incoming.ScheduleId))
+        {
+            schedule ??= await _db.CscaClassSchedules.FirstOrDefaultAsync(item =>
                 item.ExternalSource == source && item.ExternalScheduleId == incoming.ScheduleId, ct);
+            if (schedule is null && session?.ScheduleId is { } existingScheduleId)
+            {
+                schedule = await _db.CscaClassSchedules.FirstOrDefaultAsync(item =>
+                    item.Id == existingScheduleId && item.ClassId == classId, ct);
+            }
             if (schedule is null)
                 throw new CscaLmsDependencyException("Lịch nguồn của buổi học chưa có ở Management; sẽ thử lại.");
             if (schedule.ClassId != classId)
                 throw new CscaLmsValidationException("lmsSession.scheduleId không thuộc lớp Management này.");
+            if (string.IsNullOrWhiteSpace(schedule.ExternalScheduleId))
+            {
+                schedule.ExternalSource = source;
+                schedule.ExternalScheduleId = incoming.ScheduleId.Trim();
+                schedule.UpdatedAt = DateTime.UtcNow;
+                schedule.UpdatedBy = LmsActor;
+            }
+            else if (!string.Equals(schedule.ExternalSource, source, StringComparison.OrdinalIgnoreCase) ||
+                     !string.Equals(schedule.ExternalScheduleId, incoming.ScheduleId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new CscaLmsValidationException("Lịch Management đã liên kết với một lịch LMS khác.");
+            }
         }
 
-        session.ScheduleId = schedule?.Id;
+        session!.ScheduleId = schedule?.Id;
         session.LessonDate = DateOnly.FromDateTime(localStart.DateTime);
         session.StartTime = localStart.TimeOfDay;
         session.EndTime = localEnd.TimeOfDay;
@@ -755,6 +788,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
         string? MeetingUrl = null,
         string? ChangeReason = null,
         string? ManagementSessionSourceId = null,
+        string? ManagementScheduleSourceId = null,
         int Version = 1);
 
     private sealed record CscaLmsAttendanceItem(
