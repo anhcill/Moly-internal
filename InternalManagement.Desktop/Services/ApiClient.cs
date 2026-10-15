@@ -11,15 +11,21 @@ public sealed partial class ApiClient : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly bool _ownsHttpClient;
-    private readonly JsonSerializerOptions _jsonOptions = new()
+    private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
     };
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private int _authenticationExpired;
 
     public string? CurrentAccessToken { get; private set; }
     public string? CurrentRefreshToken { get; private set; }
     public DateTime? TokenExpiresAt { get; private set; }
+    public LoginResponse? CurrentSession { get; private set; }
+    public bool RequiresAuthentication => Volatile.Read(ref _authenticationExpired) == 1;
+
+    public event EventHandler<LoginResponse>? SessionRefreshed;
+    public event EventHandler? AuthenticationExpired;
 
     public ApiClient(string baseUrl, TimeSpan? timeout = null)
         : this(new HttpClient
@@ -53,6 +59,7 @@ public sealed partial class ApiClient : IDisposable
             _httpClient.DefaultRequestHeaders.Authorization = null;
             CurrentRefreshToken = null;
             TokenExpiresAt = null;
+            CurrentSession = null;
         }
     }
 
@@ -65,6 +72,22 @@ public sealed partial class ApiClient : IDisposable
         SetBearerToken(response.AccessToken);
         CurrentRefreshToken = response.RefreshToken;
         TokenExpiresAt = response.ExpiresAt;
+        CurrentSession = response;
+        Interlocked.Exchange(ref _authenticationExpired, 0);
+    }
+
+    private void ExpireAuthentication()
+    {
+        CurrentAccessToken = null;
+        CurrentRefreshToken = null;
+        TokenExpiresAt = null;
+        CurrentSession = null;
+        _httpClient.DefaultRequestHeaders.Authorization = null;
+
+        if (Interlocked.Exchange(ref _authenticationExpired, 1) == 0)
+        {
+            AuthenticationExpired?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     public void RestoreSession(LoginResponse response)
@@ -100,10 +123,12 @@ public sealed partial class ApiClient : IDisposable
             var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LoginResponse>>(_jsonOptions, ct);
             if (!response.IsSuccessStatusCode || envelope?.Success != true || envelope.Data is null)
             {
+                ExpireAuthentication();
                 return false;
             }
 
             SetSession(envelope.Data);
+            SessionRefreshed?.Invoke(this, envelope.Data);
             return true;
         }
         catch (HttpRequestException)
@@ -122,8 +147,15 @@ public sealed partial class ApiClient : IDisposable
     {
         var accessTokenUsed = CurrentAccessToken;
         var response = await send();
-        if (response.StatusCode != HttpStatusCode.Unauthorized || string.IsNullOrWhiteSpace(CurrentRefreshToken))
+        if (response.StatusCode != HttpStatusCode.Unauthorized)
         {
+            await RememberApiFailureAsync(response, ct);
+            return response;
+        }
+
+        if (string.IsNullOrWhiteSpace(CurrentRefreshToken))
+        {
+            ExpireAuthentication();
             await RememberApiFailureAsync(response, ct);
             return response;
         }
@@ -144,6 +176,10 @@ public sealed partial class ApiClient : IDisposable
         }
 
         response = await send();
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            ExpireAuthentication();
+        }
         await RememberApiFailureAsync(response, ct);
         return response;
     }

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -32,6 +33,8 @@ public partial class MainWindow : Window, IDisposable
     private const string TechnologySegment = "cong-nghe-giao-duc";
     private const string FashionSegment = "thoi-trang";
     private string _activeSegment = TechnologySegment;
+    private string? _sessionUsername;
+    private bool _rememberSession;
     private bool _isSidebarCollapsed;
     private InternalDataViewMode _internalDataMode = InternalDataViewMode.Customers;
     private List<ApiClient.BusinessUnitProfitItem> _cachedBusinessUnits = new();
@@ -59,6 +62,8 @@ public partial class MainWindow : Window, IDisposable
         _apiClient = new ApiClient(LoadApiBaseUrl(), LoadApiTimeout());
         _dashboardViewModel = new DashboardViewModel(_apiClient);
         _sessionStore = new SessionStore();
+        _apiClient.SessionRefreshed += ApiClient_SessionRefreshed;
+        _apiClient.AuthenticationExpired += ApiClient_AuthenticationExpired;
         InitializeComponent();
         ApplySidebarNavigationContent(false);
         ViewEmployeesContainer.SetViewModel(new EmployeesViewModel(_apiClient));
@@ -244,6 +249,8 @@ public partial class MainWindow : Window, IDisposable
         UsernameTextBox.Text = savedSession.Username;
         UpdateUsernameWatermark();
         RememberMeCheckBox.IsChecked = true;
+        _sessionUsername = savedSession.Username;
+        _rememberSession = true;
         _apiClient.RestoreSession(savedSession.Response);
 
         SetLoginBusy(true, "Đang khôi phục phiên làm việc...", $"Chào mừng trở lại! Đang đồng bộ thông tin tài khoản {savedSession.Username}...");
@@ -259,7 +266,7 @@ public partial class MainWindow : Window, IDisposable
                 return;
             }
 
-            _currentUser = savedSession.Response.User;
+            _currentUser = _apiClient.CurrentSession?.User ?? savedSession.Response.User;
             await EnterAppShellAsync();
         }
         catch (HttpRequestException)
@@ -279,6 +286,52 @@ public partial class MainWindow : Window, IDisposable
     {
         _sessionStore.Clear();
         _apiClient.SetBearerToken(null);
+        _sessionUsername = null;
+        _rememberSession = false;
+    }
+
+    private void ApiClient_SessionRefreshed(object? sender, ApiClient.LoginResponse session)
+    {
+        if (!_rememberSession || string.IsNullOrWhiteSpace(_sessionUsername)) return;
+
+        try
+        {
+            _sessionStore.Save(_sessionUsername, session);
+        }
+        catch (IOException)
+        {
+            // Phiên hiện tại vẫn dùng được; lần mở ứng dụng sau sẽ yêu cầu đăng nhập lại.
+        }
+        catch (CryptographicException)
+        {
+            // Không làm gián đoạn request đang chạy nếu Windows không thể cập nhật kho phiên.
+        }
+    }
+
+    private void ApiClient_AuthenticationExpired(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(HandleAuthenticationExpired);
+            return;
+        }
+
+        HandleAuthenticationExpired();
+    }
+
+    private void HandleAuthenticationExpired()
+    {
+        if (LoginContainer.Visibility == Visibility.Visible && AppShellContainer.Visibility != Visibility.Visible)
+            return;
+
+        ClearRememberedSession();
+        _currentUser = null;
+        AppShellContainer.Visibility = Visibility.Collapsed;
+        LoginContainer.Visibility = Visibility.Visible;
+        PasswordBox.Password = string.Empty;
+        VisiblePasswordTextBox.Text = string.Empty;
+        ResultBanner.Visibility = Visibility.Collapsed;
+        ShowLoginError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.");
     }
 
     private void InputBox_KeyDown(object sender, KeyEventArgs e)

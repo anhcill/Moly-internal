@@ -106,6 +106,13 @@ public partial class MainWindow
         try
         {
             await operation();
+            if (_apiClient.RequiresAuthentication)
+            {
+                _apiClient.TakeLastApiError();
+                HandleAuthenticationExpired();
+                return;
+            }
+
             var apiError = _apiClient.TakeLastApiError();
             if (!string.IsNullOrWhiteSpace(apiError))
             {
@@ -115,6 +122,13 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
+            if (_apiClient.RequiresAuthentication)
+            {
+                _apiClient.TakeLastApiError();
+                HandleAuthenticationExpired();
+                return;
+            }
+
             var detail = ToFriendlyError(ex);
             var apiError = _apiClient.TakeLastApiError();
             if (!string.IsNullOrWhiteSpace(apiError) && !detail.Contains(apiError, StringComparison.Ordinal))

@@ -83,7 +83,9 @@ public partial class MainWindow
             }
 
             _currentUser = result.User;
-            if (RememberMeCheckBox.IsChecked == true && result.Session is not null)
+            _sessionUsername = username;
+            _rememberSession = RememberMeCheckBox.IsChecked == true;
+            if (_rememberSession && result.Session is not null)
             {
                 _sessionStore.Save(username, result.Session);
             }

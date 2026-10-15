@@ -63,6 +63,67 @@ public sealed class ApiClientTests
     }
 
     [Fact]
+    public async Task UnauthorizedRequest_PublishesRotatedSessionAfterRefresh()
+    {
+        using var httpClient = new HttpClient(new StubHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/refresh-token", StringComparison.Ordinal))
+            {
+                return Task.FromResult(JsonResponse(new ApiClient.ApiEnvelope<ApiClient.LoginResponse>(
+                    true, Session("new-access", "new-refresh"), null)));
+            }
+
+            return Task.FromResult(request.Headers.Authorization?.Parameter == "old-access"
+                ? new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                : JsonResponse(EmptyPage));
+        })) { BaseAddress = new Uri("http://localhost/") };
+        using var apiClient = new ApiClient(httpClient);
+        apiClient.RestoreSession(Session("old-access", "old-refresh"));
+        ApiClient.LoginResponse? refreshedSession = null;
+        apiClient.SessionRefreshed += (_, session) => refreshedSession = session;
+
+        var result = await apiClient.GetCoursesAsync();
+
+        Assert.NotNull(result);
+        Assert.NotNull(refreshedSession);
+        Assert.Equal("new-access", refreshedSession.AccessToken);
+        Assert.Equal("new-refresh", refreshedSession.RefreshToken);
+        Assert.False(apiClient.RequiresAuthentication);
+    }
+
+    [Fact]
+    public async Task UnauthorizedRequest_WithRejectedRefresh_RequiresLoginOnce()
+    {
+        using var httpClient = new HttpClient(new StubHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/refresh-token", StringComparison.Ordinal))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = JsonContent.Create(new ApiClient.ApiEnvelope<ApiClient.LoginResponse>(
+                        false, null, "Refresh token đã hết hạn."))
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
+        })) { BaseAddress = new Uri("http://localhost/") };
+        using var apiClient = new ApiClient(httpClient);
+        apiClient.RestoreSession(Session("old-access", "old-refresh"));
+        var expirationEvents = 0;
+        apiClient.AuthenticationExpired += (_, _) => Interlocked.Increment(ref expirationEvents);
+
+        var first = await apiClient.GetCoursesAsync();
+        var second = await apiClient.GetCoursesAsync();
+
+        Assert.Null(first);
+        Assert.Null(second);
+        Assert.True(apiClient.RequiresAuthentication);
+        Assert.Null(apiClient.CurrentAccessToken);
+        Assert.Null(apiClient.CurrentRefreshToken);
+        Assert.Equal(1, expirationEvents);
+    }
+
+    [Fact]
     public async Task DashboardRefresh_UpdatesBindableMetrics()
     {
         using var httpClient = new HttpClient(new StubHandler((request, _) =>
