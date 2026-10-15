@@ -151,7 +151,8 @@ public partial class CscaClassDetailWindow
             {
                 if (dailySessions.Count == 0)
                 {
-                    foreach (var schedule in schedules.Where(s => s.DayOfWeek == dayOfWeek))
+                    foreach (var schedule in schedules.Where(s => s.DayOfWeek == dayOfWeek &&
+                                 !HasMovedSessionForSchedule(s.Id, date)))
                         AddCalendarEvent(canvas, schedule.StartTime, schedule.EndTime, schedule.TimeLabel,
                             _detail?.Name ?? "Buổi học", $"Lịch cố định · chưa tạo buổi · {schedule.LocationLabel}", schedule,
                             "#EDE9FE", "#A5B4FC", firstHour, hourHeight);
@@ -193,6 +194,18 @@ public partial class CscaClassDetailWindow
 
         // Tự động cuộn xuống ca tối
         ScrollCalendarToEvening();
+    }
+
+    private bool HasMovedSessionForSchedule(Guid scheduleId, DateTime scheduledDate)
+    {
+        var weekStart = scheduledDate.Date.AddDays(-((int)scheduledDate.DayOfWeek + 6) % 7);
+        var weekEnd = weekStart.AddDays(7);
+        return _calendarSessions.Any(session =>
+            session.ScheduleId == scheduleId &&
+            string.Equals(session.Status, "Rescheduled", StringComparison.OrdinalIgnoreCase) &&
+            session.LessonDate != DateOnly.FromDateTime(scheduledDate) &&
+            session.LessonDate >= DateOnly.FromDateTime(weekStart) &&
+            session.LessonDate < DateOnly.FromDateTime(weekEnd));
     }
 
     private void AddCalendarEvent(Canvas canvas, TimeSpan start, TimeSpan end, string time,
@@ -335,8 +348,8 @@ public partial class CscaClassDetailWindow
         if (!PromptDialog.TryShow(this, "Thiết lập lịch cố định cho khóa học", new[]
         {
             new PromptField("weeklyCount", "Số buổi học mỗi tuần", schedules.Count.ToString(CultureInfo.InvariantCulture)),
-            new PromptField("fromDate", "Ngày bắt đầu (yyyy-MM-dd)", defaultStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
-            new PromptField("toDate", "Ngày kết thúc (yyyy-MM-dd)", (_detail.EndDate?.Date ?? defaultStart.AddMonths(2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+            new PromptField("fromDate", "Ngày bắt đầu", defaultStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Kind: PromptFieldKind.Date),
+            new PromptField("toDate", "Ngày kết thúc", (_detail.EndDate?.Date ?? defaultStart.AddMonths(2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Kind: PromptFieldKind.Date)
         }, out var values)) return;
         if (!int.TryParse(values["weeklyCount"], NumberStyles.None, CultureInfo.InvariantCulture, out var weeklyCount)
             || weeklyCount is < 1 or > 14 || weeklyCount != schedules.Count)

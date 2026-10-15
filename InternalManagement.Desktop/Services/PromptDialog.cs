@@ -10,13 +10,21 @@ namespace InternalManagement.Desktop.Services;
 
 public sealed record PromptOption(string Value, string Label);
 
+public enum PromptFieldKind
+{
+    Text,
+    Date,
+    Time
+}
+
 public sealed record PromptField(
     string Key,
     string Label,
     string? InitialValue = null,
     bool IsRequired = true,
     IReadOnlyList<PromptOption>? Options = null,
-    bool IsMultiline = false);
+    bool IsMultiline = false,
+    PromptFieldKind Kind = PromptFieldKind.Text);
 
 public static class PromptDialog
 {
@@ -86,7 +94,43 @@ public static class PromptDialog
             });
 
             Control control;
-            if (field.Options is { Count: > 0 })
+            if (field.Kind == PromptFieldKind.Date)
+            {
+                var datePicker = new DatePicker
+                {
+                    Height = 34,
+                    Padding = new Thickness(8, 3, 8, 3),
+                    Margin = new Thickness(0, 0, 0, 9),
+                    SelectedDateFormat = DatePickerFormat.Short,
+                    VerticalContentAlignment = VerticalAlignment.Center
+                };
+                if (DateTime.TryParseExact(field.InitialValue, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out var initialDate))
+                {
+                    datePicker.SelectedDate = initialDate;
+                }
+                control = datePicker;
+            }
+            else if (field.Kind == PromptFieldKind.Time)
+            {
+                var timeOptions = BuildTimeOptions(field.InitialValue);
+                var combo = new ComboBox
+                {
+                    Height = 34,
+                    Padding = new Thickness(8, 5, 8, 5),
+                    ItemsSource = timeOptions,
+                    DisplayMemberPath = nameof(PromptOption.Label),
+                    SelectedValuePath = nameof(PromptOption.Value),
+                    SelectedIndex = 0,
+                    Margin = new Thickness(0, 0, 0, 9)
+                };
+                if (!string.IsNullOrWhiteSpace(field.InitialValue))
+                {
+                    combo.SelectedValue = field.InitialValue;
+                }
+                control = combo;
+            }
+            else if (field.Options is { Count: > 0 })
             {
                 var combo = new ComboBox
                 {
@@ -173,6 +217,7 @@ public static class PromptDialog
                     TextBox textBox when IsMoneyField(field) && !field.IsMultiline =>
                         new string(textBox.Text.Where(char.IsDigit).ToArray()),
                     TextBox textBox => textBox.Text.Trim(),
+                    DatePicker datePicker => datePicker.SelectedDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty,
                     ComboBox combo => (combo.SelectedValue as string) ?? string.Empty,
                     _ => string.Empty
                 };
@@ -211,6 +256,22 @@ public static class PromptDialog
         var label = field.Label.ToLowerInvariant();
         return key.Contains("fee") || key.Contains("amount") || key.Contains("price") || key.Contains("salary") || key.Contains("cost")
             || label.Contains("học phí") || label.Contains("tiền") || label.Contains("giá") || label.Contains("lương") || label.Contains("chi phí");
+    }
+
+    private static IReadOnlyList<PromptOption> BuildTimeOptions(string? initialValue)
+    {
+        var values = Enumerable.Range(0, 24 * 4)
+            .Select(index => TimeSpan.FromMinutes(index * 15).ToString(@"hh\:mm", CultureInfo.InvariantCulture))
+            .ToList();
+        if (TimeSpan.TryParseExact(initialValue, @"hh\:mm", CultureInfo.InvariantCulture, out var initialTime)
+            && initialTime >= TimeSpan.Zero && initialTime < TimeSpan.FromDays(1)
+            && !values.Contains(initialValue!, StringComparer.Ordinal))
+        {
+            values.Add(initialValue!);
+            values.Sort((left, right) => string.CompareOrdinal(left, right));
+        }
+
+        return values.Select(value => new PromptOption(value, value)).ToList();
     }
 
     internal static void AttachCurrencyFormatting(TextBox box)

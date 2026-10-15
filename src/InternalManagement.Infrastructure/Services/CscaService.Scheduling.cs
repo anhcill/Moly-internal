@@ -336,7 +336,10 @@ public sealed partial class CscaService
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
         if (IsLmsCalendarProjection(session.ExternalSource) && await GetCalendarLinkAsync(session.Class, ct) is null)
             return Result<CscaLessonSessionDto>.Failure("Lớp chưa kết nối LMS để đồng bộ thay đổi buổi học.");
-        var timeChanged = session.LessonDate != request.LessonDate || session.StartTime != request.StartTime || session.EndTime != request.EndTime;
+        var previousLessonDate = session.LessonDate;
+        var previousStartTime = session.StartTime;
+        var previousEndTime = session.EndTime;
+        var timeChanged = previousLessonDate != request.LessonDate || previousStartTime != request.StartTime || previousEndTime != request.EndTime;
         if (timeChanged && (string.IsNullOrWhiteSpace(request.ChangeReason) || request.ChangeReason.Length > 2000))
             return Result<CscaLessonSessionDto>.Failure("Vui lòng nhập lý do đổi lịch (tối đa 2000 ký tự).");
         if (timeChanged && (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
@@ -369,7 +372,10 @@ public sealed partial class CscaService
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
         await QueueSessionForWebAsync(session.Class, session,
-            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, request.ChangeReason?.Trim());
+            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, request.ChangeReason?.Trim(),
+            timeChanged ? previousLessonDate : null,
+            timeChanged ? previousStartTime : null,
+            timeChanged ? previousEndTime : null);
         await _db.SaveChangesAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }

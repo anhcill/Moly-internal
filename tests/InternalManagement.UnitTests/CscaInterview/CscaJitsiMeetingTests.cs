@@ -1,5 +1,8 @@
+using System.Text.Json;
 using FluentAssertions;
 using InternalManagement.Application.Features.CscaInterview.DTOs;
+using InternalManagement.Domain.Entities.Integration;
+using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
 using InternalManagement.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +12,48 @@ namespace InternalManagement.UnitTests.CscaInterview;
 
 public class CscaJitsiMeetingTests
 {
+    [Fact]
+    public async Task MoveSession_ShouldQueuePreviousAndCurrentTimingForWeb()
+    {
+        await using var db = CreateInMemoryDb();
+        var service = CreateService(db, withIntegration: true);
+        var classId = await CreateClassAsync(service, "CSCA-WEB-MOVE");
+        var cls = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        db.LmsCourseLinks.Add(new LmsCourseLink
+        {
+            CompanyId = cls.CompanyId,
+            BusinessUnitId = cls.BusinessUnitId,
+            CourseId = cls.CourseId,
+            ExternalCourseId = "csca-web-move",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+
+        var created = await service.CreateLessonSessionAsync(classId,
+            new CreateCscaLessonSessionRequest(
+                new DateOnly(2026, 10, 17), new TimeSpan(20, 0, 0), new TimeSpan(21, 0, 0)),
+            CancellationToken.None);
+        created.Succeeded.Should().BeTrue();
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var updated = await service.UpdateLessonSessionAsync(classId, created.Value!.Id,
+            new UpdateCscaLessonSessionRequest(
+                new DateOnly(2026, 10, 16), new TimeSpan(20, 0, 0), new TimeSpan(21, 0, 0),
+                ChangeReason: "Chuyển lịch sang ngày 16"),
+            CancellationToken.None);
+
+        updated.Succeeded.Should().BeTrue();
+        var outbox = await db.IntegrationOutboxes.SingleAsync();
+        using var document = JsonDocument.Parse(outbox.PayloadJson);
+        var payload = document.RootElement.GetProperty("payload");
+        payload.GetProperty("lessonDate").GetString().Should().Be("2026-10-16");
+        payload.GetProperty("startTime").GetString().Should().Be("20:00:00");
+        payload.GetProperty("previousLessonDate").GetString().Should().Be("2026-10-17");
+        payload.GetProperty("previousStartTime").GetString().Should().Be("20:00:00");
+        payload.GetProperty("previousEndTime").GetString().Should().Be("21:00:00");
+    }
+
     [Fact]
     public async Task CreateOnlineSessions_WithoutMeetingUrl_ShouldGenerateUniqueStableJitsiUrls()
     {
@@ -103,8 +148,9 @@ public class CscaJitsiMeetingTests
         return new ApplicationDbContext(options);
     }
 
-    private static CscaService CreateService(ApplicationDbContext db) =>
-        new(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+    private static CscaService CreateService(ApplicationDbContext db, bool withIntegration = false) =>
+        new(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: withIntegration ? db : null);
 
     private static async Task<Guid> CreateClassAsync(CscaService service, string code)
     {

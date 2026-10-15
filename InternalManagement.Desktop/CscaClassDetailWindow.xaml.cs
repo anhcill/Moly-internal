@@ -119,8 +119,8 @@ public partial class CscaClassDetailWindow : Window
             new PromptField("name", "Tên lớp", _detail.Name),
             new PromptField("batch", "Đợt / khóa", _detail.Batch),
             new PromptField("tuitionFee", "Học phí / học viên", _detail.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
-            new PromptField("startDate", "Ngày bắt đầu (yyyy-MM-dd)", _detail.StartDate?.ToString("yyyy-MM-dd"), IsRequired: false),
-            new PromptField("endDate", "Ngày kết thúc (yyyy-MM-dd)", _detail.EndDate?.ToString("yyyy-MM-dd"), IsRequired: false),
+            new PromptField("startDate", "Ngày bắt đầu", _detail.StartDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
+            new PromptField("endDate", "Ngày kết thúc", _detail.EndDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
             new PromptField("status", "Trạng thái", _detail.Status, Options: new[]
             {
                 new PromptOption("Active", "Đang hoạt động"),

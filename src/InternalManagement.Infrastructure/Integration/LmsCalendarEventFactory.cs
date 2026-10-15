@@ -48,7 +48,13 @@ internal static class LmsCalendarEventFactory
         };
     }
 
-    internal static object Session(CscaLessonSession session, DateTime updatedAt, string? changeReason = null) => new
+    internal static object Session(
+        CscaLessonSession session,
+        DateTime updatedAt,
+        string? changeReason = null,
+        DateOnly? previousLessonDate = null,
+        TimeSpan? previousStartTime = null,
+        TimeSpan? previousEndTime = null) => new
     {
         ClassSourceId = session.ClassId.ToString("N"),
         SessionSourceId = session.Id.ToString("N"),
@@ -61,6 +67,9 @@ internal static class LmsCalendarEventFactory
         LessonDate = session.LessonDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         StartTime = Clock(session.StartTime),
         EndTime = Clock(session.EndTime),
+        PreviousLessonDate = previousLessonDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        PreviousStartTime = previousStartTime.HasValue ? Clock(previousStartTime.Value) : null,
+        PreviousEndTime = previousEndTime.HasValue ? Clock(previousEndTime.Value) : null,
         Timezone,
         Status = string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
             ? "ended" : session.Status.Trim().ToLowerInvariant(),

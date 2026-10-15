@@ -259,6 +259,46 @@ public sealed class ApiClientTests
         Assert.Equal(0, viewModel.TotalCount);
     }
 
+    [Fact]
+    public async Task UpdateCscaLessonSession_SendsSelectedDateAndTimesToExpectedEndpoint()
+    {
+        var classId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        HttpMethod? method = null;
+        string? path = null;
+        string? requestBody = null;
+        using var httpClient = new HttpClient(new StubHandler(async (request, ct) =>
+        {
+            method = request.Method;
+            path = request.RequestUri!.AbsolutePath;
+            requestBody = await request.Content!.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }))
+        { BaseAddress = new Uri("http://localhost/") };
+        using var apiClient = new ApiClient(httpClient);
+
+        var updated = await apiClient.UpdateCscaLessonSessionAsync(
+            classId,
+            sessionId,
+            new DateOnly(2026, 10, 22),
+            new TimeSpan(19, 30, 0),
+            new TimeSpan(21, 15, 0),
+            null,
+            "https://meet.jit.si/csca-test",
+            "Buổi đổi lịch",
+            "Scheduled",
+            "Giáo viên đổi giờ");
+
+        Assert.True(updated);
+        Assert.Equal(HttpMethod.Put, method);
+        Assert.Equal($"/api/v1/csca/classes/{classId}/sessions/{sessionId}", path);
+        using var json = System.Text.Json.JsonDocument.Parse(requestBody!);
+        Assert.Equal("2026-10-22", json.RootElement.GetProperty("lessonDate").GetString());
+        Assert.Equal("19:30:00", json.RootElement.GetProperty("startTime").GetString());
+        Assert.Equal("21:15:00", json.RootElement.GetProperty("endTime").GetString());
+        Assert.Equal("Giáo viên đổi giờ", json.RootElement.GetProperty("changeReason").GetString());
+    }
+
     private const string EmptyPage = "{\"success\":true,\"data\":{\"items\":[],\"totalCount\":0,\"pageIndex\":1,\"pageSize\":50}}";
 
     private static ApiClient.LoginResponse Session(string accessToken, string refreshToken) =>

@@ -49,7 +49,7 @@ public partial class CscaClassDetailWindow
             new PromptField("discountAmount", "Giảm giá học nhiều khóa", student?.DiscountAmount.ToString("0", CultureInfo.InvariantCulture) ?? "0", IsRequired: false),
             new PromptField("discountNote", "Lý do giảm giá", student?.DiscountNote, IsRequired: false),
             new PromptField("paidAmount", "Số tiền đã đóng", student?.PaidAmount.ToString("0", CultureInfo.InvariantCulture) ?? "0"),
-            new PromptField("debtDueDate", "Ngày hẹn trả nợ (yyyy-MM-dd)", student?.DebtDueDate?.ToString("yyyy-MM-dd"), IsRequired: false),
+            new PromptField("debtDueDate", "Ngày hẹn trả nợ", student?.DebtDueDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
             new PromptField("paymentStatus", "Trạng thái học phí", GetPaymentStatusValue(student?.PaymentStatusValue), Options: PaymentStatusOptions()),
             new PromptField("notes", "Ghi chú", student?.Notes, IsRequired: false)
         };
@@ -62,8 +62,8 @@ public partial class CscaClassDetailWindow
         return new[]
         {
             new PromptField("dayOfWeek", "Thứ", schedule?.DayOfWeek.ToString(CultureInfo.InvariantCulture) ?? "1", Options: DayOptions()),
-            new PromptField("startTime", "Giờ bắt đầu (HH:mm)", schedule?.StartTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "18:00"),
-            new PromptField("endTime", "Giờ kết thúc (HH:mm)", schedule?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00"),
+            new PromptField("startTime", "Giờ bắt đầu", schedule?.StartTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "18:00", Kind: PromptFieldKind.Time),
+            new PromptField("endTime", "Giờ kết thúc", schedule?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00", Kind: PromptFieldKind.Time),
             new PromptField("classroomId", "Phòng học", schedule?.ClassroomId?.ToString(), IsRequired: false, Options: roomOptions),
             new PromptField("meetingUrl", "Link online (để trống: mỗi buổi có Jitsi riêng; chọn phòng: không tạo link)", schedule?.MeetingUrl, IsRequired: false),
             new PromptField("notes", "Ghi chú", schedule?.Notes, IsRequired: false)
@@ -75,9 +75,9 @@ public partial class CscaClassDetailWindow
         var rooms = await _apiClient.GetCscaClassroomsAsync();
         return new[]
         {
-            new PromptField("lessonDate", "Ngày học (yyyy-MM-dd)", session?.LessonDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
-            new PromptField("startTime", "Giờ bắt đầu (HH:mm)", session?.StartTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "18:00"),
-            new PromptField("endTime", "Giờ kết thúc (HH:mm)", session?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00"),
+            new PromptField("lessonDate", "Ngày học", session?.LessonDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Kind: PromptFieldKind.Date),
+            new PromptField("startTime", "Giờ bắt đầu", session?.StartTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "18:00", Kind: PromptFieldKind.Time),
+            new PromptField("endTime", "Giờ kết thúc", session?.EndTime.ToString(@"hh\:mm", CultureInfo.InvariantCulture) ?? "20:00", Kind: PromptFieldKind.Time),
             new PromptField("classroomId", "Phòng học", session?.ClassroomId?.ToString(), IsRequired: false, Options: BuildClassroomOptions(rooms, session?.ClassroomId)),
             new PromptField("status", "Trạng thái", session?.Status ?? "Scheduled", Options: LessonStatusOptions()),
             new PromptField("meetingUrl", "Link online (để trống: tự tạo Jitsi; chọn phòng: không tạo link)", session?.MeetingUrl, IsRequired: false),
