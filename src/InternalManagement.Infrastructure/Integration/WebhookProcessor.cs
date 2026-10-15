@@ -127,6 +127,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             }
             catch (Exception ex)
             {
+                DetachFailedProjectionChanges();
                 item.Status = IntegrationStatus.Failed;
                 item.ErrorMessage = TruncateError(ex.Message);
                 item.ProcessedAt = DateTime.UtcNow;
@@ -170,6 +171,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             }
             catch (Exception ex)
             {
+                DetachFailedProjectionChanges();
                 inbox.Status = IntegrationStatus.Failed;
                 inbox.ErrorMessage = TruncateError(ex.Message);
                 inbox.ProcessedAt = DateTime.UtcNow;
@@ -179,6 +181,18 @@ public sealed class WebhookProcessor : IWebhookProcessor
         }
 
         return projected;
+    }
+
+    private void DetachFailedProjectionChanges()
+    {
+        if (_db is not DbContext dbContext) return;
+
+        foreach (var entry in dbContext.ChangeTracker.Entries()
+                     .Where(entry => entry.Entity is not IntegrationInbox)
+                     .ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
     }
 
     private async Task<(bool Accepted, string Message)> ProjectCscaAttendanceAsync(IntegrationInbox inbox, CancellationToken ct)
@@ -299,6 +313,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             resolvedAttendance.Select(item => item!.StudentId).Distinct().Count() != normalizedAttendance.Count)
             throw new CscaLmsDependencyException("Có học viên LMS chưa được liên kết với đúng lớp Management.");
         normalizedAttendance = resolvedAttendance.Select(item => item!).ToList();
+        studentIds = normalizedAttendance.Select(item => item.StudentId).ToList();
 
         var localStart = TimeZoneInfo.ConvertTime(startTime, VietnamTimeZone());
         var localEnd = TimeZoneInfo.ConvertTime(endTime, VietnamTimeZone());

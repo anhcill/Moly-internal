@@ -203,6 +203,18 @@ public class WebhookProcessorTests
         {
             Id = membershipId, ClassId = classId, PartyId = partyId, StudentName = "Học viên retry"
         });
+        var session = new CscaLessonSession
+        {
+            Id = Guid.NewGuid(), ClassId = classId, LessonDate = new DateOnly(2026, 9, 21),
+            StartTime = new TimeSpan(16, 0, 0), EndTime = new TimeSpan(17, 30, 0),
+            Status = "Scheduled", ExternalSource = "CSCA_COURSE_LMS",
+            ExternalSessionId = "lms-session-101"
+        };
+        db.CscaLessonSessions.Add(session);
+        db.CscaLessonAttendances.Add(new CscaLessonAttendance
+        {
+            LessonSessionId = session.Id, StudentId = membershipId, Status = "Absent"
+        });
         db.IntegrationInboxes.Add(new IntegrationInbox
         {
             SourceSystem = "CSCA_COURSE_LMS",
@@ -220,7 +232,9 @@ public class WebhookProcessorTests
 
         projected.Should().Be(1);
         (await db.IntegrationInboxes.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
-        (await db.CscaLessonAttendances.SingleAsync()).StudentId.Should().Be(membershipId);
+        var attendance = await db.CscaLessonAttendances.SingleAsync();
+        attendance.StudentId.Should().Be(membershipId);
+        attendance.Status.Should().Be("Present");
     }
 
     [Fact]
