@@ -88,51 +88,11 @@ public sealed partial class CscaService
         link.UpdatedBy = _currentUser.Username ?? "System";
     }
 
-    private async Task<string?> QueueTeacherRosterForWebAsync(
-        CscaClass cls, Employee? changedEmployee, CancellationToken ct)
-    {
-        var link = await GetCalendarLinkAsync(cls, ct);
-        if (link is null) return null;
-
-        var lead = cls.Staff.FirstOrDefault(item =>
-            string.Equals(item.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
-            item.Employee is { IsDeleted: false } &&
-            !string.Equals(item.Employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(item.Employee.Email));
-        if (lead is null)
-            return "Lớp đã liên kết Web nên phải có ít nhất một giáo viên với email hợp lệ. Hãy phân công giáo viên thay thế trước.";
-
-        var now = DateTime.UtcNow;
-        var correlationId = Guid.NewGuid().ToString("N");
-        if (changedEmployee is not null &&
-            cls.Staff.Any(item => item.EmployeeId == changedEmployee.Id &&
-                string.Equals(item.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase)) &&
-            !changedEmployee.IsDeleted &&
-            !string.Equals(changedEmployee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(changedEmployee.Email))
-        {
-            QueueLinkedEvent(link, "teacher.upserted", new
-            {
-                TeacherSourceId = changedEmployee.Id.ToString("N"),
-                changedEmployee.FullName,
-                changedEmployee.Email,
-                AccountStatus = "active",
-                SourceUpdatedAt = now
-            }, now, correlationId);
-        }
-
-        QueueLinkedEvent(link, "class.upserted", new
-        {
-            ClassSourceId = cls.Id.ToString("N"),
-            CourseSourceId = link.ExternalCourseId,
-            Title = cls.Name,
-            Description = cls.Batch,
-            MaxStudents = Math.Max(30, cls.Students.Count),
-            Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
-                string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
-            LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
-            SourceUpdatedAt = now
-        }, now, correlationId);
-        return null;
-    }
+    private Task<string?> QueueTeacherRosterForWebAsync(
+        CscaClass cls,
+        Employee? changedEmployee,
+        CancellationToken ct,
+        IReadOnlyCollection<RevokedTeacherAssignment>? revokedAssignments = null) =>
+        LmsTeacherRosterSync.QueueAsync(
+            _integrationDb, _currentUser, cls, changedEmployee, revokedAssignments, ct);
 }

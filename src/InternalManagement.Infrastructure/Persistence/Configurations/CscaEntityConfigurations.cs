@@ -50,6 +50,7 @@ public sealed class CscaEntityConfigurations :
     public void Configure(EntityTypeBuilder<CscaClassStaff> builder)
     {
         builder.HasKey(s => s.Id);
+        builder.HasIndex(s => new { s.ClassId, s.EmployeeId }).IsUnique();
         builder.Property(s => s.CompensationRate).HasPrecision(18, 2);
         builder.HasOne(s => s.Class).WithMany(c => c.Staff).HasForeignKey(s => s.ClassId);
         builder.HasOne(s => s.Employee).WithMany().HasForeignKey(s => s.EmployeeId);

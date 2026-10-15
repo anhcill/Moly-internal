@@ -6,6 +6,7 @@ using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
+using InternalManagement.Infrastructure.Services;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
@@ -263,22 +264,21 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             if (classes.Any(cls => cls.Students.Count > 1000))
                 return Result<LmsCourseMappingDto>.Failure(
                     "Một lớp có hơn 1.000 học viên, vượt giới hạn lớp học của Web CSCA Course.");
-            var teachers = classes.SelectMany(cls => cls.Staff)
-                .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
-                    !staff.Employee.IsDeleted &&
-                    !string.Equals(staff.Employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
+            var teachingStaff = classes.SelectMany(cls => cls.Staff)
+                .Where(staff => LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
+                    LmsTeacherRosterSync.HasActiveAccount(staff.Employee) &&
                     IsValidLmsEmail(staff.Employee.Email) &&
                     !string.IsNullOrWhiteSpace(staff.Employee.FullName) &&
                     staff.Employee.FullName.Length <= 160)
                 .GroupBy(staff => staff.EmployeeId)
-                .Select(group => group.First().Employee)
+                .Select(group => group.OrderBy(staff => staff.CreatedAt).ThenBy(staff => staff.Id).First().Employee)
                 .ToList();
-            if (teachers.Count == 0)
+            if (teachingStaff.Count == 0)
                 return Result<LmsCourseMappingDto>.Failure(
                     "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ trước khi đồng bộ lên Web.");
             var classWithoutLead = classes.FirstOrDefault(cls => !cls.Staff.Any(staff =>
                 string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
-                teachers.Any(teacher => teacher.Id == staff.EmployeeId)));
+                teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId)));
             if (classWithoutLead is not null)
                 return Result<LmsCourseMappingDto>.Failure(
                     $"Lớp {classWithoutLead.Code} chưa có giáo viên vai trò Teacher với email hợp lệ để đồng bộ sang Web.");
@@ -292,7 +292,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
             await SupersedeIncompleteCourseSyncAsync(existing, now, actor, ct);
             var correlationId = Guid.NewGuid().ToString("N");
-            foreach (var teacher in teachers)
+            foreach (var teacher in teachingStaff)
                 QueueManagementEvent(existing, "teacher.upserted", new
                 {
                     TeacherSourceId = teacher.Id.ToString("N"),
@@ -307,16 +307,29 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 CourseSourceId = externalCourseId,
                 course.Title,
                 course.Description,
-                TeacherSourceId = teachers[0].Id.ToString("N"),
+                TeacherSourceId = classes.SelectMany(cls => cls.Staff)
+                    .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                                    teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
+                    .OrderBy(staff => staff.CreatedAt)
+                    .ThenBy(staff => staff.Id)
+                    .First().EmployeeId.ToString("N"),
                 IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
                 SourceUpdatedAt = now
             }, correlationId, now, actor);
 
             foreach (var cls in classes)
             {
-                var lead = cls.Staff.First(staff =>
-                    string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
-                    teachers.Any(teacher => teacher.Id == staff.EmployeeId));
+                var activeAssignments = cls.Staff
+                    .Where(staff => LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
+                                    teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
+                    .GroupBy(staff => staff.EmployeeId)
+                    .Select(group => group.OrderBy(staff => staff.CreatedAt).ThenBy(staff => staff.Id).First())
+                    .ToList();
+                var lead = activeAssignments
+                    .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(staff => staff.CreatedAt)
+                    .ThenBy(staff => staff.Id)
+                    .First();
                 QueueManagementEvent(existing, "class.upserted", new
                 {
                     ClassSourceId = cls.Id.ToString("N"),
@@ -328,6 +341,17 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
+                foreach (var assignment in activeAssignments)
+                    QueueManagementEvent(existing, "class.teacher.assigned", new
+                    {
+                        ClassSourceId = cls.Id.ToString("N"),
+                        TeacherSourceId = assignment.EmployeeId.ToString("N"),
+                        TeachingRole = assignment.Id == lead.Id
+                            ? "lead"
+                            : LmsTeacherRosterSync.MapTeachingRole(assignment.RoleInClass),
+                        Status = "active",
+                        SourceUpdatedAt = now
+                    }, correlationId, now, actor);
             }
 
             // The Management calendar is authoritative. Include existing slots

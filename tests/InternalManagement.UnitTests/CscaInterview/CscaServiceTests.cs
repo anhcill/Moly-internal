@@ -346,9 +346,145 @@ public class CscaServiceTests
         result.Succeeded.Should().BeTrue();
         (await db.LmsCourseLinks.SingleAsync()).Status.Should().Be(IntegrationStatus.Success);
         var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
-        commands.Should().HaveCount(2);
-        commands.Select(GetManagementEventType).Should().Equal("teacher.upserted", "class.upserted");
+        commands.Should().HaveCount(3);
+        commands.Select(GetManagementEventType).Should().Equal(
+            "teacher.upserted", "class.teacher.assigned", "class.upserted");
+        var assignment = GetManagementPayload(commands[1]);
+        assignment.GetProperty("teachingRole").GetString().Should().Be("lead");
+        assignment.GetProperty("status").GetString().Should().Be("active");
         commands.Select(item => item.CorrelationId).Distinct().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task UpdateLeadTeacherRole_ShouldRevokeOldRoleAndPromoteRemainingTeacher()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-teacher-change", Title = "CSCA Teacher Change" };
+        var cls = new CscaClass
+        {
+            Course = course,
+            CourseId = course.Id,
+            Code = "CSCA-TEACHER-CHANGE",
+            Name = "Lớp đổi giáo viên"
+        };
+        var firstTeacher = new Employee
+        {
+            EmployeeCode = "GV-FIRST", FullName = "Giáo viên một", Email = "first@example.com"
+        };
+        var secondTeacher = new Employee
+        {
+            EmployeeCode = "GV-SECOND", FullName = "Giáo viên hai", Email = "second@example.com"
+        };
+        var firstAssignment = new CscaClassStaff
+        {
+            Class = cls, Employee = firstTeacher, RoleInClass = "Teacher",
+            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+        var secondAssignment = new CscaClassStaff
+        {
+            Class = cls, Employee = secondTeacher, RoleInClass = "Teacher",
+            CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc)
+        };
+        cls.Staff.Add(firstAssignment);
+        cls.Staff.Add(secondAssignment);
+        db.AddRange(course, cls, firstTeacher, secondTeacher, firstAssignment, secondAssignment,
+            new LmsCourseLink
+            {
+                Course = course,
+                ExternalCourseId = course.CourseSourceId,
+                Status = IntegrationStatus.Success
+            });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var leadAssignment = cls.Staff.OrderBy(item => item.CreatedAt).ThenBy(item => item.Id).First();
+        var remainingAssignment = cls.Staff.Single(item => item.Id != leadAssignment.Id);
+
+        var result = await service.UpdateStaffAsync(cls.Id, leadAssignment.Id,
+            new UpdateCscaStaffRequest("Mentor", 200_000m), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        commands.Select(GetManagementEventType).Should().Equal(
+            "teacher.upserted", "teacher.upserted",
+            "class.teacher.assigned", "class.teacher.assigned", "class.teacher.assigned",
+            "class.upserted");
+        var assignments = commands
+            .Where(item => GetManagementEventType(item) == "class.teacher.assigned")
+            .Select(GetManagementPayload)
+            .ToList();
+        assignments.Should().Contain(item =>
+            item.GetProperty("teacherSourceId").GetString() == leadAssignment.EmployeeId.ToString("N") &&
+            item.GetProperty("teachingRole").GetString() == "lead" &&
+            item.GetProperty("status").GetString() == "revoked");
+        assignments.Should().Contain(item =>
+            item.GetProperty("teacherSourceId").GetString() == leadAssignment.EmployeeId.ToString("N") &&
+            item.GetProperty("teachingRole").GetString() == "co_teacher" &&
+            item.GetProperty("status").GetString() == "active");
+        assignments.Should().Contain(item =>
+            item.GetProperty("teacherSourceId").GetString() == remainingAssignment.EmployeeId.ToString("N") &&
+            item.GetProperty("teachingRole").GetString() == "lead" &&
+            item.GetProperty("status").GetString() == "active");
+        GetManagementPayload(commands[^1]).GetProperty("leadTeacherSourceId").GetString()
+            .Should().Be(remainingAssignment.EmployeeId.ToString("N"));
+    }
+
+    [Fact]
+    public async Task RemoveTeacher_WhenReplacementExists_ShouldQueueRevocationAndNewLead()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-teacher-remove", Title = "CSCA Teacher Remove" };
+        var cls = new CscaClass { Course = course, Code = "CSCA-REMOVE", Name = "Lớp xóa giáo viên" };
+        var removedTeacher = new Employee
+        {
+            EmployeeCode = "GV-REMOVE", FullName = "Giáo viên bị xóa", Email = "remove@example.com"
+        };
+        var replacementTeacher = new Employee
+        {
+            EmployeeCode = "GV-REPLACE", FullName = "Giáo viên thay thế", Email = "replacement@example.com"
+        };
+        var removedAssignment = new CscaClassStaff
+        {
+            Class = cls, Employee = removedTeacher, RoleInClass = "Teacher",
+            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+        var replacementAssignment = new CscaClassStaff
+        {
+            Class = cls, Employee = replacementTeacher, RoleInClass = "Teacher",
+            CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc)
+        };
+        cls.Staff.Add(removedAssignment);
+        cls.Staff.Add(replacementAssignment);
+        db.AddRange(course, cls, removedTeacher, replacementTeacher, removedAssignment, replacementAssignment,
+            new LmsCourseLink
+            {
+                Course = course,
+                ExternalCourseId = course.CourseSourceId,
+                Status = IntegrationStatus.Success
+            });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var leadAssignment = cls.Staff.OrderBy(item => item.CreatedAt).ThenBy(item => item.Id).First();
+        var remainingAssignment = cls.Staff.Single(item => item.Id != leadAssignment.Id);
+
+        var result = await service.RemoveStaffAsync(cls.Id, leadAssignment.Id, CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        var assignments = commands
+            .Where(item => GetManagementEventType(item) == "class.teacher.assigned")
+            .Select(GetManagementPayload)
+            .ToList();
+        assignments.Should().Contain(item =>
+            item.GetProperty("teacherSourceId").GetString() == leadAssignment.EmployeeId.ToString("N") &&
+            item.GetProperty("status").GetString() == "revoked");
+        assignments.Should().Contain(item =>
+            item.GetProperty("teacherSourceId").GetString() == remainingAssignment.EmployeeId.ToString("N") &&
+            item.GetProperty("teachingRole").GetString() == "lead" &&
+            item.GetProperty("status").GetString() == "active");
+        GetManagementPayload(commands[^1]).GetProperty("leadTeacherSourceId").GetString()
+            .Should().Be(remainingAssignment.EmployeeId.ToString("N"));
     }
 
     [Fact]
@@ -441,6 +577,50 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task UpdateStudentEmail_InLinkedClass_ShouldQueueProvisionWithNewEmail()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "student-email-sync", Title = "CSCA Student Email" };
+        var cls = new CscaClass
+        {
+            Course = course,
+            Code = "CSCA-STUDENT-EMAIL",
+            Name = "Lớp đổi email học viên",
+            TuitionFee = 2_000_000m
+        };
+        db.AddRange(course, cls, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var accessLifecycle = new LmsAccessLifecycleService(db, NullLogger<LmsAccessLifecycleService>.Instance);
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            lmsAccessLifecycleService: accessLifecycle, integrationDb: db);
+        var enrolled = await service.EnrollStudentAsync(cls.Id,
+            new EnrollStudentRequest("Học viên đổi email", "old.student@example.com", "0901234567",
+                2_000_000m, PaymentStatus.Paid), CancellationToken.None);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var updated = await service.UpdateStudentPaymentAsync(cls.Id, enrolled.Value!.Id,
+            new UpdateStudentPaymentRequest(2_000_000m, PaymentStatus.Paid,
+                StudentName: "Học viên đổi email", Email: "new.student@example.com", PhoneNumber: "0901234567"),
+            CancellationToken.None);
+
+        updated.Succeeded.Should().BeTrue();
+        var rosterCommands = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.ManagementEventRequested)
+            .OrderBy(item => item.CreatedAt)
+            .ToListAsync();
+        rosterCommands.Select(GetManagementEventType)
+            .Should().Equal("student.provisioned", "class.membership.changed");
+        GetManagementPayload(rosterCommands[0]).GetProperty("email").GetString()
+            .Should().Be("new.student@example.com");
+    }
+
+    [Fact]
     public async Task EnrollStudent_SameStudentInSecondClass_WithPartyResolver_ShouldSucceed()
     {
         using var db = CreateInMemoryDb();
@@ -527,4 +707,7 @@ public class CscaServiceTests
 
     private static string? GetManagementEventType(IntegrationOutbox item) =>
         JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString();
+
+    private static JsonElement GetManagementPayload(IntegrationOutbox item) =>
+        JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("payload").Clone();
 }

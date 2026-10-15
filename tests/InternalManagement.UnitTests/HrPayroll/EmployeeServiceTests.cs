@@ -1,9 +1,13 @@
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using InternalManagement.Application.Features.HrPayroll.DTOs;
+using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Identity;
+using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
 using InternalManagement.Infrastructure.Services;
@@ -106,6 +110,68 @@ public class EmployeeServiceTests
     }
 
     [Fact]
+    public async Task CreateEmployee_WithDuplicateEmailInCompany_ShouldFailCaseInsensitively()
+    {
+        using var db = CreateInMemoryDb();
+        var company = await db.Companies.SingleAsync();
+        db.Employees.Add(new Employee
+        {
+            CompanyId = company.Id,
+            EmployeeCode = "EMP-EMAIL-1",
+            FullName = "Nhân viên một",
+            Email = "teacher@example.com"
+        });
+        await db.SaveChangesAsync();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-EMAIL-2", "Nhân viên hai", " Teacher@Example.com ", null, null, 0), CancellationToken.None);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("Email nhân viên"));
+    }
+
+    [Fact]
+    public async Task CreateEmployee_WithEmailUsedByAnotherCompany_ShouldSucceed()
+    {
+        using var db = CreateInMemoryDb();
+        var otherCompany = new Company { Code = "OTHER", Name = "Công ty khác" };
+        db.AddRange(otherCompany, new Employee
+        {
+            CompanyId = otherCompany.Id,
+            EmployeeCode = "OTHER-1",
+            FullName = "Nhân viên công ty khác",
+            Email = "shared@example.com"
+        });
+        await db.SaveChangesAsync();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-SHARED", "Nhân viên MOLI", " Shared@Example.com ", null, null, 0), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        result.Value!.Email.Should().Be("shared@example.com");
+    }
+
+    [Fact]
+    public async Task UpdateEmployee_WithAnotherEmployeesEmail_ShouldFailCaseInsensitively()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+        var first = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-UPD-1", "Nhân viên một", "one@example.com", null, null, 0), CancellationToken.None);
+        var second = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-UPD-2", "Nhân viên hai", "two@example.com", null, null, 0), CancellationToken.None);
+
+        var result = await service.UpdateEmployeeAsync(second.Value!.Id, new UpdateEmployeeRequest(
+            second.Value.FullName, " ONE@EXAMPLE.COM ", null, null, 0), CancellationToken.None);
+
+        result.Succeeded.Should().BeFalse();
+        (await db.Employees.SingleAsync(employee => employee.Id == first.Value!.Id)).Email.Should().Be("one@example.com");
+        (await db.Employees.SingleAsync(employee => employee.Id == second.Value.Id)).Email.Should().Be("two@example.com");
+    }
+
+    [Fact]
     public async Task GetEmployees_WithSearch_ShouldReturnMatchedResults()
     {
         // Arrange
@@ -142,6 +208,137 @@ public class EmployeeServiceTests
         deleteRes.Succeeded.Should().BeTrue();
         var getRes = await service.GetEmployeeByIdAsync(empId, CancellationToken.None);
         getRes.Succeeded.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateLinkedTeacherIdentityAndStatus_ShouldQueueTeacherAndClassUpdatesWithNewLead()
+    {
+        using var db = CreateInMemoryDb();
+        var setup = await SeedLinkedClassWithTwoTeachersAsync(db);
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.UpdateEmployeeAsync(setup.Lead.Id, new UpdateEmployeeRequest(
+            "Giáo viên đã đổi", " Changed.Teacher@Example.com ", null, null, 0, Status: "Resigned"),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var events = await ReadManagementEventsAsync(db);
+        events.Select(item => item.EventType).Should().Contain("teacher.upserted");
+        events.Select(item => item.EventType).Should().Contain("class.upserted");
+        var teacherPayload = events
+            .Where(item => item.EventType == "teacher.upserted")
+            .Select(item => item.Payload)
+            .Single(payload => payload.GetProperty("teacherSourceId").GetString() == setup.Lead.Id.ToString("N"));
+        teacherPayload.GetProperty("fullName").GetString().Should().Be("Giáo viên đã đổi");
+        teacherPayload.GetProperty("email").GetString().Should().Be("changed.teacher@example.com");
+        teacherPayload.GetProperty("accountStatus").GetString().Should().Be("suspended");
+        events.Single(item => item.EventType == "class.upserted").Payload
+            .GetProperty("leadTeacherSourceId").GetString().Should().Be(setup.Replacement.Id.ToString("N"));
+        events.Where(item => item.EventType == "class.teacher.assigned")
+            .Should().Contain(item =>
+                item.Payload.GetProperty("teacherSourceId").GetString() == setup.Lead.Id.ToString("N") &&
+                item.Payload.GetProperty("status").GetString() == "revoked");
+    }
+
+    [Fact]
+    public async Task DeleteLinkedTeacher_ShouldQueueSuspensionAndClassRosterUpdate()
+    {
+        using var db = CreateInMemoryDb();
+        var setup = await SeedLinkedClassWithTwoTeachersAsync(db);
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.DeleteEmployeeAsync(setup.Lead.Id, CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var events = await ReadManagementEventsAsync(db);
+        var deletedTeacher = events
+            .Where(item => item.EventType == "teacher.upserted")
+            .Select(item => item.Payload)
+            .Single(payload => payload.GetProperty("teacherSourceId").GetString() == setup.Lead.Id.ToString("N"));
+        deletedTeacher.GetProperty("accountStatus").GetString().Should().Be("suspended");
+        events.Single(item => item.EventType == "class.upserted").Payload
+            .GetProperty("leadTeacherSourceId").GetString().Should().Be(setup.Replacement.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task ResignLinkedCoTeacher_ShouldRevokeCoTeacherWithoutChangingLead()
+    {
+        using var db = CreateInMemoryDb();
+        var setup = await SeedLinkedClassWithTwoTeachersAsync(db);
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.UpdateEmployeeAsync(setup.Replacement.Id, new UpdateEmployeeRequest(
+            setup.Replacement.FullName, setup.Replacement.Email, null, null, 0, Status: "Resigned"),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var events = await ReadManagementEventsAsync(db);
+        events.Where(item => item.EventType == "class.teacher.assigned")
+            .Should().Contain(item =>
+                item.Payload.GetProperty("teacherSourceId").GetString() == setup.Replacement.Id.ToString("N") &&
+                item.Payload.GetProperty("teachingRole").GetString() == "co_teacher" &&
+                item.Payload.GetProperty("status").GetString() == "revoked");
+        events.Single(item => item.EventType == "class.upserted").Payload
+            .GetProperty("leadTeacherSourceId").GetString().Should().Be(setup.Lead.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task ResignLinkedTeachingAssistant_ShouldRevokeAssistantAssignment()
+    {
+        using var db = CreateInMemoryDb();
+        var company = await db.Companies.SingleAsync();
+        var course = new Course { CompanyId = company.Id, CourseSourceId = "assistant-sync", Title = "Khóa trợ giảng" };
+        var cls = new CscaClass
+        {
+            CompanyId = company.Id, Course = course, Code = "CLS-ASSISTANT", Name = "Lớp trợ giảng"
+        };
+        var lead = new Employee
+        {
+            CompanyId = company.Id, EmployeeCode = "LEAD-A", FullName = "Giáo viên chính",
+            Email = "lead.a@example.com", Status = "Active"
+        };
+        var assistant = new Employee
+        {
+            CompanyId = company.Id, EmployeeCode = "ASSISTANT-A", FullName = "Trợ giảng",
+            Email = "assistant.a@example.com", Status = "Active"
+        };
+        cls.Staff.Add(new CscaClassStaff { Class = cls, Employee = lead, RoleInClass = "Teacher" });
+        cls.Staff.Add(new CscaClassStaff { Class = cls, Employee = assistant, RoleInClass = "TeachingAssistant" });
+        db.AddRange(course, cls, lead, assistant, new LmsCourseLink
+        {
+            CompanyId = company.Id, Course = course, ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.UpdateEmployeeAsync(assistant.Id, new UpdateEmployeeRequest(
+            assistant.FullName, assistant.Email, null, null, 0, Status: "Resigned"), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var events = await ReadManagementEventsAsync(db);
+        events.Where(item => item.EventType == "class.teacher.assigned")
+            .Should().Contain(item =>
+                item.Payload.GetProperty("teacherSourceId").GetString() == assistant.Id.ToString("N") &&
+                item.Payload.GetProperty("teachingRole").GetString() == "assistant" &&
+                item.Payload.GetProperty("status").GetString() == "revoked");
+        events.Single(item => item.EventType == "class.upserted").Payload
+            .GetProperty("leadTeacherSourceId").GetString().Should().Be(lead.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task UpdateEmployeeWithoutLinkedTeacherClass_ShouldNotQueueLmsEvents()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+        var created = await service.CreateEmployeeAsync(new CreateEmployeeRequest(
+            "EMP-NO-LMS", "Nhân viên thường", "normal@example.com", null, null, 0), CancellationToken.None);
+
+        var result = await service.UpdateEmployeeAsync(created.Value!.Id, new UpdateEmployeeRequest(
+            "Nhân viên đổi tên", created.Value.Email, null, null, 0), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        (await db.IntegrationOutboxes.CountAsync()).Should().Be(0);
     }
 
     [Fact]
@@ -247,5 +444,77 @@ public class EmployeeServiceTests
 
         var detail = await service.GetEmployeeByIdAsync(result.Items.Single().Id, CancellationToken.None);
         detail.Value!.BusinessUnitName.Should().Be("Công nghệ - Giáo dục");
+    }
+
+    private static async Task<(Employee Lead, Employee Replacement)> SeedLinkedClassWithTwoTeachersAsync(
+        ApplicationDbContext db)
+    {
+        var company = await db.Companies.SingleAsync(company => company.Code == "MOLI");
+        var course = new Course { CompanyId = company.Id, CourseSourceId = "employee-sync", Title = "Khóa đồng bộ" };
+        var cls = new CscaClass
+        {
+            CompanyId = company.Id,
+            Course = course,
+            CourseId = course.Id,
+            Code = "CLS-EMP-SYNC",
+            Name = "Lớp đồng bộ giáo viên",
+            Batch = "2026"
+        };
+        var lead = new Employee
+        {
+            CompanyId = company.Id,
+            EmployeeCode = "TEACHER-LEAD",
+            FullName = "Giáo viên chính",
+            Email = "lead@example.com",
+            Status = "Active"
+        };
+        var replacement = new Employee
+        {
+            CompanyId = company.Id,
+            EmployeeCode = "TEACHER-REPLACEMENT",
+            FullName = "Giáo viên thay thế",
+            Email = "replacement@example.com",
+            Status = "Active"
+        };
+        var leadAssignment = new CscaClassStaff
+        {
+            Class = cls,
+            Employee = lead,
+            RoleInClass = "Teacher",
+            CreatedAt = DateTime.UtcNow.AddMinutes(-1)
+        };
+        var replacementAssignment = new CscaClassStaff
+        {
+            Class = cls,
+            Employee = replacement,
+            RoleInClass = "Teacher",
+            CreatedAt = DateTime.UtcNow
+        };
+        cls.Staff.Add(leadAssignment);
+        cls.Staff.Add(replacementAssignment);
+        db.AddRange(course, cls, lead, replacement, leadAssignment, replacementAssignment, new LmsCourseLink
+        {
+            CompanyId = company.Id,
+            Course = course,
+            CourseId = course.Id,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var orderedTeachers = cls.Staff.OrderBy(item => item.CreatedAt).ThenBy(item => item.Id).ToList();
+        return (orderedTeachers[0].Employee, orderedTeachers[1].Employee);
+    }
+
+    private static async Task<List<(string EventType, JsonElement Payload)>> ReadManagementEventsAsync(
+        ApplicationDbContext db)
+    {
+        var outboxes = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        return outboxes.Select(item =>
+        {
+            using var document = JsonDocument.Parse(item.PayloadJson);
+            return (
+                document.RootElement.GetProperty("eventType").GetString()!,
+                document.RootElement.GetProperty("payload").Clone());
+        }).ToList();
     }
 }

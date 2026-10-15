@@ -475,6 +475,63 @@ public class PayrollServiceTests
     }
 
     [Fact]
+    public async Task CalculatePayroll_ForHourlyTeacher_ShouldIgnoreDuplicateAssignmentsAndRecalculateSessionChanges()
+    {
+        using var db = await CreateInMemoryDbWithSeedDataAsync();
+        var teacher = await db.Employees.FirstAsync(e => e.EmployeeCode == "EMP-002");
+        teacher.EmploymentType = EmploymentType.PART_TIME;
+        teacher.PartTimeCalculationMethod = PartTimeCalculationMethod.HOURLY;
+        teacher.PartTimeUnitRate = 100_000m;
+        var cls = new CscaClass
+        {
+            CompanyId = teacher.CompanyId,
+            CourseId = Guid.NewGuid(),
+            Code = "DUPLICATE-STAFF-CLASS",
+            Name = "Lớp chống nhân đôi lương",
+            Status = "Active"
+        };
+        db.CscaClasses.Add(cls);
+        db.CscaClassStaffs.AddRange(
+            new CscaClassStaff { ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher" },
+            new CscaClassStaff { ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "teacher" });
+        var sessions = Enumerable.Range(1, 20)
+            .Select(day => new CscaLessonSession
+            {
+                ClassId = cls.Id,
+                LessonDate = new DateOnly(2026, 8, day),
+                StartTime = new TimeSpan(8, 0, 0),
+                EndTime = new TimeSpan(10, 0, 0),
+                Status = "Scheduled"
+            })
+            .ToList();
+        db.CscaLessonSessions.AddRange(sessions);
+        await db.SaveChangesAsync();
+
+        var service = new PayrollService(db, new CurrentUserService(null!), NullLogger<PayrollService>.Instance);
+        var period = await service.CreatePayrollPeriodAsync(
+            new CreatePayrollPeriodRequest("Lương giáo viên chống trùng", new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 31)),
+            CancellationToken.None);
+
+        var initial = await service.CalculatePayrollAsync(period.Value!.Id, CancellationToken.None);
+        var initialPayslip = initial.Value!.Payslips.Single(p => p.EmployeeId == teacher.Id);
+        initialPayslip.ActualWorkHours.Should().Be(40m);
+        initialPayslip.NetSalary.Should().Be(4_000_000m);
+
+        sessions[0].EndTime = new TimeSpan(11, 0, 0);
+        sessions[1].Status = "Cancelled";
+        sessions[2].LessonDate = new DateOnly(2026, 9, 1);
+        db.CscaLessonSessions.Remove(sessions[3]);
+        await db.SaveChangesAsync();
+
+        var recalculated = await service.CalculatePayrollAsync(period.Value.Id, CancellationToken.None);
+        var recalculatedPayslip = recalculated.Value!.Payslips.Single(p => p.EmployeeId == teacher.Id);
+        recalculatedPayslip.ActualWorkHours.Should().Be(35m);
+        recalculatedPayslip.NetSalary.Should().Be(3_500_000m);
+        (await db.Payslips.CountAsync(item => item.PayrollPeriodId == period.Value.Id && item.EmployeeId == teacher.Id))
+            .Should().Be(1);
+    }
+
+    [Fact]
     public async Task CalculatePayroll_ForBusinessUnit_ShouldNotLeakEmployeesOrAttendanceFromOtherUnit()
     {
         using var db = await CreateInMemoryDbWithSeedDataAsync();

@@ -285,11 +285,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_csca_class_staffs");
 
-                    b.HasIndex("ClassId")
-                        .HasDatabaseName("ix_csca_class_staffs_class_id");
-
                     b.HasIndex("EmployeeId")
                         .HasDatabaseName("ix_csca_class_staffs_employee_id");
+
+                    b.HasIndex("ClassId", "EmployeeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_csca_class_staffs_class_id_employee_id");
 
                     b.ToTable("csca_class_staffs", (string)null);
                 });

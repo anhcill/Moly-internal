@@ -38,7 +38,10 @@ public sealed class LmsIntegrationOperationsServiceTests
         result.Succeeded.Should().BeTrue();
         result.Value!.Status.Should().Be(IntegrationStatus.Processing.ToString());
         result.Value.ExternalCourseId.Should().Be("csca-foundation");
-        (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync()).Should().HaveCount(3);
+        var outboxes = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        outboxes.Should().HaveCount(4);
+        outboxes.Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString())
+            .Should().ContainInOrder("teacher.upserted", "course.upserted", "class.upserted", "class.teacher.assigned");
         var overview = await service.GetOverviewAsync(CancellationToken.None);
         overview.Value!.ReadyCourseMappings.Should().Be(0);
     }

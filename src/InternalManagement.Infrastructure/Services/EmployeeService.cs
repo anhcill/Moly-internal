@@ -4,6 +4,7 @@ using InternalManagement.Application.Common.Interfaces;
 using InternalManagement.Application.Common.Models;
 using InternalManagement.Application.Features.HrPayroll.DTOs;
 using InternalManagement.Application.Features.HrPayroll.Services;
+using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Enums;
 
@@ -260,6 +261,14 @@ public sealed class EmployeeService : IEmployeeService
             return Result<EmployeeDto>.Failure($"Mã nhân viên '{request.EmployeeCode}' đã tồn tại trong hệ thống.");
         }
 
+        var normalizedEmail = NormalizeEmail(request.Email);
+        var emailExists = await _db.Employees.AnyAsync(e =>
+            !e.IsDeleted && e.CompanyId == companyId && e.Email.ToLower() == normalizedEmail, ct);
+        if (emailExists)
+        {
+            return Result<EmployeeDto>.Failure($"Email nhân viên '{request.Email.Trim()}' đã tồn tại trong hệ thống.");
+        }
+
         var employeeStatus = NormalizeEmployeeStatus(request.Status);
         var emp = new Employee
         {
@@ -269,7 +278,7 @@ public sealed class EmployeeService : IEmployeeService
             UserId = request.UserId,
             EmployeeCode = request.EmployeeCode.Trim().ToUpperInvariant(),
             FullName = request.FullName.Trim(),
-            Email = request.Email.Trim(),
+            Email = normalizedEmail,
             Phone = request.Phone?.Trim(),
             Position = request.Position?.Trim(),
             BaseSalary = request.BaseSalary,
@@ -350,6 +359,18 @@ public sealed class EmployeeService : IEmployeeService
             return Result<EmployeeDto>.Failure("Không tìm thấy nhân viên cần cập nhật.");
         }
 
+        var normalizedEmail = NormalizeEmail(request.Email);
+        var emailExists = await _db.Employees.AnyAsync(e =>
+            !e.IsDeleted && e.CompanyId == companyId && e.Id != emp.Id && e.Email.ToLower() == normalizedEmail, ct);
+        if (emailExists)
+        {
+            return Result<EmployeeDto>.Failure($"Email nhân viên '{request.Email.Trim()}' đã tồn tại trong hệ thống.");
+        }
+
+        var previousFullName = emp.FullName;
+        var previousEmail = emp.Email;
+        var previousStatus = emp.Status;
+        var linkedTeacherClasses = await LoadLinkedTeacherClassesAsync(emp, ct);
 
         var employmentType = request.EmploymentType ?? emp.EmploymentType;
         var partTimeMethod = request.PartTimeCalculationMethod ?? emp.PartTimeCalculationMethod;
@@ -397,7 +418,7 @@ public sealed class EmployeeService : IEmployeeService
         }
 
         emp.FullName = request.FullName.Trim();
-        emp.Email = request.Email.Trim();
+        emp.Email = normalizedEmail;
         emp.Phone = request.Phone?.Trim();
         emp.Position = request.Position?.Trim();
         emp.BaseSalary = request.BaseSalary;
@@ -428,6 +449,21 @@ public sealed class EmployeeService : IEmployeeService
         }
         emp.UpdatedAt = DateTime.UtcNow;
         emp.UpdatedBy = _currentUser.Username ?? "system";
+
+        var teacherIdentityChanged =
+            !string.Equals(previousFullName, emp.FullName, StringComparison.Ordinal) ||
+            !string.Equals(previousEmail, emp.Email, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(previousStatus, emp.Status, StringComparison.OrdinalIgnoreCase);
+        if (teacherIdentityChanged)
+        {
+            var syncError = await QueueTeacherRosterUpdatesAsync(
+                emp,
+                linkedTeacherClasses,
+                revokeAssignments: !LmsTeacherRosterSync.HasActiveAccount(emp),
+                ct);
+            if (syncError is not null)
+                return Result<EmployeeDto>.Failure(syncError);
+        }
 
         await _db.SaveChangesAsync(ct);
 
@@ -483,9 +519,18 @@ public sealed class EmployeeService : IEmployeeService
             return Result<bool>.Failure("Không tìm thấy nhân viên cần xóa.");
         }
 
+        var linkedTeacherClasses = await LoadLinkedTeacherClassesAsync(emp, ct);
         emp.IsDeleted = true;
         emp.DeletedAt = DateTime.UtcNow;
         emp.DeletedBy = _currentUser.Username ?? "system";
+
+        var syncError = await QueueTeacherRosterUpdatesAsync(
+            emp,
+            linkedTeacherClasses,
+            revokeAssignments: true,
+            ct);
+        if (syncError is not null)
+            return Result<bool>.Failure(syncError);
 
         await _db.SaveChangesAsync(ct);
         return Result<bool>.Success(true);
@@ -564,6 +609,58 @@ public sealed class EmployeeService : IEmployeeService
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeEmail(string value) => value.Trim().ToLowerInvariant();
+
+    private async Task<List<(CscaClass Class, RevokedTeacherAssignment PreviousAssignment)>>
+        LoadLinkedTeacherClassesAsync(Employee employee, CancellationToken ct)
+    {
+        var classes = await _db.CscaClasses
+            .Include(cls => cls.Staff)
+            .ThenInclude(staff => staff.Employee)
+            .Include(cls => cls.Students)
+            .Where(cls =>
+                !cls.IsDeleted &&
+                cls.CompanyId == employee.CompanyId &&
+                cls.Staff.Any(staff =>
+                    staff.EmployeeId == employee.Id &&
+                    (staff.RoleInClass.ToLower() == "teacher" ||
+                     staff.RoleInClass.ToLower() == "mentor" ||
+                     staff.RoleInClass.ToLower() == "teachingassistant")))
+            .ToListAsync(ct);
+
+        return classes.Select(cls =>
+        {
+            var assignment = cls.Staff.First(staff =>
+                staff.EmployeeId == employee.Id &&
+                LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null);
+            return (cls, new RevokedTeacherAssignment(
+                employee.Id,
+                LmsTeacherRosterSync.ResolveTeachingRole(cls, assignment) ?? "co_teacher"));
+        }).ToList();
+    }
+
+    private async Task<string?> QueueTeacherRosterUpdatesAsync(
+        Employee employee,
+        IReadOnlyCollection<(CscaClass Class, RevokedTeacherAssignment PreviousAssignment)> linkedClasses,
+        bool revokeAssignments,
+        CancellationToken ct)
+    {
+        foreach (var linkedClass in linkedClasses)
+        {
+            var error = await LmsTeacherRosterSync.QueueAsync(
+                _db,
+                _currentUser,
+                linkedClass.Class,
+                employee,
+                revokeAssignments ? [linkedClass.PreviousAssignment] : null,
+                ct);
+            if (error is not null)
+                return error;
+        }
+
+        return null;
+    }
 
     private static string NormalizeEmployeeStatus(string? value) => value?.Trim().ToUpperInvariant() switch
     {

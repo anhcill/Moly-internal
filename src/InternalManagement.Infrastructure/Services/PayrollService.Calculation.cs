@@ -67,8 +67,9 @@ public sealed partial class PayrollService
                 s.Class.CompanyId == companyId && !s.Class.IsDeleted &&
                 s.Class.Status != "Cancelled" && s.Status != "Cancelled" &&
                 (!period.BusinessUnitId.HasValue || s.Class.BusinessUnitId == period.BusinessUnitId))
-            .SelectMany(s => s.Class.Staff.Where(st => st.RoleInClass == "Teacher"),
-                (s, st) => new { st.EmployeeId, s.LessonDate, s.StartTime, s.EndTime })
+            .SelectMany(s => s.Class.Staff.Where(st => st.RoleInClass.ToLower() == "teacher"),
+                (s, st) => new { SessionId = s.Id, st.EmployeeId, s.LessonDate, s.StartTime, s.EndTime })
+            .Distinct()
             .ToListAsync(ct);
         var lessonHoursByEmployee = lessonHours
             .GroupBy(s => s.EmployeeId)

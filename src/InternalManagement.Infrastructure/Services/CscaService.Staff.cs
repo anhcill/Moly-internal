@@ -44,13 +44,19 @@ public sealed partial class CscaService
         }
 
         var existingStaff = cls.Staff.FirstOrDefault(s => s.EmployeeId == request.EmployeeId);
+        RevokedTeacherAssignment[]? revokedAssignments = null;
         if (existingStaff != null)
         {
+            var previousTeachingRole = LmsTeacherRosterSync.ResolveTeachingRole(cls, existingStaff);
             existingStaff.RoleInClass = request.RoleInClass.Trim();
             existingStaff.CompensationRate = request.CompensationRate;
             existingStaff.Notes = request.Notes?.Trim();
             existingStaff.UpdatedAt = DateTime.UtcNow;
             existingStaff.UpdatedBy = _currentUser.Username ?? "System";
+            if (previousTeachingRole is not null &&
+                !string.Equals(previousTeachingRole,
+                    LmsTeacherRosterSync.ResolveTeachingRole(cls, existingStaff), StringComparison.OrdinalIgnoreCase))
+                revokedAssignments = [new RevokedTeacherAssignment(existingStaff.EmployeeId, previousTeachingRole)];
         }
         else
         {
@@ -70,7 +76,7 @@ public sealed partial class CscaService
         }
 
         await SyncClassProfitAllocationAsync(cls, ct);
-        var syncError = await QueueTeacherRosterForWebAsync(cls, employee, ct);
+        var syncError = await QueueTeacherRosterForWebAsync(cls, employee, ct, revokedAssignments);
         if (syncError is not null)
             return Result<CscaStaffDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
@@ -111,6 +117,9 @@ public sealed partial class CscaService
         if (staff is null || staff.Employee is null)
             return Result<CscaStaffDto>.Failure("Không tìm thấy phân công nhân sự trong lớp.");
 
+        var previousTeachingRole = staff.Class is null
+            ? null
+            : LmsTeacherRosterSync.ResolveTeachingRole(staff.Class, staff);
         staff.RoleInClass = request.RoleInClass.Trim();
         staff.CompensationRate = request.CompensationRate;
         staff.Notes = request.Notes?.Trim();
@@ -120,7 +129,13 @@ public sealed partial class CscaService
         if (staff.Class is not null)
         {
             await SyncClassProfitAllocationAsync(staff.Class, ct);
-            var syncError = await QueueTeacherRosterForWebAsync(staff.Class, staff.Employee, ct);
+            var currentTeachingRole = LmsTeacherRosterSync.ResolveTeachingRole(staff.Class, staff);
+            var revokedAssignments = previousTeachingRole is null ||
+                                     string.Equals(previousTeachingRole, currentTeachingRole, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : new[] { new RevokedTeacherAssignment(staff.EmployeeId, previousTeachingRole) };
+            var syncError = await QueueTeacherRosterForWebAsync(
+                staff.Class, staff.Employee, ct, revokedAssignments);
             if (syncError is not null)
                 return Result<CscaStaffDto>.Failure(syncError);
         }
@@ -158,13 +173,20 @@ public sealed partial class CscaService
         }
 
         var cls = staff.Class;
+        var previousTeachingRole = cls is null
+            ? null
+            : LmsTeacherRosterSync.ResolveTeachingRole(cls, staff);
         _db.CscaClassStaffs.Remove(staff);
 
         if (cls != null)
         {
             cls.Staff.Remove(staff);
             await SyncClassProfitAllocationAsync(cls, ct);
-            var syncError = await QueueTeacherRosterForWebAsync(cls, null, ct);
+            var revokedAssignments = previousTeachingRole is null
+                ? null
+                : new[] { new RevokedTeacherAssignment(staff.EmployeeId, previousTeachingRole) };
+            var syncError = await QueueTeacherRosterForWebAsync(
+                cls, staff.Employee, ct, revokedAssignments);
             if (syncError is not null)
                 return Result<bool>.Failure(syncError);
         }
