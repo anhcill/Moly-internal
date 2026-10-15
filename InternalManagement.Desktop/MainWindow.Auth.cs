@@ -130,6 +130,15 @@ public partial class MainWindow
             _ => "Đăng nhập chưa thành công. Vui lòng kiểm tra thông tin hoặc liên hệ quản trị viên."
         };
 
+    private bool HandleExpiredAuthentication()
+    {
+        if (!_apiClient.RequiresAuthentication) return false;
+
+        _apiClient.TakeLastApiError();
+        HandleAuthenticationExpired();
+        return true;
+    }
+
     private void ShowLoginError(string message)
     {
         if (ResultBanner != null)
