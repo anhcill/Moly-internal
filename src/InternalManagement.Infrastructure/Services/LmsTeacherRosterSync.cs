@@ -49,8 +49,6 @@ internal static class LmsTeacherRosterSync
             .OrderBy(item => item.CreatedAt)
             .ThenBy(item => item.Id)
             .FirstOrDefault();
-        if (lead is null)
-            return "Lớp đã liên kết Web nên phải có ít nhất một giáo viên với email hợp lệ. Hãy phân công giáo viên thay thế trước.";
 
         var now = DateTime.UtcNow;
         var correlationId = Guid.NewGuid().ToString("N");
@@ -60,12 +58,16 @@ internal static class LmsTeacherRosterSync
             .Where(employee => employee is not null && !string.IsNullOrWhiteSpace(employee.Email))
             .Cast<Employee>()
             .GroupBy(employee => employee.Id)
-            .Select(group => group.First());
+            .Select(group => group.First())
+            .ToList();
+        var legacyTeacherSourceIds = await LoadLegacyTeacherSourceIdsAsync(
+            db, cls.CompanyId, employees, ct);
         foreach (var employee in employees)
         {
             QueueEvent(db, currentUser, link, "teacher.upserted", new
             {
                 TeacherSourceId = employee.Id.ToString("N"),
+                LegacyTeacherSourceIds = legacyTeacherSourceIds.GetValueOrDefault(employee.Id, []),
                 employee.FullName,
                 employee.Email,
                 AccountStatus = HasActiveAccount(employee) ? "active" : "suspended",
@@ -87,7 +89,7 @@ internal static class LmsTeacherRosterSync
         foreach (var assignment in activeAssignments)
         {
             QueueAssignmentEvent(db, currentUser, link, cls.Id, assignment.EmployeeId,
-                assignment.Id == lead.Id ? "lead" : MapTeachingRole(assignment.RoleInClass)!,
+                lead is not null && assignment.Id == lead.Id ? "lead" : MapTeachingRole(assignment.RoleInClass)!,
                 "active", now, correlationId);
         }
 
@@ -100,7 +102,7 @@ internal static class LmsTeacherRosterSync
             MaxStudents = Math.Max(30, cls.Students.Count),
             Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
                 string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
-            LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
+            LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
             SourceUpdatedAt = now
         }, now, correlationId);
         return null;
@@ -112,6 +114,52 @@ internal static class LmsTeacherRosterSync
         !string.Equals(employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) &&
         !string.Equals(employee.Status, "Inactive", StringComparison.OrdinalIgnoreCase) &&
         !string.Equals(employee.Status, "Blacklisted", StringComparison.OrdinalIgnoreCase);
+
+    public static async Task<IReadOnlyDictionary<Guid, string[]>> LoadLegacyTeacherSourceIdsAsync(
+        IApplicationDbContext db,
+        Guid companyId,
+        IReadOnlyCollection<Employee> employees,
+        CancellationToken ct)
+    {
+        var activeTeachers = employees
+            .Where(HasActiveAccount)
+            .Where(employee => !string.IsNullOrWhiteSpace(employee.Email))
+            .Select(employee => new
+            {
+                employee.Id,
+                NormalizedEmail = employee.Email.Trim().ToLowerInvariant()
+            })
+            .ToList();
+        if (activeTeachers.Count == 0)
+            return new Dictionary<Guid, string[]>();
+
+        var normalizedEmails = activeTeachers
+            .Select(employee => employee.NormalizedEmail)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var deletedEmployees = await db.Employees
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(employee => employee.CompanyId == companyId &&
+                employee.IsDeleted &&
+                employee.Email != null &&
+                normalizedEmails.Contains(employee.Email.Trim().ToLower()))
+            .Select(employee => new
+            {
+                employee.Id,
+                NormalizedEmail = employee.Email!.Trim().ToLower()
+            })
+            .ToListAsync(ct);
+
+        return activeTeachers.ToDictionary(
+            employee => employee.Id,
+            employee => deletedEmployees
+                .Where(legacy => legacy.Id != employee.Id &&
+                    string.Equals(legacy.NormalizedEmail, employee.NormalizedEmail, StringComparison.Ordinal))
+                .OrderBy(legacy => legacy.Id)
+                .Select(legacy => legacy.Id.ToString("N"))
+                .ToArray());
+    }
 
     public static string? ResolveTeachingRole(CscaClass cls, CscaClassStaff assignment)
     {

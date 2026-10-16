@@ -488,7 +488,7 @@ public class CscaServiceTests
     }
 
     [Fact]
-    public async Task RemoveLastTeacher_FromLinkedClass_ShouldBeRejected()
+    public async Task RemoveLastTeacher_FromLinkedClass_ShouldRevokeTeacherAndClearLead()
     {
         using var db = CreateInMemoryDb();
         var course = new Course { CourseSourceId = "csca-linked", Title = "CSCA Linked" };
@@ -527,9 +527,17 @@ public class CscaServiceTests
 
         var result = await service.RemoveStaffAsync(cls.Id, assignment.Id, CancellationToken.None);
 
-        result.Succeeded.Should().BeFalse();
-        result.Errors.Should().ContainSingle(error => error.Contains("ít nhất một giáo viên"));
-        (await db.IntegrationOutboxes.CountAsync()).Should().Be(0);
+        result.Succeeded.Should().BeTrue();
+        (await db.CscaClassStaffs.CountAsync()).Should().Be(0);
+        var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
+        commands.Select(GetManagementEventType).Should().Equal(
+            "teacher.upserted", "class.teacher.assigned", "class.upserted");
+        var revoked = GetManagementPayload(commands[1]);
+        revoked.GetProperty("teacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
+        revoked.GetProperty("teachingRole").GetString().Should().Be("lead");
+        revoked.GetProperty("status").GetString().Should().Be("revoked");
+        GetManagementPayload(commands[2]).GetProperty("leadTeacherSourceId").ValueKind
+            .Should().Be(JsonValueKind.Null);
     }
 
     [Fact]

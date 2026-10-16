@@ -14,6 +14,7 @@ using Moq;
 
 namespace InternalManagement.UnitTests.Integration;
 
+[Collection("Lms teacher takeover sync")]
 public sealed class LmsIntegrationOperationsServiceTests
 {
     [Fact]
@@ -44,6 +45,49 @@ public sealed class LmsIntegrationOperationsServiceTests
             .Should().ContainInOrder("teacher.upserted", "course.upserted", "class.upserted", "class.teacher.assigned");
         var overview = await service.GetOverviewAsync(CancellationToken.None);
         overview.Value!.ReadyCourseMappings.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UpsertCourseMapping_WhenDeletedTeacherUsedSameEmail_ShouldQueueLegacyTeacherSourceId()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var course = AddCourse(db, companyId, "teacher-takeover");
+        var teacher = new Employee
+        {
+            CompanyId = companyId, EmployeeCode = "T-ACTIVE", FullName = "Phạm Khánh Ly mới",
+            Email = "khanhly@example.com"
+        };
+        var legacyTeacher = new Employee
+        {
+            CompanyId = companyId, EmployeeCode = "T-DELETED", FullName = "Phạm Khánh Ly cũ",
+            Email = " KHANHLY@EXAMPLE.COM ", IsDeleted = true
+        };
+        var cls = new CscaClass
+        {
+            CompanyId = companyId, CourseId = course.Id, Code = "TAKEOVER-01", Name = "Teacher takeover"
+        };
+        db.Employees.AddRange(teacher, legacyTeacher);
+        db.CscaClasses.Add(cls);
+        db.CscaClassStaffs.Add(new CscaClassStaff
+        {
+            ClassId = cls.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher"
+        });
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(course.Id,
+            new UpsertLmsCourseMappingRequest(null, 102L, "teacher-takeover", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var teacherEvent = (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone())
+            .Single(item => item.GetProperty("eventType").GetString() == "teacher.upserted");
+        teacherEvent.GetProperty("payload").GetProperty("legacyTeacherSourceIds").EnumerateArray()
+            .Select(item => item.GetString())
+            .Should().Equal(legacyTeacher.Id.ToString("N"));
     }
 
     [Fact]

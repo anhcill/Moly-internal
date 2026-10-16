@@ -292,10 +292,13 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
             await SupersedeIncompleteCourseSyncAsync(existing, now, actor, ct);
             var correlationId = Guid.NewGuid().ToString("N");
+            var legacyTeacherSourceIds = await LmsTeacherRosterSync.LoadLegacyTeacherSourceIdsAsync(
+                _db, companyId, teachingStaff, ct);
             foreach (var teacher in teachingStaff)
                 QueueManagementEvent(existing, "teacher.upserted", new
                 {
                     TeacherSourceId = teacher.Id.ToString("N"),
+                    LegacyTeacherSourceIds = legacyTeacherSourceIds.GetValueOrDefault(teacher.Id, []),
                     teacher.FullName,
                     teacher.Email,
                     AccountStatus = string.Equals(teacher.Status, "Resigned", StringComparison.OrdinalIgnoreCase) ? "suspended" : "active",

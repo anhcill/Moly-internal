@@ -14,6 +14,7 @@ using InternalManagement.Infrastructure.Services;
 
 namespace InternalManagement.UnitTests.HrPayroll;
 
+[Collection("Lms teacher takeover sync")]
 public class EmployeeServiceTests
 {
     private ApplicationDbContext CreateInMemoryDb()
@@ -241,6 +242,39 @@ public class EmployeeServiceTests
     }
 
     [Fact]
+    public async Task UpdateLinkedTeacher_WhenDeletedEmployeeUsedSameEmail_ShouldQueueLegacyTeacherSourceId()
+    {
+        using var db = CreateInMemoryDb();
+        var setup = await SeedLinkedClassWithTwoTeachersAsync(db);
+        var legacyTeacher = new Employee
+        {
+            CompanyId = setup.Lead.CompanyId,
+            EmployeeCode = "TEACHER-LEGACY",
+            FullName = "Phạm Khánh Ly cũ",
+            Email = " LEAD@EXAMPLE.COM ",
+            Status = "Active",
+            IsDeleted = true
+        };
+        db.Employees.Add(legacyTeacher);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.UpdateEmployeeAsync(setup.Lead.Id, new UpdateEmployeeRequest(
+            "Phạm Khánh Ly mới", setup.Lead.Email, null, null, 0, Status: "Active"),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var payload = (await ReadManagementEventsAsync(db))
+            .Where(item => item.EventType == "teacher.upserted")
+            .Select(item => item.Payload)
+            .Single(item => item.GetProperty("teacherSourceId").GetString() == setup.Lead.Id.ToString("N"));
+        payload.GetProperty("legacyTeacherSourceIds").EnumerateArray()
+            .Select(item => item.GetString())
+            .Should().Equal(legacyTeacher.Id.ToString("N"));
+    }
+
+    [Fact]
     public async Task DeleteLinkedTeacher_ShouldQueueSuspensionAndClassRosterUpdate()
     {
         using var db = CreateInMemoryDb();
@@ -280,6 +314,47 @@ public class EmployeeServiceTests
                 item.Payload.GetProperty("status").GetString() == "revoked");
         events.Single(item => item.EventType == "class.upserted").Payload
             .GetProperty("leadTeacherSourceId").GetString().Should().Be(setup.Lead.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task ResignLastTeacher_FromLinkedClass_ShouldRevokeTeacherAndClearLead()
+    {
+        using var db = CreateInMemoryDb();
+        var company = await db.Companies.SingleAsync();
+        var course = new Course
+        {
+            CompanyId = company.Id, CourseSourceId = "last-teacher-sync", Title = "Khóa một giáo viên"
+        };
+        var cls = new CscaClass
+        {
+            CompanyId = company.Id, Course = course, Code = "CLS-LAST-TEACHER", Name = "Lớp một giáo viên"
+        };
+        var teacher = new Employee
+        {
+            CompanyId = company.Id, EmployeeCode = "LAST-TEACHER", FullName = "Giáo viên duy nhất",
+            Email = "last.teacher@example.com", Status = "Active"
+        };
+        cls.Staff.Add(new CscaClassStaff { Class = cls, Employee = teacher, RoleInClass = "Teacher" });
+        db.AddRange(course, cls, teacher, new LmsCourseLink
+        {
+            CompanyId = company.Id, Course = course, ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new EmployeeService(db, new CurrentUserService(null!), NullLogger<EmployeeService>.Instance);
+
+        var result = await service.UpdateEmployeeAsync(teacher.Id, new UpdateEmployeeRequest(
+            teacher.FullName, teacher.Email, null, null, 0, Status: "Resigned"), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var events = await ReadManagementEventsAsync(db);
+        events.Where(item => item.EventType == "class.teacher.assigned")
+            .Should().ContainSingle(item =>
+                item.Payload.GetProperty("teacherSourceId").GetString() == teacher.Id.ToString("N") &&
+                item.Payload.GetProperty("teachingRole").GetString() == "lead" &&
+                item.Payload.GetProperty("status").GetString() == "revoked");
+        events.Single(item => item.EventType == "class.upserted").Payload
+            .GetProperty("leadTeacherSourceId").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
     [Fact]
