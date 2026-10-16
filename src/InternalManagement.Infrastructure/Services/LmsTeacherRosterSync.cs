@@ -6,6 +6,7 @@ using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
+using InternalManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternalManagement.Infrastructure.Services;
@@ -15,6 +16,17 @@ internal readonly record struct RevokedTeacherAssignment(Guid EmployeeId, string
 internal static class LmsTeacherRosterSync
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly Func<ApplicationDbContext, Guid, string[], IAsyncEnumerable<LegacyTeacherRow>>
+        LegacyTeachersQuery = EF.CompileAsyncQuery(
+            (ApplicationDbContext context, Guid companyId, string[] normalizedEmails) =>
+                context.Employees
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(employee => employee.CompanyId == companyId &&
+                        employee.IsDeleted &&
+                        employee.Email != null &&
+                        normalizedEmails.Contains(employee.Email.Trim().ToLower()))
+                    .Select(employee => new LegacyTeacherRow(employee.Id, employee.Email!)));
 
     public static async Task<string?> QueueAsync(
         IApplicationDbContext? db,
@@ -136,30 +148,41 @@ internal static class LmsTeacherRosterSync
         var normalizedEmails = activeTeachers
             .Select(employee => employee.NormalizedEmail)
             .Distinct(StringComparer.Ordinal)
-            .ToList();
-        var deletedEmployees = await db.Employees
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(employee => employee.CompanyId == companyId &&
-                employee.IsDeleted &&
-                employee.Email != null &&
-                normalizedEmails.Contains(employee.Email.Trim().ToLower()))
-            .Select(employee => new
+            .ToArray();
+        List<LegacyTeacherRow> deletedEmployees;
+        if (db is ApplicationDbContext context)
+        {
+            deletedEmployees = [];
+            await foreach (var employee in LegacyTeachersQuery(context, companyId, normalizedEmails)
+                .WithCancellation(ct))
             {
-                employee.Id,
-                NormalizedEmail = employee.Email!.Trim().ToLower()
-            })
-            .ToListAsync(ct);
+                deletedEmployees.Add(employee);
+            }
+        }
+        else
+        {
+            deletedEmployees = await db.Employees
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(employee => employee.CompanyId == companyId &&
+                    employee.IsDeleted &&
+                    employee.Email != null &&
+                    normalizedEmails.Contains(employee.Email.Trim().ToLower()))
+                .Select(employee => new LegacyTeacherRow(employee.Id, employee.Email!))
+                .ToListAsync(ct);
+        }
 
         return activeTeachers.ToDictionary(
             employee => employee.Id,
             employee => deletedEmployees
                 .Where(legacy => legacy.Id != employee.Id &&
-                    string.Equals(legacy.NormalizedEmail, employee.NormalizedEmail, StringComparison.Ordinal))
+                    string.Equals(legacy.Email.Trim(), employee.NormalizedEmail, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(legacy => legacy.Id)
                 .Select(legacy => legacy.Id.ToString("N"))
                 .ToArray());
     }
+
+    private sealed record LegacyTeacherRow(Guid Id, string Email);
 
     public static string? ResolveTeachingRole(CscaClass cls, CscaClassStaff assignment)
     {
