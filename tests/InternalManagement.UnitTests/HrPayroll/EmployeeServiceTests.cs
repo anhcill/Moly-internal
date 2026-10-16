@@ -576,8 +576,10 @@ public class EmployeeServiceTests
             Status = IntegrationStatus.Success
         });
         await db.SaveChangesAsync();
-        var orderedTeachers = cls.Staff.OrderBy(item => item.CreatedAt).ThenBy(item => item.Id).ToList();
-        return (orderedTeachers[0].Employee, orderedTeachers[1].Employee);
+        leadAssignment.CreatedAt = DateTime.UtcNow.AddMinutes(-1);
+        replacementAssignment.CreatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return (lead, replacement);
     }
 
     private static async Task<List<(string EventType, JsonElement Payload)>> ReadManagementEventsAsync(
