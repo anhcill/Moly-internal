@@ -14,6 +14,7 @@ using Moq;
 
 namespace InternalManagement.UnitTests.Integration;
 
+[Collection("Lms teacher takeover sync")]
 public sealed class LmsIntegrationOperationsServiceTests
 {
     [Fact]

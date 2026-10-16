@@ -14,6 +14,7 @@ using InternalManagement.Infrastructure.Services;
 
 namespace InternalManagement.UnitTests.HrPayroll;
 
+[Collection("Lms teacher takeover sync")]
 public class EmployeeServiceTests
 {
     private ApplicationDbContext CreateInMemoryDb()
