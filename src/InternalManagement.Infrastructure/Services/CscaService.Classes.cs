@@ -202,6 +202,9 @@ public sealed partial class CscaService
         };
 
         _db.CscaClasses.Add(cls);
+        var createSyncError = await QueueClassForWebAsync(cls, ct);
+        if (createSyncError is not null)
+            return Result<CscaClassDto>.Failure(createSyncError);
         await _db.SaveChangesAsync(ct);
 
         _logger.LogInformation("Tạo lớp CSCA thành công: {ClassCode} ({ClassName})", cls.Code, cls.Name);
@@ -278,6 +281,10 @@ public sealed partial class CscaService
         cls.Status = request.Status;
         cls.UpdatedAt = DateTime.UtcNow;
         cls.UpdatedBy = _currentUser.Username ?? "System";
+
+        var classSyncError = await QueueClassForWebAsync(cls, ct);
+        if (classSyncError is not null)
+            return Result<CscaClassDto>.Failure(classSyncError);
 
         // A class date change alters the recurrence range on the teaching Web.
         // Keep its fixed slots in sync without requiring another course sync.

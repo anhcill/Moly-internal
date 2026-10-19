@@ -199,6 +199,7 @@ public sealed class EdTechService : IEdTechService
         course.UpdatedAt = DateTime.UtcNow;
         course.UpdatedBy = _currentUser.Username ?? "System";
 
+        await LmsCourseMetadataSync.QueueAsync(_db, _currentUser, course, ct);
         await _db.SaveChangesAsync(ct);
 
         return await GetCourseByIdAsync(course.Id, ct);

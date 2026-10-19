@@ -56,6 +56,31 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task CreateClass_ForLinkedCourse_ShouldQueueClassBeforeDependentEvents()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "csca-linked-create", Title = "CSCA Linked Create" };
+        db.AddRange(course, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+
+        var result = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "CSCA-LINKED-CREATE", "Lớp mới đồng bộ", "Khóa tháng 10", string.Empty, 1_000_000m,
+            CourseId: course.Id), CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var command = await db.IntegrationOutboxes.SingleAsync();
+        GetManagementEventType(command).Should().Be("class.upserted");
+        GetManagementPayload(command).GetProperty("title").GetString().Should().Be("Lớp mới đồng bộ");
+    }
+
+    [Fact]
     public async Task EnrollStudent_AndCalculateProfit_ShouldUpdateRevenueAndProfit()
     {
         // Arrange
@@ -348,8 +373,8 @@ public class CscaServiceTests
         var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
         commands.Should().HaveCount(3);
         commands.Select(GetManagementEventType).Should().Equal(
-            "teacher.upserted", "class.teacher.assigned", "class.upserted");
-        var assignment = GetManagementPayload(commands[1]);
+            "teacher.upserted", "class.upserted", "class.teacher.assigned");
+        var assignment = GetManagementPayload(commands[2]);
         assignment.GetProperty("teachingRole").GetString().Should().Be("lead");
         assignment.GetProperty("status").GetString().Should().Be("active");
         commands.Select(item => item.CorrelationId).Distinct().Should().ContainSingle();
@@ -407,8 +432,7 @@ public class CscaServiceTests
         var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
         commands.Select(GetManagementEventType).Should().Equal(
             "teacher.upserted", "teacher.upserted",
-            "class.teacher.assigned", "class.teacher.assigned", "class.teacher.assigned",
-            "class.upserted");
+            "class.upserted", "class.teacher.assigned", "class.teacher.assigned", "class.teacher.assigned");
         var assignments = commands
             .Where(item => GetManagementEventType(item) == "class.teacher.assigned")
             .Select(GetManagementPayload)
@@ -425,7 +449,8 @@ public class CscaServiceTests
             item.GetProperty("teacherSourceId").GetString() == remainingAssignment.EmployeeId.ToString("N") &&
             item.GetProperty("teachingRole").GetString() == "lead" &&
             item.GetProperty("status").GetString() == "active");
-        GetManagementPayload(commands[^1]).GetProperty("leadTeacherSourceId").GetString()
+        GetManagementPayload(commands.Single(item => GetManagementEventType(item) == "class.upserted"))
+            .GetProperty("leadTeacherSourceId").GetString()
             .Should().Be(remainingAssignment.EmployeeId.ToString("N"));
     }
 
@@ -483,7 +508,8 @@ public class CscaServiceTests
             item.GetProperty("teacherSourceId").GetString() == remainingAssignment.EmployeeId.ToString("N") &&
             item.GetProperty("teachingRole").GetString() == "lead" &&
             item.GetProperty("status").GetString() == "active");
-        GetManagementPayload(commands[^1]).GetProperty("leadTeacherSourceId").GetString()
+        GetManagementPayload(commands.Single(item => GetManagementEventType(item) == "class.upserted"))
+            .GetProperty("leadTeacherSourceId").GetString()
             .Should().Be(remainingAssignment.EmployeeId.ToString("N"));
     }
 
@@ -531,12 +557,13 @@ public class CscaServiceTests
         (await db.CscaClassStaffs.CountAsync()).Should().Be(0);
         var commands = await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync();
         commands.Select(GetManagementEventType).Should().Equal(
-            "teacher.upserted", "class.teacher.assigned", "class.upserted");
-        var revoked = GetManagementPayload(commands[1]);
+            "teacher.upserted", "class.upserted", "class.teacher.assigned");
+        var revoked = GetManagementPayload(commands[2]);
         revoked.GetProperty("teacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
         revoked.GetProperty("teachingRole").GetString().Should().Be("lead");
         revoked.GetProperty("status").GetString().Should().Be("revoked");
-        GetManagementPayload(commands[2]).GetProperty("leadTeacherSourceId").ValueKind
+        GetManagementPayload(commands.Single(item => GetManagementEventType(item) == "class.upserted"))
+            .GetProperty("leadTeacherSourceId").ValueKind
             .Should().Be(JsonValueKind.Null);
     }
 

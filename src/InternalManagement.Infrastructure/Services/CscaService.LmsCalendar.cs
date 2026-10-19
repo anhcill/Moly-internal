@@ -95,4 +95,7 @@ public sealed partial class CscaService
         IReadOnlyCollection<RevokedTeacherAssignment>? revokedAssignments = null) =>
         LmsTeacherRosterSync.QueueAsync(
             _integrationDb, _currentUser, cls, changedEmployee, revokedAssignments, ct);
+
+    private Task<string?> QueueClassForWebAsync(CscaClass cls, CancellationToken ct) =>
+        LmsTeacherRosterSync.QueueClassAsync(_integrationDb, _currentUser, cls, ct);
 }

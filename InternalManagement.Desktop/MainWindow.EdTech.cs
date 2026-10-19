@@ -241,17 +241,7 @@ public partial class MainWindow
         // Dispatch alone only processes commands already in the outbox.
         if (!await SaveLmsMappingAsync(activateForSync: true)) return;
 
-        await RunWithBusyAsync("Đang gửi dữ liệu sang Web CSCA Course...", async () =>
-        {
-            var result = await _apiClient.DispatchLmsOutboxAsync();
-            if (result is null)
-                throw new InvalidOperationException("Không gửi được dữ liệu sang Web Course. Vui lòng kiểm tra kết nối mạng và khóa bảo mật.");
-
-            ShowToast(result.Processed == 0
-                ? "Chưa có lệnh sẵn sàng gửi ngay. Hệ thống sẽ tiếp tục xử lý hàng chờ trong nền; hãy làm mới để xem trạng thái."
-                : $"Đã bắt đầu đồng bộ: {result.Succeeded} lệnh thành công, {result.Retrying} đang thử lại, {result.DeadLettered} cần kiểm tra. Các lệnh tiếp theo chạy trong nền.");
-            await LoadLmsIntegrationAsync();
-        });
+        ShowToast("Đã xếp dữ liệu vào hàng chờ. Hệ thống đang gửi sang Web trong nền; bạn có thể tiếp tục làm việc và bấm Cập nhật trạng thái để theo dõi.");
     }
 
     private async void RetryDeadLetter_Click(object sender, RoutedEventArgs e)

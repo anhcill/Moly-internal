@@ -1,11 +1,8 @@
-using System.Text.Json;
 using InternalManagement.Application.Common.Interfaces;
-using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
-using InternalManagement.Infrastructure.Integration;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternalManagement.Infrastructure.Services;
@@ -14,8 +11,6 @@ internal readonly record struct RevokedTeacherAssignment(Guid EmployeeId, string
 
 internal static class LmsTeacherRosterSync
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     public static async Task<string?> QueueAsync(
         IApplicationDbContext? db,
         ICurrentUserService currentUser,
@@ -64,7 +59,7 @@ internal static class LmsTeacherRosterSync
             db, cls.CompanyId, employees, ct);
         foreach (var employee in employees)
         {
-            QueueEvent(db, currentUser, link, "teacher.upserted", new
+            LmsManagementOutboxQueue.Queue(db, currentUser, link, "teacher.upserted", new
             {
                 TeacherSourceId = employee.Id.ToString("N"),
                 LegacyTeacherSourceIds = legacyTeacherSourceIds.GetValueOrDefault(employee.Id, []),
@@ -74,6 +69,8 @@ internal static class LmsTeacherRosterSync
                 SourceUpdatedAt = now
             }, now, correlationId);
         }
+
+        QueueClassEvent(db, currentUser, link, cls, lead, now, correlationId);
 
         if (revokedAssignments is not null)
         {
@@ -93,18 +90,31 @@ internal static class LmsTeacherRosterSync
                 "active", now, correlationId);
         }
 
-        QueueEvent(db, currentUser, link, "class.upserted", new
-        {
-            ClassSourceId = cls.Id.ToString("N"),
-            CourseSourceId = link.ExternalCourseId,
-            Title = cls.Name,
-            Description = cls.Batch,
-            MaxStudents = Math.Max(30, cls.Students.Count),
-            Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
-                string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
-            LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
-            SourceUpdatedAt = now
-        }, now, correlationId);
+        return null;
+    }
+
+    public static async Task<string?> QueueClassAsync(
+        IApplicationDbContext? db,
+        ICurrentUserService currentUser,
+        CscaClass cls,
+        CancellationToken ct)
+    {
+        if (db is null) return null;
+
+        var link = await db.LmsCourseLinks.FirstOrDefaultAsync(item =>
+            item.CompanyId == cls.CompanyId && item.CourseId == cls.CourseId &&
+            item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+            item.Status != IntegrationStatus.Pending, ct);
+        if (link is null) return null;
+
+        var lead = cls.Staff
+            .Where(item => string.Equals(item.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                item.Employee is not null && HasActiveAccount(item.Employee))
+            .OrderBy(item => item.CreatedAt)
+            .ThenBy(item => item.Id)
+            .FirstOrDefault();
+        var now = DateTime.UtcNow;
+        QueueClassEvent(db, currentUser, link, cls, lead, now, Guid.NewGuid().ToString("N"));
         return null;
     }
 
@@ -210,7 +220,7 @@ internal static class LmsTeacherRosterSync
         string status,
         DateTime now,
         string correlationId) =>
-        QueueEvent(db, currentUser, link, "class.teacher.assigned", new
+        LmsManagementOutboxQueue.Queue(db, currentUser, link, "class.teacher.assigned", new
         {
             ClassSourceId = classId.ToString("N"),
             TeacherSourceId = employeeId.ToString("N"),
@@ -219,40 +229,24 @@ internal static class LmsTeacherRosterSync
             SourceUpdatedAt = now
         }, now, correlationId);
 
-    private static void QueueEvent(
+    private static void QueueClassEvent(
         IApplicationDbContext db,
         ICurrentUserService currentUser,
         LmsCourseLink link,
-        string eventType,
-        object payload,
+        CscaClass cls,
+        CscaClassStaff? lead,
         DateTime now,
         string correlationId)
-    {
-        var eventId = Guid.NewGuid().ToString("N");
-        var sequence = db.IntegrationOutboxes.Local.Count(item => item.CorrelationId == correlationId);
-        var command = new LmsManagementEvent(eventId, eventType, now, "internal-management", payload);
-        db.IntegrationOutboxes.Add(new IntegrationOutbox
+        => LmsManagementOutboxQueue.Queue(db, currentUser, link, "class.upserted", new
         {
-            CompanyId = link.CompanyId,
-            BusinessUnitId = link.BusinessUnitId,
-            SourceSystem = LmsIntegrationSourceSystems.CscaCourseLms,
-            EventId = eventId,
-            EventType = LmsOutboxEventTypes.ManagementEventRequested,
-            AggregateType = nameof(LmsCourseLink),
-            AggregateId = link.Id.ToString("N"),
-            IdempotencyKey = $"management-event:{eventId}",
-            CorrelationId = correlationId,
-            PayloadJson = JsonSerializer.Serialize(command, JsonOptions),
-            Status = IntegrationStatus.Pending,
-            NextAttemptAt = now,
-            CreatedAt = now.AddMilliseconds(sequence),
-            CreatedBy = currentUser.Username ?? "System"
-        });
-        if (link.Status != IntegrationStatus.Success)
-            link.Status = IntegrationStatus.Processing;
-        link.LastSyncError = null;
-        link.LastSyncedAt = null;
-        link.UpdatedAt = now;
-        link.UpdatedBy = currentUser.Username ?? "System";
-    }
+            ClassSourceId = cls.Id.ToString("N"),
+            CourseSourceId = link.ExternalCourseId,
+            Title = cls.Name,
+            Description = cls.Batch,
+            MaxStudents = Math.Max(30, cls.Students.Count),
+            Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
+                string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
+            LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
+            SourceUpdatedAt = now
+        }, now, correlationId);
 }

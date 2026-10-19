@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using InternalManagement.Application.Features.EdTech.DTOs;
 using InternalManagement.Domain.Entities.EdTech;
+using InternalManagement.Domain.Entities.CscaInterview;
+using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Identity;
+using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
 using InternalManagement.Infrastructure.Services;
@@ -80,6 +83,51 @@ public class EdTechServiceTests
         result.Value.Status.Should().Be("Draft");
         result.Value.Choices.Count.Should().Be(2);
         result.Value.Choices.Should().Contain(c => c.IsCorrect && c.Label == "A");
+    }
+
+    [Fact]
+    public async Task UpdateCourse_WhenLinked_ShouldQueueCourseMetadataSync()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course
+        {
+            CourseSourceId = "internal-course",
+            Title = "Tên cũ",
+            Status = "Published"
+        };
+        var cls = new CscaClass { Course = course, Code = "CSCA-01", Name = "Lớp 01" };
+        var teacher = new Employee
+        {
+            EmployeeCode = "GV-01",
+            FullName = "Giáo viên lớp 01",
+            Email = "teacher@example.com"
+        };
+        var assignment = new CscaClassStaff
+        {
+            Class = cls,
+            Employee = teacher,
+            RoleInClass = "Teacher"
+        };
+        cls.Staff.Add(assignment);
+        db.AddRange(course, cls, teacher, assignment, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = "internal-course",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new EdTechService(db, new CurrentUserService(null!), NullLogger<EdTechService>.Instance);
+
+        var result = await service.UpdateCourseAsync(course.Id,
+            new UpdateCourseRequest("Tên mới trên Web", null, "Mô tả mới", null, 0, "Published"),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var command = await db.IntegrationOutboxes.SingleAsync();
+        using var document = System.Text.Json.JsonDocument.Parse(command.PayloadJson);
+        document.RootElement.GetProperty("eventType").GetString().Should().Be("course.upserted");
+        document.RootElement.GetProperty("payload").GetProperty("title").GetString()
+            .Should().Be("Tên mới trên Web");
     }
 
     [Fact]
