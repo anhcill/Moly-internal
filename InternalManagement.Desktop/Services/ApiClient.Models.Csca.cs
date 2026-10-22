@@ -110,7 +110,8 @@ public sealed partial class ApiClient
         DateTime? DebtDueDate,
         decimal DiscountAmount = 0,
         string? DiscountNote = null,
-        decimal PayableAmount = 0);
+        decimal PayableAmount = 0,
+        string? StudentCode = null);
 
     public sealed record CscaStudentDirectoryItem(
         Guid Id,
@@ -132,7 +133,8 @@ public sealed partial class ApiClient
         string? DiscountNote = null,
         decimal PayableAmount = 0,
         int? Age = null,
-        string? Hometown = null);
+        string? Hometown = null,
+        string? StudentCode = null);
 
     public sealed record CscaStaffItem(
         Guid Id,

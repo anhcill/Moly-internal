@@ -1,3 +1,5 @@
+using System.Globalization;
+using InternalManagement.Domain.Entities.Integration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using InternalManagement.Application.Common.Interfaces;
@@ -212,14 +214,96 @@ public sealed class EmployeeService : IEmployeeService
             employee.Id, employee.BankName, employee.BankAccountNumber, employee.BankAccountHolder));
     }
 
+    private async Task<string> GenerateNextEmployeeCodeAsync(Guid companyId, CancellationToken ct)
+    {
+        var yearPrefix = DateTime.UtcNow.ToString("yy", CultureInfo.InvariantCulture);
+        var prefix = $"MOLY-{yearPrefix}";
+
+        var existingCodes = await _db.Employees
+            .AsNoTracking()
+            .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.EmployeeCode.StartsWith(prefix))
+            .Select(e => e.EmployeeCode)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var code in existingCodes)
+        {
+            var numPart = code.Substring(prefix.Length).Trim();
+            if (int.TryParse(numPart, out var seq) && seq > maxSeq)
+            {
+                maxSeq = seq;
+            }
+        }
+
+        if (maxSeq == 0)
+        {
+            var allMolyCodes = await _db.Employees
+                .AsNoTracking()
+                .Where(e => e.CompanyId == companyId && !e.IsDeleted && e.EmployeeCode.StartsWith("MOLY-"))
+                .Select(e => e.EmployeeCode)
+                .ToListAsync(ct);
+
+            foreach (var code in allMolyCodes)
+            {
+                var digits = new string(code.Where(char.IsDigit).ToArray());
+                if (digits.Length >= 3 && int.TryParse(digits.Substring(Math.Max(0, digits.Length - 3)), out var seq) && seq > maxSeq)
+                {
+                    maxSeq = seq;
+                }
+            }
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        return $"MOLY-{yearPrefix}{nextSeq:D3}";
+    }
+
+    private async Task TrySyncTeacherToLmsAsync(Employee employee, CancellationToken ct)
+    {
+        try
+        {
+            var link = await _db.LmsCourseLinks.FirstOrDefaultAsync(l =>
+                l.CompanyId == employee.CompanyId &&
+                l.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                l.Status != IntegrationStatus.Pending, ct);
+
+            if (link is null) return;
+
+            var now = DateTime.UtcNow;
+            var correlationId = Guid.NewGuid().ToString("N");
+            string? deptName = null;
+            if (employee.DepartmentId.HasValue)
+            {
+                var dept = await _db.Departments.AsNoTracking().FirstOrDefaultAsync(d => d.Id == employee.DepartmentId.Value, ct);
+                deptName = dept?.Name;
+            }
+
+            LmsManagementOutboxQueue.Queue(_db, _currentUser, link, "teacher.upserted", new
+            {
+                TeacherSourceId = employee.Id.ToString("N"),
+                LegacyTeacherSourceIds = new[] { employee.EmployeeCode },
+                TeacherCode = employee.EmployeeCode,
+                employee.FullName,
+                employee.Email,
+                Phone = employee.Phone,
+                employee.Position,
+                Department = deptName,
+                AccountStatus = LmsTeacherRosterSync.HasActiveAccount(employee) ? "active" : "suspended",
+                SourceUpdatedAt = now
+            }, now, correlationId);
+
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not queue LMS sync for employee {EmployeeId}", employee.Id);
+        }
+    }
+
     public async Task<Result<EmployeeDto>> CreateEmployeeAsync(CreateEmployeeRequest request, CancellationToken ct)
     {
         var companyId = await GetCompanyIdAsync(ct);
 
-        if (string.IsNullOrWhiteSpace(request.EmployeeCode))
-        {
-            return Result<EmployeeDto>.Failure("Mã nhân viên không được để trống.");
-        }
+        var employeeCode = !string.IsNullOrWhiteSpace(request.EmployeeCode) ? request.EmployeeCode.Trim() : await GenerateNextEmployeeCodeAsync(companyId, ct);
 
         if (string.IsNullOrWhiteSpace(request.FullName))
         {
@@ -255,10 +339,10 @@ public sealed class EmployeeService : IEmployeeService
         }
 
         var codeExists = await _db.Employees.AnyAsync(e =>
-            !e.IsDeleted && e.CompanyId == companyId && e.EmployeeCode == request.EmployeeCode.Trim(), ct);
+            !e.IsDeleted && e.CompanyId == companyId && e.EmployeeCode == employeeCode, ct);
         if (codeExists)
         {
-            return Result<EmployeeDto>.Failure($"Mã nhân viên '{request.EmployeeCode}' đã tồn tại trong hệ thống.");
+            return Result<EmployeeDto>.Failure($"Mã nhân viên '{employeeCode}' đã tồn tại trong hệ thống.");
         }
 
         var normalizedEmail = NormalizeEmail(request.Email);
@@ -276,7 +360,7 @@ public sealed class EmployeeService : IEmployeeService
             BusinessUnitId = request.BusinessUnitId,
             DepartmentId = request.DepartmentId,
             UserId = request.UserId,
-            EmployeeCode = request.EmployeeCode.Trim().ToUpperInvariant(),
+            EmployeeCode = employeeCode.ToUpperInvariant(),
             FullName = request.FullName.Trim(),
             Email = normalizedEmail,
             Phone = request.Phone?.Trim(),
@@ -306,6 +390,7 @@ public sealed class EmployeeService : IEmployeeService
 
         _db.Employees.Add(emp);
         await _db.SaveChangesAsync(ct);
+        await TrySyncTeacherToLmsAsync(emp, ct);
 
         var deptName = request.DepartmentId.HasValue
             ? (await _db.Departments.AsNoTracking().FirstOrDefaultAsync(d => d.Id == request.DepartmentId.Value, ct))?.Name

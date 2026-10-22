@@ -248,6 +248,13 @@ public static class CscaStudentDialog
         };
         autoFillSuccessBanner.Child = autoFillSuccessText;
 
+                var codeRow = CreateTwoColumnGrid();
+        var codeBox = CreateTextBox(!string.IsNullOrWhiteSpace(student?.StudentCode) ? student.StudentCode : "(Tự động sinh: CSCA-001...)");
+        codeBox.IsReadOnly = true;
+        codeBox.Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161));
+        codeBox.FontWeight = FontWeights.Bold;
+        AddFormField(codeRow.Left, "Mã học viên (Tự động sinh)", codeBox);
+
         // Row 1: Họ tên + Tuổi
         var row1 = CreateTwoColumnGrid();
         var nameBox = CreateTextBox(student?.StudentName);
@@ -406,6 +413,7 @@ public static class CscaStudentDialog
             };
         }
 
+        formPanel.Children.Add(codeRow.Grid);
         formPanel.Children.Add(row1.Grid);
         formPanel.Children.Add(row2.Grid);
         formPanel.Children.Add(hometownPanel);

@@ -172,6 +172,7 @@ public sealed record CscaLessonAttendanceDto
     public Guid? Id { get; init; }
     public Guid LessonSessionId { get; init; }
     public Guid StudentId { get; init; }
+    public string StudentCode { get; init; } = string.Empty;
     public string StudentName { get; init; } = string.Empty;
     public string Status { get; init; } = "Unmarked";
     public DateTime? CheckInAt { get; init; }
@@ -190,6 +191,7 @@ public sealed record CscaStudentDto
 {
     public Guid Id { get; init; }
     public Guid ClassId { get; init; }
+    public string StudentCode { get; init; } = string.Empty;
     public string StudentName { get; init; } = string.Empty;
     public int? Age { get; init; }
     public string? Hometown { get; init; }
@@ -217,7 +219,8 @@ public sealed record EnrollStudentRequest(
     string? Hometown = null,
     DateTime? DebtDueDate = null,
     decimal DiscountAmount = 0,
-    string? DiscountNote = null);
+    string? DiscountNote = null,
+    string? StudentCode = null);
 
 public sealed record UpdateStudentPaymentRequest(
     decimal PaidAmount,
@@ -230,12 +233,14 @@ public sealed record UpdateStudentPaymentRequest(
     string? Hometown = null,
     DateTime? DebtDueDate = null,
     decimal DiscountAmount = 0,
-    string? DiscountNote = null);
+    string? DiscountNote = null,
+    string? StudentCode = null);
 
 public sealed record CscaStudentDirectoryDto
 {
     public Guid Id { get; init; }
     public Guid ClassId { get; init; }
+    public string StudentCode { get; init; } = string.Empty;
     public string StudentName { get; init; } = string.Empty;
     public int? Age { get; init; }
     public string? Hometown { get; init; }

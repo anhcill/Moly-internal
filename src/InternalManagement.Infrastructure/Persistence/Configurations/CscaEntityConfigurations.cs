@@ -36,6 +36,8 @@ public sealed class CscaEntityConfigurations :
     public void Configure(EntityTypeBuilder<CscaClassStudent> builder)
     {
         builder.HasKey(s => s.Id);
+        builder.Property(s => s.StudentCode).HasMaxLength(50);
+        builder.HasIndex(s => s.StudentCode);
         builder.Property(s => s.StudentName).HasMaxLength(200).IsRequired();
         builder.Property(s => s.Hometown).HasMaxLength(200);
         builder.Property(s => s.DiscountAmount).HasPrecision(18, 2);

@@ -76,7 +76,7 @@ public static class EmployeeDialog
         });
 
         var identity = TwoColumns(root);
-        var code = TextField(identity.Left, "Mã nhân viên *", employee?.EmployeeCode, editing);
+        var code = TextField(identity.Left, editing ? "Mã nhân viên *" : "Mã nhân viên (để trống tự sinh)", employee?.EmployeeCode, editing);
         var name = TextField(identity.Right, "Họ và tên *", employee?.FullName);
 
         var contact = TwoColumns(root);
@@ -219,9 +219,9 @@ public static class EmployeeDialog
         cancel.Click += (_, _) => dialog.DialogResult = false;
         save.Click += (_, _) =>
         {
-            if (string.IsNullOrWhiteSpace(code.Text) || string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(email.Text))
+            if ((editing && string.IsNullOrWhiteSpace(code.Text)) || string.IsNullOrWhiteSpace(name.Text) || string.IsNullOrWhiteSpace(email.Text))
             {
-                Warn("Vui lòng nhập mã nhân viên, họ tên và email.");
+                Warn("Vui lòng nhập họ tên và email hợp lệ.");
                 return;
             }
 

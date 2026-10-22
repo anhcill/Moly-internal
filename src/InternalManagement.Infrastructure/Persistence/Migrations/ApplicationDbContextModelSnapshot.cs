@@ -377,6 +377,11 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("student_name");
 
+                    b.Property<string>("StudentCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("student_code");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -393,6 +398,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClassId")
                         .HasDatabaseName("ix_csca_class_students_class_id");
+
+                    b.HasIndex("StudentCode")
+                        .HasDatabaseName("ix_csca_class_students_student_code");
 
                     b.HasIndex("PartyId")
                         .HasDatabaseName("ix_csca_class_students_party_id");

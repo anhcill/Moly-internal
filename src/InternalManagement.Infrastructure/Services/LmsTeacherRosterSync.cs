@@ -63,8 +63,12 @@ internal static class LmsTeacherRosterSync
             {
                 TeacherSourceId = employee.Id.ToString("N"),
                 LegacyTeacherSourceIds = legacyTeacherSourceIds.GetValueOrDefault(employee.Id, []),
+                TeacherCode = employee.EmployeeCode,
                 employee.FullName,
                 employee.Email,
+                Phone = employee.Phone,
+                Position = employee.Position,
+                Department = employee.Department?.Name,
                 AccountStatus = HasActiveAccount(employee) ? "active" : "suspended",
                 SourceUpdatedAt = now
             }, now, correlationId);

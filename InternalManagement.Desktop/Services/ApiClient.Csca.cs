@@ -176,7 +176,7 @@ public sealed partial class ApiClient
     public async Task<bool> EnrollCscaStudentAsync(
         Guid classId, string studentName, string email, string phone, int? age,
         string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null,
-        decimal discountAmount = 0, string? discountNote = null, CancellationToken ct = default)
+        decimal discountAmount = 0, string? discountNote = null, string? studentCode = null, CancellationToken ct = default)
     {
         var req = new
         {
@@ -190,7 +190,8 @@ public sealed partial class ApiClient
             DiscountAmount = discountAmount,
             DiscountNote = discountNote,
             Notes = notes,
-            DebtDueDate = debtDueDate
+            DebtDueDate = debtDueDate,
+            StudentCode = studentCode
         };
         using var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/csca/classes/{classId}/students", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(res, "Thêm học viên vào lớp thất bại", ct);
@@ -214,7 +215,7 @@ public sealed partial class ApiClient
     public async Task<bool> UpdateCscaStudentAsync(
         Guid classId, Guid studentId, string studentName, string email, string phone,
         int? age, string hometown, decimal paidAmount, int paymentStatus, string notes, DateTime? debtDueDate = null,
-        decimal discountAmount = 0, string? discountNote = null, CancellationToken ct = default)
+        decimal discountAmount = 0, string? discountNote = null, string? studentCode = null, CancellationToken ct = default)
     {
         var req = new
         {
@@ -228,7 +229,8 @@ public sealed partial class ApiClient
             DiscountAmount = discountAmount,
             DiscountNote = discountNote,
             Notes = notes,
-            DebtDueDate = debtDueDate
+            DebtDueDate = debtDueDate,
+            StudentCode = studentCode
         };
         using var res = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync($"api/v1/csca/classes/{classId}/students/{studentId}/payment", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(res, "Cập nhật học viên và học phí thất bại", ct);

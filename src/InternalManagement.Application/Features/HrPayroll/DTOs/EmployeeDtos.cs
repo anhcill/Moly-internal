@@ -71,7 +71,7 @@ public record EmployeePaymentDetailsDto(
     string? BankAccountHolder);
 
 public record CreateEmployeeRequest(
-    string EmployeeCode,
+    string? EmployeeCode,
     string FullName,
     string Email,
     string? Phone,

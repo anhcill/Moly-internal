@@ -13,6 +13,7 @@ public partial class CscaClassDetailWindow
     private sealed class StudentRow
     {
         public Guid Id { get; init; }
+        public string? StudentCode { get; init; }
         public string StudentName { get; init; } = string.Empty;
         public int? Age { get; init; }
         public string? Hometown { get; init; }
@@ -33,6 +34,7 @@ public partial class CscaClassDetailWindow
         public static StudentRow From(ApiClient.CscaStudentItem student, decimal tuitionFee) => new()
         {
             Id = student.Id,
+            StudentCode = student.StudentCode,
             StudentName = student.StudentName,
             Age = student.Age,
             Hometown = student.Hometown,

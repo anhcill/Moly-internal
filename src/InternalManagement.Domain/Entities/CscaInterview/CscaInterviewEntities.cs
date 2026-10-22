@@ -153,6 +153,7 @@ public class CscaClassStudent : BaseEntity, IAuditableEntity
     public Guid? BusinessDocumentId { get; set; }
     public BusinessDocument? BusinessDocument { get; set; }
 
+    public string StudentCode { get; set; } = string.Empty;
     public string StudentName { get; set; } = string.Empty;
     public int? Age { get; set; }
     public string? Hometown { get; set; }

@@ -41,7 +41,9 @@ public sealed record LmsAccessEvaluationRequest(
     decimal TuitionFee,
     PaymentStatus PaymentStatus,
     DateTime SourceUpdatedAt,
-    string? SourcePaymentId);
+    string? SourcePaymentId,
+    string? StudentCode = null,
+    string? ClassCode = null);
 
 /// <summary>Payload for POST /students/provision on the CSCA Course LMS.</summary>
 public sealed record LmsProvisionCommand(

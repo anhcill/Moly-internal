@@ -34,8 +34,9 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
     {
         // The Management event stream identifies a learner by PartyId when one
         // exists. The direct provision/access API must use the same identity.
+        var studentCode = !string.IsNullOrWhiteSpace(request.StudentCode) ? request.StudentCode : null;
         var legacyStudentId = request.StudentId.ToString("N");
-        var externalStudentId = request.PartyId?.ToString("N") ?? legacyStudentId;
+        var externalStudentId = studentCode ?? (request.PartyId?.ToString("N") ?? legacyStudentId);
         if (string.IsNullOrWhiteSpace(request.Email))
         {
             await AddManualReviewAsync(

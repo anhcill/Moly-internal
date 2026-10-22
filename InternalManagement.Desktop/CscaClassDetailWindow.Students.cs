@@ -52,7 +52,8 @@ public partial class CscaClassDetailWindow
             student.DebtDueDate,
             student.DiscountAmount,
             student.DiscountNote,
-            student.PayableAmount);
+            student.PayableAmount,
+            student.StudentCode);
 
         if (!CscaStudentDialog.TryShow(
             this,

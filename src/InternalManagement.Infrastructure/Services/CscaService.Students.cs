@@ -18,6 +18,57 @@ namespace InternalManagement.Infrastructure.Services;
 
 public sealed partial class CscaService
 {
+    private async Task<string> GenerateNextStudentCodeAsync(string? email, string? phoneNumber, CancellationToken ct)
+    {
+        var normalizedEmail = NormalizeStudentEmail(email);
+        var normalizedPhone = NormalizeStudentPhone(phoneNumber);
+
+        if (normalizedEmail is not null)
+        {
+            var existingByEmail = await _db.CscaClassStudents
+                .AsNoTracking()
+                .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.Email != null && s.Email.ToUpper() == normalizedEmail)
+                .OrderBy(s => s.CreatedAt)
+                .Select(s => s.StudentCode)
+                .FirstOrDefaultAsync(ct);
+
+            if (!string.IsNullOrWhiteSpace(existingByEmail))
+                return existingByEmail;
+        }
+
+        if (normalizedPhone is not null)
+        {
+            var existingByPhone = await _db.CscaClassStudents
+                .AsNoTracking()
+                .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.PhoneNumber != null && s.PhoneNumber.Contains(normalizedPhone))
+                .OrderBy(s => s.CreatedAt)
+                .Select(s => s.StudentCode)
+                .FirstOrDefaultAsync(ct);
+
+            if (!string.IsNullOrWhiteSpace(existingByPhone))
+                return existingByPhone;
+        }
+
+        var studentCodes = await _db.CscaClassStudents
+            .AsNoTracking()
+            .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.StartsWith("CSCA-"))
+            .Select(s => s.StudentCode)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var code in studentCodes)
+        {
+            var numPart = code.Substring("CSCA-".Length).Trim();
+            if (int.TryParse(numPart, out var seq) && seq > maxSeq)
+            {
+                maxSeq = seq;
+            }
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        return $"CSCA-{nextSeq:D3}";
+    }
+
     public async Task<Result<CscaStudentDto>> EnrollStudentAsync(Guid classId, EnrollStudentRequest request, CancellationToken ct)
     {
         if (!await IsClassInScopeAsync(classId, ct))
@@ -54,9 +105,14 @@ public sealed partial class CscaService
             return Result<CscaStudentDto>.Failure(duplicateError);
         }
 
+        var studentCode = !string.IsNullOrWhiteSpace(request.StudentCode)
+            ? request.StudentCode.Trim().ToUpperInvariant()
+            : await GenerateNextStudentCodeAsync(email, phoneNumber, ct);
+
         var student = new CscaClassStudent
         {
             ClassId = classId,
+            StudentCode = studentCode,
             StudentName = request.StudentName.Trim(),
             Age = request.Age,
             Hometown = request.Hometown?.Trim(),
@@ -90,6 +146,7 @@ public sealed partial class CscaService
         {
             Id = student.Id,
             ClassId = student.ClassId,
+            StudentCode = student.StudentCode,
             StudentName = student.StudentName,
             Age = student.Age,
             Hometown = student.Hometown,
@@ -149,6 +206,15 @@ public sealed partial class CscaService
         student.DiscountAmount = request.DiscountAmount;
         student.DiscountNote = request.DiscountNote?.Trim();
         student.DebtDueDate = request.DebtDueDate;
+        if (!string.IsNullOrWhiteSpace(request.StudentCode))
+        {
+            student.StudentCode = request.StudentCode.Trim().ToUpperInvariant();
+        }
+        else if (string.IsNullOrWhiteSpace(student.StudentCode))
+        {
+            student.StudentCode = await GenerateNextStudentCodeAsync(student.Email, student.PhoneNumber, ct);
+        }
+
         if (request.StudentName != null)
         {
             if (string.IsNullOrWhiteSpace(request.StudentName))
@@ -187,6 +253,7 @@ public sealed partial class CscaService
         {
             Id = student.Id,
             ClassId = student.ClassId,
+            StudentCode = student.StudentCode,
             StudentName = student.StudentName,
             Age = student.Age,
             Hometown = student.Hometown,
@@ -325,7 +392,9 @@ public sealed partial class CscaService
             GetPayableTuition(cls.TuitionFee, student.DiscountAmount),
             student.PaymentStatus,
             student.UpdatedAt ?? student.JoinedAt,
-            student.BusinessDocumentId?.ToString("N")), ct);
+            student.BusinessDocumentId?.ToString("N"),
+            student.StudentCode,
+            cls.Code), ct);
     }
 
     private static decimal GetPayableTuition(decimal tuitionFee, decimal discountAmount) =>
@@ -393,7 +462,7 @@ public sealed partial class CscaService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();
-            query = query.Where(s => s.StudentName.ToLower().Contains(term) ||
+            query = query.Where(s => (s.StudentCode != null && s.StudentCode.ToLower().Contains(term)) || s.StudentName.ToLower().Contains(term) ||
                 (s.Email != null && s.Email.ToLower().Contains(term)) ||
                 (s.PhoneNumber != null && s.PhoneNumber.Contains(term)) ||
                 s.Class.Code.ToLower().Contains(term) ||
@@ -407,6 +476,7 @@ public sealed partial class CscaService
             {
                 Id = s.Id,
                 ClassId = s.ClassId,
+                StudentCode = s.StudentCode,
                 StudentName = s.StudentName,
                 Age = s.Age,
                 Hometown = s.Hometown,

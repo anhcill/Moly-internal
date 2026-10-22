@@ -180,6 +180,7 @@
                     </StackPanel>
                     <DataGrid Grid.Row="1" x:Name="StudentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" MouseDoubleClick="StudentsDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>
+                            <DataGridTextColumn Header="MÃ HỌC VIÊN" Binding="{Binding StudentCode}" Width="110" FontWeight="Bold" />
                             <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.6*" />
                             <DataGridTextColumn Header="TUỔI" Binding="{Binding Age}" Width="60" />
                             <DataGridTextColumn Header="QUÊ QUÁN" Binding="{Binding Hometown}" Width="1.2*" />
@@ -224,6 +225,7 @@
                     <GroupBox Grid.Row="2" Header="Học phí và công nợ học viên" Margin="0,0,0,10">
                         <DataGrid x:Name="StudentFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
                             <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÃ HV" Binding="{Binding StudentCode}" Width="95" FontWeight="SemiBold" />
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.5*" />
                                 <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="115" />
                                 <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" Width="105" />
