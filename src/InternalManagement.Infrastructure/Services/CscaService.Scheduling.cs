@@ -167,14 +167,68 @@ public sealed partial class CscaService
             .ToListAsync(ct);
     }
 
+    public async Task<Result<string>> GetNextClassroomCodeAsync(CancellationToken ct)
+    {
+        var (companyId, _) = await GetContextAsync(ct);
+        var nextCode = await GenerateNextClassroomCodeAsync(companyId, ct);
+        return Result<string>.Success(nextCode);
+    }
+
+    private async Task<string> GenerateNextClassroomCodeAsync(Guid companyId, CancellationToken ct)
+    {
+        var existingCodes = await _db.CscaClassrooms
+            .AsNoTracking()
+            .Where(r => r.CompanyId == companyId)
+            .Select(r => r.Code)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var code in existingCodes)
+        {
+            if (string.IsNullOrWhiteSpace(code)) continue;
+            var trimmed = code.Trim();
+            if (trimmed.StartsWith("P-", StringComparison.OrdinalIgnoreCase))
+            {
+                var suffix = trimmed.Substring(2).Trim();
+                var digits = new string(suffix.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                {
+                    maxSeq = seq;
+                }
+            }
+            else
+            {
+                var digits = new string(trimmed.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                {
+                    maxSeq = seq;
+                }
+            }
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        var candidate = $"P-{nextSeq:D2}";
+        while (await _db.CscaClassrooms.AnyAsync(r => r.CompanyId == companyId && r.Code == candidate, ct))
+        {
+            nextSeq++;
+            candidate = $"P-{nextSeq:D2}";
+        }
+
+        return candidate;
+    }
+
     public async Task<Result<CscaClassroomDto>> CreateClassroomAsync(CreateCscaClassroomRequest request, CancellationToken ct)
     {
         var (companyId, businessUnitId) = await GetContextAsync(ct);
-        var validation = ValidateClassroom(request.Code, request.Name, request.Capacity);
+
+        var code = !string.IsNullOrWhiteSpace(request.Code)
+            ? request.Code.Trim().ToUpperInvariant()
+            : await GenerateNextClassroomCodeAsync(companyId, ct);
+
+        var validation = ValidateClassroom(code, request.Name, request.Capacity);
         if (validation != null)
             return Result<CscaClassroomDto>.Failure(validation);
 
-        var code = request.Code.Trim().ToUpperInvariant();
         var exists = await _db.CscaClassrooms.AnyAsync(room => room.CompanyId == companyId && room.Code == code, ct);
         if (exists)
             return Result<CscaClassroomDto>.Failure($"Mã phòng '{code}' đã tồn tại.");

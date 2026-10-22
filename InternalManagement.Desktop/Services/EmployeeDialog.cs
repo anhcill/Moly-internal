@@ -39,7 +39,8 @@ public static class EmployeeDialog
         IReadOnlyList<EmployeeDialogOption> departments,
         out EmployeeDialogResult? result,
         ApiClient.EmployeeItem? employee = null,
-        ApiClient.EmployeePaymentDetails? paymentDetails = null)
+        ApiClient.EmployeePaymentDetails? paymentDetails = null,
+        string? defaultEmployeeCode = null)
     {
         result = null;
         EmployeeDialogResult? submitted = null;
@@ -76,7 +77,8 @@ public static class EmployeeDialog
         });
 
         var identity = TwoColumns(root);
-        var code = TextField(identity.Left, editing ? "Mã nhân viên *" : "Mã nhân viên (để trống tự sinh)", employee?.EmployeeCode, editing);
+        var initialCode = employee?.EmployeeCode ?? defaultEmployeeCode;
+        var code = TextField(identity.Left, editing ? "Mã nhân viên *" : "Mã nhân viên (tự động tăng, có thể sửa)", initialCode, editing);
         var name = TextField(identity.Right, "Họ và tên *", employee?.FullName);
 
         var contact = TwoColumns(root);

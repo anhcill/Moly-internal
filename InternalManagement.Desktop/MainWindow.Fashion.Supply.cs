@@ -141,7 +141,7 @@ public partial class MainWindow
 
     private static IReadOnlyList<PromptField> SupplierFields(ApiClient.SupplierItem? supplier = null) => new[]
     {
-        new PromptField("code", "Mã nhà cung cấp", supplier?.Code),
+        new PromptField("code", "Mã nhà cung cấp (tự động tăng)", supplier?.Code ?? "NCC-001"),
         new PromptField("name", "Tên nhà cung cấp", supplier?.Name),
         new PromptField("contact", "Người liên hệ", supplier?.ContactName, IsRequired: false),
         new PromptField("phoneNumbers", "Số điện thoại (mỗi dòng một số)", supplier?.PhoneNumbersDisplay, IsRequired: false, IsMultiline: true),

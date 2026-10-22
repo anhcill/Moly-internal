@@ -145,11 +145,37 @@ public partial class MainWindow
         await LoadInternalDataAsync();
     }
 
+    private string ComputeNextCustomerCode()
+    {
+        var maxSeq = 0;
+        if (ViewInternalDataContainer.InternalCustomerItems is IEnumerable<ApiClient.InternalCustomerItem> items)
+        {
+            foreach (var c in items)
+            {
+                var code = c.Code?.Trim() ?? string.Empty;
+                if (code.StartsWith("KH-", StringComparison.OrdinalIgnoreCase))
+                {
+                    var digits = new string(code.Substring(3).Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+                else
+                {
+                    var digits = new string(code.Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+            }
+        }
+        return $"KH-{(maxSeq + 1):D3}";
+    }
+
     private async Task ShowCustomerDialogAsync(ApiClient.InternalCustomerItem? item = null)
     {
+        var defaultCode = item?.Code ?? ComputeNextCustomerCode();
         var fields = new[]
         {
-            new PromptField("code", "Mã khách hàng", item?.Code),
+            new PromptField("code", "Mã khách hàng (tự động tăng)", defaultCode),
             new PromptField("name", "Tên khách hàng", item?.Name),
             new PromptField("contact", "Người liên hệ", item?.ContactPerson, false),
             new PromptField("phone", "Số điện thoại", item?.Phone, false),
@@ -169,14 +195,32 @@ public partial class MainWindow
         await LoadInternalDataAsync();
     }
 
+    private string ComputeNextResourceCode()
+    {
+        var prefix = _activeSegment == FashionSegment ? "PLAN-" : "DOC-";
+        var maxSeq = 0;
+        if (ViewInternalDataContainer.InternalResourceItems is IEnumerable<ApiClient.InternalResourceItem> items)
+        {
+            foreach (var r in items)
+            {
+                var code = r.Code?.Trim() ?? string.Empty;
+                var digits = new string(code.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                    maxSeq = seq;
+            }
+        }
+        return $"{prefix}{(maxSeq + 1):D3}";
+    }
+
     private async Task ShowResourceDialogAsync(ApiClient.InternalResourceItem? item = null)
     {
         var typeOptions = _activeSegment == FashionSegment
             ? new[] { new PromptOption("PLAN", "Bản kế hoạch"), new PromptOption("DESIGN_SAMPLE", "Mẫu thiết kế") }
             : new[] { new PromptOption("EXAM", "Đề thi / đề bài"), new PromptOption("DOCUMENT", "Tài liệu") };
+        var defaultCode = item?.Code ?? ComputeNextResourceCode();
         var fields = new[]
         {
-            new PromptField("code", "Mã tài liệu", item?.Code),
+            new PromptField("code", "Mã tài liệu (tự động tăng)", defaultCode),
             new PromptField("title", "Tên tài liệu / mẫu", item?.Title),
             new PromptField("type", "Loại", item?.ResourceType ?? typeOptions[0].Value, true, typeOptions),
             new PromptField("uri", "Đường dẫn lưu trữ hoặc liên kết", item?.StorageUri),
@@ -259,7 +303,12 @@ public partial class MainWindow
         }
         var departments = new List<EmployeeDialogOption> { new(null, "Không chọn phòng ban") };
         departments.AddRange(EmployeeViewModel.Departments.Select(d => new EmployeeDialogOption(d.Id, $"{d.Code} - {d.Name}")));
-        if (!EmployeeDialog.TryShow(this, ActiveSegmentName, units, departments, out var value, employee, paymentDetails) || value is null) return;
+        string? defaultEmployeeCode = null;
+        if (employee is null)
+        {
+            defaultEmployeeCode = await _apiClient.GetNextEmployeeCodeAsync();
+        }
+        if (!EmployeeDialog.TryShow(this, ActiveSegmentName, units, departments, out var value, employee, paymentDetails, defaultEmployeeCode) || value is null) return;
 
         await RunWithBusyAsync(employee is null ? "Đang tạo hồ sơ nhân sự..." : "Đang cập nhật hồ sơ nhân sự...", async () =>
         {

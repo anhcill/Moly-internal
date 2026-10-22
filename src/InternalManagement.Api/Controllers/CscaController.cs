@@ -79,6 +79,17 @@ public class CscaController : BaseApiController
         }
     }
 
+    [HttpGet("classes/next-code")]
+    [HasPermission(Permissions.CscaClassesView)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNextClassCode(CancellationToken ct = default)
+    {
+        var result = await _cscaService.GetNextClassCodeAsync(ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<string>.Fail(result.Errors.FirstOrDefault() ?? "Không thể tạo mã lớp."));
+        return Ok(ApiResponse<string>.Ok(result.Value!, "Tạo mã lớp tiếp theo thành công."));
+    }
+
     [HttpGet("classes")]
     [HasPermission(Permissions.CscaClassesView)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedResult<CscaClassDto>>), StatusCodes.Status200OK)]
@@ -191,6 +202,17 @@ public class CscaController : BaseApiController
         if (!result.Succeeded)
             return BadRequest(ApiResponse<bool>.Fail(result.Errors.FirstOrDefault() ?? "Xóa lịch học thất bại."));
         return Ok(ApiResponse<bool>.Ok(true, "Xóa lịch học thành công."));
+    }
+
+    [HttpGet("classrooms/next-code")]
+    [HasPermission(Permissions.CscaClassesView)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNextClassroomCode(CancellationToken ct = default)
+    {
+        var result = await _cscaService.GetNextClassroomCodeAsync(ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<string>.Fail(result.Errors.FirstOrDefault() ?? "Không thể tạo mã phòng."));
+        return Ok(ApiResponse<string>.Ok(result.Value!, "Tạo mã phòng tiếp theo thành công."));
     }
 
     [HttpGet("classrooms")]

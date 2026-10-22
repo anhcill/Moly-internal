@@ -356,17 +356,35 @@ public partial class MainWindow
         await RunWithBusyAsync("Đang tải NVL, BOM và lệnh sản xuất...", LoadManufacturingDataAsync);
     }
 
+    private string ComputeNextMaterialCode()
+    {
+        var maxSeq = 0;
+        if (ManufacturingMaterialsDataGrid.ItemsSource is IEnumerable<ApiClient.MaterialItem> items)
+        {
+            foreach (var item in items)
+            {
+                var code = item.Code?.Trim() ?? string.Empty;
+                var digits = new string(code.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                    maxSeq = seq;
+            }
+        }
+        return $"NVL-{(maxSeq + 1):D3}";
+    }
+
     private async void CreateMaterialDialog_Click(object sender, RoutedEventArgs e)
     {
+        var nextCode = ComputeNextMaterialCode();
         if (!PromptDialog.TryShow(this, "Tạo nguyên vật liệu", new[]
         {
-            new PromptField("code", "Mã NVL"),
+            new PromptField("code", "Mã NVL (tự động tăng)", nextCode),
             new PromptField("name", "Tên NVL"),
             new PromptField("category", "Nhóm", IsRequired: false),
             new PromptField("unit", "Đơn vị tính")
         }, out var values)) return;
 
-        var success = await _apiClient.CreateManufacturingMaterialAsync(values["code"], values["name"], values["category"], values["unit"]);
+        var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
+        var success = await _apiClient.CreateManufacturingMaterialAsync(code, values["name"], values["category"], values["unit"]);
         MessageBox.Show(success ? "Đã tạo nguyên vật liệu và đưa vào luồng sản xuất." : "Tạo nguyên vật liệu thất bại. Vui lòng kiểm tra quyền Materials.Manage.", success ? "Thành công" : "Lỗi", MessageBoxButton.OK, success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         if (success) await LoadManufacturingDataAsync();
     }

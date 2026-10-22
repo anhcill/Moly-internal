@@ -6,6 +6,7 @@ namespace InternalManagement.Application.Features.CscaInterview.Services;
 public interface ICscaService
 {
     // Class Management
+    Task<Result<string>> GetNextClassCodeAsync(CancellationToken ct);
     Task<PaginatedResult<CscaClassDto>> GetClassesAsync(string? search, string? batch, string? status, int pageIndex, int pageSize, CancellationToken ct);
     Task<IReadOnlyList<CscaStudentDirectoryDto>> GetStudentDirectoryAsync(string? search, CancellationToken ct);
     Task<Result<CscaClassDetailDto>> GetClassByIdAsync(Guid id, CancellationToken ct);
@@ -19,6 +20,7 @@ public interface ICscaService
     Task<Result<bool>> RemoveScheduleAsync(Guid classId, Guid scheduleId, CancellationToken ct);
 
     // Classroom catalog & dated lessons
+    Task<Result<string>> GetNextClassroomCodeAsync(CancellationToken ct);
     Task<IReadOnlyList<CscaClassroomDto>> GetClassroomsAsync(bool includeInactive, CancellationToken ct);
     Task<Result<CscaClassroomDto>> CreateClassroomAsync(CreateCscaClassroomRequest request, CancellationToken ct);
     Task<Result<CscaClassroomDto>> UpdateClassroomAsync(Guid classroomId, UpdateCscaClassroomRequest request, CancellationToken ct);

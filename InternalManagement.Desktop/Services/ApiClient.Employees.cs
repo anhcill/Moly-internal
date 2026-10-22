@@ -86,6 +86,21 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
+    public async Task<string?> GetNextEmployeeCodeAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync("api/v1/employees/next-code", ct), ct);
+            if (!response.IsSuccessStatusCode) return null;
+            var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<string>>(_jsonOptions, ct);
+            return envelope?.Data;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<EmployeeItem?> CreateEmployeeAsync(CreateEmployeeModel model, CancellationToken ct = default)
     {
         using var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync("api/v1/employees", model, _jsonOptions, ct), ct);

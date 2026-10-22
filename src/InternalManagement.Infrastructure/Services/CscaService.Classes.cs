@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using InternalManagement.Application.Common.Interfaces;
@@ -162,18 +163,85 @@ public sealed partial class CscaService
         return Result<CscaClassDetailDto>.Success(detail);
     }
 
+    public async Task<Result<string>> GetNextClassCodeAsync(CancellationToken ct)
+    {
+        var (companyId, _) = await GetContextAsync(ct);
+        var nextCode = await GenerateNextClassCodeAsync(companyId, ct);
+        return Result<string>.Success(nextCode);
+    }
+
+    private async Task<string> GenerateNextClassCodeAsync(Guid companyId, CancellationToken ct)
+    {
+        var currentYear = DateTime.UtcNow.Year;
+        var yearStr = currentYear.ToString(CultureInfo.InvariantCulture);
+        var prefix = $"CSCA-{yearStr}-";
+
+        var existingClasses = await _db.CscaClasses
+            .AsNoTracking()
+            .Where(c => c.CompanyId == companyId && !c.IsDeleted)
+            .Select(c => new { c.Code, c.CreatedAt })
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var cls in existingClasses)
+        {
+            var rawCode = cls.Code?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(rawCode)) continue;
+
+            if (rawCode.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var suffix = rawCode.Substring(prefix.Length).Trim();
+                var digits = new string(suffix.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                {
+                    maxSeq = seq;
+                }
+            }
+            else if (rawCode.StartsWith("CSCA-", StringComparison.OrdinalIgnoreCase))
+            {
+                var suffix = rawCode.Substring("CSCA-".Length).Trim();
+                var digits = new string(suffix.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                {
+                    maxSeq = seq;
+                }
+            }
+            else if (rawCode.All(char.IsDigit) && int.TryParse(rawCode, out var numSeq))
+            {
+                if (cls.CreatedAt.Year == currentYear && numSeq > maxSeq)
+                {
+                    maxSeq = numSeq;
+                }
+            }
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        var candidate = $"{prefix}{nextSeq:D2}";
+
+        while (await _db.CscaClasses.AnyAsync(c => c.CompanyId == companyId && c.Code == candidate, ct))
+        {
+            nextSeq++;
+            candidate = $"{prefix}{nextSeq:D2}";
+        }
+
+        return candidate;
+    }
+
     public async Task<Result<CscaClassDto>> CreateClassAsync(CreateCscaClassRequest request, CancellationToken ct)
     {
         var (companyId, buId) = await GetContextAsync(ct);
 
-        if (string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
         {
-            return Result<CscaClassDto>.Failure("Mã lớp và tên lớp là bắt buộc.");
+            return Result<CscaClassDto>.Failure("Tên lớp học là bắt buộc.");
         }
         if (request.StartDate.HasValue && request.EndDate.HasValue && request.EndDate.Value.Date < request.StartDate.Value.Date)
             return Result<CscaClassDto>.Failure("Ngày kết thúc lớp phải sau hoặc bằng ngày bắt đầu.");
 
-        var codeUpper = request.Code.Trim().ToUpper();
+        var codeUpper = !string.IsNullOrWhiteSpace(request.Code)
+            ? request.Code.Trim().ToUpperInvariant()
+            : await GenerateNextClassCodeAsync(companyId, ct);
+
         var exists = await _db.CscaClasses.AnyAsync(c => c.CompanyId == companyId && c.Code == codeUpper && !c.IsDeleted, ct);
         if (exists)
         {

@@ -22,6 +22,10 @@ public partial class InternalDataView : UserControl
         InternalCustomersDataGrid.SelectedItem as ApiClient.InternalCustomerItem;
     public ApiClient.InternalResourceItem? SelectedResource =>
         InternalResourcesDataGrid.SelectedItem as ApiClient.InternalResourceItem;
+    public IEnumerable<ApiClient.InternalCustomerItem>? InternalCustomerItems =>
+        InternalCustomersDataGrid.ItemsSource as IEnumerable<ApiClient.InternalCustomerItem>;
+    public IEnumerable<ApiClient.InternalResourceItem>? InternalResourceItems =>
+        InternalResourcesDataGrid.ItemsSource as IEnumerable<ApiClient.InternalResourceItem>;
 
     public void Configure(bool isCustomers, string title, string help, bool canManage)
     {

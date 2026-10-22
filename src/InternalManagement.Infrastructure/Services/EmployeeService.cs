@@ -202,6 +202,13 @@ public sealed class EmployeeService : IEmployeeService
         return Result<EmployeeDetailDto>.Success(detail);
     }
 
+    public async Task<Result<string>> GetNextEmployeeCodeAsync(CancellationToken ct)
+    {
+        var companyId = await GetCompanyIdAsync(ct);
+        var nextCode = await GenerateNextEmployeeCodeAsync(companyId, ct);
+        return Result<string>.Success(nextCode);
+    }
+
     public async Task<Result<EmployeePaymentDetailsDto>> GetEmployeePaymentDetailsAsync(Guid id, CancellationToken ct)
     {
         var companyId = await GetCompanyIdAsync(ct);

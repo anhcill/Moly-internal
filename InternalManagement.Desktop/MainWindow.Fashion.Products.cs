@@ -79,18 +79,45 @@ public partial class MainWindow
         await RunWithBusyAsync("Đang tải sản phẩm thời trang...", () => LoadFashionProductsAsync());
     }
 
+    private string ComputeNextFashionProductCode()
+    {
+        var maxSeq = 0;
+        if (FashionProductsDataGrid.ItemsSource is IEnumerable<ApiClient.FashionProductItem> items)
+        {
+            foreach (var item in items)
+            {
+                var code = item.Code?.Trim() ?? string.Empty;
+                if (code.StartsWith("SP-", StringComparison.OrdinalIgnoreCase))
+                {
+                    var digits = new string(code.Substring(3).Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+                else
+                {
+                    var digits = new string(code.Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+            }
+        }
+        return $"SP-{(maxSeq + 1):D3}";
+    }
+
     private async void CreateProductDialog_Click(object sender, RoutedEventArgs e)
     {
+        var nextCode = ComputeNextFashionProductCode();
         if (!PromptDialog.TryShow(this, "Tạo sản phẩm thời trang", new[]
         {
-            new PromptField("code", "Mã sản phẩm"),
+            new PromptField("code", "Mã sản phẩm (tự động tăng)", nextCode),
             new PromptField("name", "Tên sản phẩm"),
             new PromptField("category", "Danh mục", "Thời trang"),
             new PromptField("description", "Mô tả", IsRequired: false)
         }, out var values)) return;
 
+        var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
         var success = await _apiClient.CreateFashionProductAsync(
-            values["code"], values["name"], values["category"], values["description"]);
+            code, values["name"], values["category"], values["description"]);
         if (success)
         {
             MessageBox.Show($"Đã tạo sản phẩm '{values["code"]}' và lưu vào database.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);

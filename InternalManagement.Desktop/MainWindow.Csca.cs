@@ -77,12 +77,18 @@ public partial class MainWindow
 
         var defaultCourseId = _selectedCourseFilterId?.ToString() ?? courses.Items[0].Id.ToString();
 
+        var nextCode = await _apiClient.GetNextCscaClassCodeAsync();
+        if (string.IsNullOrWhiteSpace(nextCode))
+        {
+            nextCode = ComputeFallbackNextClassCode();
+        }
+
         if (!PromptDialog.TryShow(this, "Tạo lớp học mới", new[]
         {
             new PromptField("courseId", "Khóa học", InitialValue: defaultCourseId, Options: courses.Items
                 .Select(course => new PromptOption(course.Id.ToString(), course.Title))
                 .ToArray()),
-            new PromptField("code", "Mã lớp (ví dụ: CSCA-2026-K03)"),
+            new PromptField("code", "Mã lớp (tự động tăng, có thể sửa)", InitialValue: nextCode),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
             new PromptField("tuitionFee", "Học phí (VND)", InitialValue: "0")
@@ -94,7 +100,7 @@ public partial class MainWindow
             return;
         }
 
-        var code = values["code"];
+        var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
         var name = values["name"];
         if (!Guid.TryParse(values["courseId"], out var courseId))
         {
@@ -109,6 +115,45 @@ public partial class MainWindow
             await LoadCoursesAsync();
             MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
+    }
+
+    private string ComputeFallbackNextClassCode()
+    {
+        var year = DateTime.UtcNow.Year;
+        var prefix = $"CSCA-{year}-";
+        var maxSeq = 0;
+
+        if (CscaClassesDataGrid.ItemsSource is IEnumerable<ApiClient.CscaClassItem> items)
+        {
+            foreach (var item in items)
+            {
+                var raw = item.Code?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(raw)) continue;
+
+                if (raw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var suffix = raw.Substring(prefix.Length).Trim();
+                    var digits = new string(suffix.Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+                else if (raw.StartsWith("CSCA-", StringComparison.OrdinalIgnoreCase))
+                {
+                    var suffix = raw.Substring("CSCA-".Length).Trim();
+                    var digits = new string(suffix.Where(char.IsDigit).ToArray());
+                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                        maxSeq = seq;
+                }
+                else if (raw.All(char.IsDigit) && int.TryParse(raw, out var numSeq))
+                {
+                    if (numSeq > maxSeq)
+                        maxSeq = numSeq;
+                }
+            }
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        return $"{prefix}{nextSeq:D2}";
     }
 
     private async void EditCscaClass_Click(object sender, RoutedEventArgs e)

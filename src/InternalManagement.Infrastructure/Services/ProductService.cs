@@ -180,13 +180,44 @@ public class ProductService : IProductService
             variants);
     }
 
+    private async Task<string> GenerateNextProductCodeAsync(Guid companyId, CancellationToken ct)
+    {
+        var existingCodes = await _db.Products
+            .AsNoTracking()
+            .Where(p => p.CompanyId == companyId && !p.IsDeleted && p.Code.StartsWith("SP-"))
+            .Select(p => p.Code)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var c in existingCodes)
+        {
+            var suffix = c.Substring("SP-".Length).Trim();
+            if (int.TryParse(suffix, out var seq) && seq > maxSeq)
+                maxSeq = seq;
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        var candidate = $"SP-{nextSeq:D3}";
+        while (await _db.Products.AnyAsync(p => p.CompanyId == companyId && p.Code == candidate && !p.IsDeleted, ct))
+        {
+            nextSeq++;
+            candidate = $"SP-{nextSeq:D3}";
+        }
+        return candidate;
+    }
+
     public async Task<Result<ProductDto>> CreateProductAsync(CreateProductRequest request, CancellationToken ct)
     {
         var (companyId, defaultBuId) = await GetCompanyAndBuIdAsync(ct);
-        var validation = ValidateProduct(request.Code, request.Name);
+
+        var code = !string.IsNullOrWhiteSpace(request.Code)
+            ? request.Code.Trim().ToUpperInvariant()
+            : await GenerateNextProductCodeAsync(companyId, ct);
+
+        var validation = ValidateProduct(code, request.Name);
         if (validation is not null)
             return Result<ProductDto>.Failure(validation);
-        var code = request.Code.Trim().ToUpperInvariant();
+
         if (await _db.Products.AnyAsync(product => product.CompanyId == companyId && product.Code == code && !product.IsDeleted, ct))
             return Result<ProductDto>.Failure($"Mã sản phẩm '{code}' đã tồn tại.");
         var product = new Product

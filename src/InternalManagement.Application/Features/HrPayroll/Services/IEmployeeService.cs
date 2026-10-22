@@ -5,6 +5,8 @@ namespace InternalManagement.Application.Features.HrPayroll.Services;
 
 public interface IEmployeeService
 {
+    Task<Result<string>> GetNextEmployeeCodeAsync(CancellationToken ct);
+
     Task<PaginatedResult<EmployeeDto>> GetEmployeesAsync(
         string? search, Guid? departmentId, string? status, int pageIndex, int pageSize, CancellationToken ct,
         Guid? businessUnitId = null, string? businessSegment = null);

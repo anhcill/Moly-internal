@@ -104,20 +104,48 @@ public sealed class InternalDataService : IInternalDataService
             : Result<InternalCustomerDto>.Success(MapCustomer(entity));
     }
 
+    private async Task<string> GenerateNextCustomerCodeAsync(Guid companyId, Guid? buId, BusinessSegment segment, CancellationToken ct)
+    {
+        var existingCodes = await _db.InternalCustomers
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId && x.BusinessSegment == segment && x.Code.StartsWith("KH-"))
+            .Select(x => x.Code)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var c in existingCodes)
+        {
+            var suffix = c.Substring("KH-".Length).Trim();
+            if (int.TryParse(suffix, out var seq) && seq > maxSeq)
+                maxSeq = seq;
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        var candidate = $"KH-{nextSeq:D3}";
+        while (await _db.InternalCustomers.AnyAsync(x => x.CompanyId == companyId && x.BusinessSegment == segment && x.Code == candidate, ct))
+        {
+            nextSeq++;
+            candidate = $"KH-{nextSeq:D3}";
+        }
+        return candidate;
+    }
+
     public async Task<Result<InternalCustomerDto>> CreateCustomerAsync(
         BusinessSegment segment, CreateInternalCustomerRequest request, CancellationToken ct)
     {
-        var validationErrors = ValidateCustomer(request.Code, request.Name, request.ContactPerson, request.Email,
-            request.Phone, request.Address, request.Source, request.Status, request.Notes, out var parsedStatus);
-        if (validationErrors.Length > 0)
-            return Result<InternalCustomerDto>.Failure(validationErrors);
-
         var scopeResult = await ResolveScopeAsync(segment, ct);
         if (!scopeResult.Succeeded)
             return Result<InternalCustomerDto>.Failure(scopeResult.Errors);
 
         var scope = scopeResult.Value!;
-        var code = NormalizeCode(request.Code);
+        var code = !string.IsNullOrWhiteSpace(request.Code)
+            ? NormalizeCode(request.Code)
+            : await GenerateNextCustomerCodeAsync(scope.CompanyId, scope.BusinessUnitId, segment, ct);
+
+        var validationErrors = ValidateCustomer(code, request.Name, request.ContactPerson, request.Email,
+            request.Phone, request.Address, request.Source, request.Status, request.Notes, out var parsedStatus);
+        if (validationErrors.Length > 0)
+            return Result<InternalCustomerDto>.Failure(validationErrors);
         var duplicated = await _db.InternalCustomers.AnyAsync(x =>
             x.CompanyId == scope.CompanyId &&
             x.BusinessUnitId == scope.BusinessUnitId &&
@@ -299,22 +327,59 @@ public sealed class InternalDataService : IInternalDataService
             : Result<InternalResourceDto>.Success(MapResource(entity));
     }
 
+    private async Task<string> GenerateNextResourceCodeAsync(Guid companyId, Guid? buId, BusinessSegment segment, string? rawType, CancellationToken ct)
+    {
+        var prefix = (rawType?.Trim().ToUpperInvariant()) switch
+        {
+            "DOCUMENT" => "DOC-",
+            "EXAM" => "EXAM-",
+            "PLAN" => "PLAN-",
+            "DESIGN_SAMPLE" => "DESIGN-",
+            _ => "RES-"
+        };
+
+        var existingCodes = await _db.InternalResources
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId && x.BusinessSegment == segment && x.Code.StartsWith(prefix))
+            .Select(x => x.Code)
+            .ToListAsync(ct);
+
+        var maxSeq = 0;
+        foreach (var c in existingCodes)
+        {
+            var suffix = c.Substring(prefix.Length).Trim();
+            if (int.TryParse(suffix, out var seq) && seq > maxSeq)
+                maxSeq = seq;
+        }
+
+        var nextSeq = Math.Max(maxSeq + 1, 1);
+        var candidate = $"{prefix}{nextSeq:D3}";
+        while (await _db.InternalResources.AnyAsync(x => x.CompanyId == companyId && x.BusinessSegment == segment && x.Code == candidate, ct))
+        {
+            nextSeq++;
+            candidate = $"{prefix}{nextSeq:D3}";
+        }
+        return candidate;
+    }
+
     public async Task<Result<InternalResourceDto>> CreateResourceAsync(
         BusinessSegment segment, CreateInternalResourceRequest request, CancellationToken ct)
     {
-        var validationErrors = ValidateResource(segment, request.Code, request.Title, request.ResourceType,
-            request.StorageUri, request.FileName, request.ContentType, request.FileSizeBytes, request.ChecksumSha256,
-            request.Version, request.Status, request.Tags, request.MetadataJson, request.Notes,
-            out var parsedType, out var parsedStatus);
-        if (validationErrors.Length > 0)
-            return Result<InternalResourceDto>.Failure(validationErrors);
-
         var scopeResult = await ResolveScopeAsync(segment, ct);
         if (!scopeResult.Succeeded)
             return Result<InternalResourceDto>.Failure(scopeResult.Errors);
 
         var scope = scopeResult.Value!;
-        var code = NormalizeCode(request.Code);
+        var code = !string.IsNullOrWhiteSpace(request.Code)
+            ? NormalizeCode(request.Code)
+            : await GenerateNextResourceCodeAsync(scope.CompanyId, scope.BusinessUnitId, segment, request.ResourceType, ct);
+
+        var validationErrors = ValidateResource(segment, code, request.Title, request.ResourceType,
+            request.StorageUri, request.FileName, request.ContentType, request.FileSizeBytes, request.ChecksumSha256,
+            request.Version, request.Status, request.Tags, request.MetadataJson, request.Notes,
+            out var parsedType, out var parsedStatus);
+        if (validationErrors.Length > 0)
+            return Result<InternalResourceDto>.Failure(validationErrors);
         var duplicated = await _db.InternalResources.AnyAsync(x =>
             x.CompanyId == scope.CompanyId &&
             x.BusinessUnitId == scope.BusinessUnitId &&

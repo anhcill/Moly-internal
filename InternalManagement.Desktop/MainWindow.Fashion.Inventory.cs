@@ -117,7 +117,7 @@ public partial class MainWindow
 
     private static IReadOnlyList<PromptField> WarehouseFields(ApiClient.WarehouseItem? warehouse = null) => new[]
     {
-        new PromptField("code", "Mã kho", warehouse?.Code),
+        new PromptField("code", "Mã kho (tự động tăng)", warehouse?.Code ?? "KHO-01"),
         new PromptField("name", "Tên kho", warehouse?.Name),
         new PromptField("address", "Địa chỉ", warehouse?.Address, IsRequired: false, IsMultiline: true),
         new PromptField("isActive", "Trạng thái", warehouse is null || warehouse.IsActive ? "true" : "false", Options: new[]

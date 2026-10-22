@@ -745,4 +745,59 @@ public class CscaServiceTests
 
     private static JsonElement GetManagementPayload(IntegrationOutbox item) =>
         JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("payload").Clone();
+
+    [Fact]
+    public async Task GetNextClassCode_ShouldAutoIncrementProperly()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+
+        var firstCode = await service.GetNextClassCodeAsync(CancellationToken.None);
+        firstCode.Succeeded.Should().BeTrue();
+        firstCode.Value.Should().Be($"CSCA-{DateTime.UtcNow.Year}-01");
+
+        // Create classes CSCA-2026-01, CSCA-2026-02, 01, CSCA-2026-04
+        await service.CreateClassAsync(new CreateCscaClassRequest($"CSCA-{DateTime.UtcNow.Year}-01", "Lớp 1", "Batch 1", "", 1000000m), CancellationToken.None);
+        await service.CreateClassAsync(new CreateCscaClassRequest($"CSCA-{DateTime.UtcNow.Year}-02", "Lớp 2", "Batch 1", "", 1000000m), CancellationToken.None);
+        await service.CreateClassAsync(new CreateCscaClassRequest("01", "Lớp tự do", "Batch 1", "", 1000000m), CancellationToken.None);
+        await service.CreateClassAsync(new CreateCscaClassRequest($"CSCA-{DateTime.UtcNow.Year}-04", "Lớp 4", "Batch 1", "", 1000000m), CancellationToken.None);
+
+        var nextCode = await service.GetNextClassCodeAsync(CancellationToken.None);
+        nextCode.Succeeded.Should().BeTrue();
+        nextCode.Value.Should().Be($"CSCA-{DateTime.UtcNow.Year}-05");
+    }
+
+    [Fact]
+    public async Task CreateClass_WithEmptyCode_ShouldAutoGenerateCode()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+
+        var result = await service.CreateClassAsync(new CreateCscaClassRequest("", "Lớp Tự Sinh Mã", "Batch 1", "", 1000000m), CancellationToken.None);
+        result.Succeeded.Should().BeTrue();
+        result.Value!.Code.Should().Be($"CSCA-{DateTime.UtcNow.Year}-01");
+
+        var secondResult = await service.CreateClassAsync(new CreateCscaClassRequest("  ", "Lớp Thứ Hai", "Batch 1", "", 1000000m), CancellationToken.None);
+        secondResult.Succeeded.Should().BeTrue();
+        secondResult.Value!.Code.Should().Be($"CSCA-{DateTime.UtcNow.Year}-02");
+    }
+
+    [Fact]
+    public async Task GetNextClassroomCode_AndCreateWithEmptyCode_ShouldAutoGenerate()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+
+        var nextCode = await service.GetNextClassroomCodeAsync(CancellationToken.None);
+        nextCode.Succeeded.Should().BeTrue();
+        nextCode.Value.Should().Be("P-01");
+
+        var room1 = await service.CreateClassroomAsync(new CreateCscaClassroomRequest("", "Phòng 1", 20, "Tầng 1", true), CancellationToken.None);
+        room1.Succeeded.Should().BeTrue();
+        room1.Value!.Code.Should().Be("P-01");
+
+        var room2 = await service.CreateClassroomAsync(new CreateCscaClassroomRequest("", "Phòng 2", 30, "Tầng 2", true), CancellationToken.None);
+        room2.Succeeded.Should().BeTrue();
+        room2.Value!.Code.Should().Be("P-02");
+    }
 }

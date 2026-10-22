@@ -36,6 +36,17 @@ public class EmployeesController : BaseApiController
         return Ok(ApiResponse<PaginatedResult<EmployeeDto>>.Ok(result, "Lấy danh sách nhân viên thành công."));
     }
 
+    [HttpGet("next-code")]
+    [HasPermission(Permissions.EmployeesView)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNextEmployeeCode(CancellationToken ct = default)
+    {
+        var result = await _employeeService.GetNextEmployeeCodeAsync(ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<string>.Fail(result.Errors.FirstOrDefault() ?? "Không thể tạo mã nhân viên."));
+        return Ok(ApiResponse<string>.Ok(result.Value!, "Tạo mã nhân viên tiếp theo thành công."));
+    }
+
     [HttpGet("{id:guid}")]
     [HasPermission(Permissions.EmployeesView)]
     [ProducesResponseType(typeof(ApiResponse<EmployeeDetailDto>), StatusCodes.Status200OK)]

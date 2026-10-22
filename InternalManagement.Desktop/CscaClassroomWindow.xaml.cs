@@ -47,13 +47,16 @@ public partial class CscaClassroomWindow : Window
 
     private async void AddClassroom_Click(object sender, RoutedEventArgs e)
     {
-        if (!PromptDialog.TryShow(this, "Thêm phòng học", ClassroomFields(), out var values)) return;
+        var nextCode = await _apiClient.GetNextCscaClassroomCodeAsync() ?? ComputeNextClassroomCode();
+        if (!PromptDialog.TryShow(this, "Thêm phòng học", ClassroomFields(null, nextCode), out var values)) return;
         if (!TryCapacity(values["capacity"], out var capacity)) return;
+
+        var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
 
         SetBusy(true, "Đang tạo phòng học mới...");
         try
         {
-            if (!await _apiClient.CreateCscaClassroomAsync(values["code"], values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
+            if (!await _apiClient.CreateCscaClassroomAsync(code, values["name"], capacity, Null(values["location"]), values["isActive"] == "true"))
             {
                 ShowInvalid("Không thể tạo phòng. Kiểm tra lại mã phòng hoặc quyền quản lý lớp.");
                 return;
@@ -150,10 +153,10 @@ public partial class CscaClassroomWindow : Window
             EditClassroom_Click(sender, e);
     }
 
-    private static IReadOnlyList<PromptField> ClassroomFields(ClassroomRow? classroom = null) => classroom is null
+    private IReadOnlyList<PromptField> ClassroomFields(ClassroomRow? classroom = null, string? defaultCode = null) => classroom is null
         ? new[]
         {
-            new PromptField("code", "Mã phòng (ví dụ: P-201)"),
+            new PromptField("code", "Mã phòng (tự động tăng, có thể sửa)", defaultCode ?? ComputeNextClassroomCode()),
             new PromptField("name", "Tên phòng"),
             new PromptField("capacity", "Sức chứa", IsRequired: false),
             new PromptField("location", "Vị trí / tầng", IsRequired: false),
@@ -166,6 +169,29 @@ public partial class CscaClassroomWindow : Window
             new PromptField("location", "Vị trí / tầng", classroom.Location, IsRequired: false),
             new PromptField("isActive", "Trạng thái", classroom.IsActive ? "true" : "false", Options: StatusOptions())
         };
+
+    private string ComputeNextClassroomCode()
+    {
+        var maxSeq = 0;
+        var rooms = ClassroomsDataGrid.ItemsSource as IEnumerable<ClassroomRow> ?? Array.Empty<ClassroomRow>();
+        foreach (var r in rooms)
+        {
+            var code = r.Code?.Trim() ?? string.Empty;
+            if (code.StartsWith("P-", StringComparison.OrdinalIgnoreCase))
+            {
+                var digits = new string(code.Substring(2).Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                    maxSeq = seq;
+            }
+            else
+            {
+                var digits = new string(code.Where(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out var seq) && seq > maxSeq)
+                    maxSeq = seq;
+            }
+        }
+        return $"P-{(maxSeq + 1):D2}";
+    }
 
     private static IReadOnlyList<PromptOption> StatusOptions() => new[]
     {
