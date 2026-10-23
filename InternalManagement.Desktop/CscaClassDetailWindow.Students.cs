@@ -19,7 +19,8 @@ public partial class CscaClassDetailWindow
             _detail.Name,
             _detail.TuitionFee,
             out var res,
-            apiClient: _apiClient) || res is null) return;
+            apiClient: _apiClient,
+            defaultClassId: _classId) || res is null) return;
 
         await SaveAsync(
             () => _apiClient.EnrollCscaStudentAsync(
@@ -62,7 +63,8 @@ public partial class CscaClassDetailWindow
             _detail.TuitionFee,
             out var res,
             student: studentItem,
-            apiClient: _apiClient) || res is null) return;
+            apiClient: _apiClient,
+            defaultClassId: _classId) || res is null) return;
 
         await SaveAsync(
             () => _apiClient.UpdateCscaStudentAsync(

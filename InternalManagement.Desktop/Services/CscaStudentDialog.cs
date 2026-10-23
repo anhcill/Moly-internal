@@ -44,9 +44,10 @@ public static class CscaStudentDialog
         decimal classTuitionFee,
         out CscaStudentDialogResult? result,
         ApiClient.CscaStudentItem? student = null,
-        ApiClient? apiClient = null)
+        ApiClient? apiClient = null,
+        Guid? defaultClassId = null)
     {
-        return TryShow(owner, classCode, className, classTuitionFee, out result, out _, student, apiClient, null, null);
+        return TryShow(owner, classCode, className, classTuitionFee, out result, out _, student, apiClient, null, defaultClassId);
     }
 
     public static bool TryShow(
@@ -714,7 +715,7 @@ public static class CscaStudentDialog
                 age = parsedAge;
             }
 
-            if (currentSelectedClassId == Guid.Empty && !isEditing)
+            if (availableClasses != null && availableClasses.Count > 0 && currentSelectedClassId == Guid.Empty && !isEditing)
             {
                 MessageBox.Show(dialog, "Vui lòng chọn lớp học cho học viên.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
