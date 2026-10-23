@@ -212,15 +212,7 @@ public static class PromptDialog
             var result = new Dictionary<string, string>();
             foreach (var field in fields)
             {
-                var value = controls[field.Key] switch
-                {
-                    TextBox textBox when IsMoneyField(field) && !field.IsMultiline =>
-                        new string(textBox.Text.Where(char.IsDigit).ToArray()),
-                    TextBox textBox => textBox.Text.Trim(),
-                    DatePicker datePicker => datePicker.SelectedDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty,
-                    ComboBox combo => (combo.SelectedValue as string) ?? string.Empty,
-                    _ => string.Empty
-                };
+                var value = ReadControlValue(field, controls[field.Key]);
 
                 if (field.IsRequired && string.IsNullOrWhiteSpace(value))
                 {
@@ -248,6 +240,38 @@ public static class PromptDialog
         var accepted = dialog.ShowDialog() == true;
         values = submittedValues;
         return accepted;
+    }
+
+    private static string ReadControlValue(PromptField field, Control control) => control switch
+    {
+        TextBox textBox when IsMoneyField(field) && !field.IsMultiline =>
+            new string(textBox.Text.Where(char.IsDigit).ToArray()),
+        TextBox textBox => textBox.Text.Trim(),
+        DatePicker datePicker => ReadDatePickerValue(datePicker),
+        ComboBox combo => (combo.SelectedValue as string) ?? string.Empty,
+        _ => string.Empty
+    };
+
+    private static string ReadDatePickerValue(DatePicker datePicker)
+    {
+        datePicker.ApplyTemplate();
+        var editor = datePicker.Template?.FindName("PART_TextBox", datePicker) as TextBox;
+        var visibleValue = (editor?.Text ?? datePicker.Text)?.Trim();
+        if (!string.IsNullOrWhiteSpace(visibleValue))
+        {
+            var cultures = new[] { CultureInfo.CurrentCulture, new CultureInfo("vi-VN"), CultureInfo.InvariantCulture };
+            foreach (var culture in cultures)
+            {
+                if (DateTime.TryParse(visibleValue, culture, DateTimeStyles.AllowWhiteSpaces, out var parsed))
+                {
+                    return parsed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+            }
+
+            return visibleValue;
+        }
+
+        return datePicker.SelectedDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
     private static bool IsMoneyField(PromptField field)
