@@ -59,6 +59,7 @@ public partial class CscaClassDetailWindow
         public string? EmployeeCode { get; init; }
         public string RoleInClass { get; init; } = string.Empty;
         public decimal CompensationRate { get; init; }
+        public string CostSource => "CSCA Course/LMS";
         public string? Notes { get; init; }
 
         public static TeacherRow From(ApiClient.CscaStaffItem teacher) => new()

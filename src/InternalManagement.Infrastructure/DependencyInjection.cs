@@ -144,10 +144,12 @@ public static class DependencyInjection
         services.AddScoped<IProfitAllocationService, ProfitAllocationService>();
         services.AddScoped<IFinancePostingService, FinancePostingService>();
         services.AddScoped<IFinanceLedgerService, FinanceLedgerService>();
+        services.AddScoped<IFinanceWorkspaceService, FinanceWorkspaceService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IAttendanceService, AttendanceService>();
         services.AddScoped<IPayrollService, PayrollService>();
+        services.AddScoped<ICscaTeacherCostSnapshotService, CscaTeacherCostSnapshotService>();
         services.AddScoped<IPayrollExportService, PayrollExcelExportService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IInventoryService, InventoryService>();

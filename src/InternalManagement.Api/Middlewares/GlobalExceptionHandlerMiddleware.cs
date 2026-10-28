@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace InternalManagement.Api.Middlewares;
 
@@ -32,10 +34,15 @@ public class GlobalExceptionHandlerMiddleware
     {
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        if (exception is DbUpdateConcurrencyException
+            || exception is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } })
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
 
         var cause = exception.GetBaseException();
         var (errorCode, suggestion) = cause switch
         {
+            _ when context.Response.StatusCode == StatusCodes.Status409Conflict =>
+                ("DATA_CONFLICT", "Dữ liệu đã thay đổi hoặc giao dịch đang được xử lý. Tải lại và thử lại cùng mã giao dịch để tránh ghi trùng."),
             TimeoutException or TaskCanceledException =>
                 ("TIMEOUT", "Yêu cầu quá thời gian. Thử lại; nếu vẫn xảy ra, cung cấp mã yêu cầu cho quản trị viên."),
             HttpRequestException =>

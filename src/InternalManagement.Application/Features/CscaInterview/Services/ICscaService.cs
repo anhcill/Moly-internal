@@ -46,4 +46,6 @@ public interface ICscaService
 
     // Financial Calculation
     Task<Result<ClassFinancialSummaryDto>> GetClassFinancialSummaryAsync(Guid classId, CancellationToken ct);
+    Task<Result<ClassBreakEvenAnalysisDto>> GetClassBreakEvenAnalysisAsync(
+        Guid classId, DateTime? from, DateTime? to, CancellationToken ct);
 }

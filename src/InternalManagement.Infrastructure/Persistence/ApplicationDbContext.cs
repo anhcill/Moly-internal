@@ -109,6 +109,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext,
     public DbSet<PayrollWorkEntry> PayrollWorkEntries => Set<PayrollWorkEntry>();
     public DbSet<Payslip> Payslips => Set<Payslip>();
     public DbSet<PayrollApproval> PayrollApprovals => Set<PayrollApproval>();
+    public DbSet<CscaTeacherCostSnapshot> CscaTeacherCostSnapshots => Set<CscaTeacherCostSnapshot>();
 
     // Fashion & Inventory
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
@@ -144,6 +145,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext,
     public DbSet<FinanceTransaction> FinanceTransactions => Set<FinanceTransaction>();
     public DbSet<CashAccount> CashAccounts => Set<CashAccount>();
     public DbSet<MonthlyClosing> MonthlyClosings => Set<MonthlyClosing>();
+    public DbSet<PlannedCashMovement> PlannedCashMovements => Set<PlannedCashMovement>();
+    public DbSet<TeacherAdvance> TeacherAdvances => Set<TeacherAdvance>();
+    public DbSet<TeacherAdvanceReturn> TeacherAdvanceReturns => Set<TeacherAdvanceReturn>();
+    public DbSet<TeacherPayment> TeacherPayments => Set<TeacherPayment>();
+    public DbSet<TeacherPaymentAllocation> TeacherPaymentAllocations => Set<TeacherPaymentAllocation>();
+    public DbSet<StudentReceivable> StudentReceivables => Set<StudentReceivable>();
+    public DbSet<StudentReceipt> StudentReceipts => Set<StudentReceipt>();
+    public DbSet<StudentRefund> StudentRefunds => Set<StudentRefund>();
 
     // Internal data & customer directories
     public DbSet<InternalCustomer> InternalCustomers => Set<InternalCustomer>();

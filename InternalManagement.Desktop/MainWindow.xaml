@@ -104,6 +104,8 @@
                                 <TextBlock x:Name="CompanyNavigationLabel" Text="TỔNG HỢP TOÀN CÔNG TY" Style="{StaticResource SidebarSectionLabel}" Margin="8,2,0,4" />
                                 <RadioButton x:Name="NavDashboard" GroupName="MainNavigation" Content="Tổng quan" Style="{StaticResource NavRadioButton}" IsChecked="True" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavCompanyFinance" GroupName="MainNavigation" Content="Dòng tiền &amp; lợi nhuận" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavFinanceWorkspace" GroupName="MainNavigation" Content="Tài chính vận hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavCostBreakEven" GroupName="MainNavigation" Content="Chi phí &amp; hòa vốn" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavSync" GroupName="MainNavigation" Content="Nhật ký hệ thống" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                             </StackPanel>
 
@@ -114,9 +116,12 @@
                                 <StackPanel x:Name="TechnologyCoursesSubmenu" Margin="14,0,0,5" Visibility="Collapsed">
                                     <RadioButton x:Name="NavCourseClasses" GroupName="TechnologyCoursesNavigation" Content="Lớp học" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                     <RadioButton x:Name="NavCourseFinance" GroupName="TechnologyCoursesNavigation" Content="Tài chính" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavCourseMaterials" GroupName="TechnologyCoursesNavigation" Content="Tài liệu" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavCourseVocabulary" GroupName="TechnologyCoursesNavigation" Content="Từ vựng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                    <RadioButton x:Name="NavCourseCommunity" GroupName="TechnologyCoursesNavigation" Content="Cộng đồng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                </StackPanel>
+                                <RadioButton x:Name="NavCscaMoly" GroupName="MainNavigation" Content="CSCA Moly ▾" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" Click="CscaMolyNavigationParent_Click" />
+                                <StackPanel x:Name="TechnologyCscaMolySubmenu" Margin="14,0,0,5" Visibility="Collapsed">
+                                    <RadioButton x:Name="NavCourseMaterials" GroupName="TechnologyCscaMolyNavigation" Content="Tài liệu" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseVocabulary" GroupName="TechnologyCscaMolyNavigation" Content="Từ vựng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                    <RadioButton x:Name="NavCourseCommunity" GroupName="TechnologyCscaMolyNavigation" Content="Cộng đồng" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 </StackPanel>
                                 <RadioButton x:Name="NavLms" GroupName="MainNavigation" Content="Đồng bộ Web CSCA" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavInterview" GroupName="MainNavigation" Content="Mock Interview" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
@@ -289,6 +294,12 @@
 
                     <!-- BẢNG TỔNG TÀI CHÍNH TOÀN CÔNG TY -->
                     <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" Visibility="Collapsed" />
+
+                    <!-- BẢNG ĐIỀU HÀNH TÀI CHÍNH: thực tế, dự báo, công nợ, ứng tiền và kế hoạch -->
+                    <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" Visibility="Collapsed" />
+
+                    <!-- KHUNG PHÂN TÍCH CHI PHÍ & ĐIỂM HÒA VỐN -->
+                    <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" Visibility="Collapsed" />
 
                     <!-- KHÁCH HÀNG / TÀI LIỆU NỘI BỘ DÙNG CHUNG, LUÔN LỌC THEO MẢNG -->
                     <views:InternalDataView x:Name="ViewInternalDataContainer" Visibility="Collapsed" />

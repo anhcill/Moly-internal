@@ -115,6 +115,34 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
         using var response = await SendAsync(HttpMethod.Patch, path, command, context, ct);
     }
 
+    public async Task<LmsTeacherCostReport> QueryTeacherCostsAsync(
+        LmsTeacherCostQuery query,
+        LmsOutboundRequestContext context,
+        CancellationToken ct)
+    {
+        using var response = await SendAsync(
+            HttpMethod.Post,
+            "/api/integrations/v1/payroll/teacher-costs/query",
+            query,
+            context,
+            ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        try
+        {
+            var envelope = JsonSerializer.Deserialize<LmsTeacherCostEnvelope>(body, JsonOptions);
+            if (envelope?.Data is not { Items: not null } report)
+                throw new LmsIntegrationConfigurationException("CSCA Course LMS returned an empty payroll report.");
+            return report;
+        }
+        catch (JsonException ex)
+        {
+            throw new LmsIntegrationHttpException(
+                "CSCA Course LMS payroll response is not valid JSON.",
+                response.StatusCode,
+                ex);
+        }
+    }
+
     private async Task<HttpResponseMessage> SendAsync(
         HttpMethod method,
         string path,
@@ -238,6 +266,7 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
     }
 
     private sealed record LmsClientOptions(Uri BaseUri, string ServiceToken, string IntegrationKey, string HmacSecret);
+    private sealed record LmsTeacherCostEnvelope(bool Success, string? CorrelationId, LmsTeacherCostReport? Data);
 }
 
 public sealed class LmsIntegrationHttpException : Exception

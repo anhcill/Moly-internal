@@ -3,6 +3,7 @@ using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Identity;
 using InternalManagement.Domain.Entities.Integration;
+using InternalManagement.Domain.Entities.Finance;
 using Microsoft.EntityFrameworkCore;
 
 namespace InternalManagement.Application.Features.CscaInterview.Services;
@@ -22,6 +23,7 @@ public interface ICscaDbContext
     DbSet<Employee> Employees { get; }
     DbSet<LmsAccessGrant> LmsAccessGrants { get; }
     DbSet<ProfitAllocation> ProfitAllocations { get; }
+    DbSet<StudentReceivable> StudentReceivables { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -23,6 +23,7 @@ public partial class MainWindow
     private void ApplyNavigationPermissions()
     {
         SetNavigationAccess(NavCourses, "Permissions.Courses.View", "Permissions.CscaClasses.View");
+        SetNavigationAccess(NavCscaMoly, "Permissions.Courses.View", "Permissions.CscaClasses.View");
         SetPayrollSubNavigationAccess(
             new[] { NavCourseClasses, NavCourseFinance, NavCourseMaterials, NavCourseVocabulary, NavCourseCommunity },
             "Permissions.Courses.View", "Permissions.CscaClasses.View");
@@ -62,6 +63,9 @@ public partial class MainWindow
         SetNavigationAccess(NavTechResources, "Permissions.InternalResources.View");
         SetNavigationAccess(NavFashionResources, "Permissions.InternalResources.View");
         SetNavigationAccess(NavCompanyFinance, "Permissions.FinanceReports.View");
+        SetNavigationAccess(NavFinanceWorkspace, "Permissions.FinanceReports.View");
+        ViewFinanceWorkspaceContainer.SetCanManage(HasPermission(_currentUser, "Permissions.FinanceTransactions.Manage"));
+        SetNavigationAccess(NavCostBreakEven, "Permissions.FinanceReports.View");
         SetNavigationAccess(NavFashion, "Permissions.Products.View", "Permissions.Inventory.View");
         SetPayrollSubNavigationAccess(
             new[] { NavFashionProducts, NavFashionVariants },
@@ -296,7 +300,7 @@ public partial class MainWindow
         // Open the first permitted function so the selected business area is immediately usable.
         var firstAvailableNavigation = selectedSegment == FashionSegment
             ? new[] { NavFashionResources, NavFashion, NavFashionInternalCustomers, NavFashionEmployees, NavFashionAttendance, NavFashionPayroll }
-            : new[] { NavCustomers, NavCourses, NavInterview, NavQuestions, NavTechResources, NavTechInternalCustomers, NavTechEmployees, NavTechAttendance, NavTechPayroll };
+            : new[] { NavCustomers, NavCourses, NavCscaMoly, NavInterview, NavQuestions, NavTechResources, NavTechInternalCustomers, NavTechEmployees, NavTechAttendance, NavTechPayroll };
         var firstVisibleNavigation = firstAvailableNavigation.FirstOrDefault(item => item.Visibility == Visibility.Visible && item.IsEnabled);
         if (firstVisibleNavigation is not null)
         {
@@ -378,13 +382,23 @@ public partial class MainWindow
         if (isCollapsed)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(false, false);
             SetPayrollSubmenuVisibility(false, false);
             SetFashionSubmenuVisibility(false);
         }
-        else if (NavCourses.IsChecked == true || NavCourseClasses.IsChecked == true || NavCourseFinance.IsChecked == true || NavCourseMaterials.IsChecked == true || NavCourseVocabulary.IsChecked == true || NavCourseCommunity.IsChecked == true)
+        else if (NavCourses.IsChecked == true || NavCourseClasses.IsChecked == true || NavCourseFinance.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(true);
+            SetCscaMolySubmenuVisibility(false);
+            SetEmployeesSubmenuVisibility(false, false);
+            SetPayrollSubmenuVisibility(false, false);
+            SetFashionSubmenuVisibility(false);
+        }
+        else if (NavCscaMoly.IsChecked == true || NavCourseMaterials.IsChecked == true || NavCourseVocabulary.IsChecked == true || NavCourseCommunity.IsChecked == true)
+        {
+            SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(true);
             SetEmployeesSubmenuVisibility(false, false);
             SetPayrollSubmenuVisibility(false, false);
             SetFashionSubmenuVisibility(false);
@@ -392,6 +406,7 @@ public partial class MainWindow
         else if (NavFashionPayroll.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetPayrollSubmenuVisibility(true, true);
             SetFashionSubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(false, false);
@@ -399,6 +414,7 @@ public partial class MainWindow
         else if (NavTechPayroll.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetPayrollSubmenuVisibility(false, true);
             SetFashionSubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(false, false);
@@ -406,6 +422,7 @@ public partial class MainWindow
         else if (NavFashionEmployees.IsChecked == true || NavFashionEmployeesWorking.IsChecked == true || NavFashionEmployeesProfiles.IsChecked == true || NavFashionEmployeesMissingCv.IsChecked == true || NavFashionEmployeesResigned.IsChecked == true || NavFashionEmployeesBlacklist.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(true, true);
             SetPayrollSubmenuVisibility(false, false);
             SetFashionSubmenuVisibility(false);
@@ -413,6 +430,7 @@ public partial class MainWindow
         else if (NavTechEmployees.IsChecked == true || NavTechEmployeesWorking.IsChecked == true || NavTechEmployeesProfiles.IsChecked == true || NavTechEmployeesMissingCv.IsChecked == true || NavTechEmployeesResigned.IsChecked == true || NavTechEmployeesBlacklist.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(false, true);
             SetPayrollSubmenuVisibility(false, false);
             SetFashionSubmenuVisibility(false);
@@ -420,6 +438,7 @@ public partial class MainWindow
         else if (NavFashion.IsChecked == true || NavFashionProducts.IsChecked == true || NavFashionVariants.IsChecked == true || NavFashionSuppliers.IsChecked == true || NavFashionReceipts.IsChecked == true || NavFashionBalances.IsChecked == true || NavFashionMovements.IsChecked == true || NavFashionManufacturing.IsChecked == true || NavFashionWarehouses.IsChecked == true || NavFashionOrders.IsChecked == true)
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
             SetEmployeesSubmenuVisibility(false, false);
             SetPayrollSubmenuVisibility(false, false);
             SetFashionSubmenuVisibility(true);
@@ -427,6 +446,7 @@ public partial class MainWindow
         else
         {
             SetCoursesSubmenuVisibility(false);
+            SetCscaMolySubmenuVisibility(false);
         }
     }
 
@@ -436,11 +456,14 @@ public partial class MainWindow
         {
             (Item: NavDashboard, Label: "Tổng quan"),
             (Item: NavCompanyFinance, Label: "Dòng tiền & lợi nhuận"),
+            (Item: NavFinanceWorkspace, Label: "Tài chính vận hành"),
+            (Item: NavCostBreakEven, Label: "Chi phí & hòa vốn"),
             (Item: NavSync, Label: "Nhật ký hệ thống"),
             (Item: NavCustomers, Label: "Học viên & khách hàng"),
             (Item: NavCourses, Label: "Khóa học ▾"),
             (Item: NavCourseClasses, Label: "Lớp học"),
             (Item: NavCourseFinance, Label: "Tài chính"),
+            (Item: NavCscaMoly, Label: "CSCA Moly ▾"),
             (Item: NavCourseMaterials, Label: "Tài liệu"),
             (Item: NavCourseVocabulary, Label: "Từ vựng"),
             (Item: NavCourseCommunity, Label: "Cộng đồng"),
@@ -507,9 +530,11 @@ public partial class MainWindow
     {
         "NavDashboard" => "\uE80F",
         "NavCompanyFinance" => "\uE9F9",
+        "NavFinanceWorkspace" => "\uE8D4",
+        "NavCostBreakEven" => "\uE9F9",
         "NavSync" => "\uE895",
         "NavCustomers" or "NavTechInternalCustomers" or "NavFashionInternalCustomers" => "\uE716",
-        "NavCourses" or "NavCourseClasses" => "\uE7BE",
+        "NavCourses" or "NavCourseClasses" or "NavCscaMoly" => "\uE7BE",
         "NavCourseFinance" => "\uE8D4",
         "NavCourseMaterials" => "\uE8B7",
         "NavCourseVocabulary" => "\uE8FD",
@@ -542,12 +567,24 @@ public partial class MainWindow
     private bool _isCourseFunctionSelectionSyncing;
 
     private bool IsCourseNavigationItem(object sender)
-        => sender == NavCourses || sender == NavCourseClasses || sender == NavCourseFinance || sender == NavCourseMaterials || sender == NavCourseVocabulary || sender == NavCourseCommunity;
+        => sender == NavCourses || sender == NavCourseClasses || sender == NavCourseFinance;
+
+    private bool IsCscaMolyNavigationItem(object sender)
+        => sender == NavCscaMoly || sender == NavCourseMaterials || sender == NavCourseVocabulary || sender == NavCourseCommunity;
+
+    private bool IsEducationNavigationItem(object sender)
+        => IsCourseNavigationItem(sender) || IsCscaMolyNavigationItem(sender);
 
     private void SetCoursesSubmenuVisibility(bool show)
     {
         var visible = show && !_isSidebarCollapsed ? Visibility.Visible : Visibility.Collapsed;
         TechnologyCoursesSubmenu.Visibility = visible;
+    }
+
+    private void SetCscaMolySubmenuVisibility(bool show)
+    {
+        var visible = show && !_isSidebarCollapsed ? Visibility.Visible : Visibility.Collapsed;
+        TechnologyCscaMolySubmenu.Visibility = visible;
     }
 
     private void SelectCourseFunction(object sender)
@@ -562,27 +599,41 @@ public partial class MainWindow
         {
             var index = sender == NavCourseClasses ? 1
                 : sender == NavCourseFinance ? 2
-                : sender == NavCourseMaterials ? 3
-                : sender == NavCourseVocabulary ? 4
-                : sender == NavCourseCommunity ? 5
+                : sender == NavCourseMaterials || sender == NavCourseVocabulary || sender == NavCourseCommunity || sender == NavCscaMoly ? 3
                 : 0;
 
             var children = new[] { NavCourseClasses, NavCourseFinance, NavCourseMaterials, NavCourseVocabulary, NavCourseCommunity };
             foreach (var child in children) child.IsChecked = false;
 
-            if (index > 0)
+            if (sender == NavCourseClasses) NavCourseClasses.IsChecked = true;
+            else if (sender == NavCourseFinance) NavCourseFinance.IsChecked = true;
+            else if (sender == NavCourseMaterials) NavCourseMaterials.IsChecked = true;
+            else if (sender == NavCourseVocabulary) NavCourseVocabulary.IsChecked = true;
+            else if (sender == NavCourseCommunity) NavCourseCommunity.IsChecked = true;
+
+            if (sender != NavCscaMoly && IsCscaMolyNavigationItem(sender))
             {
-                children[index - 1].IsChecked = true;
+                NavCscaMoly.IsChecked = true;
             }
 
-            if (sender != NavCourses && NavCourses.IsChecked != true)
+            if (IsCourseNavigationItem(sender) && sender != NavCourses && NavCourses.IsChecked != true)
             {
                 NavCourses.IsChecked = true;
+            }
+            else if (IsCscaMolyNavigationItem(sender) && sender != NavCscaMoly && NavCscaMoly.IsChecked != true)
+            {
+                NavCscaMoly.IsChecked = true;
             }
 
             if (CourseModuleTabControl != null)
             {
                 CourseModuleTabControl.SelectedIndex = index;
+                if (index == 3 && CscaMolyTabControl != null)
+                {
+                    CscaMolyTabControl.SelectedIndex = sender == NavCourseVocabulary ? 1
+                        : sender == NavCourseCommunity ? 2
+                        : 0;
+                }
             }
         }
         finally
@@ -597,12 +648,41 @@ public partial class MainWindow
         _isCourseFunctionSelectionSyncing = true;
         try
         {
-            var children = new[] { NavCourseClasses, NavCourseFinance, NavCourseMaterials, NavCourseVocabulary, NavCourseCommunity };
-            foreach (var child in children) child.IsChecked = false;
+            NavCourseClasses.IsChecked = false;
+            NavCourseFinance.IsChecked = false;
+            NavCourseMaterials.IsChecked = false;
+            NavCourseVocabulary.IsChecked = false;
+            NavCourseCommunity.IsChecked = false;
 
-            if (index >= 1 && index <= children.Length)
+            if (index == 1)
             {
-                children[index - 1].IsChecked = true;
+                SetCoursesSubmenuVisibility(true);
+                SetCscaMolySubmenuVisibility(false);
+                NavCourses.IsChecked = true;
+                NavCourseClasses.IsChecked = true;
+            }
+            else if (index == 2)
+            {
+                SetCoursesSubmenuVisibility(true);
+                SetCscaMolySubmenuVisibility(false);
+                NavCourses.IsChecked = true;
+                NavCourseFinance.IsChecked = true;
+            }
+            else if (index == 3)
+            {
+                SetCoursesSubmenuVisibility(false);
+                SetCscaMolySubmenuVisibility(true);
+                NavCscaMoly.IsChecked = true;
+                var molyIndex = CscaMolyTabControl?.SelectedIndex ?? 0;
+                NavCourseMaterials.IsChecked = molyIndex == 0;
+                NavCourseVocabulary.IsChecked = molyIndex == 1;
+                NavCourseCommunity.IsChecked = molyIndex == 2;
+            }
+            else
+            {
+                SetCoursesSubmenuVisibility(true);
+                SetCscaMolySubmenuVisibility(false);
+                NavCourses.IsChecked = true;
             }
         }
         finally
@@ -616,6 +696,32 @@ public partial class MainWindow
         if (sender is not RadioButton) return;
         SetCoursesSubmenuVisibility(true);
         SelectCourseFunction(NavCourses);
+    }
+
+    private void CscaMolyNavigationParent_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton) return;
+        SetCoursesSubmenuVisibility(false);
+        SetCscaMolySubmenuVisibility(true);
+        SelectCourseFunction(NavCscaMoly);
+    }
+
+    private void SyncCscaMolyNavigationSelection(int index)
+    {
+        if (_isCourseFunctionSelectionSyncing) return;
+
+        _isCourseFunctionSelectionSyncing = true;
+        try
+        {
+            NavCourseMaterials.IsChecked = index == 0;
+            NavCourseVocabulary.IsChecked = index == 1;
+            NavCourseCommunity.IsChecked = index == 2;
+            NavCscaMoly.IsChecked = true;
+        }
+        finally
+        {
+            _isCourseFunctionSelectionSyncing = false;
+        }
     }
 
     private bool _isEmployeeFunctionSelectionSyncing;
@@ -817,6 +923,11 @@ public partial class MainWindow
             SetCoursesSubmenuVisibility(false);
         }
 
+        if (!IsCscaMolyNavigationItem(sender))
+        {
+            SetCscaMolySubmenuVisibility(false);
+        }
+
         if (!IsEmployeeNavigationItem(sender))
         {
             SetEmployeesSubmenuVisibility(false, false);
@@ -850,19 +961,22 @@ public partial class MainWindow
                 await LoadDashboardMetricsAsync();
             }, "Tổng hợp doanh thu, học viên, nhân sự & tồn kho toàn hệ thống");
         }
-        else if (IsCourseNavigationItem(sender))
+        else if (IsEducationNavigationItem(sender))
         {
             SetActiveArea(TechnologySegment);
-            SetCoursesSubmenuVisibility(true);
+            SetCoursesSubmenuVisibility(IsCourseNavigationItem(sender));
+            SetCscaMolySubmenuVisibility(IsCscaMolyNavigationItem(sender));
             ViewCoursesContainer.Visibility = Visibility.Visible;
             ViewHeaderTitle.Text = sender == NavCourseClasses ? "Danh Sách Lớp Học CSCA"
                 : sender == NavCourseFinance ? "Tài Chính & Công Nợ Lớp Học"
+                : sender == NavCscaMoly ? "CSCA Moly"
                 : sender == NavCourseMaterials ? "Kho Tài Liệu & Giáo Trình Trực Tuyến"
                 : sender == NavCourseVocabulary ? "Kho Từ Vựng Chuyên Ngành CSCA"
                 : sender == NavCourseCommunity ? "Cộng Đồng Hỏi Đáp & Thảo Luận"
                 : "Khóa Học & Lớp Học";
             ViewHeaderSubtitle.Text = sender == NavCourseClasses ? "Quản lý danh sách lớp học, sĩ số và giáo viên phụ trách"
                 : sender == NavCourseFinance ? "Báo cáo doanh thu, công nợ học phí và thù lao giảng dạy"
+                : sender == NavCscaMoly ? "Tài liệu, từ vựng và cộng đồng dành cho CSCA Moly"
                 : sender == NavCourseMaterials ? "Tài liệu bài giảng đồng bộ từ hệ thống CSCA Web"
                 : sender == NavCourseVocabulary ? "Bộ từ điển HSK, thương mại và giao tiếp đa ngôn ngữ"
                 : sender == NavCourseCommunity ? "Kiểm duyệt câu hỏi, bài viết và tương tác người học"
@@ -960,6 +1074,22 @@ public partial class MainWindow
             ViewHeaderSubtitle.Text = "Bảng tổng song song của Công nghệ - Giáo dục và Thời trang";
             _ = LoadViewOnceAsync("company-finance", "Đang tổng hợp tài chính hai mảng...", LoadCompanyFinanceAsync, "Đối chiếu dòng tiền P&L, doanh thu & chi phí hợp nhất");
         }
+        else if (sender == NavFinanceWorkspace)
+        {
+            SetActiveArea(null);
+            ViewFinanceWorkspaceContainer.Visibility = Visibility.Visible;
+            ViewHeaderTitle.Text = "Tài chính vận hành";
+            ViewHeaderSubtitle.Text = "Dòng tiền thực tế và dự báo, công nợ học viên, thanh toán giáo viên và kế hoạch thu chi";
+            _ = LoadViewOnceAsync("finance-workspace", "Đang tải bảng tài chính vận hành...", LoadFinanceWorkspaceAsync, "Tổng hợp số thực tế và kịch bản theo tháng");
+        }
+        else if (sender == NavCostBreakEven)
+        {
+            SetActiveArea(null);
+            ViewCostBreakEvenContainer.Visibility = Visibility.Visible;
+            ViewHeaderTitle.Text = "Chi phí & Hòa vốn";
+            ViewHeaderSubtitle.Text = "Đối chiếu doanh thu, chi phí giáo viên từ CSCA Course/LMS và các khoản chi khác";
+            _ = LoadViewOnceAsync("cost-break-even", "Đang tải doanh thu và chi phí giáo viên từ LMS...", LoadCostBreakEvenAsync, "Đối chiếu doanh thu, chi phí giáo viên từ CSCA Course/LMS và các khoản chi khác");
+        }
         else if (IsFashionInventoryNavigationItem(sender))
         {
             SetActiveArea(FashionSegment);
@@ -986,6 +1116,8 @@ public partial class MainWindow
         ViewPayrollContainer.Visibility = Visibility.Collapsed;
         if (ViewFashionContainer != null) ViewFashionContainer.Visibility = Visibility.Collapsed;
         ViewCompanyFinanceContainer.Visibility = Visibility.Collapsed;
+        ViewFinanceWorkspaceContainer.Visibility = Visibility.Collapsed;
+        ViewCostBreakEvenContainer.Visibility = Visibility.Collapsed;
         ViewInternalDataContainer.Visibility = Visibility.Collapsed;
     }
 

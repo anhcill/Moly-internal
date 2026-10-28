@@ -80,51 +80,38 @@
                         </Grid>
                     </Border>
 
-                    <!-- METRICS STATS BAR (SaaS Modern KPI Cards) -->
-                    <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,12">
-                        <!-- Card 1: Số lớp CSCA -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <!-- Compact metrics leave more vertical room for the class list. -->
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Border Width="174" Height="42" Background="White" CornerRadius="9" Padding="10,6" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ LỚP CSCA" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#F1F5F9" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7BE;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="24" Height="24" Background="#F1F5F9" CornerRadius="6" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7BE;" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaClassCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
-                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Đang vận hành" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                                <TextBlock Grid.Column="1" Text="Tổng số lớp" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="7,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" x:Name="MetricCscaClassCount" Text="0" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
 
-                        <!-- Card 2: Tổng học viên -->
-                        <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Width="184" Height="42" Background="White" CornerRadius="9" Padding="10,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG HỌC VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
-                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="24" Height="24" Background="#EFF6FF" CornerRadius="6" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="11" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
-                                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Ghi danh các lớp" FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                                <TextBlock Grid.Column="1" Text="Tổng học viên" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="7,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" x:Name="MetricCscaStudentCount" Text="0" FontSize="17" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
-
-                    </UniformGrid>
+                    </WrapPanel>
 
                     <!-- TOOLBAR -->
                     <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
@@ -275,8 +262,11 @@
                 </Grid>
             </TabItem>
 
-            <!-- SUB-TAB 4: TÀI LIỆU WEB -->
-            <TabItem x:Name="TabItemMaterials" Header="Tài liệu web" FontWeight="SemiBold">
+            <!-- SUB-TAB 4: CSCA MOLY -->
+            <TabItem x:Name="TabItemCscaMoly" Header="CSCA Moly" FontWeight="SemiBold">
+                <TabControl x:Name="CscaMolyTabControl" Margin="0,12,0,0" Background="Transparent" BorderThickness="0" SelectionChanged="CscaMolyTabControl_SelectionChanged">
+            <!-- CSCA MOLY: TÀI LIỆU -->
+            <TabItem x:Name="TabItemMaterials" Header="Tài liệu" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -317,8 +307,8 @@
                 </Grid>
             </TabItem>
 
-            <!-- SUB-TAB 5: TỪ VỰNG WEB -->
-            <TabItem x:Name="TabItemVocabulary" Header="Từ vựng web" FontWeight="SemiBold">
+            <!-- CSCA MOLY: TỪ VỰNG -->
+            <TabItem x:Name="TabItemVocabulary" Header="Từ vựng" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -358,8 +348,8 @@
                 </Grid>
             </TabItem>
 
-            <!-- SUB-TAB 6: CỘNG ĐỒNG WEB -->
-            <TabItem x:Name="TabItemCommunity" Header="Cộng đồng web" FontWeight="SemiBold">
+            <!-- CSCA MOLY: CỘNG ĐỒNG -->
+            <TabItem x:Name="TabItemCommunity" Header="Cộng đồng" FontWeight="SemiBold">
                 <Grid Margin="0,14,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -397,6 +387,8 @@
                         </DataGrid>
                     </Border>
                 </Grid>
+            </TabItem>
+                </TabControl>
             </TabItem>
 
         </TabControl>

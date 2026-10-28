@@ -88,6 +88,7 @@ public interface IApplicationDbContext
     DbSet<PayrollWorkEntry> PayrollWorkEntries { get; }
     DbSet<Payslip> Payslips { get; }
     DbSet<PayrollApproval> PayrollApprovals { get; }
+    DbSet<CscaTeacherCostSnapshot> CscaTeacherCostSnapshots { get; }
 
     // Fashion & Inventory
     DbSet<Warehouse> Warehouses { get; }

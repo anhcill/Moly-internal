@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,19 +32,18 @@ public partial class CscaClassDetailWindow
         {
             new PromptField("employeeId", "Nhân sự", Options: options),
             new PromptField("role", "Vai trò", "Teacher", Options: RoleOptions()),
-            new PromptField("compensation", "Thù lao", "0"),
             new PromptField("notes", "Ghi chú", IsRequired: false)
         }, out var values)) return;
 
-        if (!Guid.TryParse(values["employeeId"], out var employeeId) || !TryMoney(values["compensation"], out var compensation) || compensation < 0)
+        if (!Guid.TryParse(values["employeeId"], out var employeeId))
         {
-            ShowInvalid("Nhân sự hoặc mức thù lao không hợp lệ.");
+            ShowInvalid("Nhân sự không hợp lệ.");
             return;
         }
 
         await SaveAsync(
-            () => _apiClient.AssignStaffAsync(_classId, employeeId, values["role"], compensation, values["notes"]),
-            "Đã phân công giáo viên / nhân sự vào lớp.");
+            () => _apiClient.AssignStaffAsync(_classId, employeeId, values["role"], 0, values["notes"]),
+            "Đã phân công giáo viên / nhân sự. Chi phí giảng dạy được lấy từ CSCA Course.");
     }
 
     private async void EditTeacher_Click(object sender, RoutedEventArgs e)
@@ -59,19 +57,13 @@ public partial class CscaClassDetailWindow
         if (!PromptDialog.TryShow(this, $"Sửa phân công — {teacher.EmployeeName}", new[]
         {
             new PromptField("role", "Vai trò", teacher.RoleInClass, Options: RoleOptions()),
-            new PromptField("compensation", "Thù lao", teacher.CompensationRate.ToString("0", CultureInfo.InvariantCulture)),
             new PromptField("notes", "Ghi chú", teacher.Notes, IsRequired: false)
         }, out var values)) return;
 
-        if (!TryMoney(values["compensation"], out var compensation) || compensation < 0)
-        {
-            ShowInvalid("Mức thù lao phải là số không âm.");
-            return;
-        }
-
         await SaveAsync(
-            () => _apiClient.UpdateCscaStaffAsync(_classId, teacher.Id, values["role"], compensation, values["notes"]),
-            "Đã cập nhật phân công giáo viên / nhân sự.");
+            // Preserve the legacy value for backward compatibility; the UI no longer edits it.
+            () => _apiClient.UpdateCscaStaffAsync(_classId, teacher.Id, values["role"], teacher.CompensationRate, values["notes"]),
+            "Đã cập nhật phân công. Chi phí giảng dạy vẫn lấy từ CSCA Course.");
     }
 
     private void TeachersDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

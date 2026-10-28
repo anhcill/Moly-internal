@@ -17,6 +17,9 @@ public interface IFinanceDbContext
     DbSet<CashAccount> CashAccounts { get; }
     DbSet<Company> Companies { get; }
     DbSet<CscaClass> CscaClasses { get; }
+    DbSet<CscaClassStudent> CscaClassStudents { get; }
+    DbSet<CscaTeacherCostSnapshot> CscaTeacherCostSnapshots { get; }
+    DbSet<Employee> Employees { get; }
     DbSet<FinanceCategory> FinanceCategories { get; }
     DbSet<FinanceTransaction> FinanceTransactions { get; }
     DbSet<InterviewCustomer> InterviewCustomers { get; }
@@ -29,6 +32,14 @@ public interface IFinanceDbContext
     DbSet<Return> Returns { get; }
     DbSet<SalesOrder> SalesOrders { get; }
     DbSet<SalesSettlement> SalesSettlements { get; }
+    DbSet<PlannedCashMovement> PlannedCashMovements { get; }
+    DbSet<TeacherAdvance> TeacherAdvances { get; }
+    DbSet<TeacherAdvanceReturn> TeacherAdvanceReturns { get; }
+    DbSet<TeacherPayment> TeacherPayments { get; }
+    DbSet<TeacherPaymentAllocation> TeacherPaymentAllocations { get; }
+    DbSet<StudentReceivable> StudentReceivables { get; }
+    DbSet<StudentReceipt> StudentReceipts { get; }
+    DbSet<StudentRefund> StudentRefunds { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

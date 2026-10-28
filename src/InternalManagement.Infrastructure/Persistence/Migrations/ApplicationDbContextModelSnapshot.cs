@@ -4094,6 +4094,612 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.ToTable("monthly_closings", (string)null);
                 });
 
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.PlannedCashMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTime>("PlannedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("planned_date");
+
+                    b.Property<string>("Recurrence")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("recurrence");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("settled_at");
+
+                    b.Property<Guid?>("SettledTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("settled_transaction_id");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("transaction_type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_planned_cash_movements");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_planned_cash_movements_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.HasIndex("CompanyId", "PlannedDate", "Status")
+                        .HasDatabaseName("ix_planned_cash_movements_company_id_planned_date_status");
+
+                    b.ToTable("planned_cash_movements", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("FinanceTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finance_transaction_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<Guid>("StudentReceivableId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("student_receivable_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_student_receipts");
+
+                    b.HasIndex("StudentReceivableId")
+                        .HasDatabaseName("ix_student_receipts_student_receivable_id");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_student_receipts_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.ToTable("student_receipts", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentReceivable", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("class_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DueAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("due_amount");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("due_date");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<decimal>("PaidAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("paid_amount");
+
+                    b.Property<decimal>("RefundedAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("refunded_amount");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("student_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_student_receivables");
+
+                    b.HasIndex("ClassId")
+                        .HasDatabaseName("ix_student_receivables_class_id");
+
+                    b.HasIndex("StudentId")
+                        .HasDatabaseName("ix_student_receivables_student_id");
+
+                    b.HasIndex("CompanyId", "StudentId", "ClassId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_student_receivables_company_id_student_id_class_id");
+
+                    b.ToTable("student_receivables", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentRefund", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("FinanceTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finance_transaction_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTime>("RefundedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refunded_at");
+
+                    b.Property<Guid>("StudentReceivableId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("student_receivable_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_student_refunds");
+
+                    b.HasIndex("StudentReceivableId")
+                        .HasDatabaseName("ix_student_refunds_student_receivable_id");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_student_refunds_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.ToTable("student_refunds", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherAdvance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<decimal>("AppliedAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("applied_amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<decimal>("ReturnedAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("returned_amount");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_teacher_advances");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_teacher_advances_employee_id");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_teacher_advances_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.HasIndex("CompanyId", "EmployeeId", "IssuedAt")
+                        .HasDatabaseName("ix_teacher_advances_company_id_employee_id_issued_at");
+
+                    b.ToTable("teacher_advances", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherAdvanceReturn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("FinanceTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finance_transaction_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTime>("ReturnedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("returned_at");
+
+                    b.Property<Guid>("TeacherAdvanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_advance_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_teacher_advance_returns");
+
+                    b.HasIndex("TeacherAdvanceId")
+                        .HasDatabaseName("ix_teacher_advance_returns_teacher_advance_id");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_teacher_advance_returns_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.HasIndex("CompanyId", "TeacherAdvanceId", "ReturnedAt")
+                        .HasDatabaseName("ix_teacher_advance_returns_company_id_teacher_advance_id_retur");
+
+                    b.ToTable("teacher_advance_returns", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AdvanceAppliedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("advance_applied_amount");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<Guid?>("FinanceTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("finance_transaction_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_teacher_payments");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_teacher_payments_employee_id");
+
+                    b.HasIndex("CompanyId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_teacher_payments_company_id_idempotency_key")
+                        .HasFilter("idempotency_key IS NOT NULL");
+
+                    b.HasIndex("CompanyId", "EmployeeId", "PaidAt")
+                        .HasDatabaseName("ix_teacher_payments_company_id_employee_id_paid_at");
+
+                    b.ToTable("teacher_payments", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherPaymentAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<Guid>("TeacherCostSnapshotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_cost_snapshot_id");
+
+                    b.Property<Guid>("TeacherPaymentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_payment_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_teacher_payment_allocations");
+
+                    b.HasIndex("TeacherCostSnapshotId")
+                        .HasDatabaseName("ix_teacher_payment_allocations_teacher_cost_snapshot_id");
+
+                    b.HasIndex("TeacherPaymentId")
+                        .HasDatabaseName("ix_teacher_payment_allocations_teacher_payment_id");
+
+                    b.HasIndex("CompanyId", "TeacherPaymentId", "TeacherCostSnapshotId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_teacher_payment_allocations_company_id_teacher_payment_id_t");
+
+                    b.ToTable("teacher_payment_allocations", (string)null);
+                });
+
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.AttendanceRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4147,6 +4753,207 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_attendance_records_employee_id_date");
 
                     b.ToTable("attendance_records", (string)null);
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.CscaTeacherCostSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AccruedAmount")
+                        .IsConcurrencyToken()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("accrued_amount");
+
+                    b.Property<decimal>("BonusAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("bonus_amount");
+
+                    b.Property<Guid?>("BusinessUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("business_unit_id");
+
+                    b.Property<long>("ClassLmsId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("class_lms_id");
+
+                    b.Property<string>("ClassSourceId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("class_source_id");
+
+                    b.Property<string>("ClassTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("class_title");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<string>("CourseSourceId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("course_source_id");
+
+                    b.Property<string>("CourseTitle")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("course_title");
+
+                    b.Property<decimal>("DeductionAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("deduction_amount");
+
+                    b.Property<decimal>("DurationHours")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("duration_hours");
+
+                    b.Property<decimal>("EffectiveHourlyRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("effective_hourly_rate");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_completed");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_current");
+
+                    b.Property<int>("LocalSettlementVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("local_settlement_version");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("payment_status");
+
+                    b.Property<decimal?>("ProjectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("projected_amount");
+
+                    b.Property<long>("SessionLmsId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("session_lms_id");
+
+                    b.Property<string>("SessionSourceId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("session_source_id");
+
+                    b.Property<string>("SessionTitle")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("session_title");
+
+                    b.Property<DateTime>("SourceCalculatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("source_calculated_at");
+
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("source_key");
+
+                    b.Property<string>("SourceSystem")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("source_system");
+
+                    b.Property<DateTime?>("SourceUpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("source_updated_at");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("SyncedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("synced_at");
+
+                    b.Property<long>("TeacherLmsId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("teacher_lms_id");
+
+                    b.Property<string>("TeacherName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("teacher_name");
+
+                    b.Property<string>("TeacherSourceId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("teacher_source_id");
+
+                    b.Property<string>("TeacherUsername")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("teacher_username");
+
+                    b.Property<string>("TeachingRole")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("teaching_role");
+
+                    b.HasKey("Id")
+                        .HasName("pk_csca_teacher_cost_snapshots");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_csca_teacher_cost_snapshots_employee_id");
+
+                    b.HasIndex("CompanyId", "StartTime")
+                        .HasDatabaseName("ix_csca_teacher_cost_snapshots_company_id_start_time");
+
+                    b.HasIndex("CompanyId", "ClassSourceId", "StartTime")
+                        .HasDatabaseName("ix_csca_teacher_cost_snapshots_company_id_class_source_id_star");
+
+                    b.HasIndex("CompanyId", "IsCurrent", "StartTime")
+                        .HasDatabaseName("ix_csca_teacher_cost_snapshots_company_id_is_current_start_time");
+
+                    b.HasIndex("CompanyId", "SourceSystem", "SourceKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_csca_teacher_cost_snapshots_company_id_source_system_source");
+
+                    b.ToTable("csca_teacher_cost_snapshots", (string)null);
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.Employee", b =>
@@ -8213,6 +9020,90 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentReceipt", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Finance.StudentReceivable", null)
+                        .WithMany()
+                        .HasForeignKey("StudentReceivableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_student_receipts_student_receivables_student_receivable_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentReceivable", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", null)
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_student_receivables_csca_classes_class_id");
+
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClassStudent", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_student_receivables_csca_class_students_student_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.StudentRefund", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Finance.StudentReceivable", null)
+                        .WithMany()
+                        .HasForeignKey("StudentReceivableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_student_refunds_student_receivables_student_receivable_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherAdvance", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_advances_employees_employee_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherAdvanceReturn", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.Finance.TeacherAdvance", null)
+                        .WithMany()
+                        .HasForeignKey("TeacherAdvanceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_advance_returns_teacher_advances_teacher_advance_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherPayment", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_payments_employees_employee_id");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.Finance.TeacherPaymentAllocation", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.CscaTeacherCostSnapshot", null)
+                        .WithMany()
+                        .HasForeignKey("TeacherCostSnapshotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_payment_allocations_csca_teacher_cost_snapshots_tea");
+
+                    b.HasOne("InternalManagement.Domain.Entities.Finance.TeacherPayment", null)
+                        .WithMany()
+                        .HasForeignKey("TeacherPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_payment_allocations_teacher_payments_teacher_paymen");
+                });
+
             modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.AttendanceRecord", b =>
                 {
                     b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", "Employee")
@@ -8221,6 +9112,17 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_attendance_records_employees_employee_id");
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("InternalManagement.Domain.Entities.HrPayroll.CscaTeacherCostSnapshot", b =>
+                {
+                    b.HasOne("InternalManagement.Domain.Entities.HrPayroll.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_csca_teacher_cost_snapshots_employees_employee_id");
 
                     b.Navigation("Employee");
                 });

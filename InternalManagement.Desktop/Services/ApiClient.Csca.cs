@@ -41,9 +41,14 @@ public sealed partial class ApiClient
         }
     }
 
-    public async Task<PaginatedData<CscaClassItem>?> GetCscaClassesAsync(string? search = null, string? batch = null, CancellationToken ct = default)
+    public async Task<PaginatedData<CscaClassItem>?> GetCscaClassesAsync(
+        string? search = null,
+        string? batch = null,
+        int pageIndex = 1,
+        int pageSize = 50,
+        CancellationToken ct = default)
     {
-        var url = "api/v1/csca/classes?pageSize=50";
+        var url = $"api/v1/csca/classes?pageIndex={pageIndex}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(search)) url += $"&search={Uri.EscapeDataString(search)}";
         if (!string.IsNullOrWhiteSpace(batch)) url += $"&batch={Uri.EscapeDataString(batch)}";
 
@@ -51,6 +56,59 @@ public sealed partial class ApiClient
         await EnsureCscaSuccessAsync(response, "Tải danh sách lớp CSCA thất bại", ct);
 
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<PaginatedData<CscaClassItem>>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
+    public async Task<IReadOnlyList<CscaClassItem>?> GetAllCscaClassesAsync(CancellationToken ct = default)
+    {
+        const int pageSize = 200;
+        var firstPage = await GetCscaClassesAsync(pageIndex: 1, pageSize: pageSize, ct: ct);
+        if (firstPage is null) return null;
+
+        var items = firstPage.Items.ToList();
+        for (var pageIndex = 2; items.Count < firstPage.TotalCount; pageIndex++)
+        {
+            var page = await GetCscaClassesAsync(pageIndex: pageIndex, pageSize: pageSize, ct: ct);
+            if (page is null || page.Items.Count == 0) break;
+            items.AddRange(page.Items);
+        }
+
+        return items;
+    }
+
+    public async Task<CscaTeacherCostSummaryItem?> GetCscaTeacherCostSummaryAsync(
+        DateTime? from = null,
+        DateTime? to = null,
+        string? classSourceId = null,
+        CancellationToken ct = default)
+    {
+        var query = new List<string> { "includeProjected=true" };
+        if (from.HasValue) query.Add($"from={Uri.EscapeDataString(from.Value.ToUniversalTime().ToString("O"))}");
+        if (to.HasValue) query.Add($"to={Uri.EscapeDataString(to.Value.ToUniversalTime().ToString("O"))}");
+        if (!string.IsNullOrWhiteSpace(classSourceId)) query.Add($"classSourceId={Uri.EscapeDataString(classSourceId)}");
+        using var response = await SendWithRefreshAsync(
+            () => _httpClient.GetAsync($"api/v1/payroll/csca-teacher-costs?{string.Join("&", query)}", ct), ct);
+        await EnsureCscaSuccessAsync(response, "Tải chi phí giáo viên CSCA Course thất bại", ct);
+
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<CscaTeacherCostSummaryItem>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
+    public async Task<CscaClassBreakEvenItem?> GetCscaClassBreakEvenAsync(
+        Guid classId,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken ct = default)
+    {
+        var query = new List<string>();
+        if (from.HasValue) query.Add($"from={Uri.EscapeDataString(from.Value.ToUniversalTime().ToString("O"))}");
+        if (to.HasValue) query.Add($"to={Uri.EscapeDataString(to.Value.ToUniversalTime().ToString("O"))}");
+        var suffix = query.Count == 0 ? string.Empty : "?" + string.Join("&", query);
+        using var response = await SendWithRefreshAsync(
+            () => _httpClient.GetAsync($"api/v1/csca/classes/{classId:D}/break-even{suffix}", ct), ct);
+        await EnsureCscaSuccessAsync(response, "Tải phân tích hòa vốn lớp học thất bại", ct);
+
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<CscaClassBreakEvenItem>>(_jsonOptions, ct);
         return envelope?.Data;
     }
 

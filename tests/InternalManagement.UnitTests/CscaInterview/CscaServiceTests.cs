@@ -10,6 +10,7 @@ using InternalManagement.Domain.Entities.Documents;
 using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.Integration;
+using InternalManagement.Domain.Entities.Finance;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
 using InternalManagement.Infrastructure.Persistence;
@@ -125,8 +126,173 @@ public class CscaServiceTests
         finRes.Value.PaidStudents.Should().Be(1);
         finRes.Value.ExpectedRevenue.Should().Be(8000000m); // 2 * 4M
         finRes.Value.ActualRevenue.Should().Be(6000000m);   // 4M + 2M
-        finRes.Value.TotalStaffExpense.Should().Be(2500000m);
-        finRes.Value.NetProfit.Should().Be(3500000m);       // 6M - 2.5M
+        finRes.Value.TotalStaffExpense.Should().Be(0);      // Manual compensation is not a finance source.
+        finRes.Value.NetProfit.Should().Be(6000000m);
+    }
+
+    [Fact]
+    public async Task GetClassFinancialSummary_WithLmsSnapshot_ShouldUseSnapshotInsteadOfManualCompensation()
+    {
+        using var db = CreateInMemoryDb();
+        var currentUser = new CurrentUserService(null!);
+        var service = new CscaService(db, currentUser, NullLogger<CscaService>.Instance, integrationDb: db);
+
+        var classResult = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-SNAPSHOT", "Lớp snapshot", "Batch 1", "T2", 4_000_000m),
+            CancellationToken.None);
+        var classId = classResult.Value!.Id;
+        var employee = new Employee
+        {
+            EmployeeCode = "EMP-SNAPSHOT",
+            FullName = "Giảng viên snapshot",
+            Email = "snapshot@test.com"
+        };
+        db.Employees.Add(employee);
+        await db.SaveChangesAsync();
+        await service.AssignStaffAsync(classId, new AssignStaffRequest(employee.Id, "Teacher", 99_000_000m), CancellationToken.None);
+
+        db.CscaTeacherCostSnapshots.Add(new CscaTeacherCostSnapshot
+        {
+            CompanyId = Guid.Empty,
+            SourceSystem = "CSCA_COURSE",
+            SourceKey = $"teacher:class:{classId:N}:session-1",
+            TeacherLmsId = 11,
+            TeacherName = employee.FullName,
+            ClassSourceId = classId.ToString("N"),
+            ClassLmsId = 22,
+            ClassTitle = "Lớp snapshot",
+            SessionSourceId = "session-1",
+            SessionLmsId = 33,
+            StartTime = DateTime.UtcNow.AddDays(-1),
+            EndTime = DateTime.UtcNow,
+            Status = "ended",
+            IsCompleted = true,
+            DurationHours = 2,
+            EffectiveHourlyRate = 200_000,
+            AccruedAmount = 400_000,
+            ProjectedAmount = 600_000,
+            SourceCalculatedAt = DateTime.UtcNow,
+            SyncedAt = DateTime.UtcNow,
+            IsCurrent = true
+        });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetClassFinancialSummaryAsync(classId, CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        result.Value!.TotalStaffExpense.Should().Be(400_000m);
+        result.Value.ProjectedStaffExpense.Should().Be(600_000m);
+        result.Value.StaffExpenseSource.Should().Be("CSCA_COURSE");
+    }
+
+    [Fact]
+    public async Task GetClassBreakEven_ShouldCombineSnapshotAndClassifiedLedgerCosts()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance, integrationDb: db);
+        var classResult = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-BE", "Lớp hòa vốn", "Batch 1", "T2", 4_000_000m),
+            CancellationToken.None);
+        var classId = classResult.Value!.Id;
+        var businessUnitId = Guid.NewGuid();
+        var cls = await db.CscaClasses.FindAsync(classId);
+        cls!.BusinessUnitId = businessUnitId;
+        await service.EnrollStudentAsync(classId,
+            new EnrollStudentRequest("HV 1", "be1@test.com", null, 4_000_000m, PaymentStatus.Paid), CancellationToken.None);
+        await service.EnrollStudentAsync(classId,
+            new EnrollStudentRequest("HV 2", "be2@test.com", null, 0, PaymentStatus.Pending), CancellationToken.None);
+
+        db.CscaTeacherCostSnapshots.Add(new CscaTeacherCostSnapshot
+        {
+            CompanyId = Guid.Empty,
+            SourceSystem = "CSCA_COURSE",
+            SourceKey = $"teacher:class:{classId:N}:session-be",
+            TeacherLmsId = 1,
+            TeacherName = "Teacher",
+            ClassSourceId = classId.ToString("N"),
+            ClassLmsId = 2,
+            ClassTitle = "Lớp hòa vốn",
+            SessionSourceId = "session-be",
+            SessionLmsId = 3,
+            StartTime = new DateTime(2026, 6, 10, 8, 0, 0, DateTimeKind.Utc),
+            EndTime = new DateTime(2026, 6, 10, 10, 0, 0, DateTimeKind.Utc),
+            Status = "ended",
+            IsCompleted = true,
+            DurationHours = 2,
+            EffectiveHourlyRate = 200_000,
+            AccruedAmount = 400_000,
+            ProjectedAmount = 8_400_000,
+            SourceCalculatedAt = DateTime.UtcNow,
+            SyncedAt = DateTime.UtcNow,
+            IsCurrent = true
+        });
+        var fixedCategory = new FinanceCategory { CompanyId = Guid.Empty, Code = "CO_DINH", Name = "Chi phí cố định", Type = TransactionType.Expense };
+        var variableCategory = new FinanceCategory { CompanyId = Guid.Empty, Code = "BIEN_DOI", Name = "Chi phí biến đổi", Type = TransactionType.Expense };
+        db.FinanceCategories.AddRange(fixedCategory, variableCategory);
+        db.FinanceTransactions.AddRange(
+            new FinanceTransaction
+            {
+                CompanyId = Guid.Empty, Category = fixedCategory, CategoryId = fixedCategory.Id,
+                TransactionType = TransactionType.Expense, Amount = 1_000_000m,
+                TransactionDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc),
+                ReferenceType = nameof(CscaClass), ReferenceId = classId, Description = "Phòng học"
+            },
+            new FinanceTransaction
+            {
+                CompanyId = Guid.Empty, Category = variableCategory, CategoryId = variableCategory.Id,
+                TransactionType = TransactionType.Expense, Amount = 100_000m,
+                TransactionDate = new DateTime(2026, 6, 16, 0, 0, 0, DateTimeKind.Utc),
+                ReferenceType = nameof(CscaClass), ReferenceId = classId, Description = "Tài liệu"
+            },
+            new FinanceTransaction
+            {
+                CompanyId = Guid.Empty, BusinessUnitId = businessUnitId,
+                Category = fixedCategory, CategoryId = fixedCategory.Id,
+                TransactionType = TransactionType.Expense, Amount = 9_000_000m,
+                TransactionDate = new DateTime(2026, 6, 20, 0, 0, 0, DateTimeKind.Utc),
+                Description = "Văn phòng dùng chung"
+            },
+            new FinanceTransaction
+            {
+                CompanyId = Guid.Empty, Category = fixedCategory, CategoryId = fixedCategory.Id,
+                TransactionType = TransactionType.Expense, Amount = 5_000_000m,
+                TransactionDate = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+                ReferenceType = nameof(CscaClass), ReferenceId = classId, Description = "Ngoài kỳ"
+            });
+        await db.SaveChangesAsync();
+
+        var result = await service.GetClassBreakEvenAnalysisAsync(
+            classId,
+            new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        result.Value!.TeacherAccruedCost.Should().Be(400_000m);
+        result.Value.LedgerFixedCost.Should().Be(1_000_000m);
+        result.Value.LedgerVariableCost.Should().Be(100_000m);
+        result.Value.ContributionMarginPerStudent.Should().Be(3_950_000m);
+        result.Value.BreakEvenStudents.Should().Be(3m);
+        result.Value.BreakEvenRevenue.Should().Be(12_000_000m);
+        result.Value.ActualProfit.Should().Be(2_500_000m);
+        result.Value.ProjectedProfit.Should().Be(-1_500_000m);
+        result.Value.Warnings.Should().ContainSingle(x => x.Contains("chi phí cố định dùng chung"));
+    }
+
+    [Fact]
+    public async Task GetClassBreakEven_WithoutLmsCosts_ShouldNotReportZeroStudentBreakEven()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance, integrationDb: db);
+        var cls = await service.CreateClassAsync(new CreateCscaClassRequest("BE-NO-LMS", "Lớp chưa đồng bộ", "", "", 4_000_000m), default);
+
+        var result = await service.GetClassBreakEvenAnalysisAsync(cls.Value!.Id,
+            new DateTime(2026, 6, 1), new DateTime(2026, 7, 1), default);
+
+        result.Succeeded.Should().BeTrue();
+        result.Value!.BreakEvenStudents.Should().BeNull();
+        result.Value.BreakEvenReachable.Should().BeFalse();
+        result.Value.Warnings.Should().Contain(x => x.Contains("Chưa có snapshot"));
     }
 
     [Fact]

@@ -201,6 +201,14 @@ public sealed partial class CscaService
             return Result<CscaStudentDto>.Failure(duplicateError);
         }
 
+        var managedReceivable = await _db.StudentReceivables.FirstOrDefaultAsync(x => x.StudentId == student.Id && x.CompanyId == student.Class.CompanyId, ct);
+        if (managedReceivable is not null && (student.PaidAmount != request.PaidAmount || student.PaymentStatus != request.PaymentStatus))
+            return Result<CscaStudentDto>.Failure("Học viên đã có sổ công nợ. Hãy ghi nhận thu/hoàn trong Bảng tính tài chính để giữ đúng lịch sử tiền.");
+        if (managedReceivable is not null)
+        {
+            managedReceivable.DueAmount = GetPayableTuition(student.Class.TuitionFee, request.DiscountAmount);
+            managedReceivable.DueDate = request.DebtDueDate;
+        }
         student.PaidAmount = request.PaidAmount;
         student.PaymentStatus = request.PaymentStatus;
         student.DiscountAmount = request.DiscountAmount;
@@ -285,6 +293,8 @@ public sealed partial class CscaService
             return Result<bool>.Failure("Không tìm thấy học viên trong lớp.");
         }
 
+        if (await _db.StudentReceivables.AnyAsync(x => x.StudentId == student.Id && x.CompanyId == student.Class.CompanyId, ct))
+            return Result<bool>.Failure("Học viên đã có lịch sử công nợ. Hãy hoàn tiền/hủy công nợ trong Bảng tính tài chính thay vì xóa.");
         var hasLmsAccessHistory = await _db.LmsAccessGrants
             .AnyAsync(grant => grant.CscaClassStudentId == student.Id, ct);
         if (hasLmsAccessHistory)
@@ -341,7 +351,8 @@ public sealed partial class CscaService
             student.BusinessDocumentId = document.Id;
         }
 
-        if (_financePostingService is null || student.PaidAmount <= 0)
+        if (_financePostingService is null || student.PaidAmount <= 0
+            || await _db.StudentReceivables.AnyAsync(x => x.CompanyId == cls.CompanyId && x.StudentId == student.Id, ct))
         {
             return;
         }

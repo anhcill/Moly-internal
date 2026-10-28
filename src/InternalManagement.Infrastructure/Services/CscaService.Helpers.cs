@@ -317,7 +317,8 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(p => p.ReferenceType == "CscaClass" && p.ReferenceId == cls.Id, ct);
 
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
-        var totalStaffExpense = cls.Staff?.Sum(st => st.CompensationRate) ?? 0;
+        var teacherCost = await GetClassTeacherCostAsync(cls, ct);
+        var totalStaffExpense = teacherCost.AccruedAmount;
 
         if (allocation == null)
         {
@@ -339,5 +340,56 @@ public sealed partial class CscaService
             allocation.ExpenseAmount = totalStaffExpense;
             allocation.AllocatedAt = DateTime.UtcNow;
         }
+    }
+
+    private async Task<(decimal AccruedAmount, decimal ProjectedAmount, DateTime? LastSyncedAt)> GetClassTeacherCostAsync(
+        CscaClass cls, CancellationToken ct, DateTime? from = null, DateTime? to = null)
+    {
+        // Manual staff compensation is not a finance source for CSCA classes.
+        // Without the integration context, report no LMS-backed cost.
+        if (_integrationDb is null)
+            return (0, 0, null);
+
+        var sourceIds = new List<string> { cls.Id.ToString("N") };
+        var mappedSourceIds = await _integrationDb.ApplicationClassMaps.AsNoTracking()
+            .Where(x => x.CompanyId == cls.CompanyId && x.CscaClassId == cls.Id)
+            .Select(x => x.ExternalClassId)
+            .ToListAsync(ct);
+        sourceIds.AddRange(mappedSourceIds.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+        var rows = await _integrationDb.CscaTeacherCostSnapshots.AsNoTracking()
+            .Where(x => x.CompanyId == cls.CompanyId && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent &&
+                        sourceIds.Contains(x.ClassSourceId))
+            .ToListAsync(ct);
+        if (from.HasValue) rows = rows.Where(x => x.StartTime >= from.Value).ToList();
+        if (to.HasValue) rows = rows.Where(x => x.StartTime < to.Value).ToList();
+        return (rows.Sum(x => x.AccruedAmount), rows.Sum(x => x.ProjectedAmount ?? 0),
+            rows.Count == 0 ? null : rows.Max(x => x.SyncedAt));
+    }
+
+    private async Task<Dictionary<Guid, (decimal AccruedAmount, decimal ProjectedAmount, DateTime? LastSyncedAt)>>
+        GetClassTeacherCostMapAsync(IReadOnlyCollection<Guid> classIds, Guid companyId, CancellationToken ct)
+    {
+        var result = classIds.ToDictionary(id => id, _ => (0m, 0m, (DateTime?)null));
+        if (_integrationDb is null || classIds.Count == 0)
+            return result;
+
+        var idList = classIds.ToList();
+        var sourceToClass = idList.ToDictionary(id => id.ToString("N"), id => id, StringComparer.Ordinal);
+        var mapped = await _integrationDb.ApplicationClassMaps.AsNoTracking()
+            .Where(x => x.CompanyId == companyId && idList.Contains(x.CscaClassId))
+            .Select(x => new { x.CscaClassId, x.ExternalClassId })
+            .ToListAsync(ct);
+        foreach (var map in mapped.Where(x => !string.IsNullOrWhiteSpace(x.ExternalClassId)))
+            sourceToClass[map.ExternalClassId] = map.CscaClassId;
+
+        var rows = await _integrationDb.CscaTeacherCostSnapshots.AsNoTracking()
+            .Where(x => x.CompanyId == companyId && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent &&
+                        sourceToClass.Keys.Contains(x.ClassSourceId))
+            .ToListAsync(ct);
+        foreach (var group in rows.GroupBy(x => sourceToClass[x.ClassSourceId]))
+            result[group.Key] = (group.Sum(x => x.AccruedAmount), group.Sum(x => x.ProjectedAmount ?? 0),
+                group.Max(x => (DateTime?)x.SyncedAt));
+        return result;
     }
 }

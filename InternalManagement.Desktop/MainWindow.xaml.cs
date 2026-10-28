@@ -119,6 +119,10 @@ public partial class MainWindow : Window, IDisposable
         ViewAttendanceContainer.ImportRequested += ImportAttendance_Click;
         ViewAttendanceContainer.RecordRequested += RecordAttendance_Click;
         ViewCompanyFinanceContainer.RefreshRequested += RefreshCompanyFinance_Click;
+        ViewFinanceWorkspaceContainer.SetApiClient(_apiClient);
+        ViewFinanceWorkspaceContainer.RefreshRequested += RefreshFinanceWorkspace_Click;
+        ViewCostBreakEvenContainer.RefreshRequested += RefreshCostBreakEven_Click;
+        ViewCostBreakEvenContainer.FiltersChanged += CostBreakEvenFilters_Changed;
         ViewCoursesContainer.ActionRequested += DispatchFeatureViewAction;
         ViewEmployeesContainer.BlacklistRequested += BlacklistEmployee_Click;
         ViewEmployeesContainer.CreateRequested += CreateEmployee_Click;

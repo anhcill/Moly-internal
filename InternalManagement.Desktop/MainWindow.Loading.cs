@@ -166,6 +166,104 @@ public partial class MainWindow
         MetricCscaNetProfit.Text = $"{totalProfit:N0} đ";
     }
 
+    private async Task LoadCostBreakEvenAsync()
+    {
+        var from = ViewCostBreakEvenContainer.FromDate;
+        var toExclusive = ViewCostBreakEvenContainer.ToDateExclusive;
+        if (from.HasValue && toExclusive.HasValue && from >= toExclusive)
+        {
+            SetViewStatus("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.", isError: true);
+            return;
+        }
+
+        var selectedClassId = ViewCostBreakEvenContainer.SelectedClassId;
+        var classesTask = _apiClient.GetAllCscaClassesAsync();
+        var teacherCostsTask = _apiClient.GetCscaTeacherCostSummaryAsync(
+            from,
+            toExclusive,
+            selectedClassId?.ToString("N"));
+        var breakEvenTask = selectedClassId.HasValue
+            ? _apiClient.GetCscaClassBreakEvenAsync(selectedClassId.Value, from, toExclusive)
+            : Task.FromResult<ApiClient.CscaClassBreakEvenItem?>(null);
+        await Task.WhenAll(classesTask, teacherCostsTask, breakEvenTask);
+
+        var classes = await classesTask ?? [];
+        var teacherCosts = await teacherCostsTask;
+        var breakEven = await breakEvenTask;
+        ViewCostBreakEvenContainer.SetClassOptions(classes);
+
+        var scopedClasses = classes.AsEnumerable();
+        if (selectedClassId.HasValue)
+            scopedClasses = scopedClasses.Where(x => x.Id == selectedClassId.Value);
+        if (from.HasValue)
+            scopedClasses = scopedClasses.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= from.Value);
+        if (toExclusive.HasValue)
+            scopedClasses = scopedClasses.Where(x => !x.StartDate.HasValue || x.StartDate.Value < toExclusive.Value);
+
+        var scopedClassList = scopedClasses.ToList();
+        CostBreakEvenRevenueMetric.Text = $"{scopedClassList.Sum(x => x.TotalRevenue):N0} đ";
+        ViewCostBreakEvenContainer.SetFilterScope(selectedClassId.HasValue
+            ? $"Lớp đã chọn · {scopedClassList.Count:N0} lớp trong phạm vi"
+            : $"Tất cả lớp · {scopedClassList.Count:N0} lớp trong phạm vi");
+        CostBreakEvenOtherCostMetric.Text = breakEven is null
+            ? "Chọn một lớp"
+            : $"{breakEven.LedgerFixedCost + breakEven.LedgerVariableCost:N0} đ";
+        CostBreakEvenMetric.Text = breakEven is null
+            ? "Chọn một lớp"
+            : breakEven.BreakEvenReachable
+                ? $"{breakEven.BreakEvenStudents:N0} HV · {breakEven.BreakEvenRevenue:N0} đ"
+                : "Chưa thể hòa vốn";
+        ViewCostBreakEvenContainer.SetAnalysisNote(breakEven is null
+            ? "Chọn một lớp để xem kết quả hòa vốn thực tế từ API."
+            : breakEven.Warnings.Count > 0
+                ? string.Join(" ", breakEven.Warnings)
+                : $"Biên đóng góp bình quân {breakEven.ContributionMarginPerStudent:N0} đ/học viên; dữ liệu trong kỳ {breakEven.From.ToLocalTime():dd/MM/yyyy} - {breakEven.To.ToLocalTime().AddTicks(-1):dd/MM/yyyy}.");
+        if (breakEven is not null)
+        {
+            CostBreakEvenRevenueMetric.Text = $"{breakEven.ActualRevenue:N0} đ";
+            CostBreakEvenTeacherCostMetric.Text = $"{breakEven.TeacherAccruedCost:N0} đ";
+        }
+        CostBreakEvenRefreshStatusText.Text = $"Tải lúc {DateTime.Now:dd/MM/yyyy HH:mm}";
+
+        if (teacherCosts is null)
+        {
+            if (breakEven is null) CostBreakEvenTeacherCostMetric.Text = "Chưa đồng bộ";
+            CostBreakEvenLmsStatusText.Text = breakEven?.TeacherCostLastSyncedAt is { } breakEvenSyncedAt
+                ? $"LMS đồng bộ {breakEvenSyncedAt.ToLocalTime():dd/MM HH:mm}"
+                : "Chưa đồng bộ dữ liệu LMS";
+            SetViewStatus(breakEven is null
+                ? "Đã tải doanh thu lớp; chưa có snapshot chi phí giáo viên từ LMS."
+                : "Đã tải phân tích hòa vốn lớp; API tổng hợp chi phí LMS chưa khả dụng.", isError: true);
+            return;
+        }
+
+        if (breakEven is null)
+            CostBreakEvenTeacherCostMetric.Text = $"{teacherCosts.ClassCostAmount:N0} đ";
+        CostBreakEvenLmsStatusText.Text = teacherCosts.LastSyncedAt.HasValue
+            ? $"LMS đồng bộ {teacherCosts.LastSyncedAt.Value.ToLocalTime():dd/MM HH:mm}"
+            : "Chưa đồng bộ dữ liệu LMS";
+        SetViewStatus($"Đã tải {teacherCosts.ItemCount:N0} dòng chi phí giáo viên từ LMS.");
+    }
+
+    private void RefreshCostBreakEven_Click(object sender, RoutedEventArgs e)
+    {
+        InvalidateLoadedView("cost-break-even");
+        _ = RunWithBusyAsync(
+            "Đang tải lại phân tích chi phí & hòa vốn...",
+            LoadCostBreakEvenAsync,
+            "Đối chiếu doanh thu lớp học với snapshot chi phí giáo viên từ LMS");
+    }
+
+    private void CostBreakEvenFilters_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_isUiReady || ViewCostBreakEvenContainer.Visibility != Visibility.Visible) return;
+        InvalidateLoadedView("cost-break-even");
+        _ = RunWithBusyAsync(
+            "Đang cập nhật phạm vi phân tích...",
+            LoadCostBreakEvenAsync,
+            "Áp dụng bộ lọc thời gian và lớp học");
+    }
+
     private async Task LoadCscaOnlineAsync(string? search = null)
     {
         var materialsTask = _apiClient.GetCscaOnlineMaterialsAsync(search);

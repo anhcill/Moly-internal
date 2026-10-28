@@ -24,6 +24,15 @@ public partial class MainWindow
         const string fallback = "https://internal-management-api-production-6f08.up.railway.app/";
         const string settingsFileName = "appsettings.production.json";
 #endif
+        var environmentOverride = Environment.GetEnvironmentVariable("MOLY_API_BASE_URL");
+        if (Uri.TryCreate(environmentOverride, UriKind.Absolute, out var environmentUri) &&
+            (environmentUri.Scheme == Uri.UriSchemeHttp || environmentUri.Scheme == Uri.UriSchemeHttps))
+        {
+            return environmentUri.AbsoluteUri.EndsWith('/')
+                ? environmentUri.AbsoluteUri
+                : environmentUri.AbsoluteUri + "/";
+        }
+
         var path = Path.Combine(AppContext.BaseDirectory, settingsFileName);
         if (!File.Exists(path))
         {

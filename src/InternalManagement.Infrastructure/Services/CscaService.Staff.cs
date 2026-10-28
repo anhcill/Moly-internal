@@ -214,7 +214,7 @@ public sealed partial class CscaService
         var paidStudents = cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
         var expectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
-        var totalStaffExpense = cls.Staff.Sum(st => st.CompensationRate);
+        var teacherCost = await GetClassTeacherCostAsync(cls, ct);
 
         var summary = new ClassFinancialSummaryDto
         {
@@ -225,7 +225,9 @@ public sealed partial class CscaService
             PaidStudents = paidStudents,
             ExpectedRevenue = expectedRevenue,
             ActualRevenue = actualRevenue,
-            TotalStaffExpense = totalStaffExpense
+            TotalStaffExpense = teacherCost.AccruedAmount,
+            ProjectedStaffExpense = teacherCost.ProjectedAmount,
+            StaffExpenseLastSyncedAt = teacherCost.LastSyncedAt
         };
 
         return Result<ClassFinancialSummaryDto>.Success(summary);

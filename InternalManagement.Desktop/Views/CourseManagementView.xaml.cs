@@ -63,6 +63,9 @@ public partial class CourseManagementView : UserControl
     private void CourseModuleTabControl_SelectionChanged(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CourseModuleTabControl_SelectionChanged), sender, e));
 
+    private void CscaMolyTabControl_SelectionChanged(object sender, RoutedEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaMolyTabControl_SelectionChanged), sender, e));
+
     private void CscaCourseFilterComboBox_SelectionChanged(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaCourseFilterComboBox_SelectionChanged), sender, e));
 

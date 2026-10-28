@@ -10,6 +10,8 @@ public partial class MainWindow
     private System.Windows.Controls.TabItem TabItemCourses => ViewCoursesContainer.TabItemCourses;
     private System.Windows.Controls.TabItem TabItemClasses => ViewCoursesContainer.TabItemClasses;
     private System.Windows.Controls.TabItem TabItemClassFinance => ViewCoursesContainer.TabItemClassFinance;
+    private System.Windows.Controls.TabItem TabItemCscaMoly => ViewCoursesContainer.TabItemCscaMoly;
+    private System.Windows.Controls.TabControl CscaMolyTabControl => ViewCoursesContainer.CscaMolyTabControl;
     private System.Windows.Controls.TabItem TabItemMaterials => ViewCoursesContainer.TabItemMaterials;
     private System.Windows.Controls.TabItem TabItemVocabulary => ViewCoursesContainer.TabItemVocabulary;
     private System.Windows.Controls.TabItem TabItemCommunity => ViewCoursesContainer.TabItemCommunity;
@@ -21,6 +23,12 @@ public partial class MainWindow
     private System.Windows.Controls.TextBlock MetricCscaRevenue => ViewCoursesContainer.MetricCscaRevenue;
     private System.Windows.Controls.TextBlock MetricCscaDebt => ViewCoursesContainer.MetricCscaDebt;
     private System.Windows.Controls.TextBlock MetricCscaNetProfit => ViewCoursesContainer.MetricCscaNetProfit;
+    private System.Windows.Controls.TextBlock CostBreakEvenRevenueMetric => ViewCostBreakEvenContainer.RevenueMetricText;
+    private System.Windows.Controls.TextBlock CostBreakEvenTeacherCostMetric => ViewCostBreakEvenContainer.TeacherCostMetricText;
+    private System.Windows.Controls.TextBlock CostBreakEvenOtherCostMetric => ViewCostBreakEvenContainer.OtherCostMetricText;
+    private System.Windows.Controls.TextBlock CostBreakEvenMetric => ViewCostBreakEvenContainer.BreakEvenMetricText;
+    private System.Windows.Controls.TextBlock CostBreakEvenLmsStatusText => ViewCostBreakEvenContainer.LmsStatusText;
+    private System.Windows.Controls.TextBlock CostBreakEvenRefreshStatusText => ViewCostBreakEvenContainer.RefreshStatusText;
     private System.Windows.Controls.TextBox CscaSearchBox => ViewCoursesContainer.CscaSearchBox;
     private System.Windows.Controls.TextBlock CscaSearchPlaceholder => ViewCoursesContainer.CscaSearchPlaceholder;
     private System.Windows.Controls.ComboBox CscaCourseFilterComboBox => ViewCoursesContainer.CscaCourseFilterComboBox;

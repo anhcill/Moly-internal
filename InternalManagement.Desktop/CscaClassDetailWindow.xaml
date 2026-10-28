@@ -237,14 +237,23 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </GroupBox>
-                    <GroupBox Grid.Row="3" Header="Thù lao giáo viên">
-                        <DataGrid x:Name="TeacherFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.5*" />
-                                <DataGridTextColumn Header="VAI TRÒ" Binding="{Binding RoleInClass}" Width="1.2*" />
-                                <DataGridTextColumn Header="THÙ LAO" Binding="{Binding CompensationRate, StringFormat='{}{0:N0} đ'}" Width="140" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                    <GroupBox Grid.Row="3" Header="Giáo viên &amp; nguồn chi phí">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,0,8">
+                                <TextBlock Text="Chi phí giáo viên là dữ liệu chỉ đọc, đồng bộ từ snapshot CSCA Course/LMS; không nhập thù lao thủ công tại lớp." FontSize="11.5" Foreground="#1D4ED8" TextWrapping="Wrap" />
+                            </Border>
+                            <DataGrid Grid.Row="1" x:Name="TeacherFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.5*" />
+                                    <DataGridTextColumn Header="VAI TRÒ" Binding="{Binding RoleInClass}" Width="1.2*" />
+                                    <DataGridTextColumn Header="NGUỒN CHI PHÍ" Binding="{Binding CostSource}" Width="150" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
                     </GroupBox>
                 </Grid>
             </TabItem>
@@ -259,7 +268,7 @@
                         <Button Content="+ Phân công giáo viên" Click="AddTeacher_Click" Style="{StaticResource PrimaryButton}" />
                         <Button Content="✎ Sửa phân công" Click="EditTeacher_Click" Style="{StaticResource ToolbarButton}" />
                         <Button Content="Hủy phân công" Click="RemoveTeacher_Click" Style="{StaticResource DangerButton}" />
-                        <TextBlock Text="Bấm đúp vào dòng giáo viên để sửa vai trò, thù lao và ghi chú." VerticalAlignment="Center" Foreground="#64748B" FontSize="12" Margin="8,0,0,0" />
+                        <TextBlock Text="Bấm đúp để sửa vai trò và ghi chú. Chi phí lấy từ CSCA Course/LMS, không nhập tại đây." VerticalAlignment="Center" Foreground="#64748B" FontSize="12" Margin="8,0,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                     <DataGrid Grid.Row="1" x:Name="TeachersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="44" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" MouseDoubleClick="TeachersDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>

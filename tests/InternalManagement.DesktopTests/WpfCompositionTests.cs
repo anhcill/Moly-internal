@@ -48,6 +48,10 @@ public sealed class WpfCompositionTests
                 Assert.NotNull(payrollView.FindName("PayrollGuideView"));
                 Assert.IsType<FashionView>(window.FindName("ViewFashionContainer"));
                 Assert.IsType<CompanyFinanceView>(window.FindName("ViewCompanyFinanceContainer"));
+                var financeWorkspace = Assert.IsType<FinanceWorkspaceView>(window.FindName("ViewFinanceWorkspaceContainer"));
+                Assert.NotNull(financeWorkspace.FindName("FinanceChartCanvas"));
+                financeWorkspace.SetCanManage(false);
+                Assert.NotNull(window.FindName("NavFinanceWorkspace"));
                 Assert.IsType<InternalDataView>(window.FindName("ViewInternalDataContainer"));
                 using var api = new ApiClient("http://localhost:5000/");
                 var period = new ApiClient.PayrollPeriodItem(

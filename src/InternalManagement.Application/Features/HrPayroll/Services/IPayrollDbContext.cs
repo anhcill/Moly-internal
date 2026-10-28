@@ -19,6 +19,7 @@ public interface IPayrollDbContext
     DbSet<PayrollPeriod> PayrollPeriods { get; }
     DbSet<PayrollPolicyVersion> PayrollPolicyVersions { get; }
     DbSet<Payslip> Payslips { get; }
+    DbSet<CscaTeacherCostSnapshot> CscaTeacherCostSnapshots { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

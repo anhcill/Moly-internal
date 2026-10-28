@@ -424,4 +424,27 @@ public class CscaController : BaseApiController
 
         return Ok(ApiResponse<ClassFinancialSummaryDto>.Ok(result.Value!, "Lấy báo cáo tài chính lớp học thành công."));
     }
+
+    [HttpGet("classes/{id:guid}/break-even")]
+    [HasPermission(Permissions.CscaClassesView)]
+    [ProducesResponseType(typeof(ApiResponse<ClassBreakEvenAnalysisDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ClassBreakEvenAnalysisDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<ClassBreakEvenAnalysisDto>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetClassBreakEven(
+        Guid id,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        var result = await _cscaService.GetClassBreakEvenAnalysisAsync(id, from, to, ct);
+        if (!result.Succeeded)
+        {
+            var message = result.Errors.FirstOrDefault() ?? "Không thể tính hòa vốn lớp học.";
+            return message.Contains("Không tìm thấy", StringComparison.OrdinalIgnoreCase)
+                ? NotFound(ApiResponse<ClassBreakEvenAnalysisDto>.Fail(message))
+                : BadRequest(ApiResponse<ClassBreakEvenAnalysisDto>.Fail(message));
+        }
+
+        return Ok(ApiResponse<ClassBreakEvenAnalysisDto>.Ok(result.Value!, "Lấy phân tích chi phí và hòa vốn lớp học thành công."));
+    }
 }

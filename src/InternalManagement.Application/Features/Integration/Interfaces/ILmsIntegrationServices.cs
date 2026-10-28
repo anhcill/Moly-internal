@@ -34,6 +34,11 @@ public interface ICscaCourseLmsClient
         LmsAccessCommand command,
         LmsOutboundRequestContext context,
         CancellationToken ct);
+
+    Task<LmsTeacherCostReport> QueryTeacherCostsAsync(
+        LmsTeacherCostQuery query,
+        LmsOutboundRequestContext context,
+        CancellationToken ct);
 }
 
 /// <summary>

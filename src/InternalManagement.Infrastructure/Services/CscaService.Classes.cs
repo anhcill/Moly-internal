@@ -69,10 +69,22 @@ public sealed partial class CscaService
                 TotalDiscountAmount = c.Students.Sum(s => s.DiscountAmount),
                 ExpectedRevenue = (c.Students.Count * c.TuitionFee) - c.Students.Sum(s => s.DiscountAmount),
                 TotalRevenue = c.Students.Sum(s => s.PaidAmount),
-                TotalStaffExpense = c.Staff.Sum(st => st.CompensationRate),
+                TotalStaffExpense = 0,
                 CreatedAt = c.CreatedAt
             })
             .ToListAsync(ct);
+
+        var teacherCosts = await GetClassTeacherCostMapAsync(items.Select(x => x.Id).ToList(), companyId, ct);
+        items = items.Select(item =>
+        {
+            var cost = teacherCosts[item.Id];
+            return item with
+            {
+                TotalStaffExpense = cost.AccruedAmount,
+                ProjectedStaffExpense = cost.ProjectedAmount,
+                StaffExpenseLastSyncedAt = cost.LastSyncedAt
+            };
+        }).ToList();
 
         return new PaginatedResult<CscaClassDto>(items, count, pageIndex, pageSize);
     }
@@ -100,7 +112,7 @@ public sealed partial class CscaService
         var paidStudents = cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
         var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
         var expectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
-        var totalStaffExpense = cls.Staff.Sum(st => st.CompensationRate);
+        var teacherCost = await GetClassTeacherCostAsync(cls, ct);
 
         var detail = new CscaClassDetailDto
         {
@@ -156,7 +168,9 @@ public sealed partial class CscaService
                 PaidStudents = paidStudents,
                 ExpectedRevenue = expectedRevenue,
                 ActualRevenue = actualRevenue,
-                TotalStaffExpense = totalStaffExpense
+                TotalStaffExpense = teacherCost.AccruedAmount,
+                ProjectedStaffExpense = teacherCost.ProjectedAmount,
+                StaffExpenseLastSyncedAt = teacherCost.LastSyncedAt
             }
         };
 
@@ -366,6 +380,8 @@ public sealed partial class CscaService
         }
         await _db.SaveChangesAsync(ct);
 
+        var teacherCost = await GetClassTeacherCostAsync(cls, ct);
+
         var dto = new CscaClassDto
         {
             Id = cls.Id,
@@ -384,7 +400,9 @@ public sealed partial class CscaService
             TotalDiscountAmount = cls.Students.Sum(s => s.DiscountAmount),
             ExpectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount)),
             TotalRevenue = cls.Students.Sum(s => s.PaidAmount),
-            TotalStaffExpense = cls.Staff.Sum(st => st.CompensationRate),
+            TotalStaffExpense = teacherCost.AccruedAmount,
+            ProjectedStaffExpense = teacherCost.ProjectedAmount,
+            StaffExpenseLastSyncedAt = teacherCost.LastSyncedAt,
             CreatedAt = cls.CreatedAt
         };
 

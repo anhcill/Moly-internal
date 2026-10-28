@@ -73,6 +73,26 @@ dotnet watch --project src/InternalManagement.Api --launch-profile InternalManag
 2. Mở `InternalManagement.Desktop` bằng Visual Studio, nhấn **F5** một lần. Bật **Hot Reload on Save**; các thay đổi XAML/code được hỗ trợ sẽ áp dụng ngay khi lưu.
 3. Nếu không dùng Visual Studio, ở terminal thứ hai dùng `dotnet watch --project InternalManagement.Desktop`. Với các thay đổi WPF không hỗ trợ Hot Reload, watcher sẽ tự restart ứng dụng; không cần tự dừng API.
 
+Nếu API/SQL đang chạy trên Railway và chỉ muốn test Desktop bằng Debug + Hot Reload, dùng script này thay cho lệnh trên:
+
+```powershell
+.\scripts\watch-desktop-railway.ps1
+```
+
+Script đặt `MOLY_API_BASE_URL` cho đúng phiên terminal; mặc định Debug vẫn trỏ localhost để tránh ghi nhầm dữ liệu production. Có thể truyền endpoint khác khi cần:
+
+```powershell
+.\scripts\watch-desktop-railway.ps1 -ApiBaseUrl "https://your-api.example.com/"
+```
+
+Nếu muốn test cả **API code local** nhưng vẫn dùng PostgreSQL production trên Railway, mở terminal API bằng script sau:
+
+```powershell
+.\scripts\watch-api-railway-db.ps1
+```
+
+Script lấy TCP proxy public của PostgreSQL Railway và truyền connection string vào tiến trình local, không deploy gì cả. Khi chạy theo cách này, API local sẽ lắng nghe `http://localhost:59724` và Desktop dùng lệnh `dotnet watch --project InternalManagement.Desktop`. Development đã tắt tự động migration, nhưng mọi thao tác ghi dữ liệu vẫn tác động vào database Railway thật — chỉ dùng khi bạn chủ động chấp nhận điều đó.
+
 Các thay đổi như `Program.cs`, đăng ký DI, package/project file, entity/EF mapping hoặc migration thường vẫn cần restart. `dotnet watch` sẽ báo rõ và tự xử lý việc restart khi cần.
 
 ### Khi thay đổi database

@@ -545,6 +545,8 @@ public partial class MainWindow
 
     private void CourseModuleTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!ReferenceEquals(e.Source, CourseModuleTabControl)) return;
+
         if (e.Source is not TabControl tabControl) return;
         if (tabControl.SelectedItem is TabItem selectedTab)
         {
@@ -561,6 +563,12 @@ public partial class MainWindow
             }
             SyncCourseNavigationSelection(tabControl.SelectedIndex);
         }
+    }
+
+    private void CscaMolyTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.Source, CscaMolyTabControl)) return;
+        SyncCscaMolyNavigationSelection(CscaMolyTabControl.SelectedIndex);
     }
 
     private void CreateQuestionDialog_Click(object sender, RoutedEventArgs e)

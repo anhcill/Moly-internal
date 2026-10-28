@@ -72,10 +72,45 @@ public sealed partial class ApiClient
         Guid CourseId,
         string CourseTitle,
         decimal ExpectedRevenue = 0,
-        decimal TotalDiscountAmount = 0)
+        decimal TotalDiscountAmount = 0,
+        decimal ProjectedStaffExpense = 0,
+        string StaffExpenseSource = "CSCA_COURSE",
+        DateTime? StaffExpenseLastSyncedAt = null)
     {
         public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
     }
+
+    public sealed record CscaTeacherCostSummaryItem(
+        int ItemCount,
+        int TeacherCount,
+        decimal AccruedAmount,
+        decimal ProjectedAmount,
+        decimal BonusAmount,
+        decimal DeductionAmount,
+        decimal NetAccruedAmount,
+        DateTime? LastSyncedAt,
+        int ClassCount = 0,
+        decimal ClassCostAmount = 0,
+        decimal ProjectedClassCostAmount = 0,
+        string SettlementAdjustmentScope = "teacher",
+        string NetAccruedAmountScope = "teacher",
+        IReadOnlyList<CscaTeacherCostClassSummaryItem>? ClassSummaries = null);
+
+    public sealed record CscaTeacherCostClassSummaryItem(
+        string ClassSourceId,
+        string ClassTitle,
+        string? CourseSourceId,
+        string? CourseTitle,
+        string? TeacherSourceId,
+        long TeacherLmsId,
+        string TeacherName,
+        int SessionCount,
+        int CompletedSessionCount,
+        decimal TotalHours,
+        decimal CompletedHours,
+        decimal AccruedAmount,
+        decimal ProjectedAmount,
+        bool SettlementAdjustmentApplied = false);
 
     public sealed record CscaClassDetailItem(
         Guid Id,
@@ -213,6 +248,31 @@ public sealed partial class ApiClient
         int AbsentCount,
         int ExcusedCount,
         DateTime? LastSyncedAt);
+
+    public sealed record CscaClassBreakEvenItem(
+        Guid ClassId,
+        string ClassCode,
+        string ClassName,
+        DateTime From,
+        DateTime To,
+        int EnrolledStudents,
+        int PaidStudents,
+        decimal ActualRevenue,
+        decimal PotentialRevenue,
+        decimal TeacherAccruedCost,
+        decimal TeacherProjectedCost,
+        decimal LedgerFixedCost,
+        decimal LedgerVariableCost,
+        decimal LedgerUnclassifiedExpense,
+        decimal AverageRevenuePerStudent,
+        decimal VariableCostPerStudent,
+        decimal ContributionMarginPerStudent,
+        decimal? BreakEvenStudents,
+        decimal? BreakEvenRevenue,
+        bool BreakEvenReachable,
+        string TeacherCostSource,
+        DateTime? TeacherCostLastSyncedAt,
+        IReadOnlyList<string> Warnings);
 
     public sealed record CscaStudentAttendanceSummaryItem(
         Guid StudentId,

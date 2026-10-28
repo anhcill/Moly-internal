@@ -23,6 +23,9 @@ public sealed record CscaClassDto
     public decimal TotalDiscountAmount { get; init; }
     public decimal TotalRevenue { get; init; }
     public decimal TotalStaffExpense { get; init; }
+    public decimal ProjectedStaffExpense { get; init; }
+    public string StaffExpenseSource { get; init; } = "CSCA_COURSE";
+    public DateTime? StaffExpenseLastSyncedAt { get; init; }
     public decimal NetProfit => TotalRevenue - TotalStaffExpense;
     public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
     public DateTime CreatedAt { get; init; }
@@ -298,7 +301,44 @@ public sealed record ClassFinancialSummaryDto
     public decimal ExpectedRevenue { get; init; }
     public decimal ActualRevenue { get; init; }
     public decimal TotalStaffExpense { get; init; }
+    public decimal ProjectedStaffExpense { get; init; }
+    public string StaffExpenseSource { get; init; } = "CSCA_COURSE";
+    public DateTime? StaffExpenseLastSyncedAt { get; init; }
     public decimal NetProfit => ActualRevenue - TotalStaffExpense;
     public decimal DebtAmount => Math.Max(0, ExpectedRevenue - ActualRevenue);
     public double ProfitMarginPercent => ActualRevenue > 0 ? (double)(NetProfit / ActualRevenue) * 100 : 0;
+}
+
+/// <summary>Class-level cost and break-even analysis backed by LMS snapshots and the finance ledger.</summary>
+public sealed record ClassBreakEvenAnalysisDto
+{
+    public Guid ClassId { get; init; }
+    public string ClassCode { get; init; } = string.Empty;
+    public string ClassName { get; init; } = string.Empty;
+    public DateTime From { get; init; }
+    public DateTime To { get; init; }
+    public int EnrolledStudents { get; init; }
+    public int PaidStudents { get; init; }
+    public decimal ActualRevenue { get; init; }
+    public decimal PotentialRevenue { get; init; }
+    public decimal TeacherAccruedCost { get; init; }
+    public decimal TeacherProjectedCost { get; init; }
+    public decimal LedgerFixedCost { get; init; }
+    public decimal LedgerVariableCost { get; init; }
+    public decimal LedgerUnclassifiedExpense { get; init; }
+    public decimal ActualVariableCost => LedgerVariableCost;
+    public decimal ProjectedVariableCost => LedgerVariableCost;
+    public decimal ActualFixedCost => TeacherAccruedCost + LedgerFixedCost + LedgerUnclassifiedExpense;
+    public decimal ProjectedFixedCost => TeacherProjectedCost + LedgerFixedCost + LedgerUnclassifiedExpense;
+    public decimal ActualProfit => ActualRevenue - ActualFixedCost - ActualVariableCost;
+    public decimal ProjectedProfit => PotentialRevenue - ProjectedFixedCost - ProjectedVariableCost;
+    public decimal AverageRevenuePerStudent { get; init; }
+    public decimal VariableCostPerStudent { get; init; }
+    public decimal ContributionMarginPerStudent { get; init; }
+    public decimal? BreakEvenStudents { get; init; }
+    public decimal? BreakEvenRevenue { get; init; }
+    public bool BreakEvenReachable { get; init; }
+    public string TeacherCostSource { get; init; } = "CSCA_COURSE";
+    public DateTime? TeacherCostLastSyncedAt { get; init; }
+    public List<string> Warnings { get; init; } = [];
 }
