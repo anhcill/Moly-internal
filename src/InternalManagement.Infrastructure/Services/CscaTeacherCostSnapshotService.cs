@@ -120,6 +120,10 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
             .Distinct()
             .ToList();
         var classBusinessUnits = new Dictionary<string, Guid?>(StringComparer.Ordinal);
+        var cscaBusinessUnitId = await _db.BusinessUnits.AsNoTracking()
+            .Where(x => x.CompanyId == companyId && x.Code == "CSCA" && x.IsActive)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(ct);
         var classesById = classIds.Count == 0
             ? new Dictionary<Guid, Guid?>()
             : await _db.CscaClasses.AsNoTracking()
@@ -127,7 +131,7 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
                 .ToDictionaryAsync(x => x.Id, x => x.BusinessUnitId, ct);
         foreach (var classId in classIds)
         {
-            if (!classesById.TryGetValue(classId, out var businessUnitId)) continue;
+            var businessUnitId = classesById.GetValueOrDefault(classId) ?? cscaBusinessUnitId;
             classBusinessUnits[classId.ToString()] = businessUnitId;
             classBusinessUnits[classId.ToString("N")] = businessUnitId;
         }
@@ -142,9 +146,14 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
                 .ToListAsync(ct);
             foreach (var mapping in mappings)
             {
-                if (classesById.TryGetValue(mapping.CscaClassId, out var businessUnitId))
-                    classBusinessUnits[mapping.ExternalClassId] = businessUnitId;
+                var businessUnitId = classesById.GetValueOrDefault(mapping.CscaClassId) ?? cscaBusinessUnitId;
+                classBusinessUnits[mapping.ExternalClassId] = businessUnitId;
             }
+        }
+        if (cscaBusinessUnitId.HasValue)
+        {
+            foreach (var sourceId in classSourceIds)
+                classBusinessUnits.TryAdd(sourceId, cscaBusinessUnitId.Value);
         }
 
         var now = DateTime.UtcNow;
