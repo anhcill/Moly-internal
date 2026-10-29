@@ -38,7 +38,7 @@ public sealed partial class FinanceWorkspaceService
         var students = await GetReceivablesForCompany(company.Value, ct);
         var teachers = await GetTeacherCostsForCompany(company.Value, ct);
         var snapshots = await db.CscaTeacherCostSnapshots.AsNoTracking()
-            .Where(x => x.CompanyId == company.Value && (!unit.HasValue || x.BusinessUnitId == unit)
+            .Where(x => x.CompanyId == company.Value && (!unit.HasValue || x.BusinessUnitId == unit || x.BusinessUnitId == null)
                 && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent)
             .ToListAsync(ct);
         var warnings = new List<string>
@@ -52,6 +52,8 @@ public sealed partial class FinanceWorkspaceService
             warnings.Add("Ngày bắt đầu ở tương lai: tiền đầu kỳ là giả định tại ngày bắt đầu, không phải số dư hiện tại.");
         if (snapshots.Count == 0)
             warnings.Add("Chưa có dữ liệu lương CSCA Course; dự báo đang thiếu chi phí giáo viên.");
+        else if (unit.HasValue && snapshots.Any(x => x.BusinessUnitId == null))
+            warnings.Add("Một phần chi phí lương CSCA chưa gắn Business Unit; đang hiển thị như chi phí dùng chung để không làm mất dữ liệu.");
         else if (snapshots.Max(x => x.SyncedAt) < now.AddHours(-24))
             warnings.Add("Dữ liệu lương đã hơn 24 giờ chưa đồng bộ. Hãy đồng bộ trước khi chốt ngân sách.");
         if (snapshots.Any(x => !x.EmployeeId.HasValue))

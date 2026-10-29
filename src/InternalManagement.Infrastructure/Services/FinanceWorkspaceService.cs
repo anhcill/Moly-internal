@@ -202,7 +202,11 @@ public sealed partial class FinanceWorkspaceService(
 
     private async Task<List<TeacherCostWorkspaceDto>> GetTeacherCostsForCompany(Guid company, CancellationToken ct)
     {
-        var snapshots = (await Scope(db.CscaTeacherCostSnapshots.AsNoTracking(), company).Where(x => x.SourceSystem == "CSCA_COURSE" && x.IsCurrent && x.EmployeeId != null).ToListAsync(ct))
+        var snapshotQuery = db.CscaTeacherCostSnapshots.AsNoTracking()
+            .Where(x => x.CompanyId == company && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent && x.EmployeeId != null);
+        if (currentUser?.BusinessUnitId is { } snapshotUnit)
+            snapshotQuery = snapshotQuery.Where(x => x.BusinessUnitId == snapshotUnit || x.BusinessUnitId == null);
+        var snapshots = (await snapshotQuery.ToListAsync(ct))
             .Where(x => !string.Equals(x.Status, "cancelled", StringComparison.OrdinalIgnoreCase) && !string.Equals(x.Status, "canceled", StringComparison.OrdinalIgnoreCase)).ToList();
         var advances = await Scope(db.TeacherAdvances.AsNoTracking(), company).ToListAsync(ct);
         var payments = await Scope(db.TeacherPayments.AsNoTracking(), company).ToListAsync(ct);
