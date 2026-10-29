@@ -212,18 +212,21 @@ public sealed partial class FinanceWorkspaceService(
         var payments = await Scope(db.TeacherPayments.AsNoTracking(), company).ToListAsync(ct);
         var allocations = await Scope(db.TeacherPaymentAllocations.AsNoTracking(), company).ToListAsync(ct);
         var ids = snapshots.Select(x => x.EmployeeId!.Value).Concat(advances.Select(x => x.EmployeeId)).Concat(payments.Select(x => x.EmployeeId)).Distinct().ToList();
+        var snapshotNames = snapshots.GroupBy(x => x.EmployeeId!.Value)
+            .ToDictionary(x => x.Key, x => x.OrderByDescending(row => row.SourceUpdatedAt ?? row.SourceCalculatedAt).First().TeacherName);
         // Snapshot scope is authoritative for imported CSCA teaching costs; a
         // legacy employee may not yet carry the same business-unit assignment.
         var employees = await db.Employees.AsNoTracking()
             .Where(x => x.CompanyId == company && ids.Contains(x.Id) && !x.IsDeleted)
             .ToDictionaryAsync(x => x.Id, ct);
-        return ids.Where(employees.ContainsKey).Select(id =>
+        return ids.Where(id => employees.ContainsKey(id) || snapshotNames.ContainsKey(id)).Select(id =>
         {
             var facts = snapshots.Where(x => x.EmployeeId == id).ToList();
             var issued = advances.Where(x => x.EmployeeId == id && x.Status != "Cancelled").ToList();
             var earned = facts.Sum(x => x.AccruedAmount);
             var settled = facts.Sum(x => Math.Max(IsSourcePaid(x.PaymentStatus, x.PaidAt) ? x.AccruedAmount : 0, allocations.Where(a => a.TeacherCostSnapshotId == x.Id).Sum(a => a.Amount)));
-            return new TeacherCostWorkspaceDto(id, employees[id].FullName, earned, facts.Sum(x => x.ProjectedAmount ?? x.AccruedAmount), settled,
+            var teacherName = employees.TryGetValue(id, out var employee) ? employee.FullName : snapshotNames[id];
+            return new TeacherCostWorkspaceDto(id, teacherName, earned, facts.Sum(x => x.ProjectedAmount ?? x.AccruedAmount), settled,
                 issued.Sum(x => x.Amount), issued.Sum(x => x.ReturnedAmount), issued.Sum(x => x.Amount - x.ReturnedAmount - x.AppliedAmount), Math.Max(0, earned - settled),
                 issued.OrderBy(x => x.IssuedAt).Select(x => new TeacherAdvanceDto(x.Id, x.Amount, x.ReturnedAmount, x.AppliedAmount, x.Amount - x.ReturnedAmount - x.AppliedAmount, x.IssuedAt, x.Description)).ToList(), issued.Sum(x => x.AppliedAmount));
         }).OrderBy(x => x.TeacherName).ToList();
