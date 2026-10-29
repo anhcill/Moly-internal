@@ -20,6 +20,7 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public string Batch { get; set; } = string.Empty;
     public string Schedule { get; set; } = string.Empty;
     public decimal TuitionFee { get; set; }
+    public bool IsTrial { get; set; } = false;
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string Status { get; set; } = "Active"; // Active, Completed, Cancelled

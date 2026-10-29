@@ -167,9 +167,9 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
-    public async Task<bool> CreateCscaClassAsync(string code, string name, string batch, string schedule, decimal tuitionFee, Guid? courseId = null, CancellationToken ct = default)
+    public async Task<bool> CreateCscaClassAsync(string code, string name, string batch, string schedule, decimal tuitionFee, Guid? courseId = null, bool isTrial = false, CancellationToken ct = default)
     {
-        var req = new { Code = code, Name = name, Batch = batch, Schedule = schedule, TuitionFee = tuitionFee, CourseId = courseId, Status = "Active" };
+        var req = new { Code = code, Name = name, Batch = batch, Schedule = schedule, TuitionFee = isTrial ? 0 : tuitionFee, CourseId = courseId, Status = "Active", IsTrial = isTrial };
         using var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync("api/v1/csca/classes", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(res, "Tạo lớp CSCA thất bại", ct);
     }
@@ -287,9 +287,9 @@ public sealed partial class ApiClient
 
     public async Task<bool> UpdateCscaClassAsync(
         Guid classId, string name, string batch, string schedule, decimal tuitionFee,
-        DateTime? startDate, DateTime? endDate, string status, Guid? courseId = null, CancellationToken ct = default)
+        DateTime? startDate, DateTime? endDate, string status, Guid? courseId = null, bool? isTrial = null, CancellationToken ct = default)
     {
-        var req = new { Name = name, Batch = batch, Schedule = schedule, TuitionFee = tuitionFee, StartDate = startDate, EndDate = endDate, CourseId = courseId, Status = status };
+        var req = new { Name = name, Batch = batch, Schedule = schedule, TuitionFee = isTrial == true ? 0 : tuitionFee, StartDate = startDate, EndDate = endDate, CourseId = courseId, Status = status, IsTrial = isTrial };
         using var res = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync($"api/v1/csca/classes/{classId}", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(res, "Cập nhật lớp CSCA thất bại", ct);
     }

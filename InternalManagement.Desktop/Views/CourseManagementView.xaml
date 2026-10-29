@@ -126,6 +126,11 @@
                                 </Grid>
                                 <!-- Course Filter ComboBox -->
                                 <ComboBox x:Name="CscaCourseFilterComboBox" Width="175" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
+                                <ComboBox x:Name="CscaClassTypeFilterComboBox" Width="150" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" SelectionChanged="CscaClassTypeFilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Tất cả dạng lớp" IsSelected="True" />
+                                    <ComboBoxItem Content="Lớp chính thức" />
+                                    <ComboBoxItem Content="Lớp học thử (0đ)" />
+                                </ComboBox>
                             </WrapPanel>
 
                             <!-- VÙNG THAO TÁC (BÊN PHẢI) -->
@@ -144,6 +149,41 @@
                         <DataGrid x:Name="CscaClassesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="CscaClassesDataGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="MÃ LỚP" Binding="{Binding Code}" Width="105" FontWeight="Bold" />
+                                <DataGridTemplateColumn Header="LOẠI LỚP" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#F0FDF4" />
+                                                        <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                                        <Setter Property="BorderThickness" Value="1" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsTrial}" Value="True">
+                                                                <Setter Property="Background" Value="#FEF3C7" />
+                                                                <Setter Property="BorderBrush" Value="#FDE68A" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontWeight="SemiBold" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="Chính thức" />
+                                                            <Setter Property="Foreground" Value="#15803D" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsTrial}" Value="True">
+                                                                    <Setter Property="Text" Value="Học thử (0đ)" />
+                                                                    <Setter Property="Foreground" Value="#B45309" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="TÊN LỚP &amp; KHÓA HỌC" Width="1.7*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -249,6 +289,41 @@
                         <DataGrid x:Name="CscaFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="MÃ LỚP" Binding="{Binding Code}" Width="105" FontWeight="Bold" />
+                                <DataGridTemplateColumn Header="LOẠI LỚP" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#F0FDF4" />
+                                                        <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                                        <Setter Property="BorderThickness" Value="1" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsTrial}" Value="True">
+                                                                <Setter Property="Background" Value="#FEF3C7" />
+                                                                <Setter Property="BorderBrush" Value="#FDE68A" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontWeight="SemiBold" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="Chính thức" />
+                                                            <Setter Property="Foreground" Value="#15803D" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsTrial}" Value="True">
+                                                                    <Setter Property="Text" Value="Học thử (0đ)" />
+                                                                    <Setter Property="Foreground" Value="#B45309" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="TÊN LỚP" Binding="{Binding Name}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 <DataGridTextColumn Header="HỌC PHÍ" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" Width="110" />
                                 <DataGridTextColumn Header="SĨ SỐ" Binding="{Binding StudentCount}" Width="65" />

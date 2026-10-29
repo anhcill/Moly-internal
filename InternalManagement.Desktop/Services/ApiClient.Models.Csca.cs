@@ -75,9 +75,11 @@ public sealed partial class ApiClient
         decimal TotalDiscountAmount = 0,
         decimal ProjectedStaffExpense = 0,
         string StaffExpenseSource = "CSCA_COURSE",
-        DateTime? StaffExpenseLastSyncedAt = null)
+        DateTime? StaffExpenseLastSyncedAt = null,
+        bool IsTrial = false)
     {
         public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
+        public string ClassTypeDisplay => IsTrial || TuitionFee == 0 ? "Học thử (Miễn phí)" : "Chính thức";
     }
 
     public sealed record CscaTeacherCostSummaryItem(
@@ -128,7 +130,8 @@ public sealed partial class ApiClient
         IReadOnlyList<CscaScheduleItem> Schedules,
         ClassFinancialItem FinancialSummary,
         Guid CourseId,
-        string CourseTitle);
+        string CourseTitle,
+        bool IsTrial = false);
 
     public sealed record CscaStudentItem(
         Guid Id,
@@ -169,7 +172,8 @@ public sealed partial class ApiClient
         decimal PayableAmount = 0,
         int? Age = null,
         string? Hometown = null,
-        string? StudentCode = null);
+        string? StudentCode = null,
+        bool IsTrial = false);
 
     public sealed record CscaStaffItem(
         Guid Id,

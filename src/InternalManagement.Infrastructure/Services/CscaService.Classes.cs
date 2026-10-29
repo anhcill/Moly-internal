@@ -60,15 +60,16 @@ public sealed partial class CscaService
                 Name = c.Name,
                 Batch = c.Batch,
                 Schedule = c.Schedule,
-                TuitionFee = c.TuitionFee,
+                TuitionFee = (c.IsTrial || c.TuitionFee == 0) ? 0 : c.TuitionFee,
+                IsTrial = c.IsTrial || c.TuitionFee == 0,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
                 Status = c.Status,
                 StudentCount = c.Students.Count,
                 StaffCount = c.Staff.Count,
-                TotalDiscountAmount = c.Students.Sum(s => s.DiscountAmount),
-                ExpectedRevenue = (c.Students.Count * c.TuitionFee) - c.Students.Sum(s => s.DiscountAmount),
-                TotalRevenue = c.Students.Sum(s => s.PaidAmount),
+                TotalDiscountAmount = (c.IsTrial || c.TuitionFee == 0) ? 0 : c.Students.Sum(s => s.DiscountAmount),
+                ExpectedRevenue = (c.IsTrial || c.TuitionFee == 0) ? 0 : (c.Students.Count * c.TuitionFee) - c.Students.Sum(s => s.DiscountAmount),
+                TotalRevenue = (c.IsTrial || c.TuitionFee == 0) ? 0 : c.Students.Sum(s => s.PaidAmount),
                 TotalStaffExpense = 0,
                 CreatedAt = c.CreatedAt
             })
@@ -108,10 +109,11 @@ public sealed partial class CscaService
             return Result<CscaClassDetailDto>.Failure("Không tìm thấy lớp học CSCA.");
         }
 
+        var isTrial = cls.IsTrial || cls.TuitionFee == 0;
         var totalStudents = cls.Students.Count;
-        var paidStudents = cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
-        var actualRevenue = cls.Students.Sum(s => s.PaidAmount);
-        var expectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
+        var paidStudents = isTrial ? 0 : cls.Students.Count(s => s.PaymentStatus == PaymentStatus.Paid);
+        var actualRevenue = isTrial ? 0 : cls.Students.Sum(s => s.PaidAmount);
+        var expectedRevenue = isTrial ? 0 : cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount));
         var teacherCost = await GetClassTeacherCostAsync(cls, ct);
 
         var detail = new CscaClassDetailDto
@@ -123,7 +125,8 @@ public sealed partial class CscaService
             Name = cls.Name,
             Batch = cls.Batch,
             Schedule = cls.Schedule,
-            TuitionFee = cls.TuitionFee,
+            TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
+            IsTrial = cls.IsTrial,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -275,7 +278,8 @@ public sealed partial class CscaService
             Name = request.Name.Trim(),
             Batch = request.Batch?.Trim() ?? string.Empty,
             Schedule = request.Schedule?.Trim() ?? string.Empty,
-            TuitionFee = request.TuitionFee,
+            TuitionFee = request.IsTrial ? 0 : request.TuitionFee,
+            IsTrial = request.IsTrial,
             StartDate = NormalizeClassDate(request.StartDate),
             EndDate = NormalizeClassDate(request.EndDate),
             Status = string.IsNullOrWhiteSpace(request.Status) ? "Active" : request.Status.Trim(),
@@ -300,7 +304,8 @@ public sealed partial class CscaService
             Name = cls.Name,
             Batch = cls.Batch,
             Schedule = cls.Schedule,
-            TuitionFee = cls.TuitionFee,
+            TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
+            IsTrial = cls.IsTrial,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -357,7 +362,8 @@ public sealed partial class CscaService
         cls.Schedule = cls.Schedules.Count == 0
             ? request.Schedule?.Trim() ?? string.Empty
             : FormatScheduleSummary(cls.Schedules);
-        cls.TuitionFee = request.TuitionFee;
+        cls.IsTrial = request.IsTrial;
+        cls.TuitionFee = request.IsTrial ? 0 : request.TuitionFee;
         cls.StartDate = NormalizeClassDate(request.StartDate);
         cls.EndDate = NormalizeClassDate(request.EndDate);
         cls.Status = request.Status;
@@ -381,6 +387,7 @@ public sealed partial class CscaService
         await _db.SaveChangesAsync(ct);
 
         var teacherCost = await GetClassTeacherCostAsync(cls, ct);
+        var isTrial = cls.IsTrial || cls.TuitionFee == 0;
 
         var dto = new CscaClassDto
         {
@@ -391,15 +398,16 @@ public sealed partial class CscaService
             Name = cls.Name,
             Batch = cls.Batch,
             Schedule = cls.Schedule,
-            TuitionFee = cls.TuitionFee,
+            TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
+            IsTrial = cls.IsTrial,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
             StudentCount = cls.Students.Count,
             StaffCount = cls.Staff.Count,
-            TotalDiscountAmount = cls.Students.Sum(s => s.DiscountAmount),
-            ExpectedRevenue = cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount)),
-            TotalRevenue = cls.Students.Sum(s => s.PaidAmount),
+            TotalDiscountAmount = isTrial ? 0 : cls.Students.Sum(s => s.DiscountAmount),
+            ExpectedRevenue = isTrial ? 0 : cls.Students.Sum(s => GetPayableTuition(cls.TuitionFee, s.DiscountAmount)),
+            TotalRevenue = isTrial ? 0 : cls.Students.Sum(s => s.PaidAmount),
             TotalStaffExpense = teacherCost.AccruedAmount,
             ProjectedStaffExpense = teacherCost.ProjectedAmount,
             StaffExpenseLastSyncedAt = teacherCost.LastSyncedAt,

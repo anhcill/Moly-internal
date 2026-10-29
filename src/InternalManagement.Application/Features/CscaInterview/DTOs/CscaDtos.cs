@@ -14,6 +14,7 @@ public sealed record CscaClassDto
     public string Batch { get; init; } = string.Empty;
     public string Schedule { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
+    public bool IsTrial { get; init; }
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -41,6 +42,7 @@ public sealed record CscaClassDetailDto
     public string Batch { get; init; } = string.Empty;
     public string Schedule { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
+    public bool IsTrial { get; init; }
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -60,7 +62,8 @@ public sealed record CreateCscaClassRequest(
     DateTime? StartDate = null,
     DateTime? EndDate = null,
     string Status = "Active",
-    Guid? CourseId = null);
+    Guid? CourseId = null,
+    bool IsTrial = false);
 
 public sealed record UpdateCscaClassRequest(
     string Name,
@@ -70,7 +73,8 @@ public sealed record UpdateCscaClassRequest(
     DateTime? StartDate = null,
     DateTime? EndDate = null,
     string Status = "Active",
-    Guid? CourseId = null);
+    Guid? CourseId = null,
+    bool IsTrial = false);
 
 // ── CSCA Schedule DTOs ──
 
@@ -253,6 +257,7 @@ public sealed record CscaStudentDirectoryDto
     public string ClassCode { get; init; } = string.Empty;
     public string ClassName { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
+    public bool IsTrial { get; init; }
     public decimal DiscountAmount { get; init; }
     public string? DiscountNote { get; init; }
     public decimal PayableAmount { get; init; }

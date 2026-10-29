@@ -76,6 +76,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<bool>("IsTrial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_trial");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)

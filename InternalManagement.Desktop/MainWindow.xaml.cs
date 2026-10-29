@@ -27,6 +27,7 @@ public partial class MainWindow : Window, IDisposable
     private bool _isInventoryWarehouseSelectionSyncing;
     private bool _isFashionFunctionSelectionSyncing;
     private bool _isPayrollFunctionSelectionSyncing;
+    private bool _isDashboardScopeSelectionSyncing;
     private int _busyOperationCount;
     private static readonly TimeSpan ApiReadyWaitTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan ApiHealthProbeTimeout = TimeSpan.FromSeconds(3);
@@ -71,6 +72,8 @@ public partial class MainWindow : Window, IDisposable
         ViewDashboardContainer.DataContext = _dashboardViewModel;
         ViewDashboardContainer.OpenCoursesRequested += GoToCourses_Click;
         ViewDashboardContainer.OpenQuestionsRequested += GoToQuestions_Click;
+        ViewDashboardContainer.ScopeChanged += DashboardScopeChanged;
+        ViewDashboardContainer.RefreshRequested += RefreshDashboard_Click;
         ViewQuestionsContainer.SetViewModel(new QuestionBankViewModel(_apiClient));
         ViewQuestionsContainer.SearchChanged += (_, _) =>
         {
@@ -102,6 +105,7 @@ public partial class MainWindow : Window, IDisposable
         ViewCustomersContainer.CreateStudentRequested += CreateCustomerStudent_Click;
         ViewCustomersContainer.EditStudentRequested += EditCustomerStudent_Click;
         ViewCustomersContainer.DeleteStudentRequested += DeleteCustomerStudent_Click;
+        ViewCustomersContainer.ConvertTrialRequested += ConvertTrialCustomerStudent_Click;
         ViewSyncContainer.SyncCoursesRequested += TriggerSyncCourses_Click;
         ViewSyncContainer.SyncCustomersRequested += TriggerSyncCustomers_Click;
         ViewSyncContainer.RefreshRunsRequested += RefreshSyncRuns_Click;

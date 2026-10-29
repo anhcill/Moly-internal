@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace InternalManagement.Desktop.Services;
@@ -196,6 +197,7 @@ public static class PromptDialog
             Width = 90,
             Height = 34,
             Margin = new Thickness(0, 0, 8, 0),
+            IsCancel = true,
             Style = Application.Current.TryFindResource("OutlineButton") as Style
         };
         cancelButton.Click += (_, _) => dialog.DialogResult = false;
@@ -205,10 +207,15 @@ public static class PromptDialog
             Content = "Lưu dữ liệu",
             Width = 120,
             Height = 34,
+            IsDefault = true,
             Style = Application.Current.TryFindResource("PrimaryGradientButton") as Style
         };
         saveButton.Click += (_, _) =>
         {
+            // Commit the control that received the paste before reading values.
+            Keyboard.ClearFocus();
+            dialog.UpdateLayout();
+
             var result = new Dictionary<string, string>();
             foreach (var field in fields)
             {

@@ -32,6 +32,7 @@ public partial class MainWindow
     private System.Windows.Controls.TextBox CscaSearchBox => ViewCoursesContainer.CscaSearchBox;
     private System.Windows.Controls.TextBlock CscaSearchPlaceholder => ViewCoursesContainer.CscaSearchPlaceholder;
     private System.Windows.Controls.ComboBox CscaCourseFilterComboBox => ViewCoursesContainer.CscaCourseFilterComboBox;
+    private System.Windows.Controls.ComboBox CscaClassTypeFilterComboBox => ViewCoursesContainer.CscaClassTypeFilterComboBox;
     private System.Windows.Controls.ComboBox CscaFinanceCourseFilterComboBox => ViewCoursesContainer.CscaFinanceCourseFilterComboBox;
     private System.Windows.Controls.DataGrid CscaClassesDataGrid => ViewCoursesContainer.CscaClassesDataGrid;
     private System.Windows.Controls.DataGrid CscaFinanceDataGrid => ViewCoursesContainer.CscaFinanceDataGrid;

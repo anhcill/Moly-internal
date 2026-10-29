@@ -64,7 +64,7 @@ public partial class CscaClassDetailWindow
         ScheduleHeaderGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(48) });
         ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) });
         for (var day = 0; day < 7; day++)
-            ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+            ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 100 });
 
         var corner = new Border
         {
@@ -91,7 +91,7 @@ public partial class CscaClassDetailWindow
         ScheduleCalendarGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(calendarHeight) });
         ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) });
         for (var day = 0; day < 7; day++)
-            ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+            ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 100 });
 
         var gutter = new Canvas { Height = calendarHeight, Background = Brushes.White };
         for (var hour = firstHour; hour <= lastHour; hour++)
@@ -137,7 +137,29 @@ public partial class CscaClassDetailWindow
             Grid.SetColumn(header, dayIndex + 1);
             ScheduleHeaderGrid.Children.Add(header);
 
-            var canvas = new Canvas { Height = calendarHeight, Background = dateIsInCourse ? Brushes.White : Brush("#F8FAFC") };
+            var canvas = new Canvas { Height = calendarHeight, Background = dateIsInCourse ? Brushes.White : Brush("#F8FAFC") };
+            canvas.SizeChanged += (s, e) =>
+            {
+                var newW = Math.Max(70, e.NewSize.Width - 10);
+                foreach (UIElement child in canvas.Children)
+                {
+                    if (child is Button btn)
+                        btn.Width = newW;
+                    else if (child is Border b && b.Height == 1)
+                        b.Width = e.NewSize.Width;
+                }
+            };
+            canvas.SizeChanged += (s, e) =>
+            {
+                var newW = Math.Max(70, e.NewSize.Width - 10);
+                foreach (UIElement child in canvas.Children)
+                {
+                    if (child is Button btn)
+                        btn.Width = newW;
+                    else if (child is Border b && b.Height == 1)
+                        b.Width = e.NewSize.Width;
+                }
+            };
             for (var hour = firstHour; hour <= lastHour; hour++)
             {
                 var line = new Border { Height = 1, Width = 150, Background = Brush("#E9EEF5") };

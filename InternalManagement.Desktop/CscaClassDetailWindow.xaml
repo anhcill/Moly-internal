@@ -4,11 +4,11 @@
         xmlns:local="clr-namespace:InternalManagement.Desktop"
         Title="Chi tiết lớp CSCA"
         Icon="Assets/app-icon.ico"
-        Width="1420"
-        Height="860"
-        MinWidth="1120"
-        MinHeight="680"
-        WindowStartupLocation="CenterOwner"
+        Width="1260"
+        Height="760"
+        MinWidth="920"
+        MinHeight="540"
+        WindowStartupLocation="Manual"
         Background="#F8FAFC"
         FontFamily="Segoe UI"
         Loaded="Window_Loaded">
@@ -106,6 +106,9 @@
                     <TextBlock x:Name="ClassSubtitleText" Text="Đang tải dữ liệu..." FontSize="12" Foreground="#64748B" Margin="0,3,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border x:Name="ClassTypeBadge" CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
+                        <TextBlock x:Name="ClassTypeText" Text="Lớp chính thức" FontWeight="Bold" FontSize="12" />
+                    </Border>
                     <Border Background="#EEF2FF" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Học viên: " Foreground="#6366F1" FontWeight="SemiBold" />
@@ -337,7 +340,7 @@
                                           VerticalScrollBarVisibility="Disabled"
                                           Focusable="False"
                                           PreviewMouseWheel="ScheduleHeaderScrollViewer_PreviewMouseWheel">
-                                <Grid x:Name="ScheduleHeaderGrid" MinWidth="1110" />
+                                <Grid x:Name="ScheduleHeaderGrid" MinWidth="700" />
                             </ScrollViewer>
 
                             <!-- Thân thời khóa biểu hiển thị các giờ và các buổi học (tự động cuộn xuống ca tối) -->
@@ -345,7 +348,7 @@
                                           HorizontalScrollBarVisibility="Auto"
                                           VerticalScrollBarVisibility="Auto"
                                           ScrollChanged="ScheduleCalendarScrollViewer_ScrollChanged">
-                                <Grid x:Name="ScheduleCalendarGrid" MinWidth="1110" />
+                                <Grid x:Name="ScheduleCalendarGrid" MinWidth="700" />
                             </ScrollViewer>
                         </Grid>
                     </Border>

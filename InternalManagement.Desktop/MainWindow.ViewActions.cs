@@ -45,6 +45,7 @@ public partial class MainWindow
             case nameof(CscaMolyTabControl_SelectionChanged): CscaMolyTabControl_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
             case nameof(CscaCourseFilterComboBox_SelectionChanged): CscaCourseFilterComboBox_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
             case nameof(CscaFinanceCourseFilterComboBox_SelectionChanged): CscaFinanceCourseFilterComboBox_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
+            case nameof(CscaClassTypeFilterComboBox_SelectionChanged): CscaClassTypeFilterComboBox_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
             case nameof(CourseSearch_TextChanged): CourseSearch_TextChanged(action.Sender, (TextChangedEventArgs)action.Args); break;
             case nameof(CscaSearch_TextChanged): CscaSearch_TextChanged(action.Sender, (TextChangedEventArgs)action.Args); break;
             case nameof(AutoGenerateSlug_Click): AutoGenerateSlug_Click(action.Sender, action.Args); break;

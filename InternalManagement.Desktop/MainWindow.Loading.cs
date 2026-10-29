@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using InternalManagement.Desktop.Services;
+using InternalManagement.Desktop.ViewModels;
+using InternalManagement.Desktop.Views;
 
 namespace InternalManagement.Desktop;
 
@@ -19,13 +21,61 @@ public partial class MainWindow
 
     private async Task LoadDashboardMetricsAsync()
     {
-        await _dashboardViewModel.RefreshAsync();
+        await _dashboardViewModel.RefreshAsync(ViewDashboardContainer.SelectedScope);
         var isHealthy = _dashboardViewModel.IsApiHealthy;
         ApiHealthBorder.Background = isHealthy ? new SolidColorBrush(Color.FromRgb(236, 253, 245)) : new SolidColorBrush(Color.FromRgb(254, 242, 242));
         ApiHealthBorder.BorderBrush = isHealthy ? new SolidColorBrush(Color.FromRgb(167, 243, 208)) : new SolidColorBrush(Color.FromRgb(254, 202, 202));
         ApiHealthDot.Fill = isHealthy ? new SolidColorBrush(Color.FromRgb(16, 185, 129)) : new SolidColorBrush(Color.FromRgb(239, 68, 68));
         ApiHealthText.Foreground = isHealthy ? new SolidColorBrush(Color.FromRgb(6, 95, 70)) : new SolidColorBrush(Color.FromRgb(153, 27, 27));
         ApiHealthText.Text = isHealthy ? "API Trực Tuyến" : "API Không Khả Dụng";
+    }
+
+    private void DashboardScopeChanged(object? sender, DashboardScopeChangedEventArgs e)
+    {
+        _isDashboardScopeSelectionSyncing = true;
+        try
+        {
+            SegmentTechnologyButton.IsChecked = e.Scope == DashboardViewModel.EducationScope;
+            SegmentFashionButton.IsChecked = e.Scope == DashboardViewModel.FashionScope;
+            TechnologyNavigationGroup.Visibility = e.Scope == DashboardViewModel.EducationScope ? Visibility.Visible : Visibility.Collapsed;
+            FashionNavigationGroup.Visibility = e.Scope == DashboardViewModel.FashionScope ? Visibility.Visible : Visibility.Collapsed;
+        }
+        finally
+        {
+            _isDashboardScopeSelectionSyncing = false;
+        }
+
+        SetActiveArea(e.Scope switch
+        {
+            DashboardViewModel.EducationScope => TechnologySegment,
+            DashboardViewModel.FashionScope => FashionSegment,
+            _ => null
+        });
+        ApplyDashboardHeader(e.Scope);
+        InvalidateLoadedView("dashboard");
+        _ = RunWithBusyAsync("Đang cập nhật báo cáo tổng quan...", LoadDashboardMetricsAsync, "Tổng hợp KPI, biểu đồ và cảnh báo vận hành");
+    }
+
+    private void RefreshDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        InvalidateLoadedView("dashboard");
+        _ = RunWithBusyAsync("Đang làm mới báo cáo tổng quan...", LoadDashboardMetricsAsync, "Đối chiếu dữ liệu mới nhất từ các phân hệ");
+    }
+
+    private void ApplyDashboardHeader(string scope)
+    {
+        ViewHeaderTitle.Text = scope switch
+        {
+            DashboardViewModel.EducationScope => "Tổng Quan Công Nghệ - Giáo Dục",
+            DashboardViewModel.FashionScope => "Tổng Quan Thời Trang",
+            _ => "Tổng Quan Toàn Công Ty"
+        };
+        ViewHeaderSubtitle.Text = scope switch
+        {
+            DashboardViewModel.EducationScope => "Báo cáo lớp học, học viên, công nợ, nhân sự và tài chính CSCA",
+            DashboardViewModel.FashionScope => "Báo cáo sản phẩm, tồn kho, đơn hàng, nhân sự và tài chính thời trang",
+            _ => "Báo cáo điều hành hợp nhất toàn bộ hệ thống MOLY"
+        };
     }
 
     private async Task LoadCoursesAsync(string? search = null)
@@ -123,7 +173,7 @@ public partial class MainWindow
             var title = course?.Title ?? _selectedCourseFilterTitle;
             if (!string.IsNullOrEmpty(title))
             {
-                filtered = filtered.Where(c => string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
+                filtered = filtered.Where(c => c.CourseId == _selectedCourseFilterId.Value || string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
             }
             CscaCourseFilterBanner.Visibility = Visibility.Visible;
             CscaCourseFilterText.Text = $"Đang lọc các lớp thuộc khóa học: {title} ({filtered.Count()} lớp)";
@@ -131,6 +181,14 @@ public partial class MainWindow
         else
         {
             CscaCourseFilterBanner.Visibility = Visibility.Collapsed;
+        }
+
+        if (CscaClassTypeFilterComboBox != null && CscaClassTypeFilterComboBox.SelectedIndex > 0)
+        {
+            if (CscaClassTypeFilterComboBox.SelectedIndex == 1) // Lớp chính thức
+                filtered = filtered.Where(c => !c.IsTrial && c.TuitionFee > 0);
+            else if (CscaClassTypeFilterComboBox.SelectedIndex == 2) // Lớp học thử
+                filtered = filtered.Where(c => c.IsTrial || c.TuitionFee == 0);
         }
 
         var itemsList = filtered.ToList();
@@ -148,7 +206,7 @@ public partial class MainWindow
             var course = _cachedCourses.FirstOrDefault(c => c.Id == _selectedCourseFilterId.Value);
             var title = course?.Title ?? _selectedCourseFilterTitle;
             if (!string.IsNullOrEmpty(title))
-                filtered = filtered.Where(c => string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
+                filtered = filtered.Where(c => c.CourseId == _selectedCourseFilterId.Value || string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
             CscaFinanceScopeText.Text = $"Khóa học: {title}";
         }
         else

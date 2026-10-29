@@ -1,5 +1,6 @@
 using System.Windows;
 using InternalManagement.Desktop.Services;
+using InternalManagement.Desktop.ViewModels;
 
 namespace InternalManagement.Desktop;
 
@@ -60,6 +61,90 @@ public partial class MainWindow
         });
     }
 
+    private async void ConvertTrialCustomerStudent_Click(object? sender, RoutedEventArgs e)
+    {
+        var trialGroup = ViewCustomersContainer.SelectedTrialStudentGroup;
+        if (trialGroup is null)
+        {
+            ShowToast("Hãy chọn một học viên học thử để chuyển sang lớp chính thức.");
+            return;
+        }
+
+        var classesData = await _apiClient.GetCscaClassesAsync();
+        var allPaidClasses = (classesData?.Items ?? Array.Empty<ApiClient.CscaClassItem>())
+            .Where(c => !c.IsTrial && c.TuitionFee > 0)
+            .ToList();
+
+        if (allPaidClasses.Count == 0)
+        {
+            MessageBox.Show(
+                this,
+                "Hiện chưa có lớp chính thức (có học phí) nào trong hệ thống. Vui lòng tạo lớp chính thức trong phần 'Quản lý đào tạo' trước.",
+                "Chưa có lớp chính thức",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var primary = trialGroup.PrimaryEnrollment;
+        var prefill = new ApiClient.CscaStudentItem(
+            Guid.Empty,
+            allPaidClasses[0].Id,
+            trialGroup.StudentName,
+            trialGroup.Age,
+            trialGroup.Hometown,
+            trialGroup.Email,
+            trialGroup.PhoneNumber,
+            PaidAmount: 0,
+            PaymentStatus: 0,
+            JoinedAt: DateTime.UtcNow,
+            Notes: $"Chuyển từ lớp học thử ({trialGroup.ClassesSummary})",
+            DebtDueDate: null,
+            DiscountAmount: 0,
+            DiscountNote: null,
+            PayableAmount: allPaidClasses[0].TuitionFee,
+            StudentCode: trialGroup.StudentCode);
+
+        if (!CscaStudentDialog.TryShowForConversion(
+            this,
+            allPaidClasses[0].Code,
+            allPaidClasses[0].Name,
+            allPaidClasses[0].TuitionFee,
+            out var res,
+            out var selectedClassId,
+            prefillStudent: prefill,
+            apiClient: _apiClient,
+            availableClasses: allPaidClasses,
+            defaultClassId: allPaidClasses[0].Id) || res is null)
+        {
+            return;
+        }
+
+        await RunWithBusyAsync($"Đang chuyển học viên '{res.StudentName}' sang lớp chính thức...", async () =>
+        {
+            var success = await _apiClient.EnrollCscaStudentAsync(
+                selectedClassId,
+                res.StudentName,
+                res.Email,
+                res.PhoneNumber,
+                res.Age,
+                res.Hometown,
+                res.PaidAmount,
+                res.PaymentStatus,
+                res.Notes,
+                res.DebtDueDate,
+                res.DiscountAmount,
+                res.DiscountNote);
+
+            if (success)
+            {
+                var targetClass = allPaidClasses.FirstOrDefault(c => c.Id == selectedClassId);
+                ShowToast($"Đã chuyển thành công học viên '{res.StudentName}' sang lớp chính thức '{targetClass?.Code ?? ""}'.");
+                await LoadCustomersAsync(ViewCustomersContainer.SearchText);
+            }
+        });
+    }
+
     private async void EditCustomerStudent_Click(object? sender, RoutedEventArgs e)
     {
         var student = ViewCustomersContainer.SelectedStudent;
@@ -84,7 +169,8 @@ public partial class MainWindow
             student.DebtDueDate,
             student.DiscountAmount,
             student.DiscountNote,
-            student.PayableAmount);
+            student.PayableAmount,
+            student.StudentCode);
 
         if (!CscaStudentDialog.TryShow(
             this,
@@ -125,6 +211,7 @@ public partial class MainWindow
 
     private async void DeleteCustomerStudent_Click(object? sender, RoutedEventArgs e)
     {
+        var group = ViewCustomersContainer.SelectedPaidStudentGroup ?? ViewCustomersContainer.SelectedTrialStudentGroup;
         var student = ViewCustomersContainer.SelectedStudent;
         if (student is null)
         {
@@ -132,9 +219,13 @@ public partial class MainWindow
             return;
         }
 
+        var message = group != null && group.ClassCount > 1
+            ? $"Học viên '{student.StudentName}' hiện đang tham gia {group.ClassCount} lớp ({group.ClassesSummary}).\nBạn có chắc chắn muốn xóa học viên khỏi lớp '{student.ClassCode}'?"
+            : $"Bạn có chắc chắn muốn xóa học viên '{student.StudentName}' khỏi lớp '{student.ClassCode}' ({student.CourseTitle})?";
+
         var confirm = MessageBox.Show(
             this,
-            $"Bạn có chắc chắn muốn xóa học viên '{student.StudentName}' khỏi lớp '{student.ClassCode}' ({student.CourseTitle})?",
+            message,
             "Xác nhận xóa học viên",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -146,7 +237,7 @@ public partial class MainWindow
             var success = await _apiClient.RemoveCscaStudentAsync(student.ClassId, student.Id);
             if (success)
             {
-                ShowToast($"Đã xóa học viên '{student.StudentName}' khỏi lớp.");
+                ShowToast($"Đã xóa học viên '{student.StudentName}' khỏi lớp '{student.ClassCode}'.");
                 await LoadCustomersAsync(ViewCustomersContainer.SearchText);
             }
         });

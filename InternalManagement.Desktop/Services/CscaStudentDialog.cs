@@ -50,6 +50,33 @@ public static class CscaStudentDialog
         return TryShow(owner, classCode, className, classTuitionFee, out result, out _, student, apiClient, null, defaultClassId);
     }
 
+    public static bool TryShowForConversion(
+        Window owner,
+        string classCode,
+        string className,
+        decimal classTuitionFee,
+        out CscaStudentDialogResult? result,
+        out Guid selectedClassId,
+        ApiClient.CscaStudentItem prefillStudent,
+        ApiClient? apiClient = null,
+        IReadOnlyList<ApiClient.CscaClassItem>? availableClasses = null,
+        Guid? defaultClassId = null)
+    {
+        return TryShow(
+            owner,
+            classCode,
+            className,
+            classTuitionFee,
+            out result,
+            out selectedClassId,
+            student: null,
+            apiClient: apiClient,
+            availableClasses: availableClasses,
+            defaultClassId: defaultClassId,
+            prefillStudent: prefillStudent,
+            customTitle: $"⚡ Chuyển sang lớp chính thức — {prefillStudent.StudentName}");
+    }
+
     public static bool TryShow(
         Window owner,
         string classCode,
@@ -60,7 +87,9 @@ public static class CscaStudentDialog
         ApiClient.CscaStudentItem? student = null,
         ApiClient? apiClient = null,
         IReadOnlyList<ApiClient.CscaClassItem>? availableClasses = null,
-        Guid? defaultClassId = null)
+        Guid? defaultClassId = null,
+        ApiClient.CscaStudentItem? prefillStudent = null,
+        string? customTitle = null)
     {
         result = null;
         selectedClassId = defaultClassId ?? student?.ClassId ?? Guid.Empty;
@@ -88,7 +117,7 @@ public static class CscaStudentDialog
         var dialog = new Window
         {
             Owner = owner,
-            Title = isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : (string.IsNullOrWhiteSpace(currentClassCode) ? "Thêm học viên mới" : $"Thêm học viên vào lớp {currentClassCode}"),
+            Title = customTitle ?? (isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : (string.IsNullOrWhiteSpace(currentClassCode) ? "Thêm học viên mới" : $"Thêm học viên vào lớp {currentClassCode}")),
             Width = 680,
             Height = 740,
             MinWidth = 620,
@@ -122,7 +151,7 @@ public static class CscaStudentDialog
         var titlePanel = new StackPanel();
         titlePanel.Children.Add(new TextBlock
         {
-            Text = isEditing ? $"Sửa thông tin: {student?.StudentName}" : "Thêm học viên mới",
+            Text = customTitle ?? (isEditing ? $"Sửa thông tin: {student?.StudentName}" : "Thêm học viên mới"),
             FontSize = 17,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42))
@@ -249,8 +278,9 @@ public static class CscaStudentDialog
         };
         autoFillSuccessBanner.Child = autoFillSuccessText;
 
-                var codeRow = CreateTwoColumnGrid();
-        var codeBox = CreateTextBox(!string.IsNullOrWhiteSpace(student?.StudentCode) ? student.StudentCode : "(Tự động sinh: CSCA-001...)");
+                var effectiveStudent = student ?? prefillStudent;
+        var codeRow = CreateTwoColumnGrid();
+        var codeBox = CreateTextBox(!string.IsNullOrWhiteSpace(effectiveStudent?.StudentCode) ? effectiveStudent.StudentCode : "(Tự động sinh: CSCA-001...)");
         codeBox.IsReadOnly = true;
         codeBox.Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161));
         codeBox.FontWeight = FontWeights.Bold;
@@ -258,20 +288,26 @@ public static class CscaStudentDialog
 
         // Row 1: Họ tên + Tuổi
         var row1 = CreateTwoColumnGrid();
-        var nameBox = CreateTextBox(student?.StudentName);
-        var ageBox = CreateTextBox(student?.Age?.ToString(CultureInfo.InvariantCulture));
+        var nameBox = CreateTextBox(effectiveStudent?.StudentName);
+        var ageBox = CreateTextBox(effectiveStudent?.Age?.ToString(CultureInfo.InvariantCulture));
         AddFormField(row1.Left, "Họ và tên *", nameBox);
         AddFormField(row1.Right, "Tuổi", ageBox);
 
         // Row 2: Số điện thoại + Email
         var row2 = CreateTwoColumnGrid();
-        var phoneBox = CreateTextBox(student?.PhoneNumber);
-        var emailBox = CreateTextBox(student?.Email);
+        var phoneBox = CreateTextBox(effectiveStudent?.PhoneNumber);
+        var emailBox = CreateTextBox(effectiveStudent?.Email);
         AddFormField(row2.Left, "Số điện thoại", phoneBox);
         AddFormField(row2.Right, "Email", emailBox);
 
         // Row 3: Quê quán
-        var hometownBox = CreateTextBox(student?.Hometown);
+        var hometownBox = CreateTextBox(effectiveStudent?.Hometown);
+
+        if (prefillStudent != null)
+        {
+            autoFillSuccessText.Text = $"✓ Đã chuyển thông tin cá nhân của học viên '{prefillStudent.StudentName}'. Vui lòng chọn lớp chính thức và nhập học phí.";
+            autoFillSuccessBanner.Visibility = Visibility.Visible;
+        }
         var hometownPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
         AddFormField(hometownPanel, "Quê quán", hometownBox);
 

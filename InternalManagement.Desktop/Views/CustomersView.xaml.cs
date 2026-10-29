@@ -16,14 +16,22 @@ public partial class CustomersView : UserControl
     public CustomersViewModel? ViewModel { get; private set; }
     public string SearchText => CustomerSearchBox.Text;
 
+    public CscaStudentGroupItem? SelectedPaidStudentGroup =>
+        PaidStudentsDataGrid.SelectedItem as CscaStudentGroupItem;
+
+    public CscaStudentGroupItem? SelectedTrialStudentGroup =>
+        TrialStudentsDataGrid.SelectedItem as CscaStudentGroupItem;
+
+    // For backwards compatibility:
     public ApiClient.CscaStudentDirectoryItem? SelectedStudent =>
-        StudentsDataGrid.SelectedItem as ApiClient.CscaStudentDirectoryItem;
+        SelectedPaidStudentGroup?.PrimaryEnrollment ?? SelectedTrialStudentGroup?.PrimaryEnrollment;
 
     public event RoutedEventHandler? SearchChanged;
     public event RoutedEventHandler? RefreshRequested;
     public event RoutedEventHandler? CreateStudentRequested;
     public event RoutedEventHandler? EditStudentRequested;
     public event RoutedEventHandler? DeleteStudentRequested;
+    public event RoutedEventHandler? ConvertTrialRequested;
 
     public void SetViewModel(CustomersViewModel viewModel)
     {
@@ -40,35 +48,81 @@ public partial class CustomersView : UserControl
     private void AddStudent_Click(object sender, RoutedEventArgs e) =>
         CreateStudentRequested?.Invoke(sender, e);
 
-    private void EditStudent_Click(object sender, RoutedEventArgs e) =>
+    // Paid students actions
+    private void EditPaidStudent_Click(object sender, RoutedEventArgs e) =>
         EditStudentRequested?.Invoke(sender, e);
 
-    private void DeleteStudent_Click(object sender, RoutedEventArgs e) =>
+    private void DeletePaidStudent_Click(object sender, RoutedEventArgs e) =>
         DeleteStudentRequested?.Invoke(sender, e);
 
-    private void EditStudentRow_Click(object sender, RoutedEventArgs e)
+    private void EditPaidStudentRow_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is ApiClient.CscaStudentDirectoryItem item)
+        if (sender is FrameworkElement fe && fe.DataContext is CscaStudentGroupItem item)
         {
-            StudentsDataGrid.SelectedItem = item;
+            PaidStudentsDataGrid.SelectedItem = item;
         }
         EditStudentRequested?.Invoke(sender, e);
     }
 
-    private void DeleteStudentRow_Click(object sender, RoutedEventArgs e)
+    private void DeletePaidStudentRow_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is ApiClient.CscaStudentDirectoryItem item)
+        if (sender is FrameworkElement fe && fe.DataContext is CscaStudentGroupItem item)
         {
-            StudentsDataGrid.SelectedItem = item;
+            PaidStudentsDataGrid.SelectedItem = item;
         }
         DeleteStudentRequested?.Invoke(sender, e);
     }
 
-    private void StudentsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void PaidStudentsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (SelectedStudent != null)
+        if (SelectedPaidStudentGroup != null)
         {
             EditStudentRequested?.Invoke(sender, e);
         }
+    }
+
+    // Trial students actions
+    private void EditTrialStudent_Click(object sender, RoutedEventArgs e) =>
+        EditStudentRequested?.Invoke(sender, e);
+
+    private void DeleteTrialStudent_Click(object sender, RoutedEventArgs e) =>
+        DeleteStudentRequested?.Invoke(sender, e);
+
+    private void EditTrialStudentRow_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is CscaStudentGroupItem item)
+        {
+            TrialStudentsDataGrid.SelectedItem = item;
+        }
+        EditStudentRequested?.Invoke(sender, e);
+    }
+
+    private void DeleteTrialStudentRow_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is CscaStudentGroupItem item)
+        {
+            TrialStudentsDataGrid.SelectedItem = item;
+        }
+        DeleteStudentRequested?.Invoke(sender, e);
+    }
+
+    private void TrialStudentsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (SelectedTrialStudentGroup != null)
+        {
+            EditStudentRequested?.Invoke(sender, e);
+        }
+    }
+
+    private void ConvertSelectedTrialStudent_Click(object sender, RoutedEventArgs e) =>
+        ConvertTrialRequested?.Invoke(sender, e);
+
+    private void ConvertTrialStudentRow_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is CscaStudentGroupItem item)
+        {
+            TrialStudentsDataGrid.SelectedItem = item;
+        }
+        ConvertTrialRequested?.Invoke(sender, e);
     }
 }

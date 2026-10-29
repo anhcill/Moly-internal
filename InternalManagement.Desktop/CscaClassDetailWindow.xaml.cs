@@ -19,6 +19,13 @@ public partial class CscaClassDetailWindow : Window
         InitializeComponent();
         _apiClient = apiClient;
         _classId = classId;
+
+        // Tự động căn chỉnh kích thước theo vùng hiển thị thực tế (WorkArea) để không bị lệch mép trên/dưới màn hình
+        var workArea = SystemParameters.WorkArea;
+        Width = Math.Min(1260, Math.Max(920, workArea.Width - 40));
+        Height = Math.Min(760, Math.Max(540, workArea.Height - 40));
+        Left = Math.Max(0, workArea.Left + (workArea.Width - Width) / 2);
+        Top = Math.Max(0, workArea.Top + (workArea.Height - Height) / 2);
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -72,6 +79,38 @@ public partial class CscaClassDetailWindow : Window
             : detail.Schedule;
 
         ClassSubtitleText.Text = $"{detail.Batch}  •  {scheduleSummary}  •  Mở ngày {FormatDate(detail.CreatedAt)}";
+        if (detail.IsTrial || detail.TuitionFee == 0)
+        {
+            ClassTypeBadge.Background = Brush("#FEF3C7");
+            ClassTypeBadge.BorderBrush = Brush("#FDE68A");
+            ClassTypeBadge.BorderThickness = new Thickness(1);
+            ClassTypeText.Foreground = Brush("#B45309");
+            ClassTypeText.Text = "LỚP HỌC THỬ (0 đ)";
+        }
+        else
+        {
+            ClassTypeBadge.Background = Brush("#ECFDF5");
+            ClassTypeBadge.BorderBrush = Brush("#A7F3D0");
+            ClassTypeBadge.BorderThickness = new Thickness(1);
+            ClassTypeText.Foreground = Brush("#065F46");
+            ClassTypeText.Text = "LỚP CHÍNH THỨC";
+        }
+        if (detail.IsTrial || detail.TuitionFee == 0)
+        {
+            ClassTypeBadge.Background = Brush("#FEF3C7");
+            ClassTypeBadge.BorderBrush = Brush("#FDE68A");
+            ClassTypeBadge.BorderThickness = new Thickness(1);
+            ClassTypeText.Foreground = Brush("#B45309");
+            ClassTypeText.Text = "LỚP HỌC THỬ (0 đ)";
+        }
+        else
+        {
+            ClassTypeBadge.Background = Brush("#ECFDF5");
+            ClassTypeBadge.BorderBrush = Brush("#A7F3D0");
+            ClassTypeBadge.BorderThickness = new Thickness(1);
+            ClassTypeText.Foreground = Brush("#065F46");
+            ClassTypeText.Text = "LỚP CHÍNH THỨC";
+        }
         StudentCountText.Text = detail.Students.Count.ToString(CultureInfo.CurrentCulture);
         RevenueText.Text = Money(detail.FinancialSummary.ActualRevenue);
         DebtText.Text = Money(Math.Max(0, detail.FinancialSummary.ExpectedRevenue - detail.FinancialSummary.ActualRevenue));

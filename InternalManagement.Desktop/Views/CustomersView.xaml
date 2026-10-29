@@ -34,7 +34,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock Text="Học viên &amp; Khách hàng" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                    <TextBlock Text="Học viên đồng bộ trực tiếp từ các lớp học EdTech; thông tin khách hàng đăng ký toàn hệ thống." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                    <TextBlock Text="Phân tách học viên chính thức, học viên học thử (miễn phí), và khách hàng đăng ký từ website. Mỗi học viên chỉ xuất hiện 1 lần duy nhất." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBox x:Name="CustomerSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm tên, SĐT, email..." Margin="0,0,10,0" TextChanged="CustomerSearch_TextChanged" />
@@ -46,8 +46,9 @@
 
         <!-- DATA TABS -->
         <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
-            <TabControl Background="Transparent" BorderThickness="0">
-                <TabItem Header="Học viên từ lớp học" FontWeight="SemiBold">
+            <TabControl x:Name="CustomerTabs" Background="Transparent" BorderThickness="0">
+                <!-- TAB 1: HỌC VIÊN CHÍNH THỨC -->
+                <TabItem Header="Học viên chính thức (có học phí)" FontWeight="SemiBold">
                     <Grid Margin="0,8,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -63,45 +64,45 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="+ Thêm học viên" Click="AddStudent_Click" Style="{StaticResource ModernPrimaryButton}" Height="32" Padding="14,0" Margin="0,0,8,0" />
-                                    <Button x:Name="EditStudentButton" Content="✎ Sửa học viên" Click="EditStudent_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="12,0" Margin="0,0,8,0" />
-                                    <Button x:Name="DeleteStudentButton" Click="DeleteStudent_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="32" Padding="12,0" Margin="0,0,8,0">
+                                    <Button x:Name="EditPaidStudentButton" Content="✎ Sửa thông tin" Click="EditPaidStudent_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="12,0" Margin="0,0,8,0" />
+                                    <Button x:Name="DeletePaidStudentButton" Click="DeletePaidStudent_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="32" Padding="12,0" Margin="0,0,8,0">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74D;" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="Xóa học viên" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Xóa khỏi lớp" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="💡 Double-click hoặc bấm nút Thao tác để sửa nhanh thông tin học viên." Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <TextBlock Grid.Column="1" Text="💡 Mỗi học viên xuất hiện duy nhất 1 lần; nếu học nhiều lớp sẽ gộp mã lớp và cộng dồn học phí." Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
                             </Grid>
                         </Border>
 
-                        <DataGrid Grid.Row="1" x:Name="StudentsDataGrid" ItemsSource="{Binding Students}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="StudentsDataGrid_MouseDoubleClick">
+                        <DataGrid Grid.Row="1" x:Name="PaidStudentsDataGrid" ItemsSource="{Binding PaidStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="PaidStudentsDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="+ Thêm học viên mới" Click="AddStudent_Click" FontWeight="SemiBold" />
-                                    <MenuItem Header="✎ Sửa thông tin &amp; học phí" Click="EditStudent_Click" />
+                                    <MenuItem Header="✎ Sửa thông tin &amp; học phí" Click="EditPaidStudent_Click" />
                                     <Separator />
-                                    <MenuItem Header="🗑 Xóa học viên khỏi lớp" Click="DeleteStudent_Click" Foreground="#DC2626" />
+                                    <MenuItem Header="🗑 Xóa học viên khỏi lớp" Click="DeletePaidStudent_Click" Foreground="#DC2626" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" MinWidth="150" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                 <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="120" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="170" Width="1.8*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CourseTitle}" MinWidth="150" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                <DataGridTextColumn Header="LỚP" Binding="{Binding ClassCode}" MinWidth="110" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TuitionFee, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding DiscountAmount, StringFormat='{}{0:N0} đ'}" MinWidth="90" Width="100" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding PayableAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
-                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding PaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
-                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}" MinWidth="95" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridAmberTextCellStyle}" />
-                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding DebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" MinWidth="95" Width="100" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
+                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="160" Width="1.6*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="CÁC LỚP THAM GIA" Binding="{Binding ClassesSummary}" MinWidth="140" Width="1.5*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CoursesSummary}" MinWidth="140" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="HỌC PHÍ GỐC" Binding="{Binding TotalTuitionFee, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="GIẢM GIÁ" Binding="{Binding TotalDiscountAmount, StringFormat='{}{0:N0} đ'}" MinWidth="90" Width="100" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="CẦN THU" Binding="{Binding TotalPayableAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="ĐÃ ĐÓNG" Binding="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}" MinWidth="100" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridGreenTextCellStyle}" />
+                                <DataGridTextColumn Header="CÒN NỢ" Binding="{Binding TotalDebtAmount, StringFormat='{}{0:N0} đ'}" MinWidth="95" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridAmberTextCellStyle}" />
+                                <DataGridTextColumn Header="HẸN TRẢ" Binding="{Binding LatestDebtDueDate, StringFormat='{}{0:dd/MM/yyyy}'}" MinWidth="95" Width="100" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
                                 <DataGridTemplateColumn Header="THAO TÁC" MinWidth="140" Width="145">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Button Content="Sửa" Click="EditStudentRow_Click" Style="{StaticResource StudentRowButton}" Margin="0,0,6,0" />
-                                                <Button Content="Xóa" Click="DeleteStudentRow_Click" Style="{StaticResource StudentRowDangerButton}" />
+                                                <Button Content="Sửa" Click="EditPaidStudentRow_Click" Style="{StaticResource StudentRowButton}" Margin="0,0,6,0" />
+                                                <Button Content="Xóa" Click="DeletePaidStudentRow_Click" Style="{StaticResource StudentRowDangerButton}" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -110,7 +111,65 @@
                         </DataGrid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Khách hàng đăng ký" FontWeight="SemiBold">
+
+                <!-- TAB 2: HỌC VIÊN HỌC THỬ (MIỄN PHÍ) -->
+                <TabItem Header="Học viên học thử (miễn phí)" FontWeight="SemiBold">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- ACTION SUB-TOOLBAR -->
+                        <Border Grid.Row="0" Background="#FFFBEB" CornerRadius="8" Padding="10,8" Margin="0,0,0,8" BorderBrush="#FDE68A" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="+ Thêm học viên học thử" Click="AddStudent_Click" Style="{StaticResource ModernPrimaryButton}" Height="32" Padding="14,0" Margin="0,0,8,0" />
+                                    <Button Content="⚡ Chuyển sang chính thức" Click="ConvertSelectedTrialStudent_Click" Style="{StaticResource OutlineButton}" Foreground="#D97706" BorderBrush="#FCD34D" Height="32" Padding="12,0" Margin="0,0,8,0" ToolTip="Chuyển học viên học thử đang chọn sang lớp chính thức có phí" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="💡 Bấm '⚡ Chuyển chính thức' để lập tức ghi danh học viên vào lớp có học phí." Foreground="#B45309" FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            </Grid>
+                        </Border>
+
+                        <DataGrid Grid.Row="1" x:Name="TrialStudentsDataGrid" ItemsSource="{Binding TrialStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="TrialStudentsDataGrid_MouseDoubleClick">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="⚡ Chuyển sang lớp chính thức" Click="ConvertSelectedTrialStudent_Click" FontWeight="Bold" />
+                                    <MenuItem Header="✎ Sửa thông tin" Click="EditTrialStudent_Click" />
+                                    <Separator />
+                                    <MenuItem Header="🗑 Xóa khỏi lớp học thử" Click="DeleteTrialStudent_Click" Foreground="#DC2626" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" MinWidth="150" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                <DataGridTextColumn Header="SỐ ĐIỆN THOẠI" Binding="{Binding PhoneNumber}" MinWidth="110" Width="120" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="EMAIL" Binding="{Binding Email}" MinWidth="160" Width="1.6*" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                                <DataGridTextColumn Header="LỚP HỌC THỬ" Binding="{Binding ClassesSummary}" MinWidth="140" Width="1.5*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="KHÓA HỌC" Binding="{Binding CoursesSummary}" MinWidth="140" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTextColumn Header="NGÀY THAM GIA" Binding="{Binding JoinedAt, StringFormat='{}{0:dd/MM/yyyy}'}" MinWidth="105" Width="115" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
+                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Notes}" MinWidth="120" Width="1.6*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                <DataGridTemplateColumn Header="THAO TÁC" MinWidth="220" Width="230">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Content="⚡ Chuyển chính thức" Click="ConvertTrialStudentRow_Click" Style="{StaticResource StudentRowButton}" Background="#FEF3C7" BorderBrush="#FDE68A" Foreground="#B45309" FontWeight="Bold" Margin="0,0,6,0" ToolTip="Đăng ký học viên này vào lớp chính thức (có học phí)" />
+                                                <Button Content="Sửa" Click="EditTrialStudentRow_Click" Style="{StaticResource StudentRowButton}" Margin="0,0,6,0" />
+                                                <Button Content="Xóa" Click="DeleteTrialStudentRow_Click" Style="{StaticResource StudentRowDangerButton}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 3: KHÁCH HÀNG ĐĂNG KÝ (WEBSITE) -->
+                <TabItem Header="Khách hàng đăng ký (Website)" FontWeight="SemiBold">
                     <Grid Margin="0,8,0,0">
                         <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <DataGrid.Columns>

@@ -88,16 +88,31 @@ public partial class MainWindow
             new PromptField("courseId", "Khóa học", InitialValue: defaultCourseId, Options: courses.Items
                 .Select(course => new PromptOption(course.Id.ToString(), course.Title))
                 .ToArray()),
+            new PromptField("classType", "Loại lớp học", InitialValue: "paid", Options: new[]
+            {
+                new PromptOption("paid", "Lớp chính thức (có học phí)"),
+                new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
+            }),
             new PromptField("code", "Mã lớp (tự động tăng, có thể sửa)", InitialValue: nextCode),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
-            new PromptField("tuitionFee", "Học phí (VND)", InitialValue: "0")
+            new PromptField("tuitionFee", "Học phí (VND) - tự động về 0đ nếu là lớp học thử", InitialValue: "0")
         }, out var values)) return;
 
-        if (!decimal.TryParse(values["tuitionFee"], NumberStyles.Number, CultureInfo.InvariantCulture, out var tuitionFee) || tuitionFee < 0)
+        var isTrial = values.TryGetValue("classType", out var cType) && cType == "trial";
+        decimal tuitionFee = 0;
+        if (isTrial)
+        {
+            tuitionFee = 0;
+        }
+        else if (!decimal.TryParse(values["tuitionFee"], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedFee) || parsedFee < 0)
         {
             MessageBox.Show("Học phí phải là số không âm.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
+        }
+        else
+        {
+            tuitionFee = parsedFee;
         }
 
         var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
@@ -110,10 +125,10 @@ public partial class MainWindow
 
         await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
-            await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId);
+            await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId, isTrial: isTrial);
             await LoadCscaClassesAsync();
             await LoadCoursesAsync();
-            MessageBox.Show($"Tạo thành công lớp học: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Tạo thành công {(isTrial ? "lớp học thử (miễn phí)" : "lớp chính thức")}: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
@@ -168,6 +183,11 @@ public partial class MainWindow
         {
             new PromptField("name", "Tên lớp", cls.Name),
             new PromptField("batch", "Đợt / khóa", cls.Batch),
+            new PromptField("classType", "Loại lớp", cls.IsTrial || cls.TuitionFee == 0 ? "trial" : "paid", Options: new[]
+            {
+                new PromptOption("paid", "Lớp chính thức (có học phí)"),
+                new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
+            }),
             new PromptField("tuitionFee", "Học phí", cls.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
             new PromptField("status", "Trạng thái", cls.Status, Options: new[]
             {
@@ -177,15 +197,25 @@ public partial class MainWindow
             })
         }, out var values)) return;
 
-        if (!decimal.TryParse(values["tuitionFee"], NumberStyles.Number, CultureInfo.InvariantCulture, out var tuitionFee) || tuitionFee < 0)
+        var isTrial = values.TryGetValue("classType", out var cType) && cType == "trial";
+        decimal tuitionFee = 0;
+        if (isTrial)
+        {
+            tuitionFee = 0;
+        }
+        else if (!decimal.TryParse(values["tuitionFee"], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedFee) || parsedFee < 0)
         {
             MessageBox.Show("Học phí phải là số không âm.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        else
+        {
+            tuitionFee = parsedFee;
+        }
 
         await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
-            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"]);
+            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"], isTrial: isTrial);
             await LoadCscaClassesAsync();
             MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });

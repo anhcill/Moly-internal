@@ -463,24 +463,57 @@ public partial class MainWindow
         });
     }
 
+    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+    {
+        while (child != null)
+        {
+            if (child is T parent) return parent;
+            child = VisualTreeHelper.GetParent(child);
+        }
+        return null;
+    }
+
     private void CoursesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        => FilterClassesBySelectedCourse();
+    {
+        var row = FindVisualParent<DataGridRow>(e.OriginalSource as DependencyObject);
+        var course = row?.Item as ApiClient.CourseItem ?? CoursesDataGrid.SelectedItem as ApiClient.CourseItem;
+        if (course != null)
+        {
+            FilterClassesByCourse(course);
+        }
+    }
 
     private void ViewCourseClasses_Click(object sender, RoutedEventArgs e)
-        => FilterClassesBySelectedCourse();
+    {
+        if (CoursesDataGrid.SelectedItem is ApiClient.CourseItem course)
+        {
+            FilterClassesByCourse(course);
+        }
+        else
+        {
+            ShowToast("Vui lòng chọn một khóa học.");
+        }
+    }
 
     private void FilterClassesBySelectedCourse()
     {
-        if (CoursesDataGrid.SelectedItem is not ApiClient.CourseItem course)
+        if (CoursesDataGrid.SelectedItem is ApiClient.CourseItem course)
+        {
+            FilterClassesByCourse(course);
+        }
+        else
         {
             ShowToast("Vui lòng chọn một khóa học.");
-            return;
         }
+    }
 
+    private void FilterClassesByCourse(ApiClient.CourseItem course)
+    {
         _selectedCourseFilterId = course.Id;
         _selectedCourseFilterTitle = course.Title;
 
         CourseModuleTabControl.SelectedItem = TabItemClasses;
+        SyncCourseNavigationSelection(1);
 
         if (CscaCourseFilterComboBox.ItemsSource is IEnumerable<CourseFilterOption> options)
         {
@@ -491,8 +524,15 @@ public partial class MainWindow
             }
         }
 
-        ApplyCscaClassFilter();
-        ApplyCscaFinanceFilter();
+        if (_allCscaClasses.Count == 0)
+        {
+            _ = LoadCscaClassesAsync();
+        }
+        else
+        {
+            ApplyCscaClassFilter();
+            ApplyCscaFinanceFilter();
+        }
     }
 
     private void ClearCscaCourseFilter_Click(object sender, RoutedEventArgs e)
@@ -520,6 +560,12 @@ public partial class MainWindow
 
     private void CscaFinanceCourseFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         => UpdateCscaCourseFilter(CscaFinanceCourseFilterComboBox, CscaCourseFilterComboBox);
+
+    private void CscaClassTypeFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isUiReady) return;
+        ApplyCscaClassFilter();
+    }
 
     private void UpdateCscaCourseFilter(ComboBox source, ComboBox target)
     {

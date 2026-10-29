@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using InternalManagement.Desktop.Services;
+using InternalManagement.Desktop.ViewModels;
 
 namespace InternalManagement.Desktop;
 
@@ -81,6 +82,7 @@ public partial class MainWindow
         DispatchLmsOutboxButton.Visibility = canOperateLms ? Visibility.Visible : Visibility.Collapsed;
 
         NavDashboard.Visibility = Visibility.Visible;
+        ViewDashboardContainer.SelectScope(DashboardViewModel.CompanyScope);
         NavDashboard.IsChecked = true;
         SetActiveArea(null);
         SetViewStatus("Đã tải quyền truy cập theo tài khoản hiện tại");
@@ -289,7 +291,7 @@ public partial class MainWindow
 
     private void SegmentSelector_Checked(object sender, RoutedEventArgs e)
     {
-        if (!_isUiReady || sender is not RadioButton selector) return;
+        if (!_isUiReady || _isDashboardScopeSelectionSyncing || sender is not RadioButton selector) return;
 
         var selectedSegment = selector == SegmentFashionButton ? FashionSegment : TechnologySegment;
         _activeSegment = selectedSegment;
@@ -297,14 +299,19 @@ public partial class MainWindow
         FashionNavigationGroup.Visibility = selectedSegment == FashionSegment ? Visibility.Visible : Visibility.Collapsed;
         SetActiveArea(selectedSegment);
 
-        // Open the first permitted function so the selected business area is immediately usable.
-        var firstAvailableNavigation = selectedSegment == FashionSegment
-            ? new[] { NavFashionResources, NavFashion, NavFashionInternalCustomers, NavFashionEmployees, NavFashionAttendance, NavFashionPayroll }
-            : new[] { NavCustomers, NavCourses, NavCscaMoly, NavInterview, NavQuestions, NavTechResources, NavTechInternalCustomers, NavTechEmployees, NavTechAttendance, NavTechPayroll };
-        var firstVisibleNavigation = firstAvailableNavigation.FirstOrDefault(item => item.Visibility == Visibility.Visible && item.IsEnabled);
-        if (firstVisibleNavigation is not null)
+        var dashboardScope = selectedSegment == FashionSegment
+            ? DashboardViewModel.FashionScope
+            : DashboardViewModel.EducationScope;
+        ViewDashboardContainer.SelectScope(dashboardScope);
+        if (NavDashboard.IsChecked == true)
         {
-            firstVisibleNavigation.IsChecked = true;
+            ApplyDashboardHeader(dashboardScope);
+            InvalidateLoadedView("dashboard");
+            _ = RunWithBusyAsync("Đang tải tổng quan phân hệ...", LoadDashboardMetricsAsync, "Tổng hợp báo cáo theo phân hệ vừa chọn");
+        }
+        else
+        {
+            NavDashboard.IsChecked = true;
         }
     }
 

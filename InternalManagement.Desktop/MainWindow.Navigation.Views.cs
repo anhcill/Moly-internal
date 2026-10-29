@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using InternalManagement.Desktop.Services;
+using InternalManagement.Desktop.ViewModels;
 
 namespace InternalManagement.Desktop;
 
@@ -52,10 +53,15 @@ public partial class MainWindow
 
         if (sender == NavDashboard)
         {
-            SetActiveArea(null);
+            var dashboardScope = ViewDashboardContainer.SelectedScope;
+            SetActiveArea(dashboardScope switch
+            {
+                DashboardViewModel.EducationScope => TechnologySegment,
+                DashboardViewModel.FashionScope => FashionSegment,
+                _ => null
+            });
             ViewDashboardContainer.Visibility = Visibility.Visible;
-            ViewHeaderTitle.Text = "Tổng Quan Hệ Thống";
-            ViewHeaderSubtitle.Text = "Không gian làm việc MOLY Internal Management";
+            ApplyDashboardHeader(dashboardScope);
             SetViewStatus("Đã sẵn sàng");
             _ = LoadViewOnceAsync("dashboard", "Đang cập nhật chỉ số tổng quan...", async () =>
             {
