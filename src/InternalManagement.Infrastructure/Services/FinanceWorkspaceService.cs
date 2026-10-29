@@ -208,7 +208,11 @@ public sealed partial class FinanceWorkspaceService(
         var payments = await Scope(db.TeacherPayments.AsNoTracking(), company).ToListAsync(ct);
         var allocations = await Scope(db.TeacherPaymentAllocations.AsNoTracking(), company).ToListAsync(ct);
         var ids = snapshots.Select(x => x.EmployeeId!.Value).Concat(advances.Select(x => x.EmployeeId)).Concat(payments.Select(x => x.EmployeeId)).Distinct().ToList();
-        var employees = await Scope(db.Employees.AsNoTracking(), company).Where(x => ids.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id, ct);
+        // Snapshot scope is authoritative for imported CSCA teaching costs; a
+        // legacy employee may not yet carry the same business-unit assignment.
+        var employees = await db.Employees.AsNoTracking()
+            .Where(x => x.CompanyId == company && ids.Contains(x.Id) && !x.IsDeleted)
+            .ToDictionaryAsync(x => x.Id, ct);
         return ids.Where(employees.ContainsKey).Select(id =>
         {
             var facts = snapshots.Where(x => x.EmployeeId == id).ToList();
