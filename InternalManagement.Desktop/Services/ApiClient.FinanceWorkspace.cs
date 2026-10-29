@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace InternalManagement.Desktop.Services;
@@ -10,7 +11,7 @@ public sealed partial class ApiClient
         decimal costFactor = 1m, decimal openingCash = 0m, CancellationToken ct = default)
     {
         var query = FormattableString.Invariant($"from={fromMonth:yyyy-MM-dd}&horizonMonths={horizonMonths}&collectionPercent={collectionPercent}&costFactor={costFactor}&openingCash={openingCash}");
-        using var response = await SendWithRefreshAsync(() => _httpClient.GetAsync($"api/v1/finance/workspace?{query}", ct), ct);
+        using var response = await SendFinanceWorkspaceAsync(HttpMethod.Get, $"api/v1/finance/workspace?{query}", null, ct);
         await EnsureFinanceWorkspaceSuccessAsync(response, ct);
         var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<FinanceWorkspaceReportItem>>(_jsonOptions, ct);
         return envelope?.Data;
@@ -18,9 +19,31 @@ public sealed partial class ApiClient
 
     private async Task<bool> FinanceWorkspacePostAsync(string path, object body, CancellationToken ct)
     {
-        using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync(path, body, _jsonOptions, ct), ct);
+        using var response = await SendFinanceWorkspaceAsync(HttpMethod.Post, path, body, ct);
         await EnsureFinanceWorkspaceSuccessAsync(response, ct);
         return true;
+    }
+
+    private Task<System.Net.Http.HttpResponseMessage> SendFinanceWorkspaceAsync(
+        HttpMethod method, string path, object? body, CancellationToken ct)
+    {
+        return SendWithRefreshAsync(async () =>
+        {
+            using var request = new HttpRequestMessage(method, path);
+            if (body is not null)
+            {
+                request.Content = JsonContent.Create(body, options: _jsonOptions);
+            }
+
+            var cscaBusinessUnitId = CurrentSession?.User.AccessibleBusinessUnits?
+                .FirstOrDefault(unit => string.Equals(unit.Code, "CSCA", StringComparison.OrdinalIgnoreCase))?.Id;
+            if (cscaBusinessUnitId.HasValue)
+            {
+                request.Headers.Add("X-Business-Unit-ID", cscaBusinessUnitId.Value.ToString("D"));
+            }
+
+            return await _httpClient.SendAsync(request, ct);
+        }, ct);
     }
 
     private async Task EnsureFinanceWorkspaceSuccessAsync(System.Net.Http.HttpResponseMessage response, CancellationToken ct)
@@ -38,8 +61,11 @@ public sealed partial class ApiClient
 
     public async Task<bool> UpdateStudentReceivableAsync(Guid receivableId, DateTime? dueDate, bool cancelled = false, CancellationToken ct = default)
     {
-        using var response = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync(
-            $"api/v1/finance/workspace/receivables/{receivableId:D}", new { DueDate = dueDate, Cancelled = cancelled }, _jsonOptions, ct), ct);
+        using var response = await SendFinanceWorkspaceAsync(
+            HttpMethod.Put,
+            $"api/v1/finance/workspace/receivables/{receivableId:D}",
+            new { DueDate = dueDate, Cancelled = cancelled },
+            ct);
         await EnsureFinanceWorkspaceSuccessAsync(response, ct);
         return true;
     }

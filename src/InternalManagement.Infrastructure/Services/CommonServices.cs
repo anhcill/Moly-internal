@@ -6,6 +6,7 @@ namespace InternalManagement.Infrastructure.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
+    private const string BusinessUnitHeader = "X-Business-Unit-ID";
     private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public CurrentUserService(IHttpContextAccessor? httpContextAccessor)
@@ -42,7 +43,12 @@ public class CurrentUserService : ICurrentUserService
     {
         get
         {
-            var buClaim = _httpContextAccessor?.HttpContext?.User?.FindFirstValue("bu_id");
+            var httpContext = _httpContextAccessor?.HttpContext;
+            var selectedBusinessUnit = httpContext?.Request.Headers[BusinessUnitHeader].ToString();
+            if (Guid.TryParse(selectedBusinessUnit, out var selectedId))
+                return selectedId;
+
+            var buClaim = httpContext?.User?.FindFirstValue("bu_id");
             return Guid.TryParse(buClaim, out var id) ? id : null;
         }
     }

@@ -15,17 +15,20 @@ public sealed class FinanceWorkspaceClientTests
     public async Task ReceivableUpdate_SendsDueDateAndCancellationToPutEndpoint(bool cancelled)
     {
         var receivableId = Guid.NewGuid();
+        var cscaBusinessUnitId = Guid.NewGuid();
         var dueDate = new DateTimeOffset(2026, 10, 30, 23, 59, 59, TimeSpan.FromHours(7)).AddTicks(9_999_999).UtcDateTime;
         using var http = new HttpClient(new Handler(async (request, ct) =>
         {
             Assert.Equal(HttpMethod.Put, request.Method);
             Assert.Equal($"/api/v1/finance/workspace/receivables/{receivableId}", request.RequestUri!.AbsolutePath);
+            Assert.Equal(cscaBusinessUnitId.ToString("D"), request.Headers.GetValues("X-Business-Unit-ID").Single());
             using var json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
             Assert.Equal(dueDate, json.RootElement.GetProperty("dueDate").GetDateTime());
             Assert.Equal(cancelled, json.RootElement.GetProperty("cancelled").GetBoolean());
             return Json("{\"success\":true}");
         })) { BaseAddress = new Uri("http://localhost/") };
         using var api = new ApiClient(http);
+        api.RestoreSession(Session(cscaBusinessUnitId));
         Assert.True(await api.UpdateStudentReceivableAsync(receivableId, dueDate, cancelled));
     }
 
@@ -42,12 +45,14 @@ public sealed class FinanceWorkspaceClientTests
     [Fact]
     public async Task Report_UsesInvariantScenarioQueryAndReadsSplitFacts()
     {
+        var cscaBusinessUnitId = Guid.NewGuid();
         var previousCulture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("vi-VN");
         try
         {
             using var http = new HttpClient(new Handler((request, _) =>
             {
+                Assert.Equal(cscaBusinessUnitId.ToString("D"), request.Headers.GetValues("X-Business-Unit-ID").Single());
                 Assert.Contains("from=2026-10-01", request.RequestUri!.Query);
                 Assert.Contains("costFactor=1.25", request.RequestUri.Query);
                 return Task.FromResult(Json("""
@@ -55,6 +60,7 @@ public sealed class FinanceWorkspaceClientTests
                     """));
             })) { BaseAddress = new Uri("http://localhost/") };
             using var api = new ApiClient(http);
+            api.RestoreSession(Session(cscaBusinessUnitId));
             var report = await api.GetFinanceWorkspaceAsync(new DateTime(2026, 10, 1), costFactor: 1.25m);
             Assert.NotNull(report);
             Assert.Equal(16, Assert.Single(report.Months).ForecastInflow);
@@ -69,9 +75,11 @@ public sealed class FinanceWorkspaceClientTests
     public async Task TeacherPayment_SendsCashAndAdvanceCreditWithStableKey()
     {
         var employeeId = Guid.NewGuid();
+        var cscaBusinessUnitId = Guid.NewGuid();
         using var http = new HttpClient(new Handler(async (request, ct) =>
         {
             Assert.Equal("/api/v1/finance/workspace/teacher-payments", request.RequestUri!.AbsolutePath);
+            Assert.Equal(cscaBusinessUnitId.ToString("D"), request.Headers.GetValues("X-Business-Unit-ID").Single());
             using var json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
             Assert.Equal(employeeId, json.RootElement.GetProperty("employeeId").GetGuid());
             Assert.Equal(0, json.RootElement.GetProperty("amount").GetDecimal());
@@ -80,7 +88,33 @@ public sealed class FinanceWorkspaceClientTests
             return Json("{\"success\":true}");
         })) { BaseAddress = new Uri("http://localhost/") };
         using var api = new ApiClient(http);
+        api.RestoreSession(Session(cscaBusinessUnitId));
         Assert.True(await api.PayTeacherAsync(employeeId, 0, DateTime.UtcNow, "Cấn trừ", "retry-key", 200));
+    }
+
+    [Fact]
+    public async Task Report_RetainsCscaScopeWhenRefreshingAndRetrying()
+    {
+        var cscaBusinessUnitId = Guid.NewGuid();
+        var financeRequests = 0;
+        using var http = new HttpClient(new Handler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/refresh-token", StringComparison.Ordinal))
+            {
+                return Task.FromResult(Json(JsonSerializer.Serialize(new ApiClient.ApiEnvelope<ApiClient.LoginResponse>(
+                    true, Session(cscaBusinessUnitId, "new-access", "new-refresh"), null))));
+            }
+
+            Assert.Equal(cscaBusinessUnitId.ToString("D"), request.Headers.GetValues("X-Business-Unit-ID").Single());
+            return Task.FromResult(Interlocked.Increment(ref financeRequests) == 1
+                ? new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                : Json("{\"success\":true,\"data\":null}"));
+        })) { BaseAddress = new Uri("http://localhost/") };
+        using var api = new ApiClient(http);
+        api.RestoreSession(Session(cscaBusinessUnitId));
+
+        Assert.Null(await api.GetFinanceWorkspaceAsync(new DateTime(2026, 10, 1)));
+        Assert.Equal(2, financeRequests);
     }
 
     [Fact]
@@ -100,6 +134,11 @@ public sealed class FinanceWorkspaceClientTests
     }
 
     private static HttpResponseMessage Json(string json) => new(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
+    private static ApiClient.LoginResponse Session(Guid cscaBusinessUnitId, string accessToken = "access", string refreshToken = "refresh") =>
+        new(accessToken, refreshToken, DateTime.UtcNow.AddHours(1),
+            new ApiClient.UserInfo(Guid.NewGuid(), "admin", "admin@example.test", "Admin", [], [],
+                AccessibleBusinessUnits: [new ApiClient.BusinessUnitItem(cscaBusinessUnitId, "CSCA", "CSCA")]));
+
     private sealed class Handler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) => send(request, ct);
