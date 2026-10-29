@@ -108,17 +108,44 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
                 .Select(x => x.Id)
                 .ToListAsync(ct)).ToHashSet();
 
-        var classIds = report.Items
-            .Select(x => ParseGuid(x.ClassSourceId))
+        var classSourceIds = report.Items
+            .Select(x => x.ClassSourceId)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var classIds = classSourceIds
+            .Select(ParseGuid)
             .Where(x => x.HasValue)
             .Select(x => x!.Value)
             .Distinct()
             .ToList();
-        var classBusinessUnits = classIds.Count == 0
+        var classBusinessUnits = new Dictionary<string, Guid?>(StringComparer.Ordinal);
+        var classesById = classIds.Count == 0
             ? new Dictionary<Guid, Guid?>()
             : await _db.CscaClasses.AsNoTracking()
                 .Where(x => x.CompanyId == companyId && classIds.Contains(x.Id))
                 .ToDictionaryAsync(x => x.Id, x => x.BusinessUnitId, ct);
+        foreach (var classId in classIds)
+        {
+            if (!classesById.TryGetValue(classId, out var businessUnitId)) continue;
+            classBusinessUnits[classId.ToString()] = businessUnitId;
+            classBusinessUnits[classId.ToString("N")] = businessUnitId;
+        }
+
+        // LMS class IDs are often external mapping keys rather than the internal
+        // CscaClass GUID; resolve those keys before assigning tenant scope.
+        if (classSourceIds.Count > 0)
+        {
+            var mappings = await _db.ApplicationClassMaps.AsNoTracking()
+                .Where(x => x.CompanyId == companyId && classSourceIds.Contains(x.ExternalClassId))
+                .Select(x => new { x.ExternalClassId, x.CscaClassId })
+                .ToListAsync(ct);
+            foreach (var mapping in mappings)
+            {
+                if (classesById.TryGetValue(mapping.CscaClassId, out var businessUnitId))
+                    classBusinessUnits[mapping.ExternalClassId] = businessUnitId;
+            }
+        }
 
         var now = DateTime.UtcNow;
         var inserted = 0;
@@ -247,12 +274,16 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
         DateTime calculatedAt,
         DateTime syncedAt,
         HashSet<Guid> validEmployeeIds,
-        Dictionary<Guid, Guid?> classBusinessUnits)
+        IReadOnlyDictionary<string, Guid?> classBusinessUnits)
     {
         var employeeId = ParseGuid(item.TeacherSourceId);
         var classId = ParseGuid(item.ClassSourceId);
         entity.EmployeeId = employeeId.HasValue && validEmployeeIds.Contains(employeeId.Value) ? employeeId : null;
-        entity.BusinessUnitId = classId.HasValue && classBusinessUnits.TryGetValue(classId.Value, out var unitId) ? unitId : null;
+        entity.BusinessUnitId = classBusinessUnits.TryGetValue(item.ClassSourceId, out var unitId)
+            ? unitId
+            : classId.HasValue && classBusinessUnits.TryGetValue(classId.Value.ToString(), out unitId)
+                ? unitId
+                : null;
         entity.TeacherSourceId = Normalize(item.TeacherSourceId);
         entity.TeacherLmsId = item.TeacherLmsId;
         entity.TeacherName = item.TeacherName;
