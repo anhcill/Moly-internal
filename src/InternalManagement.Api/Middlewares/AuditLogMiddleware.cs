@@ -48,6 +48,8 @@ public class AuditLogMiddleware
                 };
 
                 var entityName = path.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? "Resource";
+                if (entityName.Length > 100) entityName = entityName[..100];
+                var entityId = path.Length > 100 ? path[^100..] : path;
 
                 var auditLog = new AuditLog
                 {
@@ -56,7 +58,7 @@ public class AuditLogMiddleware
                     BusinessUnitId = currentUserService.BusinessUnitId,
                     Action = action,
                     EntityName = entityName,
-                    EntityId = path,
+                    EntityId = entityId,
                     IpAddress = context.Connection.RemoteIpAddress?.ToString(),
                     UserAgent = context.Request.Headers.UserAgent.ToString(),
                     CreatedAt = DateTime.UtcNow

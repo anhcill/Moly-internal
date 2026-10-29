@@ -351,8 +351,10 @@ public partial class CscaClassDetailWindow
             var row = LessonSessionRow.From(session);
             if (!PromptDialog.TryShow(this, $"Buổi học {row.LessonDate:dd/MM/yyyy}", await LessonSessionFieldsAsync(row), out var values)) return;
             if (!TryLessonSessionValues(values, out var lessonDate, out var startTime, out var endTime, out var classroomId)) return;
+            var timeChanged = lessonDate != row.LessonDate || startTime != row.StartTime || endTime != row.EndTime;
+            var changeReason = Null(values["changeReason"]) ?? (timeChanged ? "Đổi lịch học" : null);
             await SaveAsync(() => _apiClient.UpdateCscaLessonSessionAsync(_classId, row.Id, lessonDate,
-                startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"], Null(values["changeReason"])),
+                startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"], changeReason),
                 "Đã lưu thay đổi buổi học.");
         }
     }

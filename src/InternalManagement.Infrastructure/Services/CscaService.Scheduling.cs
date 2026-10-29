@@ -394,8 +394,11 @@ public sealed partial class CscaService
         var previousStartTime = session.StartTime;
         var previousEndTime = session.EndTime;
         var timeChanged = previousLessonDate != request.LessonDate || previousStartTime != request.StartTime || previousEndTime != request.EndTime;
-        if (timeChanged && (string.IsNullOrWhiteSpace(request.ChangeReason) || request.ChangeReason.Length > 2000))
-            return Result<CscaLessonSessionDto>.Failure("Vui lòng nhập lý do đổi lịch (tối đa 2000 ký tự).");
+        var changeReason = string.IsNullOrWhiteSpace(request.ChangeReason)
+            ? (timeChanged ? "Đổi lịch học" : null)
+            : request.ChangeReason.Trim();
+        if (changeReason != null && changeReason.Length > 2000)
+            return Result<CscaLessonSessionDto>.Failure("Lý do đổi lịch tối đa 2000 ký tự.");
         if (timeChanged && (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
             || string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)))
             return Result<CscaLessonSessionDto>.Failure("Không thể đổi lịch buổi đã kết thúc hoặc đã hủy.");
@@ -426,7 +429,7 @@ public sealed partial class CscaService
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
         await QueueSessionForWebAsync(session.Class, session,
-            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, request.ChangeReason?.Trim(),
+            string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, changeReason,
             timeChanged ? previousLessonDate : null,
             timeChanged ? previousStartTime : null,
             timeChanged ? previousEndTime : null);
