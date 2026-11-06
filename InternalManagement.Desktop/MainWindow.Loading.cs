@@ -314,7 +314,7 @@ public partial class MainWindow
 
     private void CostBreakEvenFilters_Changed(object sender, RoutedEventArgs e)
     {
-        if (!_isUiReady || ViewCostBreakEvenContainer.Visibility != Visibility.Visible) return;
+        if (!_isUiReady || ViewFinanceHubContainer.Visibility != Visibility.Visible) return;
         InvalidateLoadedView("cost-break-even");
         _ = RunWithBusyAsync(
             "Đang cập nhật phạm vi phân tích...",

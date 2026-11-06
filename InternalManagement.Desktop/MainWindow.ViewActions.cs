@@ -39,8 +39,11 @@ public partial class MainWindow
             case nameof(RefreshCsca_Click): RefreshCsca_Click(action.Sender, action.Args); break;
             case nameof(ViewCourseClasses_Click): ViewCourseClasses_Click(action.Sender, action.Args); break;
             case nameof(ViewCscaClassDetails_Click): ViewCscaClassDetails_Click(action.Sender, action.Args); break;
+            case nameof(ViewCscaFinanceDetails_Click): ViewCscaFinanceDetails_Click(action.Sender, action.Args); break;
             case nameof(CoursesDataGrid_MouseDoubleClick): CoursesDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
             case nameof(CscaClassesDataGrid_MouseDoubleClick): CscaClassesDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
+            case nameof(CscaFinanceDataGrid_MouseDoubleClick): CscaFinanceDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
+            case nameof(CscaFinanceDataGrid_KeyDown): CscaFinanceDataGrid_KeyDown(action.Sender, (KeyEventArgs)action.Args); break;
             case nameof(CourseModuleTabControl_SelectionChanged): CourseModuleTabControl_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
             case nameof(CscaMolyTabControl_SelectionChanged): CscaMolyTabControl_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;
             case nameof(CscaCourseFilterComboBox_SelectionChanged): CscaCourseFilterComboBox_SelectionChanged(action.Sender, (SelectionChangedEventArgs)action.Args); break;

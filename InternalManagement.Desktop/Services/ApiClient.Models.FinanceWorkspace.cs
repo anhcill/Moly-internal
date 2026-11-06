@@ -74,7 +74,23 @@ public sealed partial class ApiClient
         decimal RemainingAdvance,
         decimal UnpaidEarned,
         IReadOnlyList<FinanceTeacherAdvanceItem>? Advances = null,
-        decimal AdvancesApplied = 0);
+        decimal AdvancesApplied = 0)
+    {
+        public decimal GrossEarnedAmount { get; init; } = EarnedAmount;
+        public decimal FutureProjectedAmount { get; init; } = ProjectedAmount;
+        public decimal BonusAmount { get; init; }
+        public decimal DeductionAmount { get; init; }
+        public string PaymentStatus { get; init; } = "pending";
+        public long? TeacherLmsId { get; init; }
+        public decimal TotalNetProjection => EarnedAmount + FutureProjectedAmount;
+        public string PaymentStatusLabel => PaymentStatus.ToLowerInvariant() switch
+        {
+            "processing" => "Đang xử lý",
+            "paid" => "Đã thanh toán",
+            "hold" => "Tạm giữ",
+            _ => "Chờ thanh toán"
+        };
+    }
 
     public sealed record FinanceTeacherAdvanceItem(Guid Id, decimal Amount, decimal ReturnedAmount, decimal AppliedAmount, decimal RemainingAmount, DateTime IssuedAt, string Description);
 

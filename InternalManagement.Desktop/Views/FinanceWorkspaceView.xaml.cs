@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.Win32;
@@ -15,6 +16,7 @@ public partial class FinanceWorkspaceView : UserControl
     private ApiClient? _apiClient;
     private ApiClient.FinanceWorkspaceReportItem? _report;
     private bool _working;
+    private bool _canManage;
     private readonly Dictionary<string, string> _pendingOperationKeys = new(StringComparer.Ordinal);
     private static readonly CultureInfo Vi = CultureInfo.GetCultureInfo("vi-VN");
     private Window DialogOwner => Window.GetWindow(this);
@@ -29,9 +31,11 @@ public partial class FinanceWorkspaceView : UserControl
 
     public void SetApiClient(ApiClient apiClient) => _apiClient = apiClient;
     public event RoutedEventHandler? RefreshRequested;
+    public event RoutedEventHandler? FinancialDataChanged;
     public DateTime FromMonth => new(ForecastFromMonthPicker.SelectedDate!.Value.Year, ForecastFromMonthPicker.SelectedDate.Value.Month, 1);
     public void SetCanManage(bool canManage)
     {
+        _canManage = canManage;
         foreach (var button in Descendants(this).OfType<Button>().Where(x => Equals(x.Tag, "FinanceWrite"))) button.IsEnabled = canManage;
     }
     private static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
@@ -110,6 +114,7 @@ public partial class FinanceWorkspaceView : UserControl
             committed = true;
             _pendingOperationKeys.Remove(fingerprint);
             await LoadAsync(_apiClient);
+            FinancialDataChanged?.Invoke(this, new RoutedEventArgs());
         }
         catch (Exception ex) { ShowError(committed ? $"Đã lưu giao dịch. Chưa tải lại được báo cáo: {ex.Message}\nBấm Tải báo cáo để cập nhật số liệu." : $"{ex.Message}\n\nNếu kết nối gián đoạn, nhập lại cùng nội dung để thử lại giao dịch an toàn."); }
         finally { _working = false; WorkspaceTabs.IsEnabled = true; }
@@ -194,13 +199,105 @@ public partial class FinanceWorkspaceView : UserControl
     private async void PayTeacher_Click(object sender, RoutedEventArgs e)
     {
         var row = SelectedTeacher(); if (row is null) return;
-        if (row.UnpaidEarned <= 0) { ShowError("Giáo viên không còn công đã kiếm chưa thanh toán."); return; }
-        var applyAdvance = 0m;
-        if (!CashPrompt($"Thanh toán công · {row.TeacherName}", row.UnpaidEarned, row.UnpaidEarned, out var amount, out var date, out var notes,
-                new[] { new PromptField("applyAmount", $"Cấn trừ tiền ứng (còn {row.RemainingAdvance:N0} đ)", "0") },
-                values => applyAdvance = Number(values["applyAmount"], "Số tiền cấn trừ", 0, row.RemainingAdvance), allowZero: true)) return;
-        if (amount + applyAdvance <= 0 || amount + applyAdvance > row.UnpaidEarned) { ShowError("Tổng tiền trả và cấn trừ phải lớn hơn 0 và không vượt công chưa thanh toán."); return; }
-        await ExecuteAsync(Fingerprint("payment", row.EmployeeId, amount, date, notes + "|" + applyAdvance.ToString(CultureInfo.InvariantCulture)), key => _apiClient!.PayTeacherAsync(row.EmployeeId, amount, BusinessUtc(date), notes, key, applyAdvance));
+        if (row.UnpaidEarned <= 0) { ShowError("Không còn tiền mặt phải trả sau khi tự động cấn trừ khoản ứng với công thực tế."); return; }
+        if (!CashPrompt($"Thanh toán công · {row.TeacherName}", row.UnpaidEarned, row.UnpaidEarned, out var amount, out var date, out var notes)) return;
+        await ExecuteAsync(Fingerprint("payment", row.EmployeeId, amount, date, notes), key => _apiClient!.PayTeacherAsync(row.EmployeeId, amount, BusinessUtc(date), notes, key));
+    }
+
+    private async void SyncMolyCoursePayroll_Click(object sender, RoutedEventArgs e)
+    {
+        if (_working || _apiClient is null) return;
+        _working = true;
+        WorkspaceTabs.IsEnabled = false;
+        try
+        {
+            await _apiClient.SyncCscaTeacherCostsForFinanceAsync();
+            await LoadAsync(_apiClient);
+            FinancialDataChanged?.Invoke(this, new RoutedEventArgs());
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+        finally { _working = false; WorkspaceTabs.IsEnabled = true; }
+    }
+
+    private async void TeacherCostsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (TeacherCostsGrid.SelectedItem is not ApiClient.FinanceTeacherCostItem row) return;
+        var detail = $"{row.TeacherName}\n\n" +
+            $"Công buổi đã dạy: {row.GrossEarnedAmount:N0} đ\n" +
+            $"Thưởng: +{row.BonusAmount:N0} đ\n" +
+            $"Khấu trừ: -{row.DeductionAmount:N0} đ\n" +
+            $"Công thực tế ròng: {row.EarnedAmount:N0} đ\n" +
+            $"Dự kiến các buổi chưa dạy: {row.FutureProjectedAmount:N0} đ\n" +
+            $"Đã quyết toán/cấn ứng: {row.SettledAmount:N0} đ\n" +
+            $"Ứng còn dư sau cấn công: {row.RemainingAdvance:N0} đ\n" +
+            $"Tiền mặt còn phải trả: {row.UnpaidEarned:N0} đ\n" +
+            $"Trạng thái MolyCourse: {row.PaymentStatusLabel}";
+        if (!_canManage)
+        {
+            MessageBox.Show(DialogOwner, detail, "Chi tiết lương giáo viên", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (MessageBox.Show(DialogOwner, detail + "\n\nBạn có muốn sửa quyết toán trên MolyCourse không?", "Chi tiết lương giáo viên", MessageBoxButton.YesNo, MessageBoxImage.Information) != MessageBoxResult.Yes) return;
+
+        var statuses = new[]
+        {
+            new PromptOption("pending", "Chờ thanh toán"),
+            new PromptOption("processing", "Đang xử lý"),
+            new PromptOption("paid", "Đã thanh toán"),
+            new PromptOption("hold", "Tạm giữ")
+        };
+        var fields = new[]
+        {
+            new PromptField("bonusAmount", "Tiền thưởng", row.BonusAmount.ToString(CultureInfo.InvariantCulture)),
+            new PromptField("deductionAmount", "Tiền khấu trừ", row.DeductionAmount.ToString(CultureInfo.InvariantCulture)),
+            new PromptField("paymentStatus", "Trạng thái MolyCourse", row.PaymentStatus.ToLowerInvariant(), Options: statuses),
+            new PromptField("notes", "Ghi chú quyết toán", IsRequired: false, IsMultiline: true)
+        };
+        if (!PromptDialog.TryShow(DialogOwner, $"Sửa quyết toán · {row.TeacherName}", fields, out var values)) return;
+        try
+        {
+            var bonus = Number(values["bonusAmount"], "Tiền thưởng", 0, decimal.MaxValue);
+            var deduction = Number(values["deductionAmount"], "Tiền khấu trừ", 0, decimal.MaxValue);
+            _working = true;
+            WorkspaceTabs.IsEnabled = false;
+            await _apiClient!.UpdateCscaTeacherSettlementAsync(row.EmployeeId, bonus, deduction, values["paymentStatus"], values["notes"]);
+            await LoadAsync(_apiClient);
+            FinancialDataChanged?.Invoke(this, new RoutedEventArgs());
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+        finally { _working = false; WorkspaceTabs.IsEnabled = true; }
+    }
+
+    private void ReceivablesGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (ReceivablesGrid.SelectedItem is not ApiClient.FinanceReceivableItem row) return;
+        MessageBox.Show(DialogOwner,
+            $"{row.StudentName}\nLớp: {row.ClassName}\n\nCần thu: {row.PayableAmount:N0} đ\nĐã thu ròng: {row.PaidAmount - row.RefundedAmount:N0} đ\nĐã hoàn: {row.RefundedAmount:N0} đ\nCòn nợ: {row.OutstandingAmount:N0} đ\nHạn thu: {(row.LocalDueDate.HasValue ? row.LocalDueDate.Value.ToString("dd/MM/yyyy") : "Chưa hẹn")}\nTrạng thái: {row.StatusLabel}",
+            "Chi tiết công nợ học viên", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void MonthlyRowsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (MonthlyRowsGrid.SelectedItem is not ApiClient.FinanceMonthlyRowItem row) return;
+        MessageBox.Show(DialogOwner,
+            $"Tháng {row.MonthLabel} · {row.KindLabel}\n\nĐầu kỳ: {row.OpeningCash:N0} đ\nThu thực tế: {row.ActualInflow:N0} đ\nChi thực tế: {row.ActualOutflow:N0} đ\nThu dự báo: {row.ForecastInflow:N0} đ\nChi dự báo: {row.ForecastOutflow:N0} đ\nCuối kỳ: {row.ClosingCash:N0} đ",
+            "Chi tiết dòng tiền tháng", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void PlanItemsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (PlanItemsGrid.SelectedItem is not ApiClient.FinancePlanItem row) return;
+        MessageBox.Show(DialogOwner,
+            $"{row.Title}\n\nLoại: {row.TypeLabel}\nSố tiền: {row.Amount:N0} đ\nNgày dự kiến: {row.LocalPlannedDate:dd/MM/yyyy}\nLặp lại: {row.RecurrenceLabel}\nTrạng thái: {row.StatusLabel}\nGhi chú: {row.Notes ?? "—"}",
+            "Chi tiết kế hoạch thu chi", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void CashMovementsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (CashMovementsGrid.SelectedItem is not ApiClient.FinanceCashMovementItem row) return;
+        MessageBox.Show(DialogOwner,
+            $"{row.Description}\n\nNgày: {row.LocalOccurredAt:dd/MM/yyyy HH:mm}\nLoại: {row.TypeLabel}\nThu: {row.Inflow:N0} đ\nChi: {row.Outflow:N0} đ\nTham chiếu: {row.ReferenceLabel}",
+            "Chi tiết giao dịch", MessageBoxButton.OK, MessageBoxImage.Information);
     }
     private async void AddPlanItem_Click(object sender, RoutedEventArgs e)
     {

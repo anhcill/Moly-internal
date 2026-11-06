@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace InternalManagement.Api.Controllers;
 
 /// <summary>
-/// Read-only CSCA Course payroll projection. Salary facts are configured in
-/// the LMS and cannot be entered or edited through this controller.
+/// CSCA Course payroll projection and settlement bridge. Teaching facts still
+/// come from the LMS; finance administrators may update settlement metadata.
 /// </summary>
 [Route("api/v1/payroll/csca-teacher-costs")]
 public sealed class CscaTeacherCostsController : BaseApiController
@@ -60,5 +60,38 @@ public sealed class CscaTeacherCostsController : BaseApiController
 
         return Ok(ApiResponse<CscaTeacherCostSyncResultDto>.Ok(
             result.Value!, "Đã đồng bộ snapshot chi phí giảng viên từ CSCA Course."));
+    }
+
+    [HttpPost("sync-finance")]
+    [HasPermission(Permissions.FinanceTransactionsManage)]
+    public async Task<IActionResult> SyncForFinance(
+        [FromBody] SyncCscaTeacherCostsRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await _service.SyncAsync(request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaTeacherCostSyncResultDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Không thể đồng bộ bảng lương từ MolyCourse."));
+
+        return Ok(ApiResponse<CscaTeacherCostSyncResultDto>.Ok(
+            result.Value!, "Đã lấy bảng lương thực tế mới nhất từ MolyCourse."));
+    }
+
+    [HttpPut("teachers/{employeeId:guid}/settlement")]
+    [HasPermission(Permissions.FinanceTransactionsManage)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSummaryDto>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateSettlement(
+        Guid employeeId,
+        [FromBody] UpdateCscaTeacherSettlementRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await _service.UpdateSettlementAsync(employeeId, request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaTeacherCostSummaryDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Không thể cập nhật quyết toán lương giáo viên."));
+
+        return Ok(ApiResponse<CscaTeacherCostSummaryDto>.Ok(
+            result.Value!, "Đã cập nhật MolyCourse và đồng bộ lại bảng lương."));
     }
 }

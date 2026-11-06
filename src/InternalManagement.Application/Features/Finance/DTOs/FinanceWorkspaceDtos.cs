@@ -11,7 +11,15 @@ public sealed record RecordStudentRefundRequest(decimal Amount, DateTime? Refund
 public sealed record UpdateStudentReceivableRequest(DateTime? DueDate, bool Cancelled = false);
 
 public sealed record TeacherAdvanceDto(Guid Id, decimal Amount, decimal ReturnedAmount, decimal AppliedAmount, decimal RemainingAmount, DateTime IssuedAt, string Description);
-public sealed record TeacherCostWorkspaceDto(Guid EmployeeId, string TeacherName, decimal EarnedAmount, decimal ProjectedAmount, decimal SettledAmount, decimal AdvancesIssued, decimal AdvancesReturned, decimal RemainingAdvance, decimal UnpaidEarned, IReadOnlyList<TeacherAdvanceDto>? Advances = null, decimal AdvancesApplied = 0);
+public sealed record TeacherCostWorkspaceDto(Guid EmployeeId, string TeacherName, decimal EarnedAmount, decimal ProjectedAmount, decimal SettledAmount, decimal AdvancesIssued, decimal AdvancesReturned, decimal RemainingAdvance, decimal UnpaidEarned, IReadOnlyList<TeacherAdvanceDto>? Advances = null, decimal AdvancesApplied = 0)
+{
+    public decimal GrossEarnedAmount { get; init; } = EarnedAmount;
+    public decimal FutureProjectedAmount { get; init; }
+    public decimal BonusAmount { get; init; }
+    public decimal DeductionAmount { get; init; }
+    public string PaymentStatus { get; init; } = "pending";
+    public long? TeacherLmsId { get; init; }
+}
 public sealed record IssueTeacherAdvanceRequest(Guid EmployeeId, decimal Amount, DateTime? IssuedAt = null, string? Description = null, string? IdempotencyKey = null, Guid? BusinessUnitId = null);
 public sealed record ReturnTeacherAdvanceRequest(decimal Amount, DateTime? ReturnedAt = null, string? Description = null, string? IdempotencyKey = null);
 public sealed record PayTeacherRequest(Guid EmployeeId, decimal Amount, DateTime? PaidAt = null, string? Description = null, string? IdempotencyKey = null, Guid? BusinessUnitId = null, decimal ApplyAdvanceAmount = 0);

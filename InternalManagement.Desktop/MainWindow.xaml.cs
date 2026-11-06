@@ -125,6 +125,7 @@ public partial class MainWindow : Window, IDisposable
         ViewCompanyFinanceContainer.RefreshRequested += RefreshCompanyFinance_Click;
         ViewFinanceWorkspaceContainer.SetApiClient(_apiClient);
         ViewFinanceWorkspaceContainer.RefreshRequested += RefreshFinanceWorkspace_Click;
+        ViewFinanceWorkspaceContainer.FinancialDataChanged += FinanceWorkspaceDataChanged;
         ViewCostBreakEvenContainer.RefreshRequested += RefreshCostBreakEven_Click;
         ViewCostBreakEvenContainer.FiltersChanged += CostBreakEvenFilters_Changed;
         ViewCoursesContainer.ActionRequested += DispatchFeatureViewAction;

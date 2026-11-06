@@ -103,7 +103,30 @@ public static class PromptDialog
                     Padding = new Thickness(8, 3, 8, 3),
                     Margin = new Thickness(0, 0, 0, 9),
                     SelectedDateFormat = DatePickerFormat.Short,
+                    Language = System.Windows.Markup.XmlLanguage.GetLanguage("vi-VN"),
                     VerticalContentAlignment = VerticalAlignment.Center
+                };
+                datePicker.DateValidationError += (_, args) =>
+                {
+                    var text = args.Text?.Trim();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        var formats = new[] { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd", "dd-MM-yyyy", "d-M-yyyy" };
+                        if (DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d1))
+                        {
+                            datePicker.SelectedDate = d1;
+                            args.ThrowException = false;
+                            return;
+                        }
+
+                        if (DateTime.TryParse(text, new CultureInfo("vi-VN"), DateTimeStyles.None, out var d2) ||
+                            DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out d2) ||
+                            DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out d2))
+                        {
+                            datePicker.SelectedDate = d2;
+                            args.ThrowException = false;
+                        }
+                    }
                 };
                 if (DateTime.TryParseExact(field.InitialValue, "yyyy-MM-dd", CultureInfo.InvariantCulture,
                         DateTimeStyles.None, out var initialDate))
@@ -212,10 +235,6 @@ public static class PromptDialog
         };
         saveButton.Click += (_, _) =>
         {
-            // Commit the control that received the paste before reading values.
-            Keyboard.ClearFocus();
-            dialog.UpdateLayout();
-
             var result = new Dictionary<string, string>();
             foreach (var field in fields)
             {
@@ -266,7 +285,13 @@ public static class PromptDialog
         var visibleValue = (editor?.Text ?? datePicker.Text)?.Trim();
         if (!string.IsNullOrWhiteSpace(visibleValue))
         {
-            var cultures = new[] { CultureInfo.CurrentCulture, new CultureInfo("vi-VN"), CultureInfo.InvariantCulture };
+            var formats = new[] { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd", "dd-MM-yyyy", "d-M-yyyy" };
+            if (DateTime.TryParseExact(visibleValue, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exactDate))
+            {
+                return exactDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            var cultures = new[] { new CultureInfo("vi-VN"), CultureInfo.InvariantCulture, CultureInfo.CurrentCulture };
             foreach (var culture in cultures)
             {
                 if (DateTime.TryParse(visibleValue, culture, DateTimeStyles.AllowWhiteSpaces, out var parsed))

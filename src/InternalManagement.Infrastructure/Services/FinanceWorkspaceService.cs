@@ -223,12 +223,42 @@ public sealed partial class FinanceWorkspaceService(
         {
             var facts = snapshots.Where(x => x.EmployeeId == id).ToList();
             var issued = advances.Where(x => x.EmployeeId == id && x.Status != "Cancelled").ToList();
-            var earned = facts.Sum(x => x.AccruedAmount);
-            var settled = facts.Sum(x => Math.Max(IsSourcePaid(x.PaymentStatus, x.PaidAt) ? x.AccruedAmount : 0, allocations.Where(a => a.TeacherCostSnapshotId == x.Id).Sum(a => a.Amount)));
+            var latest = facts.OrderByDescending(x => x.SourceUpdatedAt ?? x.SourceCalculatedAt).FirstOrDefault();
+            var grossEarned = facts.Sum(x => x.AccruedAmount);
+            var bonus = latest?.BonusAmount ?? 0;
+            var deduction = latest?.DeductionAmount ?? 0;
+            var earned = Math.Max(0, grossEarned + bonus - deduction);
+            var teachingSettled = facts.Sum(x => Math.Max(IsSourcePaid(x.PaymentStatus, x.PaidAt) ? x.AccruedAmount : 0, allocations.Where(a => a.TeacherCostSnapshotId == x.Id).Sum(a => a.Amount)));
+            var sourceSettled = latest is not null && IsSourcePaid(latest.PaymentStatus, latest.PaidAt) ? earned : 0;
+            var localPayments = payments.Where(x => x.EmployeeId == id).Sum(x => x.Amount + x.AdvanceAppliedAmount);
+            var settledBeforeOpenAdvance = Math.Min(earned, Math.Max(sourceSettled, Math.Max(teachingSettled, localPayments)));
+            var rawRemainingAdvance = issued.Sum(x => x.Amount - x.ReturnedAmount - x.AppliedAmount);
+            var automaticAdvanceOffset = Math.Min(rawRemainingAdvance, Math.Max(0, earned - settledBeforeOpenAdvance));
+            var settled = settledBeforeOpenAdvance + automaticAdvanceOffset;
+            var remainingAdvance = rawRemainingAdvance - automaticAdvanceOffset;
+            var unpaidEarned = Math.Max(0, earned - settled);
+            var totalProjected = facts.Sum(x => x.ProjectedAmount ?? x.AccruedAmount);
+            var offsetToDistribute = automaticAdvanceOffset;
+            var advanceRows = issued.OrderBy(x => x.IssuedAt).ThenBy(x => x.Id).Select(x =>
+            {
+                var available = x.Amount - x.ReturnedAmount - x.AppliedAmount;
+                var automaticApplied = Math.Min(offsetToDistribute, available);
+                offsetToDistribute -= automaticApplied;
+                return new TeacherAdvanceDto(x.Id, x.Amount, x.ReturnedAmount, x.AppliedAmount + automaticApplied,
+                    available - automaticApplied, x.IssuedAt, x.Description);
+            }).ToList();
             var teacherName = employees.TryGetValue(id, out var employee) ? employee.FullName : snapshotNames[id];
-            return new TeacherCostWorkspaceDto(id, teacherName, earned, facts.Sum(x => x.ProjectedAmount ?? x.AccruedAmount), settled,
-                issued.Sum(x => x.Amount), issued.Sum(x => x.ReturnedAmount), issued.Sum(x => x.Amount - x.ReturnedAmount - x.AppliedAmount), Math.Max(0, earned - settled),
-                issued.OrderBy(x => x.IssuedAt).Select(x => new TeacherAdvanceDto(x.Id, x.Amount, x.ReturnedAmount, x.AppliedAmount, x.Amount - x.ReturnedAmount - x.AppliedAmount, x.IssuedAt, x.Description)).ToList(), issued.Sum(x => x.AppliedAmount));
+            return new TeacherCostWorkspaceDto(id, teacherName, earned, Math.Max(0, totalProjected - grossEarned), settled,
+                issued.Sum(x => x.Amount), issued.Sum(x => x.ReturnedAmount), remainingAdvance, unpaidEarned,
+                advanceRows, issued.Sum(x => x.AppliedAmount) + automaticAdvanceOffset)
+            {
+                GrossEarnedAmount = grossEarned,
+                FutureProjectedAmount = Math.Max(0, totalProjected - grossEarned),
+                BonusAmount = bonus,
+                DeductionAmount = deduction,
+                PaymentStatus = latest?.PaymentStatus ?? "pending",
+                TeacherLmsId = latest?.TeacherLmsId
+            };
         }).OrderBy(x => x.TeacherName).ToList();
     }
 
@@ -260,7 +290,11 @@ public sealed partial class FinanceWorkspaceService(
         if (advance is null) return Result<TeacherCostWorkspaceDto>.Failure("Không tìm thấy khoản ứng trong phạm vi được phép.");
         var existing = await Scope(db.TeacherAdvanceReturns, company.Value).FirstOrDefaultAsync(x => x.IdempotencyKey == Key(request.IdempotencyKey), ct);
         if (existing is not null) return existing.TeacherAdvanceId == advanceId && SameCashRequest(existing.Amount, request.Amount, existing.ReturnedAt, request.ReturnedAt, existing.Description, request.Description) ? Result<TeacherCostWorkspaceDto>.Success(await Teacher(company.Value, advance.EmployeeId, ct)) : Result<TeacherCostWorkspaceDto>.Failure("IdempotencyKey đã dùng cho giao dịch khác.");
-        if (request.Amount > advance.Amount - advance.ReturnedAmount - advance.AppliedAmount) return Result<TeacherCostWorkspaceDto>.Failure("Số tiền hoàn vượt phần ứng còn lại; phần đã trừ vào công không thể hoàn lại.");
+        var effectiveAdvance = (await GetTeacherCostsForCompany(company.Value, ct))
+            .FirstOrDefault(x => x.EmployeeId == advance.EmployeeId)?.Advances?
+            .FirstOrDefault(x => x.Id == advanceId);
+        if (effectiveAdvance is null || request.Amount > effectiveAdvance.RemainingAmount)
+            return Result<TeacherCostWorkspaceDto>.Failure("Số tiền hoàn vượt phần ứng còn lại sau khi đã tự động cấn công thực tế.");
         var returned = new TeacherAdvanceReturn { CompanyId = company.Value, BusinessUnitId = advance.BusinessUnitId, TeacherAdvanceId = advanceId, Amount = request.Amount, ReturnedAt = Utc(request.ReturnedAt), Description = Text(request.Description, "Hoàn ứng giáo viên"), IdempotencyKey = Key(request.IdempotencyKey) };
         returned.FinanceTransactionId = Post(company.Value, advance.BusinessUnitId, TransactionType.Income, returned.Amount, returned.ReturnedAt, nameof(TeacherAdvanceReturn), returned.Id, returned.Description).Id;
         db.TeacherAdvanceReturns.Add(returned); advance.ReturnedAmount += request.Amount;
@@ -279,9 +313,10 @@ public sealed partial class FinanceWorkspaceService(
         var existing = await Scope(db.TeacherPayments, company.Value).FirstOrDefaultAsync(x => x.IdempotencyKey == Key(request.IdempotencyKey), ct);
         if (existing is not null) return existing.EmployeeId == request.EmployeeId && existing.BusinessUnitId == unit && SameCashRequest(existing.Amount, request.Amount, existing.PaidAt, request.PaidAt, existing.Description, request.Description) && existing.AdvanceAppliedAmount == request.ApplyAdvanceAmount ? Result<TeacherCostWorkspaceDto>.Success(await Teacher(company.Value, employee.Id, ct)) : Result<TeacherCostWorkspaceDto>.Failure("IdempotencyKey đã dùng cho giao dịch khác.");
         var costs = (await GetTeacherCostsForCompany(company.Value, ct)).FirstOrDefault(x => x.EmployeeId == employee.Id);
-        if (costs is null || request.Amount + request.ApplyAdvanceAmount > costs.UnpaidEarned) return Result<TeacherCostWorkspaceDto>.Failure("Tổng tiền và phần trừ ứng vượt công giáo viên còn phải trả.");
+        if (costs is null || request.Amount > costs.UnpaidEarned) return Result<TeacherCostWorkspaceDto>.Failure("Tiền thanh toán vượt số tiền mặt còn phải trả sau khi trừ ứng.");
         var advances = await Scope(db.TeacherAdvances, company.Value).Where(x => x.EmployeeId == employee.Id && x.Status == "Open").OrderBy(x => x.IssuedAt).ThenBy(x => x.Id).ToListAsync(ct);
-        if (request.ApplyAdvanceAmount > advances.Sum(x => x.Amount - x.ReturnedAmount - x.AppliedAmount)) return Result<TeacherCostWorkspaceDto>.Failure("Phần trừ ứng vượt số ứng còn lại.");
+        if (request.ApplyAdvanceAmount > costs.RemainingAdvance) return Result<TeacherCostWorkspaceDto>.Failure("Phần trừ ứng vượt số ứng còn lại sau khi tự động cấn công đã dạy.");
+        if (request.Amount + request.ApplyAdvanceAmount > costs.UnpaidEarned) return Result<TeacherCostWorkspaceDto>.Failure("Tổng tiền và phần trừ ứng vượt công giáo viên còn phải trả.");
         var toApply = request.ApplyAdvanceAmount;
         foreach (var advance in advances) { var applied = Math.Min(toApply, advance.Amount - advance.ReturnedAmount - advance.AppliedAmount); advance.AppliedAmount += applied; toApply -= applied; advance.Status = advance.Amount == advance.ReturnedAmount + advance.AppliedAmount ? "Settled" : "Open"; }
         var payment = new TeacherPayment { CompanyId = company.Value, BusinessUnitId = unit, EmployeeId = employee.Id, Amount = request.Amount, AdvanceAppliedAmount = request.ApplyAdvanceAmount, PaidAt = Utc(request.PaidAt), Description = Text(request.Description, $"Thanh toán công giáo viên {employee.FullName}"), IdempotencyKey = Key(request.IdempotencyKey) };
@@ -298,7 +333,8 @@ public sealed partial class FinanceWorkspaceService(
             fact.LocalSettlementVersion++;
             toAllocate -= allocated;
         }
-        if (toAllocate > 0) throw new InvalidOperationException("Teaching cost changed during settlement; reload and retry.");
+        // Bonus/penalty adjustments belong to the teacher settlement rather than
+        // a specific lesson, so only the teaching-cost portion receives session allocations.
         if (payment.Amount > 0) payment.FinanceTransactionId = Post(company.Value, unit, TransactionType.Expense, payment.Amount, payment.PaidAt, nameof(TeacherPayment), payment.Id, payment.Description).Id;
         db.TeacherPayments.Add(payment);
         await db.SaveChangesAsync(ct);

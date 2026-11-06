@@ -123,6 +123,27 @@ public sealed class FinanceWorkspaceReportTests
         report.Months.Sum(x => x.ForecastOutflow).Should().Be(0);
     }
 
+    [Fact]
+    public async Task TeacherSummary_ShowsFutureProjectionOnlyAndOffsetsEarnedAgainstAdvance()
+    {
+        await using var db = CreateDb();
+        var company = Guid.NewGuid();
+        var employee = new Employee { CompanyId = company, EmployeeCode = "T", FullName = "Teacher" };
+        db.AddRange(employee,
+            new TeacherAdvance { CompanyId = company, EmployeeId = employee.Id, Amount = 4_000_000, IssuedAt = DateTime.UtcNow.AddDays(-10) },
+            Snapshot(company, employee.Id, "completed", DateTime.UtcNow.AddDays(-2), 2_400_000, 2_400_000, true),
+            Snapshot(company, employee.Id, "future", DateTime.UtcNow.AddDays(2), 0, 5_600_000, false));
+        await db.SaveChangesAsync();
+
+        var teacher = (await Service(db, company).GetTeacherCostsAsync(default)).Value!.Single();
+
+        teacher.EarnedAmount.Should().Be(2_400_000);
+        teacher.ProjectedAmount.Should().Be(5_600_000);
+        teacher.AdvancesApplied.Should().Be(2_400_000);
+        teacher.RemainingAdvance.Should().Be(1_600_000);
+        teacher.UnpaidEarned.Should().Be(0);
+    }
+
     private static CscaTeacherCostSnapshot Snapshot(Guid company, Guid? employee, string key, DateTime date, decimal accrued, decimal projected, bool completed) => new()
     {
         CompanyId = company, EmployeeId = employee, SourceKey = key, TeacherLmsId = 5,

@@ -14,6 +14,7 @@ namespace InternalManagement.Infrastructure.Services;
 public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotService
 {
     private const string SourceSystem = "CSCA_COURSE";
+    private static readonly string[] SettlementStatuses = ["pending", "processing", "paid", "hold"];
     private readonly IApplicationDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly ICscaCourseLmsClient _lmsClient;
@@ -193,6 +194,63 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
             now));
     }
 
+    public async Task<Result<CscaTeacherCostSummaryDto>> UpdateSettlementAsync(
+        Guid employeeId,
+        UpdateCscaTeacherSettlementRequest request,
+        CancellationToken ct)
+    {
+        if (request.BonusAmount < 0 || request.DeductionAmount < 0)
+            return Result<CscaTeacherCostSummaryDto>.Failure("Thưởng và khấu trừ không được âm.");
+
+        var status = Normalize(request.PaymentStatus)?.ToLowerInvariant();
+        if (status is null || !SettlementStatuses.Contains(status, StringComparer.Ordinal))
+            return Result<CscaTeacherCostSummaryDto>.Failure("Trạng thái lương phải là pending, processing, paid hoặc hold.");
+        if (request.Notes?.Length > 2000)
+            return Result<CscaTeacherCostSummaryDto>.Failure("Ghi chú quyết toán không được vượt quá 2.000 ký tự.");
+        var period = Normalize(request.Period) ?? "all";
+        if (period.Length > 40)
+            return Result<CscaTeacherCostSummaryDto>.Failure("Kỳ quyết toán không hợp lệ.");
+
+        var companyId = await GetCompanyIdAsync(ct);
+        var snapshot = await _db.CscaTeacherCostSnapshots.AsNoTracking()
+            .Where(x => x.CompanyId == companyId && x.SourceSystem == SourceSystem
+                && x.IsCurrent && x.EmployeeId == employeeId)
+            .OrderByDescending(x => x.SourceUpdatedAt ?? x.SourceCalculatedAt)
+            .FirstOrDefaultAsync(ct);
+        if (snapshot is null)
+            return Result<CscaTeacherCostSummaryDto>.Failure("Không tìm thấy bảng lương MolyCourse của giáo viên này.");
+
+        var correlationId = Guid.NewGuid().ToString("N");
+        try
+        {
+            await _lmsClient.UpdateTeacherSettlementAsync(
+                new LmsTeacherSettlementUpdate(
+                    snapshot.TeacherLmsId,
+                    request.BonusAmount,
+                    request.DeductionAmount,
+                    status,
+                    Normalize(request.Notes),
+                    request.PaidAt,
+                    period),
+                new LmsOutboundRequestContext($"payroll-settlement:{correlationId}", correlationId),
+                ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Unable to update CSCA Course teacher settlement for employee {EmployeeId}", employeeId);
+            return Result<CscaTeacherCostSummaryDto>.Failure(ex.Message);
+        }
+
+        var synced = await SyncAsync(new SyncCscaTeacherCostsRequest(
+            TeacherSourceId: snapshot.TeacherSourceId,
+            IncludeProjected: true), ct);
+        if (!synced.Succeeded)
+            return Result<CscaTeacherCostSummaryDto>.Failure(
+                $"MolyCourse đã cập nhật nhưng đồng bộ lại thất bại: {synced.Errors.FirstOrDefault()}");
+
+        return await GetAsync(null, null, null, null, snapshot.TeacherSourceId, true, ct);
+    }
+
     public async Task<Result<CscaTeacherCostSummaryDto>> GetAsync(
         DateTime? from,
         DateTime? to,
@@ -331,7 +389,8 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
         x.CourseSourceId, x.CourseTitle, x.ClassSourceId, x.ClassTitle,
         x.SessionSourceId, x.SessionTitle, x.StartTime, x.EndTime, x.Status,
         x.IsCompleted, x.DurationHours, x.EffectiveHourlyRate, x.AccruedAmount,
-        x.ProjectedAmount, x.PaymentStatus, x.PaidAt, x.SourceUpdatedAt, x.SyncedAt);
+        x.ProjectedAmount, x.BonusAmount, x.DeductionAmount, x.PaymentStatus,
+        x.PaidAt, x.SourceUpdatedAt, x.SyncedAt);
 
     private static string BuildSourceKey(LmsTeacherCostItem item) =>
         $"{item.TeacherLmsId}:{item.ClassLmsId}:{item.SessionLmsId}";

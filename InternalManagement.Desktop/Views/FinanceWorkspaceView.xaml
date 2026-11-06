@@ -92,7 +92,7 @@
                         </Border>
 
                         <Border Grid.Row="3" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                            <DataGrid x:Name="MonthlyRowsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <DataGrid x:Name="MonthlyRowsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="MonthlyRowsGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="95" />
                                     <DataGridTextColumn Header="LOẠI" Binding="{Binding KindLabel}" Width="90" />
@@ -126,7 +126,7 @@
                         <TextBlock Text="Chỉ ghi giao dịch thực tế; khoản chưa thu vẫn là công nợ." FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
                     </WrapPanel>
                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="ReceivablesGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="ReceivablesGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="ReceivablesGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="HỌC VIÊN" Binding="{Binding StudentName}" Width="1.4*" />
                                 <DataGridTextColumn Header="LỚP" Binding="{Binding ClassName}" Width="1.2*" />
@@ -149,19 +149,22 @@
                         <Button Content="Ứng tiền" Click="IssueAdvance_Click" Tag="FinanceWrite" Style="{StaticResource ModernPrimaryButton}" Height="31" Padding="12,0" Margin="0,0,6,0" />
                         <Button Content="Hoàn ứng" Click="ReturnAdvance_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="0,0,6,0" />
                         <Button Content="Thanh toán công" Click="PayTeacher_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" />
+                        <Button Content="↻ Đồng bộ MolyCourse" Click="SyncMolyCoursePayroll_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="6,0,0,0" />
+                        <TextBlock Text="Bấm đúp giáo viên để xem chi tiết và sửa thưởng/khấu trừ/trạng thái trên MolyCourse." FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
                     </WrapPanel>
                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="TeacherCostsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="TeacherCostsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="TeacherCostsGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="GIÁO VIÊN" Binding="{Binding TeacherName}" Width="1.4*" />
-                                <DataGridTextColumn Header="ĐÃ KIẾM" Binding="{Binding EarnedAmount, StringFormat='{}{0:N0} đ'}" Width="120" />
-                                <DataGridTextColumn Header="DỰ KIẾN" Binding="{Binding ProjectedAmount, StringFormat='{}{0:N0} đ'}" Width="120" />
-                                <DataGridTextColumn Header="ĐÃ THANH TOÁN" Binding="{Binding SettledAmount, StringFormat='{}{0:N0} đ'}" Width="135" />
+                                <DataGridTextColumn Header="CÔNG THỰC TẾ" Binding="{Binding EarnedAmount, StringFormat='{}{0:N0} đ'}" Width="125" />
+                                <DataGridTextColumn Header="DỰ KIẾN CÒN LẠI" Binding="{Binding FutureProjectedAmount, StringFormat='{}{0:N0} đ'}" Width="145" />
+                                <DataGridTextColumn Header="ĐÃ QUYẾT TOÁN" Binding="{Binding SettledAmount, StringFormat='{}{0:N0} đ'}" Width="140" />
                                 <DataGridTextColumn Header="ĐÃ ỨNG" Binding="{Binding AdvancesIssued, StringFormat='{}{0:N0} đ'}" Width="115" />
                                 <DataGridTextColumn Header="ĐÃ HOÀN" Binding="{Binding AdvancesReturned, StringFormat='{}{0:N0} đ'}" Width="115" />
                                 <DataGridTextColumn Header="ĐÃ CẤN TRỪ" Binding="{Binding AdvancesApplied, StringFormat='{}{0:N0} đ'}" Width="115" />
-                                <DataGridTextColumn Header="CÒN ỨNG" Binding="{Binding RemainingAdvance, StringFormat='{}{0:N0} đ'}" Width="115" />
-                                <DataGridTextColumn Header="CÒN PHẢI TRẢ" Binding="{Binding UnpaidEarned, StringFormat='{}{0:N0} đ'}" Width="135" FontWeight="Bold" />
+                                <DataGridTextColumn Header="ỨNG CÒN DƯ" Binding="{Binding RemainingAdvance, StringFormat='{}{0:N0} đ'}" Width="115" />
+                                <DataGridTextColumn Header="TIỀN MẶT CÒN TRẢ" Binding="{Binding UnpaidEarned, StringFormat='{}{0:N0} đ'}" Width="155" FontWeight="Bold" />
+                                <DataGridTextColumn Header="TRẠNG THÁI LMS" Binding="{Binding PaymentStatusLabel}" Width="125" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
@@ -177,7 +180,7 @@
                         <Button Content="Hủy kế hoạch" Click="CancelPlanItem_Click" Tag="FinanceWrite" Style="{StaticResource FinanceDangerButton}" Height="31" Padding="12,0" />
                     </WrapPanel>
                     <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="PlanItemsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="PlanItemsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="PlanItemsGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="NGÀY DỰ KIẾN" Binding="{Binding LocalPlannedDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="115" />
                                 <DataGridTextColumn Header="LOẠI" Binding="{Binding TypeLabel}" Width="85" />
@@ -194,7 +197,7 @@
 
             <TabItem Header="Nhật ký" FontWeight="SemiBold">
                 <Border Margin="0,10,0,0" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                    <DataGrid x:Name="CashMovementsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid x:Name="CashMovementsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="CashMovementsGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="THỜI GIAN" Binding="{Binding LocalOccurredAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="145" />
                             <DataGridTextColumn Header="LOẠI" Binding="{Binding TypeLabel}" Width="90" />

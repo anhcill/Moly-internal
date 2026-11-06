@@ -1,6 +1,8 @@
 using FluentAssertions;
 using InternalManagement.Application.Common.Interfaces;
+using InternalManagement.Application.Features.HrPayroll.DTOs;
 using InternalManagement.Application.Features.Integration.Interfaces;
+using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Infrastructure.Persistence;
 using InternalManagement.Infrastructure.Services;
@@ -64,6 +66,86 @@ public sealed class CscaTeacherCostSnapshotServiceTests
         selected.Value.ClassSummaries.Should().ContainSingle(x => x.ClassSourceId == "class-a");
     }
 
+    [Fact]
+    public async Task UpdateSettlementAsync_UpdatesMolyCourseThenRefreshesLocalSnapshot()
+    {
+        using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var employeeId = Guid.NewGuid();
+        db.Employees.Add(new Employee
+        {
+            Id = employeeId,
+            CompanyId = companyId,
+            EmployeeCode = "GV-001",
+            FullName = "Teacher A",
+            Email = "teacher-a@example.test"
+        });
+        var snapshot = Snapshot(
+            companyId,
+            "class-a",
+            "session-a",
+            new DateTime(2026, 11, 1, 1, 0, 0, DateTimeKind.Utc),
+            400000m,
+            800000m);
+        snapshot.EmployeeId = employeeId;
+        snapshot.TeacherSourceId = employeeId.ToString();
+        snapshot.TeacherLmsId = 7;
+        snapshot.ClassLmsId = 8;
+        snapshot.SessionLmsId = 9;
+        snapshot.SourceKey = "7:8:9";
+        db.CscaTeacherCostSnapshots.Add(snapshot);
+        await db.SaveChangesAsync();
+
+        var lmsClient = new Mock<ICscaCourseLmsClient>();
+        lmsClient.Setup(x => x.UpdateTeacherSettlementAsync(
+                It.Is<LmsTeacherSettlementUpdate>(update =>
+                    update.TeacherLmsId == 7
+                    && update.BonusAmount == 125000m
+                    && update.DeductionAmount == 25000m
+                    && update.PaymentStatus == "processing"
+                    && update.Notes == "Reviewed from management"),
+                It.IsAny<LmsOutboundRequestContext>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        lmsClient.Setup(x => x.QueryTeacherCostsAsync(
+                It.Is<LmsTeacherCostQuery>(query =>
+                    query.TeacherSourceId == employeeId.ToString()
+                    && query.IncludeProjected),
+                It.IsAny<LmsOutboundRequestContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new LmsTeacherCostReport(
+                "CSCA_COURSE",
+                new DateTime(2026, 11, 6, 3, 0, 0, DateTimeKind.Utc),
+                true,
+                [new LmsTeacherCostItem(
+                    employeeId.ToString(), 7, "Teacher A", "teacher-a",
+                    "course-a", "CSCA", "class-a", 8, "Class A", "lead",
+                    "session-a", 9, "Lesson 1",
+                    new DateTime(2026, 11, 1, 1, 0, 0, DateTimeKind.Utc),
+                    new DateTime(2026, 11, 1, 3, 0, 0, DateTimeKind.Utc),
+                    "ended", true, 2m, 200000m, 400000m, 800000m,
+                    125000m, 25000m, "processing", null,
+                    new DateTime(2026, 11, 6, 2, 59, 0, DateTimeKind.Utc))]));
+        var service = CreateService(db, companyId, lmsClient.Object);
+
+        var result = await service.UpdateSettlementAsync(
+            employeeId,
+            new UpdateCscaTeacherSettlementRequest(
+                125000m,
+                25000m,
+                "Processing",
+                " Reviewed from management "),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.BonusAmount.Should().Be(125000m);
+        result.Value.DeductionAmount.Should().Be(25000m);
+        result.Value.NetAccruedAmount.Should().Be(500000m);
+        result.Value.Items.Should().ContainSingle(x => x.PaymentStatus == "processing");
+        lmsClient.VerifyAll();
+    }
+
     private static ApplicationDbContext CreateInMemoryDb()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -72,14 +154,17 @@ public sealed class CscaTeacherCostSnapshotServiceTests
         return new ApplicationDbContext(options);
     }
 
-    private static CscaTeacherCostSnapshotService CreateService(ApplicationDbContext db, Guid companyId)
+    private static CscaTeacherCostSnapshotService CreateService(
+        ApplicationDbContext db,
+        Guid companyId,
+        ICscaCourseLmsClient? lmsClient = null)
     {
         var currentUser = new Mock<ICurrentUserService>();
         currentUser.SetupGet(x => x.CompanyId).Returns(companyId);
         return new CscaTeacherCostSnapshotService(
             db,
             currentUser.Object,
-            Mock.Of<ICscaCourseLmsClient>(),
+            lmsClient ?? Mock.Of<ICscaCourseLmsClient>(),
             NullLogger<CscaTeacherCostSnapshotService>.Instance);
     }
 

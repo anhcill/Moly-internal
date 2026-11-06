@@ -80,6 +80,12 @@ public partial class CscaClassDetailWindow
             EditStudent_Click(sender, e);
     }
 
+    private void StudentFinanceDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (StudentFinanceDataGrid.SelectedItem is StudentRow)
+            EditStudent_Click(sender, e);
+    }
+
     private async void RemoveStudent_Click(object sender, RoutedEventArgs e)
     {
         if (StudentsDataGrid.SelectedItem is not StudentRow student)

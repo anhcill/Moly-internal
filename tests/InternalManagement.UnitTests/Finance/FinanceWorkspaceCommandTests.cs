@@ -61,7 +61,11 @@ public sealed class FinanceWorkspaceCommandTests
         var advanceRequest = new IssueTeacherAdvanceRequest(employee.Id, 600, IdempotencyKey: "advance-1");
         (await service.IssueAdvanceAsync(advanceRequest, default)).Succeeded.Should().BeTrue();
         (await service.IssueAdvanceAsync(advanceRequest, default)).Succeeded.Should().BeTrue();
-        var payRequest = new PayTeacherRequest(employee.Id, 400, IdempotencyKey: "pay-1", ApplyAdvanceAmount: 600);
+        var afterAdvance = await service.GetTeacherCostsAsync(default);
+        afterAdvance.Value!.Single().AdvancesApplied.Should().Be(600, "earned teaching cost automatically consumes the oldest open advance");
+        afterAdvance.Value.Single().RemainingAdvance.Should().Be(0);
+        afterAdvance.Value.Single().UnpaidEarned.Should().Be(400);
+        var payRequest = new PayTeacherRequest(employee.Id, 400, IdempotencyKey: "pay-1");
         var paid = await service.PayTeacherAsync(payRequest, default);
         paid.Succeeded.Should().BeTrue();
         paid.Value!.SettledAmount.Should().Be(1000);
@@ -71,7 +75,7 @@ public sealed class FinanceWorkspaceCommandTests
         (await service.PayTeacherAsync(payRequest, default)).Succeeded.Should().BeTrue();
         (await db.FinanceTransactions.CountAsync()).Should().Be(2);
         (await db.FinanceTransactions.SumAsync(x => x.Amount)).Should().Be(1000);
-        (await db.TeacherPaymentAllocations.SumAsync(x => x.Amount)).Should().Be(1000);
+        (await db.TeacherPaymentAllocations.SumAsync(x => x.Amount)).Should().Be(400);
         var advance = await db.TeacherAdvances.SingleAsync();
         (await service.ReturnAdvanceAsync(advance.Id, new(1, IdempotencyKey: "return-consumed"), default)).Succeeded.Should().BeFalse();
 
@@ -100,6 +104,8 @@ public sealed class FinanceWorkspaceCommandTests
     {
         await using var db = NewDb();
         var (company, employee, _) = await SeedTeacher(db);
+        (await db.CscaTeacherCostSnapshots.SingleAsync()).AccruedAmount = 0;
+        await db.SaveChangesAsync();
         var service = Service(db, company.Id);
         await service.IssueAdvanceAsync(new(employee.Id, 500, IdempotencyKey: "advance"), default);
         var advance = await db.TeacherAdvances.SingleAsync();

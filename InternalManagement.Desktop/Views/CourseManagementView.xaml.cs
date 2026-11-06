@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace InternalManagement.Desktop.Views;
 
@@ -54,11 +55,20 @@ public partial class CourseManagementView : UserControl
     private void ViewCscaClassDetails_Click(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(ViewCscaClassDetails_Click), sender, e));
 
+    private void ViewCscaFinanceDetails_Click(object sender, RoutedEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(ViewCscaFinanceDetails_Click), sender, e));
+
     private void CoursesDataGrid_MouseDoubleClick(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CoursesDataGrid_MouseDoubleClick), sender, e));
 
     private void CscaClassesDataGrid_MouseDoubleClick(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaClassesDataGrid_MouseDoubleClick), sender, e));
+
+    private void CscaFinanceDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaFinanceDataGrid_MouseDoubleClick), sender, e));
+
+    private void CscaFinanceDataGrid_KeyDown(object sender, KeyEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaFinanceDataGrid_KeyDown), sender, e));
 
     private void CourseModuleTabControl_SelectionChanged(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CourseModuleTabControl_SelectionChanged), sender, e));

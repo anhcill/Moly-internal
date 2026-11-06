@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Infrastructure.Integration.Connectors;
@@ -82,6 +83,50 @@ public sealed class CscaCourseLmsPayrollClientTests
         captured.Headers.Should().ContainKey("X-Signature");
         captured.Headers.Should().ContainKey("X-Integration-Key");
         captured.Headers.GetValues("Idempotency-Key").Should().ContainSingle("idem-1");
+    }
+
+    [Fact]
+    public async Task UpdateTeacherSettlementAsync_ShouldUseSignedSettlementEndpointAndSerializeValues()
+    {
+        HttpRequestMessage? captured = null;
+        string? capturedBody = null;
+        var handler = new StubHandler(async request =>
+        {
+            captured = request;
+            capturedBody = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"success\":true}", Encoding.UTF8, "application/json")
+            };
+        });
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Integrations:CscaCourseLms:BaseUrl"] = "https://csca.example",
+            ["Integrations:CscaCourseLms:ServiceToken"] = "service-token",
+            ["Integrations:CscaCourseLms:IntegrationKey"] = "integration-key",
+            ["Integrations:CscaCourseLms:HmacSecret"] = "a-secret-long-enough-for-test"
+        }).Build();
+        var client = new CscaCourseLmsClient(new HttpClient(handler), configuration);
+        var paidAt = new DateTime(2026, 11, 6, 2, 30, 0, DateTimeKind.Utc);
+
+        await client.UpdateTeacherSettlementAsync(
+            new LmsTeacherSettlementUpdate(7, 125000, 25000, "processing", "Reviewed", paidAt, "all"),
+            new LmsOutboundRequestContext("settlement-1", "corr-settlement-1"),
+            CancellationToken.None);
+
+        captured.Should().NotBeNull();
+        captured!.RequestUri!.AbsolutePath.Should().Be("/api/integrations/v1/payroll/teacher-settlements/update");
+        captured.Headers.Should().ContainKey("X-Signature");
+        captured.Headers.Should().ContainKey("X-Integration-Key");
+        captured.Headers.GetValues("Idempotency-Key").Should().ContainSingle("settlement-1");
+        using var document = JsonDocument.Parse(capturedBody!);
+        var root = document.RootElement;
+        root.GetProperty("teacherLmsId").GetInt64().Should().Be(7);
+        root.GetProperty("bonusAmount").GetDecimal().Should().Be(125000);
+        root.GetProperty("deductionAmount").GetDecimal().Should().Be(25000);
+        root.GetProperty("paymentStatus").GetString().Should().Be("processing");
+        root.GetProperty("notes").GetString().Should().Be("Reviewed");
+        root.GetProperty("period").GetString().Should().Be("all");
     }
 
     private sealed class StubHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> send) : HttpMessageHandler

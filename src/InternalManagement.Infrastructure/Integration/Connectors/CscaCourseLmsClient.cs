@@ -143,6 +143,19 @@ public sealed class CscaCourseLmsClient : ICscaCourseLmsClient
         }
     }
 
+    public async Task UpdateTeacherSettlementAsync(
+        LmsTeacherSettlementUpdate update,
+        LmsOutboundRequestContext context,
+        CancellationToken ct)
+    {
+        using var response = await SendAsync(
+            HttpMethod.Post,
+            "/api/integrations/v1/payroll/teacher-settlements/update",
+            update,
+            context,
+            ct);
+    }
+
     private async Task<HttpResponseMessage> SendAsync(
         HttpMethod method,
         string path,

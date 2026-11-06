@@ -94,6 +94,34 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
+    public async Task<CscaTeacherCostSummaryItem?> UpdateCscaTeacherSettlementAsync(
+        Guid employeeId,
+        decimal bonusAmount,
+        decimal deductionAmount,
+        string paymentStatus,
+        string? notes,
+        DateTime? paidAt = null,
+        string period = "all",
+        CancellationToken ct = default)
+    {
+        var request = new { BonusAmount = bonusAmount, DeductionAmount = deductionAmount, PaymentStatus = paymentStatus, Notes = notes, PaidAt = paidAt, Period = period };
+        using var response = await SendWithRefreshAsync(() => _httpClient.PutAsJsonAsync(
+            $"api/v1/payroll/csca-teacher-costs/teachers/{employeeId:D}/settlement", request, _jsonOptions, ct), ct);
+        await EnsureCscaSuccessAsync(response, "Cập nhật quyết toán lương MolyCourse thất bại", ct);
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<CscaTeacherCostSummaryItem>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
+    public async Task<bool> SyncCscaTeacherCostsForFinanceAsync(CancellationToken ct = default)
+    {
+        using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync(
+            "api/v1/payroll/csca-teacher-costs/sync-finance",
+            new { IncludeProjected = true },
+            _jsonOptions,
+            ct), ct);
+        return await EnsureCscaSuccessAsync(response, "Đồng bộ bảng lương từ MolyCourse thất bại", ct);
+    }
+
     public async Task<CscaClassBreakEvenItem?> GetCscaClassBreakEvenAsync(
         Guid classId,
         DateTime? from = null,

@@ -103,9 +103,7 @@
                             <StackPanel x:Name="CompanyNavigationGroup">
                                 <TextBlock x:Name="CompanyNavigationLabel" Text="TỔNG HỢP TOÀN CÔNG TY" Style="{StaticResource SidebarSectionLabel}" Margin="8,2,0,4" />
                                 <RadioButton x:Name="NavDashboard" GroupName="MainNavigation" Content="Tổng quan" Style="{StaticResource NavRadioButton}" IsChecked="True" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCompanyFinance" GroupName="MainNavigation" Content="Dòng tiền &amp; lợi nhuận" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavFinanceWorkspace" GroupName="MainNavigation" Content="Tài chính vận hành" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
-                                <RadioButton x:Name="NavCostBreakEven" GroupName="MainNavigation" Content="Chi phí &amp; hòa vốn" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
+                                <RadioButton x:Name="NavFinance" GroupName="MainNavigation" Content="Tài chính" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                                 <RadioButton x:Name="NavSync" GroupName="MainNavigation" Content="Nhật ký hệ thống" Style="{StaticResource NavRadioButton}" Checked="Nav_Checked" />
                             </StackPanel>
 
@@ -292,14 +290,20 @@
                     <!-- ── TAB: FASHION & INVENTORY VIEW (NGÀY 14) ── -->
                     <views:FashionView x:Name="ViewFashionContainer" Visibility="Collapsed" />
 
-                    <!-- BẢNG TỔNG TÀI CHÍNH TOÀN CÔNG TY -->
-                    <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" Visibility="Collapsed" />
-
-                    <!-- BẢNG ĐIỀU HÀNH TÀI CHÍNH: thực tế, dự báo, công nợ, ứng tiền và kế hoạch -->
-                    <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" Visibility="Collapsed" />
-
-                    <!-- KHUNG PHÂN TÍCH CHI PHÍ & ĐIỂM HÒA VỐN -->
-                    <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" Visibility="Collapsed" />
+                    <!-- MỘT KHÔNG GIAN TÀI CHÍNH, CHIA THÀNH CÁC TAB CON -->
+                    <Grid x:Name="ViewFinanceHubContainer" Visibility="Collapsed">
+                        <TabControl x:Name="FinanceHubTabs" Background="Transparent" BorderThickness="0">
+                            <TabItem Header="Tổng quan dòng tiền" FontWeight="SemiBold">
+                                <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" />
+                            </TabItem>
+                            <TabItem Header="Vận hành &amp; công nợ" FontWeight="SemiBold">
+                                <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" />
+                            </TabItem>
+                            <TabItem Header="Chi phí &amp; hòa vốn" FontWeight="SemiBold">
+                                <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" />
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
 
                     <!-- KHÁCH HÀNG / TÀI LIỆU NỘI BỘ DÙNG CHUNG, LUÔN LỌC THEO MẢNG -->
                     <views:InternalDataView x:Name="ViewInternalDataContainer" Visibility="Collapsed" />

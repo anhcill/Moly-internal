@@ -43,6 +43,36 @@ public partial class MainWindow
     private void ViewCscaClassDetails_Click(object sender, RoutedEventArgs e)
         => _ = ShowSelectedCscaClassDetailsAsync();
 
+    private void ViewCscaFinanceDetails_Click(object sender, RoutedEventArgs e)
+        => _ = ShowSelectedCscaFinanceDetailsAsync();
+
+    private void CscaFinanceDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        => _ = ShowSelectedCscaFinanceDetailsAsync();
+
+    private void CscaFinanceDataGrid_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        e.Handled = true;
+        _ = ShowSelectedCscaFinanceDetailsAsync();
+    }
+
+    private async Task ShowSelectedCscaFinanceDetailsAsync()
+    {
+        if (CscaFinanceDataGrid.SelectedItem is not ApiClient.CscaClassItem selectedClass)
+        {
+            ShowToast("Hãy chọn một lớp để xem chi tiết tài chính học viên.");
+            return;
+        }
+
+        var detailWindow = new CscaClassFinanceDetailWindow(_apiClient, selectedClass.Id)
+        {
+            Owner = this
+        };
+        detailWindow.ShowDialog();
+        await LoadCscaClassesAsync(CscaSearchBox.Text);
+        await LoadCscaFinanceAsync();
+    }
+
     private async Task ShowSelectedCscaClassDetailsAsync()
     {
         if (CscaClassesDataGrid.SelectedItem is not ApiClient.CscaClassItem selectedClass)

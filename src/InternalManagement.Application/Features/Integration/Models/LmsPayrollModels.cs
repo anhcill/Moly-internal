@@ -41,3 +41,12 @@ public sealed record LmsTeacherCostReport(
     DateTime CalculatedAt,
     bool IncludeProjected,
     IReadOnlyList<LmsTeacherCostItem> Items);
+
+public sealed record LmsTeacherSettlementUpdate(
+    long TeacherLmsId,
+    decimal BonusAmount,
+    decimal DeductionAmount,
+    string PaymentStatus,
+    string? Notes = null,
+    DateTime? PaidAt = null,
+    string Period = "all");

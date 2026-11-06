@@ -216,9 +216,10 @@
                         <DockPanel LastChildFill="False">
                             <StackPanel DockPanel.Dock="Left">
                                 <TextBlock Text="TÀI CHÍNH THEO LỚP" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" FontSize="13" />
-                                <TextBlock x:Name="CscaFinanceScopeText" Text="Tất cả lớp học" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,3,0,0" />
+                                <TextBlock x:Name="CscaFinanceScopeText" Text="Tất cả lớp học  •  Double-click một lớp để xem chi tiết học viên &amp; số tiền đóng" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,3,0,0" />
                             </StackPanel>
                             <ComboBox x:Name="CscaFinanceCourseFilterComboBox" DockPanel.Dock="Right" Width="230" Height="36" Margin="12,0,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaFinanceCourseFilterComboBox_SelectionChanged" />
+                            <Button DockPanel.Dock="Right" Content="👁 Xem chi tiết học viên" Height="36" Padding="12,0" Margin="12,0,0,0" Style="{StaticResource OutlineButton}" Click="ViewCscaFinanceDetails_Click" ToolTip="Xem danh sách chi tiết học viên và số tiền đóng của lớp đang chọn" />
                         </DockPanel>
                     </Border>
                     <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,14">
@@ -286,7 +287,7 @@
                         </Border>
                     </UniformGrid>
                     <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="CscaFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="CscaFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="48" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="CscaFinanceDataGrid_MouseDoubleClick" KeyDown="CscaFinanceDataGrid_KeyDown">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="MÃ LỚP" Binding="{Binding Code}" Width="105" FontWeight="Bold" />
                                 <DataGridTemplateColumn Header="LOẠI LỚP" Width="120">

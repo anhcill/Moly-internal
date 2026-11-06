@@ -7,6 +7,11 @@ public interface ICscaTeacherCostSnapshotService
 {
     Task<Result<CscaTeacherCostSyncResultDto>> SyncAsync(SyncCscaTeacherCostsRequest request, CancellationToken ct);
 
+    Task<Result<CscaTeacherCostSummaryDto>> UpdateSettlementAsync(
+        Guid employeeId,
+        UpdateCscaTeacherSettlementRequest request,
+        CancellationToken ct);
+
     Task<Result<CscaTeacherCostSummaryDto>> GetAsync(
         DateTime? from,
         DateTime? to,

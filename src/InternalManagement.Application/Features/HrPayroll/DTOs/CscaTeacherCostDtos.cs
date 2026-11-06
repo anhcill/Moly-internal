@@ -8,6 +8,14 @@ public sealed record SyncCscaTeacherCostsRequest(
     string? TeacherSourceId = null,
     bool IncludeProjected = true);
 
+public sealed record UpdateCscaTeacherSettlementRequest(
+    decimal BonusAmount,
+    decimal DeductionAmount,
+    string PaymentStatus,
+    string? Notes = null,
+    DateTime? PaidAt = null,
+    string Period = "all");
+
 public sealed record CscaTeacherCostSnapshotDto(
     Guid Id,
     Guid? EmployeeId,
@@ -28,6 +36,8 @@ public sealed record CscaTeacherCostSnapshotDto(
     decimal EffectiveHourlyRate,
     decimal AccruedAmount,
     decimal? ProjectedAmount,
+    decimal BonusAmount,
+    decimal DeductionAmount,
     string PaymentStatus,
     DateTime? PaidAt,
     DateTime? SourceUpdatedAt,

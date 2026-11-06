@@ -174,29 +174,14 @@ public partial class MainWindow
             SetActiveArea(sender == NavFashionResources ? FashionSegment : TechnologySegment);
             ShowInternalDataView(InternalDataViewMode.Resources);
         }
-        else if (sender == NavCompanyFinance)
+        else if (sender == NavFinance)
         {
             SetActiveArea(null);
-            ViewCompanyFinanceContainer.Visibility = Visibility.Visible;
-            ViewHeaderTitle.Text = "Dòng tiền & lợi nhuận";
-            ViewHeaderSubtitle.Text = "Bảng tổng song song của Công nghệ - Giáo dục và Thời trang";
-            _ = LoadViewOnceAsync("company-finance", "Đang tổng hợp tài chính hai mảng...", LoadCompanyFinanceAsync, "Đối chiếu dòng tiền P&L, doanh thu & chi phí hợp nhất");
-        }
-        else if (sender == NavFinanceWorkspace)
-        {
-            SetActiveArea(null);
-            ViewFinanceWorkspaceContainer.Visibility = Visibility.Visible;
-            ViewHeaderTitle.Text = "Tài chính vận hành";
-            ViewHeaderSubtitle.Text = "Dòng tiền thực tế và dự báo, công nợ học viên, thanh toán giáo viên và kế hoạch thu chi";
-            _ = LoadViewOnceAsync("finance-workspace", "Đang tải bảng tài chính vận hành...", LoadFinanceWorkspaceAsync, "Tổng hợp số thực tế và kịch bản theo tháng");
-        }
-        else if (sender == NavCostBreakEven)
-        {
-            SetActiveArea(null);
-            ViewCostBreakEvenContainer.Visibility = Visibility.Visible;
-            ViewHeaderTitle.Text = "Chi phí & Hòa vốn";
-            ViewHeaderSubtitle.Text = "Đối chiếu doanh thu, chi phí giáo viên từ CSCA Course/LMS và các khoản chi khác";
-            _ = LoadViewOnceAsync("cost-break-even", "Đang tải doanh thu và chi phí giáo viên từ LMS...", LoadCostBreakEvenAsync, "Đối chiếu doanh thu, chi phí giáo viên từ CSCA Course/LMS và các khoản chi khác");
+            ViewFinanceHubContainer.Visibility = Visibility.Visible;
+            ViewHeaderTitle.Text = "Tài chính";
+            ViewHeaderSubtitle.Text = "Dòng tiền, công nợ, lương giáo viên và hòa vốn trong một không gian thống nhất";
+            _ = LoadViewOnceAsync("finance-hub", "Đang đối soát toàn bộ dữ liệu tài chính...", LoadFinanceHubAsync,
+                "Đối chiếu doanh thu, công nợ, bảng lương MolyCourse và chi phí hợp nhất");
         }
         else if (IsFashionInventoryNavigationItem(sender))
         {
@@ -223,9 +208,7 @@ public partial class MainWindow
         ViewLmsContainer.Visibility = Visibility.Collapsed;
         ViewPayrollContainer.Visibility = Visibility.Collapsed;
         if (ViewFashionContainer != null) ViewFashionContainer.Visibility = Visibility.Collapsed;
-        ViewCompanyFinanceContainer.Visibility = Visibility.Collapsed;
-        ViewFinanceWorkspaceContainer.Visibility = Visibility.Collapsed;
-        ViewCostBreakEvenContainer.Visibility = Visibility.Collapsed;
+        ViewFinanceHubContainer.Visibility = Visibility.Collapsed;
         ViewInternalDataContainer.Visibility = Visibility.Collapsed;
     }
 }

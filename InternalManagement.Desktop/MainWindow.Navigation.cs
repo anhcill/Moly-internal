@@ -63,10 +63,8 @@ public partial class MainWindow
         SetNavigationAccess(NavFashionInternalCustomers, "Permissions.InternalCustomers.View");
         SetNavigationAccess(NavTechResources, "Permissions.InternalResources.View");
         SetNavigationAccess(NavFashionResources, "Permissions.InternalResources.View");
-        SetNavigationAccess(NavCompanyFinance, "Permissions.FinanceReports.View");
-        SetNavigationAccess(NavFinanceWorkspace, "Permissions.FinanceReports.View");
+        SetNavigationAccess(NavFinance, "Permissions.FinanceReports.View");
         ViewFinanceWorkspaceContainer.SetCanManage(HasPermission(_currentUser, "Permissions.FinanceTransactions.Manage"));
-        SetNavigationAccess(NavCostBreakEven, "Permissions.FinanceReports.View");
         SetNavigationAccess(NavFashion, "Permissions.Products.View", "Permissions.Inventory.View");
         SetPayrollSubNavigationAccess(
             new[] { NavFashionProducts, NavFashionVariants },
@@ -462,9 +460,7 @@ public partial class MainWindow
         var navigationItems = new[]
         {
             (Item: NavDashboard, Label: "Tổng quan"),
-            (Item: NavCompanyFinance, Label: "Dòng tiền & lợi nhuận"),
-            (Item: NavFinanceWorkspace, Label: "Tài chính vận hành"),
-            (Item: NavCostBreakEven, Label: "Chi phí & hòa vốn"),
+            (Item: NavFinance, Label: "Tài chính"),
             (Item: NavSync, Label: "Nhật ký hệ thống"),
             (Item: NavCustomers, Label: "Học viên & khách hàng"),
             (Item: NavCourses, Label: "Khóa học ▾"),
@@ -536,9 +532,7 @@ public partial class MainWindow
     private static string NavigationIconGlyph(string name) => name switch
     {
         "NavDashboard" => "\uE80F",
-        "NavCompanyFinance" => "\uE9F9",
-        "NavFinanceWorkspace" => "\uE8D4",
-        "NavCostBreakEven" => "\uE9F9",
+        "NavFinance" => "\uE9F9",
         "NavSync" => "\uE895",
         "NavCustomers" or "NavTechInternalCustomers" or "NavFashionInternalCustomers" => "\uE716",
         "NavCourses" or "NavCourseClasses" or "NavCscaMoly" => "\uE7BE",
