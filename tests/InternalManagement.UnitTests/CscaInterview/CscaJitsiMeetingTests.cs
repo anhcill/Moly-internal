@@ -13,6 +13,50 @@ namespace InternalManagement.UnitTests.CscaInterview;
 public class CscaJitsiMeetingTests
 {
     [Fact]
+    public async Task AddSchedule_BeforeCourseDates_ShouldSaveAndQueueWhenDatesAreSet()
+    {
+        await using var db = CreateInMemoryDb();
+        var service = CreateService(db, withIntegration: true);
+        var classId = await CreateClassAsync(service, "CSCA-DEFERRED-TERM");
+        var cls = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        db.LmsCourseLinks.Add(new LmsCourseLink
+        {
+            CompanyId = cls.CompanyId,
+            BusinessUnitId = cls.BusinessUnitId,
+            CourseId = cls.CourseId,
+            ExternalCourseId = "csca-deferred-term",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+
+        var schedule = await service.AddScheduleAsync(classId,
+            new CreateCscaScheduleRequest(2, TimeSpan.FromHours(17), TimeSpan.FromHours(19)),
+            CancellationToken.None);
+
+        schedule.Succeeded.Should().BeTrue();
+        (await db.IntegrationOutboxes.CountAsync()).Should().Be(0,
+            "the weekly pattern is valid even before the course term is chosen");
+
+        var updated = await service.UpdateClassAsync(classId,
+            new UpdateCscaClassRequest(
+                cls.Name,
+                cls.Batch,
+                cls.Schedule,
+                cls.TuitionFee,
+                new DateTime(2026, 11, 8, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 12, 10, 0, 0, 0, DateTimeKind.Utc),
+                cls.Status,
+                cls.CourseId,
+                cls.IsTrial),
+            CancellationToken.None);
+
+        updated.Succeeded.Should().BeTrue();
+        var events = await db.IntegrationOutboxes.ToListAsync();
+        events.Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString())
+            .Should().Contain("class.schedule.upserted");
+    }
+
+    [Fact]
     public async Task MoveSession_ShouldQueuePreviousAndCurrentTimingForWeb()
     {
         await using var db = CreateInMemoryDb();

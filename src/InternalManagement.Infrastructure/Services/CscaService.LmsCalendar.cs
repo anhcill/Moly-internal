@@ -25,8 +25,10 @@ public sealed partial class CscaService
         if (IsLmsCalendarProjection(schedule.ExternalSource)) return null;
         var link = await GetCalendarLinkAsync(cls, ct);
         if (link is null) return null;
+        // Let users define the weekly pattern before choosing the course term.
+        // UpdateClassAsync queues the saved slots once both effective dates exist.
         if (!LmsCalendarEventFactory.HasEffectiveDates(cls, schedule))
-            return $"Lớp {cls.Code} chưa có ngày bắt đầu và kết thúc hợp lệ; không thể đẩy lịch cố định sang Web.";
+            return null;
 
         var now = DateTime.UtcNow;
         QueueCalendarEvent(link, archived ? "class.schedule.archived" : "class.schedule.upserted",

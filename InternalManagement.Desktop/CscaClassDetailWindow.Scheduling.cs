@@ -369,22 +369,30 @@ public partial class CscaClassDetailWindow
             return;
         }
         var defaultStart = _detail.StartDate?.Date ?? DateTime.Today;
+        var defaultSessionCount = _calendarSessions.Count > 0 ? _calendarSessions.Count : 15;
+        var fixedSchedule = string.Join("; ", schedules
+            .OrderBy(schedule => schedule.DayOfWeek == 0 ? 7 : schedule.DayOfWeek)
+            .ThenBy(schedule => schedule.StartTime)
+            .Select(schedule => $"{schedule.DayLabel} {schedule.StartTime:hh\\:mm}-{schedule.EndTime:hh\\:mm}"));
         if (!PromptDialog.TryShow(this, "Thiết lập lịch cố định cho khóa học", new[]
         {
-            new PromptField("weeklyCount", "Số buổi học mỗi tuần", schedules.Count.ToString(CultureInfo.InvariantCulture)),
             new PromptField("fromDate", "Ngày bắt đầu", defaultStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Kind: PromptFieldKind.Date),
-            new PromptField("toDate", "Ngày kết thúc", (_detail.EndDate?.Date ?? defaultStart.AddMonths(2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), Kind: PromptFieldKind.Date)
+            new PromptField("sessionCount", $"Tổng số buổi ({fixedSchedule})", defaultSessionCount.ToString(CultureInfo.InvariantCulture))
         }, out var values)) return;
-        if (!int.TryParse(values["weeklyCount"], NumberStyles.None, CultureInfo.InvariantCulture, out var weeklyCount)
-            || weeklyCount is < 1 or > 14 || weeklyCount != schedules.Count)
+        if (!int.TryParse(values["sessionCount"], NumberStyles.None, CultureInfo.InvariantCulture, out var sessionCount)
+            || sessionCount is < 1 or > 500)
         {
-            ShowInvalid($"Số buổi mỗi tuần phải bằng số khung giờ cố định đã tạo ({schedules.Count}). Hãy thêm hoặc xóa khung giờ trước.");
+            ShowInvalid("Tổng số buổi phải từ 1 đến 500.");
             return;
         }
-        if (!TryDateOnly(values["fromDate"], out var fromDate) || !TryDateOnly(values["toDate"], out var toDate)
-            || toDate < fromDate || toDate.DayNumber - fromDate.DayNumber > 366)
+        if (!TryDateOnly(values["fromDate"], out var fromDate))
         {
-            ShowInvalid("Ngày bắt đầu/kết thúc phải đúng yyyy-MM-dd, theo thứ tự và trong tối đa 366 ngày.");
+            ShowInvalid("Ngày bắt đầu không hợp lệ.");
+            return;
+        }
+        if (!TryCalculateScheduleEndDate(fromDate, schedules, sessionCount, out var toDate))
+        {
+            ShowInvalid("Không thể xếp đủ số buổi trong vòng 366 ngày. Hãy giảm số buổi hoặc kiểm tra lại lịch cố định.");
             return;
         }
         if (_calendarSessions.Any(s => s.LessonDate < fromDate || s.LessonDate > toDate))
@@ -392,6 +400,10 @@ public partial class CscaClassDetailWindow
             ShowInvalid("Đã có buổi học nằm ngoài khoảng ngày mới. Hãy giữ hoặc mở rộng kỳ học để không làm mất tính nhất quán của lịch.");
             return;
         }
+        if (MessageBox.Show(this,
+                $"Lịch cố định: {fixedSchedule}\n\nHệ thống sẽ tạo {sessionCount} buổi từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}.\nBạn không cần tự tính ngày kết thúc. Tiếp tục?",
+                "Xác nhận lịch khóa học", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            return;
 
         SetBusy(true, "Đang lưu kỳ học và tạo các buổi theo lịch cố định...");
         try
@@ -412,7 +424,7 @@ public partial class CscaClassDetailWindow
             }
             LoadingText.Text = created.Value == 0
                 ? "Lịch cố định đã được lưu; các buổi trong kỳ đã tồn tại."
-                : $"Đã lưu {weeklyCount} buổi/tuần đến {toDate:dd/MM/yyyy} và tạo {created.Value} buổi học.";
+                : $"Đã tự tính ngày kết thúc {toDate:dd/MM/yyyy} và tạo {created.Value}/{sessionCount} buổi học.";
         }
         catch (Exception ex)
         {
@@ -422,6 +434,27 @@ public partial class CscaClassDetailWindow
         {
             SetBusy(false, LoadingText.Text);
         }
+    }
+
+    private static bool TryCalculateScheduleEndDate(
+        DateOnly fromDate,
+        IReadOnlyCollection<ScheduleRow> schedules,
+        int sessionCount,
+        out DateOnly endDate)
+    {
+        endDate = default;
+        var remaining = sessionCount;
+        for (var offset = 0; offset <= 366; offset++)
+        {
+            var date = fromDate.AddDays(offset);
+            remaining -= schedules.Count(schedule => schedule.DayOfWeek == (int)date.DayOfWeek);
+            if (remaining <= 0)
+            {
+                endDate = date;
+                return true;
+            }
+        }
+        return false;
     }
 
     private async void AddSchedule_Click(object sender, RoutedEventArgs e)

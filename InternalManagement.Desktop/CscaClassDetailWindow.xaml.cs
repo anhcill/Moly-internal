@@ -135,7 +135,7 @@ public partial class CscaClassDetailWindow : Window
             ? "Chưa có khung giờ cố định. Hãy thêm các buổi học hằng tuần."
             : $"{scheduleRows.Count} buổi/tuần  •  Tổng thời lượng {FormatDuration(weeklyDuration)}";
         ScheduleCoverageText.Text = scheduleRows.Count == 0
-            ? "Sau khi thêm khung giờ, chọn Thiết lập kỳ học để đặt ngày kết thúc và tạo buổi học."
+            ? "Thêm các khung giờ cố định trong tuần, sau đó nhập ngày bắt đầu và tổng số buổi; ngày kết thúc sẽ được tự tính."
             : $"{scheduleRows.Select(schedule => schedule.DayOfWeek).Distinct().Count()} ngày học/tuần  •  {FormatDate(detail.StartDate)} – {FormatDate(detail.EndDate)}";
     }
 
@@ -148,8 +148,8 @@ public partial class CscaClassDetailWindow : Window
             new PromptField("name", "Tên lớp", _detail.Name),
             new PromptField("batch", "Đợt / khóa", _detail.Batch),
             new PromptField("tuitionFee", "Học phí / học viên", _detail.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
-            new PromptField("startDate", "Ngày bắt đầu", _detail.StartDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
-            new PromptField("endDate", "Ngày kết thúc", _detail.EndDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
+            new PromptField("startDate", "Ngày bắt đầu (có thể đặt ở tab Thời khóa biểu)", _detail.StartDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
+            new PromptField("endDate", "Ngày kết thúc (được tự tính theo số buổi)", _detail.EndDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
             new PromptField("status", "Trạng thái", _detail.Status, Options: new[]
             {
                 new PromptOption("Active", "Đang hoạt động"),
