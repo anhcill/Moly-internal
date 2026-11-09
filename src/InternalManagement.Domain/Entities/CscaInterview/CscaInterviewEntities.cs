@@ -110,6 +110,14 @@ public class CscaLessonSession : BaseEntity, IAuditableEntity
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
     public string Status { get; set; } = "Scheduled"; // Scheduled, Rescheduled, Cancelled, Completed
+    public string SessionKind { get; set; } = "Regular"; // Regular, Makeup, Supplemental, CurriculumInsert
+    public Guid? ReplacementForSessionId { get; set; }
+    public CscaLessonSession? ReplacementForSession { get; set; }
+    public ICollection<CscaLessonSession> ReplacementSessions { get; set; } = new List<CscaLessonSession>();
+    public bool IsPayable { get; set; } = true;
+    public string? CancelReason { get; set; }
+    public DateTime? CancelledAt { get; set; }
+    public string? CancelledBy { get; set; }
     public string? MeetingUrl { get; set; }
     public string? Notes { get; set; }
 

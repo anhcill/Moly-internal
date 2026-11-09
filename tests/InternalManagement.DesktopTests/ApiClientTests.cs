@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using InternalManagement.Desktop.Services;
 using InternalManagement.Desktop.ViewModels;
 
@@ -297,6 +298,34 @@ public sealed class ApiClientTests
         Assert.Equal("19:30:00", json.RootElement.GetProperty("startTime").GetString());
         Assert.Equal("21:15:00", json.RootElement.GetProperty("endTime").GetString());
         Assert.Equal("Giáo viên đổi giờ", json.RootElement.GetProperty("changeReason").GetString());
+    }
+
+    [Fact]
+    public async Task CancelCscaLessonSession_SendsDedicatedCancellationRequest()
+    {
+        var classId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        HttpMethod? method = null;
+        string? path = null;
+        string? requestBody = null;
+        using var httpClient = new HttpClient(new StubHandler(async (request, ct) =>
+        {
+            method = request.Method;
+            path = request.RequestUri!.AbsolutePath;
+            requestBody = await request.Content!.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        })) { BaseAddress = new Uri("http://localhost/") };
+        using var apiClient = new ApiClient(httpClient);
+
+        var cancelled = await apiClient.CancelCscaLessonSessionAsync(classId, sessionId, "Giáo viên bận");
+
+        Assert.True(cancelled);
+        Assert.Equal(HttpMethod.Post, method);
+        Assert.Equal($"/api/v1/csca/classes/{classId}/sessions/{sessionId}/cancel", path);
+        using var json = JsonDocument.Parse(requestBody!);
+        Assert.Equal("Giáo viên bận", json.RootElement.GetProperty("reason").GetString());
+        Assert.True(json.RootElement.GetProperty("shiftCurriculum").GetBoolean());
+        Assert.True(json.RootElement.GetProperty("extendCourse").GetBoolean());
     }
 
     private const string EmptyPage = "{\"success\":true,\"data\":{\"items\":[],\"totalCount\":0,\"pageIndex\":1,\"pageSize\":50}}";

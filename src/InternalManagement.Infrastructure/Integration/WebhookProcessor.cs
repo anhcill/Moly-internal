@@ -558,6 +558,34 @@ public sealed class WebhookProcessor : IWebhookProcessor
         session.Status = string.Equals(eventType, CscaLmsSessionCancelledEvent, StringComparison.OrdinalIgnoreCase)
             ? "Cancelled"
             : MapSessionStatus(incoming.Status);
+        session.SessionKind = MapSessionKind(incoming.SessionKind);
+        session.IsPayable = !string.Equals(eventType, CscaLmsSessionCancelledEvent, StringComparison.OrdinalIgnoreCase)
+            && incoming.IsPayable != false;
+        if (string.Equals(eventType, CscaLmsSessionCancelledEvent, StringComparison.OrdinalIgnoreCase))
+        {
+            session.CancelReason = TrimOptional(incoming.CancelReason ?? incoming.ChangeReason,
+                "lmsSession.cancelReason", 2000);
+            session.CancelledAt = incoming.CancelledAt?.UtcDateTime ?? DateTime.UtcNow;
+            session.CancelledBy = LmsActor;
+        }
+        if (!string.IsNullOrWhiteSpace(incoming.ReplacementForSessionSourceId)
+            && Guid.TryParse(incoming.ReplacementForSessionSourceId, out var replacementSourceId))
+        {
+            var replacement = await _db.CscaLessonSessions.FirstOrDefaultAsync(item =>
+                item.Id == replacementSourceId && item.ClassId == classId, ct);
+            if (replacement == null || !string.Equals(replacement.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                throw new CscaLmsDependencyException("Buổi gốc của buổi học bù chưa được hủy hoặc chưa đồng bộ.");
+            session.ReplacementForSessionId = replacement.Id;
+        }
+        else if (!string.IsNullOrWhiteSpace(incoming.ReplacementForSessionId))
+        {
+            var replacement = await _db.CscaLessonSessions.FirstOrDefaultAsync(item =>
+                item.ClassId == classId && item.ExternalSource == source &&
+                item.ExternalSessionId == incoming.ReplacementForSessionId.Trim(), ct);
+            if (replacement == null || !string.Equals(replacement.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                throw new CscaLmsDependencyException("Buổi LMS gốc của buổi học bù chưa được hủy hoặc chưa đồng bộ.");
+            session.ReplacementForSessionId = replacement.Id;
+        }
         session.MeetingUrl = TrimOptional(incoming.MeetingUrl, "lmsSession.meetingUrl", 1000);
         session.Notes = BuildImportedSessionNote(incoming.Title);
         session.ExternalSource = source;
@@ -606,6 +634,13 @@ public sealed class WebhookProcessor : IWebhookProcessor
             throw new CscaLmsValidationException("lmsSession.scheduleId không hợp lệ.");
         _ = TrimOptional(incoming.MeetingUrl, "lmsSession.meetingUrl", 1000);
     }
+
+    private static string MapSessionKind(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "makeup" => "Makeup",
+        "supplemental" => "Supplemental",
+        _ => "Regular"
+    };
 
     private static int ToManagementDayOfWeek(int isoDayOfWeek) => isoDayOfWeek == 7 ? 0 : isoDayOfWeek;
 
@@ -804,6 +839,12 @@ public sealed class WebhookProcessor : IWebhookProcessor
         string? ChangeReason = null,
         string? ManagementSessionSourceId = null,
         string? ManagementScheduleSourceId = null,
+        string? SessionKind = null,
+        string? ReplacementForSessionId = null,
+        string? ReplacementForSessionSourceId = null,
+        bool? IsPayable = null,
+        string? CancelReason = null,
+        DateTimeOffset? CancelledAt = null,
         int Version = 1);
 
     private sealed record CscaLmsAttendanceItem(

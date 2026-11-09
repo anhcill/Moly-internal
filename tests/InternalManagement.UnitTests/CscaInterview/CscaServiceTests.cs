@@ -478,6 +478,30 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task CancelLessonSession_ShouldDisablePayAndRejectUnsupportedCurriculumInsert()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var cls = await service.CreateClassAsync(
+            new CreateCscaClassRequest("CSCA-CANCEL", "Lớp hủy buổi", "Batch 1", string.Empty, 1_000_000m), CancellationToken.None);
+        var session = await service.CreateLessonSessionAsync(cls.Value!.Id,
+            new CreateCscaLessonSessionRequest(new DateOnly(2026, 11, 10), TimeSpan.FromHours(18), TimeSpan.FromHours(20)),
+            CancellationToken.None);
+
+        var cancelled = await service.CancelLessonSessionAsync(cls.Value.Id, session.Value!.Id,
+            new CancelCscaLessonSessionRequest("Giáo viên bận"), CancellationToken.None);
+        var unsupported = await service.CreateLessonSessionAsync(cls.Value.Id,
+            new CreateCscaLessonSessionRequest(new DateOnly(2026, 11, 11), TimeSpan.FromHours(18), TimeSpan.FromHours(20),
+                SessionKind: "CurriculumInsert", CurriculumAction: "Insert"), CancellationToken.None);
+
+        cancelled.Succeeded.Should().BeTrue();
+        cancelled.Value!.Status.Should().Be("Cancelled");
+        cancelled.Value.IsPayable.Should().BeFalse();
+        cancelled.Value.CancelReason.Should().Be("Giáo viên bận");
+        unsupported.Succeeded.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task UpdateStaff_ShouldChangeExistingAssignmentWithoutCreatingAnotherRow()
     {
         using var db = CreateInMemoryDb();

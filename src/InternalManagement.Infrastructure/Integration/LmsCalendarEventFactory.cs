@@ -54,7 +54,9 @@ internal static class LmsCalendarEventFactory
         string? changeReason = null,
         DateOnly? previousLessonDate = null,
         TimeSpan? previousStartTime = null,
-        TimeSpan? previousEndTime = null) => new
+        TimeSpan? previousEndTime = null,
+        string curriculumAction = "None",
+        bool extendCourse = false) => new
     {
         ClassSourceId = session.ClassId.ToString("N"),
         SessionSourceId = session.Id.ToString("N"),
@@ -74,7 +76,12 @@ internal static class LmsCalendarEventFactory
         Status = string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase)
             ? "ended" : session.Status.Trim().ToLowerInvariant(),
         session.MeetingUrl,
-        ChangeReason = changeReason,
+        ChangeReason = changeReason ?? session.CancelReason,
+        session.SessionKind,
+        ReplacementForSessionSourceId = session.ReplacementForSessionId?.ToString("N"),
+        session.IsPayable,
+        CurriculumAction = curriculumAction,
+        ExtendCourse = extendCourse,
         SourceUpdatedAt = updatedAt
     };
 

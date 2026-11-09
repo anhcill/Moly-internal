@@ -216,7 +216,12 @@ public sealed partial class ApiClient
         TimeSpan EndTime,
         string Status,
         string? MeetingUrl,
-        string? Notes);
+        string? Notes,
+        string SessionKind = "Regular",
+        Guid? ReplacementForSessionId = null,
+        bool IsPayable = true,
+        string? CancelReason = null,
+        DateTime? CancelledAt = null);
 
     public sealed record CscaLessonAttendanceItem(
         Guid? Id,

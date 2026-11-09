@@ -99,6 +99,43 @@ public class CscaJitsiMeetingTests
     }
 
     [Fact]
+    public async Task CancelRegularSession_ShouldQueueNoPayShiftForwardPayload()
+    {
+        await using var db = CreateInMemoryDb();
+        var service = CreateService(db, withIntegration: true);
+        var classId = await CreateClassAsync(service, "CSCA-WEB-CANCEL");
+        var cls = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        db.LmsCourseLinks.Add(new LmsCourseLink
+        {
+            CompanyId = cls.CompanyId,
+            BusinessUnitId = cls.BusinessUnitId,
+            CourseId = cls.CourseId,
+            ExternalCourseId = "csca-web-cancel",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var created = await service.CreateLessonSessionAsync(classId,
+            new CreateCscaLessonSessionRequest(new DateOnly(2026, 10, 17), TimeSpan.FromHours(20), TimeSpan.FromHours(21)),
+            CancellationToken.None);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var cancelled = await service.CancelLessonSessionAsync(classId, created.Value!.Id,
+            new CancelCscaLessonSessionRequest("Giáo viên bận"), CancellationToken.None);
+
+        cancelled.Succeeded.Should().BeTrue();
+        var outbox = await db.IntegrationOutboxes.SingleAsync();
+        using var document = JsonDocument.Parse(outbox.PayloadJson);
+        document.RootElement.GetProperty("eventType").GetString().Should().Be("class.session.cancelled");
+        var payload = document.RootElement.GetProperty("payload");
+        payload.GetProperty("isPayable").GetBoolean().Should().BeFalse();
+        payload.GetProperty("sessionKind").GetString().Should().Be("Regular");
+        payload.GetProperty("curriculumAction").GetString().Should().Be("ShiftForward");
+        payload.GetProperty("extendCourse").GetBoolean().Should().BeTrue();
+        payload.GetProperty("changeReason").GetString().Should().Be("Giáo viên bận");
+    }
+
+    [Fact]
     public async Task CreateOnlineSessions_WithoutMeetingUrl_ShouldGenerateUniqueStableJitsiUrls()
     {
         await using var db = CreateInMemoryDb();

@@ -558,6 +558,20 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("cancel_reason");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<string>("CancelledBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("cancelled_by");
+
                     b.Property<Guid>("ClassId")
                         .HasColumnType("uuid")
                         .HasColumnName("class_id");
@@ -592,6 +606,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("external_version");
 
+                    b.Property<bool>("IsPayable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_payable");
+
                     b.Property<DateOnly>("LessonDate")
                         .HasColumnType("date")
                         .HasColumnName("lesson_date");
@@ -606,9 +626,21 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
+                    b.Property<Guid?>("ReplacementForSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("replacement_for_session_id");
+
                     b.Property<Guid?>("ScheduleId")
                         .HasColumnType("uuid")
                         .HasColumnName("schedule_id");
+
+                    b.Property<string>("SessionKind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("Regular")
+                        .HasColumnName("session_kind");
 
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("interval")
@@ -630,6 +662,11 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_csca_lesson_sessions");
+
+                    b.HasIndex("ReplacementForSessionId")
+                        .IsUnique()
+                        .HasFilter("replacement_for_session_id IS NOT NULL AND status <> 'Cancelled'")
+                        .HasDatabaseName("ix_csca_lesson_sessions_replacement_for_session_id");
 
                     b.HasIndex("ScheduleId")
                         .HasDatabaseName("ix_csca_lesson_sessions_schedule_id");
@@ -8322,6 +8359,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_csca_lesson_sessions_csca_classrooms_classroom_id");
 
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaLessonSession", "ReplacementForSession")
+                        .WithMany("ReplacementSessions")
+                        .HasForeignKey("ReplacementForSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_csca_lesson_sessions_csca_lesson_sessions_replacement_for_s");
+
                     b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClassSchedule", "Schedule")
                         .WithMany("LessonSessions")
                         .HasForeignKey("ScheduleId")
@@ -8331,6 +8374,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.Navigation("Class");
 
                     b.Navigation("Classroom");
+
+                    b.Navigation("ReplacementForSession");
 
                     b.Navigation("Schedule");
                 });
@@ -9677,6 +9722,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaLessonSession", b =>
                 {
                     b.Navigation("Attendances");
+
+                    b.Navigation("ReplacementSessions");
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.Documents.BusinessDocument", b =>

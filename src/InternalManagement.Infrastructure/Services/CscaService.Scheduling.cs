@@ -316,6 +316,11 @@ public sealed partial class CscaService
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,
                 Status = session.Status,
+                SessionKind = session.SessionKind,
+                ReplacementForSessionId = session.ReplacementForSessionId,
+                IsPayable = session.IsPayable,
+                CancelReason = session.CancelReason,
+                CancelledAt = session.CancelledAt,
                 MeetingUrl = session.MeetingUrl,
                 Notes = session.Notes
             }).ToListAsync(ct);
@@ -329,9 +334,12 @@ public sealed partial class CscaService
             (!businessUnitId.HasValue || item.BusinessUnitId == businessUnitId), ct);
         if (cls == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
-        if (await HasLmsCalendarProjectionAsync(classId, ct))
-            return Result<CscaLessonSessionDto>.Failure("Buổi học của lớp này được quản lý trên LMS. Hãy tạo buổi tại LMS.");
+        if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(request.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Failure("Buổi mới chỉ được tạo ở trạng thái Đã lên lịch hoặc Đổi lịch.");
         var validation = ValidateLessonSession(request.LessonDate, request.StartTime, request.EndTime, request.Status)
+            ?? ValidateSessionKind(request.SessionKind)
+            ?? ValidateCurriculumAction(request.CurriculumAction)
             ?? ValidateMeetingUrl(request.MeetingUrl);
         if (validation != null)
             return Result<CscaLessonSessionDto>.Failure(validation);
@@ -346,6 +354,24 @@ public sealed partial class CscaService
             if (sourceSchedule == null)
                 return Result<CscaLessonSessionDto>.Failure("Lịch tuần gốc không thuộc lớp này.");
         }
+        CscaLessonSession? replacementFor = null;
+        if (request.ReplacementForSessionId.HasValue)
+        {
+            replacementFor = await _db.CscaLessonSessions.FirstOrDefaultAsync(item =>
+                item.Id == request.ReplacementForSessionId.Value && item.ClassId == classId, ct);
+            if (replacementFor == null || !string.Equals(replacementFor.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                return Result<CscaLessonSessionDto>.Failure("Buổi được chọn để học bù không tồn tại hoặc chưa bị hủy.");
+            if (!string.Equals(request.SessionKind, "Makeup", StringComparison.OrdinalIgnoreCase))
+                return Result<CscaLessonSessionDto>.Failure("Chỉ buổi học bù mới được liên kết với một buổi đã hủy.");
+            var alreadyReplaced = await _db.CscaLessonSessions.AnyAsync(item =>
+                item.ReplacementForSessionId == replacementFor.Id && item.Status != "Cancelled", ct);
+            if (alreadyReplaced)
+                return Result<CscaLessonSessionDto>.Failure("Buổi đã hủy này đã có một buổi học bù đang hoạt động.");
+        }
+        else if (string.Equals(request.SessionKind, "Makeup", StringComparison.OrdinalIgnoreCase))
+        {
+            return Result<CscaLessonSessionDto>.Failure("Buổi học bù phải chọn buổi đã hủy cần thay thế.");
+        }
         var conflict = await ValidateDatedSessionAvailabilityAsync(request.ClassroomId, classId, request.LessonDate, request.StartTime, request.EndTime, null, request.Status, ct);
         if (conflict != null)
             return Result<CscaLessonSessionDto>.Failure(conflict);
@@ -359,10 +385,15 @@ public sealed partial class CscaService
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Status = request.Status.Trim(),
+            SessionKind = NormalizeSessionKind(request.SessionKind),
+            ReplacementForSessionId = replacementFor?.Id,
+            IsPayable = true,
             Notes = request.Notes?.Trim(),
             CreatedAt = DateTime.UtcNow,
             CreatedBy = _currentUser.Username ?? "System",
-            Classroom = classroomResult.Value
+            Classroom = classroomResult.Value,
+            Schedule = sourceSchedule,
+            ReplacementForSession = replacementFor
         };
         var requestedMeetingUrl = string.IsNullOrWhiteSpace(request.MeetingUrl)
             ? sourceSchedule?.MeetingUrl
@@ -373,7 +404,8 @@ public sealed partial class CscaService
         session.MeetingUrl = ResolveNewLessonMeetingUrl(
             requestedMeetingUrl, isOnlineSession, session.Id);
         _db.CscaLessonSessions.Add(session);
-        await QueueSessionForWebAsync(cls, session, false, ct);
+        await QueueSessionForWebAsync(cls, session, false, ct,
+            curriculumAction: NormalizeCurriculumAction(request.CurriculumAction));
         await _db.SaveChangesAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
@@ -388,6 +420,13 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
+        if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Failure("Hãy dùng thao tác Hủy buổi để ghi lý do, dồn giáo trình và loại buổi khỏi lương.");
+        if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(request.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Failure("Không thể mở lại buổi đã hoàn thành. Hãy dùng nghiệp vụ điều chỉnh có kiểm soát.");
+        if (string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Failure("Không thể sửa buổi đã hủy. Hãy tạo buổi học bù mới.");
         if (IsLmsCalendarProjection(session.ExternalSource) && await GetCalendarLinkAsync(session.Class, ct) is null)
             return Result<CscaLessonSessionDto>.Failure("Lớp chưa kết nối LMS để đồng bộ thay đổi buổi học.");
         var previousLessonDate = session.LessonDate;
@@ -437,16 +476,67 @@ public sealed partial class CscaService
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
 
+    public async Task<Result<CscaLessonSessionDto>> CancelLessonSessionAsync(
+        Guid classId, Guid sessionId, CancelCscaLessonSessionRequest request, CancellationToken ct)
+    {
+        if (!await IsClassInScopeAsync(classId, ct))
+            return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
+        var reason = request.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+            return Result<CscaLessonSessionDto>.Failure("Lý do hủy buổi là bắt buộc.");
+        if (reason.Length > 2000)
+            return Result<CscaLessonSessionDto>.Failure("Lý do hủy buổi tối đa 2000 ký tự.");
+
+        var session = await _db.CscaLessonSessions
+            .Include(item => item.Class).Include(item => item.Schedule).Include(item => item.Classroom)
+            .Include(item => item.Attendances)
+            .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
+        if (session == null)
+            return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
+        if (string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
+        if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+            return Result<CscaLessonSessionDto>.Failure("Không thể hủy buổi đã hoàn thành. Hãy tạo điều chỉnh lương nếu cần sửa sai.");
+        if (session.Attendances.Count > 0)
+            return Result<CscaLessonSessionDto>.Failure("Buổi học đã có dữ liệu điểm danh nên không thể hủy.");
+        if (await HasSettledTeacherCostAsync(session, ct))
+            return Result<CscaLessonSessionDto>.Failure("Buổi học đã được quyết toán lương; không thể hủy trực tiếp.");
+
+        var now = DateTime.UtcNow;
+        var actor = _currentUser.Username ?? "System";
+        var shouldShiftCurriculum = request.ShiftCurriculum &&
+            !string.Equals(session.SessionKind, "Supplemental", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(session.SessionKind, "Makeup", StringComparison.OrdinalIgnoreCase);
+        if (shouldShiftCurriculum && !request.ExtendCourse)
+            return Result<CscaLessonSessionDto>.Failure("Dồn giáo trình cần cho phép kéo dài khóa học thêm một buổi.");
+        session.Status = "Cancelled";
+        session.IsPayable = false;
+        session.CancelReason = reason;
+        session.CancelledAt = now;
+        session.CancelledBy = actor;
+        session.UpdatedAt = now;
+        session.UpdatedBy = actor;
+        await QueueSessionForWebAsync(session.Class, session, true, ct, reason,
+            curriculumAction: shouldShiftCurriculum ? "ShiftForward" : "None",
+            extendCourse: shouldShiftCurriculum && request.ExtendCourse);
+        await _db.SaveChangesAsync(ct);
+        return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
+    }
+
     public async Task<Result<bool>> RemoveLessonSessionAsync(Guid classId, Guid sessionId, CancellationToken ct)
     {
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA.");
         var session = await _db.CscaLessonSessions.Include(item => item.Class)
+            .Include(item => item.ReplacementSessions)
+            .Include(item => item.Attendances)
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<bool>.Failure("Không tìm thấy buổi học.");
         if (IsLmsCalendarProjection(session.ExternalSource))
             return Result<bool>.Failure("Buổi học này được quản lý trên LMS. Hãy hủy buổi tại LMS.");
+        if (session.ReplacementSessions.Count > 0 || session.ReplacementForSessionId.HasValue || session.Attendances.Count > 0)
+            return Result<bool>.Failure("Buổi học đã có liên kết học bù hoặc dữ liệu nghiệp vụ. Hãy dùng chức năng hủy buổi thay vì xóa.");
 
         await QueueSessionForWebAsync(session.Class, session, true, ct);
         _db.CscaLessonSessions.Remove(session);

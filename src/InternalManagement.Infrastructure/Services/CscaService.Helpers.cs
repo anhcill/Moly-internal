@@ -151,6 +151,41 @@ public sealed partial class CscaService
     private static bool IsValidLessonStatus(string? status) => new[] { "Scheduled", "Rescheduled", "Cancelled", "Completed" }
         .Contains(status?.Trim(), StringComparer.OrdinalIgnoreCase);
 
+    private static string? ValidateSessionKind(string? kind) => new[] { "Regular", "Makeup", "Supplemental" }
+        .Contains(kind?.Trim(), StringComparer.OrdinalIgnoreCase)
+            ? null
+            : "Loại buổi phải là buổi thường, học bù hoặc bổ sung. Chèn giáo trình chưa được hỗ trợ.";
+
+    private static string? ValidateCurriculumAction(string? action) => new[] { "Append", "FillCancelled", "None" }
+        .Contains(action?.Trim(), StringComparer.OrdinalIgnoreCase)
+            ? null
+            : "Cách xếp giáo trình phải là nối cuối, bù buổi hủy hoặc không thay đổi. Chèn giáo trình chưa được hỗ trợ.";
+
+    private static string NormalizeSessionKind(string kind) => kind.Trim() switch
+    {
+        var value when value.Equals("Makeup", StringComparison.OrdinalIgnoreCase) => "Makeup",
+        var value when value.Equals("Supplemental", StringComparison.OrdinalIgnoreCase) => "Supplemental",
+        _ => "Regular"
+    };
+
+    private static string NormalizeCurriculumAction(string action) => action.Trim() switch
+    {
+        var value when value.Equals("FillCancelled", StringComparison.OrdinalIgnoreCase) => "FillCancelled",
+        var value when value.Equals("None", StringComparison.OrdinalIgnoreCase) => "None",
+        _ => "Append"
+    };
+
+    private async Task<bool> HasSettledTeacherCostAsync(CscaLessonSession session, CancellationToken ct)
+    {
+        if (_integrationDb == null) return false;
+        var sourceIds = new[] { session.Id.ToString(), session.Id.ToString("N") };
+        var externalId = long.TryParse(session.ExternalSessionId, out var lmsId) ? lmsId : (long?)null;
+        return await _integrationDb.CscaTeacherCostSnapshots.AsNoTracking().AnyAsync(cost =>
+            cost.IsCurrent &&
+            (sourceIds.Contains(cost.SessionSourceId) || (externalId.HasValue && cost.SessionLmsId == externalId.Value)) &&
+            (cost.PaymentStatus == "paid" || cost.PaymentStatus == "settled"), ct);
+    }
+
     private static bool IsValidAttendanceStatus(string? status) => new[] { "Present", "Late", "Absent", "Excused" }
         .Contains(status?.Trim(), StringComparer.OrdinalIgnoreCase);
 
@@ -254,6 +289,11 @@ public sealed partial class CscaService
         StartTime = session.StartTime,
         EndTime = session.EndTime,
         Status = session.Status,
+        SessionKind = session.SessionKind,
+        ReplacementForSessionId = session.ReplacementForSessionId,
+        IsPayable = session.IsPayable,
+        CancelReason = session.CancelReason,
+        CancelledAt = session.CancelledAt,
         MeetingUrl = session.MeetingUrl,
         Notes = session.Notes
     };

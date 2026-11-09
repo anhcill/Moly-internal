@@ -301,6 +301,8 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="+ Thêm khung giờ" Click="AddSchedule_Click" Style="{StaticResource ToolbarButton}" />
+                            <Button Content="+ Thêm buổi" Click="AddLessonSession_Click" Style="{StaticResource ToolbarButton}" ToolTip="Thêm một buổi bổ sung, không dồn các buổi hiện có" />
+                            <Button Content="Hủy buổi" Click="CancelLessonSession_Click" Style="{StaticResource ToolbarButton}" ToolTip="Không tính lương và dồn giáo trình của buổi thường" />
                             <Button Content="Thiết lập kỳ học" Click="SetupCourseSchedule_Click" Style="{StaticResource PrimaryButton}" />
                             <Button Content="Quản lý phòng" Click="ManageClassrooms_Click" Style="{StaticResource ToolbarButton}" />
                         </StackPanel>

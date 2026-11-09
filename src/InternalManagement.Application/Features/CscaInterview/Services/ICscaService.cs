@@ -28,6 +28,7 @@ public interface ICscaService
     Task<IReadOnlyList<CscaLessonSessionDto>> GetLessonSessionsAsync(Guid classId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct);
     Task<Result<CscaLessonSessionDto>> CreateLessonSessionAsync(Guid classId, CreateCscaLessonSessionRequest request, CancellationToken ct);
     Task<Result<CscaLessonSessionDto>> UpdateLessonSessionAsync(Guid classId, Guid sessionId, UpdateCscaLessonSessionRequest request, CancellationToken ct);
+    Task<Result<CscaLessonSessionDto>> CancelLessonSessionAsync(Guid classId, Guid sessionId, CancelCscaLessonSessionRequest request, CancellationToken ct);
     Task<Result<bool>> RemoveLessonSessionAsync(Guid classId, Guid sessionId, CancellationToken ct);
     Task<Result<int>> GenerateLessonSessionsAsync(Guid classId, GenerateCscaLessonSessionsRequest request, CancellationToken ct);
     Task<Result<IReadOnlyList<CscaLessonAttendanceDto>>> GetLessonAttendanceAsync(Guid classId, Guid sessionId, CancellationToken ct);

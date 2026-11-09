@@ -65,7 +65,7 @@ public sealed partial class PayrollService
         var lessonHours = await _db.CscaLessonSessions.AsNoTracking()
             .Where(s => s.LessonDate >= period.StartDate && s.LessonDate <= period.EndDate &&
                 s.Class.CompanyId == companyId && !s.Class.IsDeleted &&
-                s.Class.Status != "Cancelled" && s.Status != "Cancelled" &&
+                s.Class.Status != "Cancelled" && s.Status != "Cancelled" && s.IsPayable &&
                 (!period.BusinessUnitId.HasValue || s.Class.BusinessUnitId == period.BusinessUnitId))
             .SelectMany(s => s.Class.Staff.Where(st => st.RoleInClass.ToLower() == "teacher"),
                 (s, st) => new { SessionId = s.Id, st.EmployeeId, s.LessonDate, s.StartTime, s.EndTime })

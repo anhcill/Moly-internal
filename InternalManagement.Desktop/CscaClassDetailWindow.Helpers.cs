@@ -130,7 +130,6 @@ public partial class CscaClassDetailWindow
     {
         new PromptOption("Scheduled", "Đã lên lịch"),
         new PromptOption("Rescheduled", "Đổi lịch"),
-        new PromptOption("Cancelled", "Đã hủy"),
         new PromptOption("Completed", "Hoàn thành")
     };
 

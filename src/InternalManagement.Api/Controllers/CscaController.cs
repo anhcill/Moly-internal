@@ -281,6 +281,16 @@ public class CscaController : BaseApiController
         return Ok(ApiResponse<CscaLessonSessionDto>.Ok(result.Value!, "Cập nhật buổi học thành công."));
     }
 
+    [HttpPost("classes/{id:guid}/sessions/{sessionId:guid}/cancel")]
+    [HasPermission(Permissions.CscaClassesManage)]
+    public async Task<IActionResult> CancelLessonSession(Guid id, Guid sessionId, [FromBody] CancelCscaLessonSessionRequest request, CancellationToken ct)
+    {
+        var result = await _cscaService.CancelLessonSessionAsync(id, sessionId, request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaLessonSessionDto>.Fail(result.Errors.FirstOrDefault() ?? "Hủy buổi học thất bại."));
+        return Ok(ApiResponse<CscaLessonSessionDto>.Ok(result.Value!, "Đã hủy buổi học, loại khỏi lương và xử lý tiến độ giáo trình."));
+    }
+
     [HttpDelete("classes/{id:guid}/sessions/{sessionId:guid}")]
     [HasPermission(Permissions.CscaClassesManage)]
     public async Task<IActionResult> RemoveLessonSession(Guid id, Guid sessionId, CancellationToken ct)

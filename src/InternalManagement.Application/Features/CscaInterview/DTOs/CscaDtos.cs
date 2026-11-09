@@ -148,6 +148,11 @@ public sealed record CscaLessonSessionDto
     public TimeSpan StartTime { get; init; }
     public TimeSpan EndTime { get; init; }
     public string Status { get; init; } = "Scheduled";
+    public string SessionKind { get; init; } = "Regular";
+    public Guid? ReplacementForSessionId { get; init; }
+    public bool IsPayable { get; init; } = true;
+    public string? CancelReason { get; init; }
+    public DateTime? CancelledAt { get; init; }
     public string? MeetingUrl { get; init; }
     public string? Notes { get; init; }
 }
@@ -160,7 +165,10 @@ public sealed record CreateCscaLessonSessionRequest(
     string? MeetingUrl = null,
     string? Notes = null,
     Guid? ScheduleId = null,
-    string Status = "Scheduled");
+    string Status = "Scheduled",
+    string SessionKind = "Regular",
+    Guid? ReplacementForSessionId = null,
+    string CurriculumAction = "Append");
 
 public sealed record UpdateCscaLessonSessionRequest(
     DateOnly LessonDate,
@@ -171,6 +179,11 @@ public sealed record UpdateCscaLessonSessionRequest(
     string? Notes = null,
     string Status = "Scheduled",
     string? ChangeReason = null);
+
+public sealed record CancelCscaLessonSessionRequest(
+    string Reason,
+    bool ShiftCurriculum = true,
+    bool ExtendCourse = true);
 
 public sealed record GenerateCscaLessonSessionsRequest(DateOnly FromDate, DateOnly ToDate);
 

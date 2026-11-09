@@ -368,6 +368,44 @@ public class WebhookProcessorTests
         session.ScheduleId.Should().Be((await db.CscaClassSchedules.SingleAsync()).Id);
     }
 
+    [Fact]
+    public async Task Ingest_CancelledLmsSession_ShouldPersistNoPayAndCancellationMetadata()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        const string secret = "test-webhook-secret";
+        db.CscaClasses.Add(new CscaClass { Id = classId, Code = "CSCA-CANCEL", Name = "CSCA Cancel", IsDeleted = false });
+        db.IntegrationSources.Add(new IntegrationSource
+        {
+            CompanyId = Guid.NewGuid(), Code = "CSCA_COURSE_LMS", Name = "CSCA Course LMS",
+            BaseUrl = "https://lms.example.test", AuthType = "HMAC", CredentialReference = secret, IsActive = true
+        });
+        await db.SaveChangesAsync();
+        var payload = JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1,
+            managementClassId = classId.ToString(),
+            lmsSession = new
+            {
+                id = "lms-session-cancelled", liveClassId = "12", title = "Buổi giáo viên bận",
+                startTime = "2026-09-22T09:00:00.000Z", endTime = "2026-09-22T10:30:00.000Z",
+                status = "cancelled", sessionKind = "regular", isPayable = false,
+                cancelReason = "Giáo viên bận", cancelledAt = "2026-09-20T04:00:00.000Z", version = 2
+            }
+        });
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+
+        (await processor.IngestAsync("CSCA_COURSE_LMS", "calendar-cancel-1",
+            "lms.session.cancelled", payload, Sign(payload, secret), CancellationToken.None)).Accepted.Should().BeTrue();
+
+        var session = await db.CscaLessonSessions.SingleAsync();
+        session.Status.Should().Be("Cancelled");
+        session.IsPayable.Should().BeFalse();
+        session.CancelReason.Should().Be("Giáo viên bận");
+        session.CancelledAt.Should().Be(new DateTime(2026, 9, 20, 4, 0, 0, DateTimeKind.Utc));
+        session.CancelledBy.Should().Be("CSCA_COURSE_LMS");
+    }
+
     private static string AttendancePayload(Guid classId, Guid studentId, string status) =>
         $$"""{"schemaVersion":1,"managementClassId":"{{classId}}","lmsSession":{"id":"lms-session-101","title":"Buổi 1","startTime":"2026-09-21T09:00:00.000Z","endTime":"2026-09-21T10:30:00.000Z","status":"scheduled"},"attendance":[{"managementStudentId":"{{studentId}}","status":"{{status}}","checkedAt":"2026-09-21T09:05:00.000Z","note":""}]}""";
 

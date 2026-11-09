@@ -101,6 +101,10 @@ public sealed class CscaEntityConfigurations :
         builder.Property(session => session.StartTime).IsRequired();
         builder.Property(session => session.EndTime).IsRequired();
         builder.Property(session => session.Status).HasMaxLength(30).IsRequired();
+        builder.Property(session => session.SessionKind).HasMaxLength(30).HasDefaultValue("Regular").IsRequired();
+        builder.Property(session => session.IsPayable).HasDefaultValue(true);
+        builder.Property(session => session.CancelReason).HasMaxLength(2000);
+        builder.Property(session => session.CancelledBy).HasMaxLength(200);
         builder.Property(session => session.MeetingUrl).HasMaxLength(1000);
         builder.Property(session => session.Notes).HasMaxLength(1000);
         builder.Property(session => session.ExternalSource).HasMaxLength(100);
@@ -115,6 +119,10 @@ public sealed class CscaEntityConfigurations :
             .OnDelete(DeleteBehavior.SetNull);
         builder.HasOne(session => session.Classroom).WithMany(room => room.LessonSessions).HasForeignKey(session => session.ClassroomId)
             .OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(session => session.ReplacementForSession).WithMany(session => session.ReplacementSessions)
+            .HasForeignKey(session => session.ReplacementForSessionId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(session => session.ReplacementForSessionId).IsUnique()
+            .HasFilter("replacement_for_session_id IS NOT NULL AND status <> 'Cancelled'");
         builder.HasQueryFilter(session => !session.Class.IsDeleted);
     }
 

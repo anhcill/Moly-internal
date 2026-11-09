@@ -134,6 +134,10 @@ public partial class CscaClassDetailWindow
         public string? MeetingUrl { get; init; }
         public string? Notes { get; init; }
         public string Status { get; init; } = "Scheduled";
+        public string SessionKind { get; init; } = "Regular";
+        public Guid? ReplacementForSessionId { get; init; }
+        public bool IsPayable { get; init; } = true;
+        public string? CancelReason { get; init; }
         public string TimeLabel => $"{StartTime:hh\\:mm} – {EndTime:hh\\:mm}";
         public string LocationLabel
         {
@@ -164,7 +168,11 @@ public partial class CscaClassDetailWindow
             ClassroomName = session.ClassroomName,
             MeetingUrl = session.MeetingUrl,
             Notes = session.Notes,
-            Status = session.Status
+            Status = session.Status,
+            SessionKind = session.SessionKind,
+            ReplacementForSessionId = session.ReplacementForSessionId,
+            IsPayable = session.IsPayable,
+            CancelReason = session.CancelReason
         };
     }
 

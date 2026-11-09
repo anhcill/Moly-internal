@@ -434,11 +434,18 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
-    public async Task<bool> CreateCscaLessonSessionAsync(Guid classId, DateOnly lessonDate, TimeSpan startTime, TimeSpan endTime, Guid? classroomId, string? meetingUrl, string? notes, string status = "Scheduled", CancellationToken ct = default)
+    public async Task<bool> CreateCscaLessonSessionAsync(Guid classId, DateOnly lessonDate, TimeSpan startTime, TimeSpan endTime, Guid? classroomId, string? meetingUrl, string? notes, string status = "Scheduled", string sessionKind = "Supplemental", Guid? replacementForSessionId = null, string curriculumAction = "Append", CancellationToken ct = default)
     {
-        var req = new { LessonDate = lessonDate, StartTime = startTime, EndTime = endTime, ClassroomId = classroomId, MeetingUrl = meetingUrl, Notes = notes, Status = status };
+        var req = new { LessonDate = lessonDate, StartTime = startTime, EndTime = endTime, ClassroomId = classroomId, MeetingUrl = meetingUrl, Notes = notes, Status = status, SessionKind = sessionKind, ReplacementForSessionId = replacementForSessionId, CurriculumAction = curriculumAction };
         using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/csca/classes/{classId}/sessions", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(response, "Tạo buổi học thất bại", ct);
+    }
+
+    public async Task<bool> CancelCscaLessonSessionAsync(Guid classId, Guid sessionId, string reason, bool shiftCurriculum = true, bool extendCourse = true, CancellationToken ct = default)
+    {
+        var req = new { Reason = reason, ShiftCurriculum = shiftCurriculum, ExtendCourse = extendCourse };
+        using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync($"api/v1/csca/classes/{classId}/sessions/{sessionId}/cancel", req, _jsonOptions, ct), ct);
+        return await EnsureCscaSuccessAsync(response, "Hủy buổi học thất bại", ct);
     }
 
     public async Task<bool> UpdateCscaLessonSessionAsync(Guid classId, Guid sessionId, DateOnly lessonDate, TimeSpan startTime, TimeSpan endTime, Guid? classroomId, string? meetingUrl, string? notes, string status, string? changeReason = null, CancellationToken ct = default)
