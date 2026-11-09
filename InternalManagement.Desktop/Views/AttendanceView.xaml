@@ -11,7 +11,7 @@
         <!-- SUMMARY KPI CARDS -->
         <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
             <!-- Metric 1: Total -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -22,11 +22,11 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG LƯỢT CHẤM CÔNG" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG LƯỢT CHẤM CÔNG" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8A5;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,3" />
+                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricAttendanceTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,3,0,3" />
                     <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
                         <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
                             <TextBlock Text="Bản ghi chấm công" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
@@ -36,7 +36,7 @@
             </Border>
 
             <!-- Metric 2: Present -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -47,7 +47,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÚNG GIỜ (PRESENT)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐÚNG GIỜ (PRESENT)" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                         <TextBlock Text="✅" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
@@ -61,7 +61,7 @@
             </Border>
 
             <!-- Metric 3: Late -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -72,7 +72,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐI MUỘN (LATE)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ĐI MUỘN (LATE)" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                         <TextBlock Text="⏰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
@@ -86,7 +86,7 @@
             </Border>
 
             <!-- Metric 4: Work Hours -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -97,7 +97,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG GIỜ LÀM VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG GIỜ LÀM VIỆC" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                         <TextBlock Text="⏱️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
@@ -112,7 +112,7 @@
         </UniformGrid>
 
         <!-- TOOLBAR & IMPORT -->
-        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -120,9 +120,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Từ ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                    <TextBlock Text="Từ ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                     <DatePicker x:Name="AttendanceFromDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
-                    <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                    <TextBlock Text="Đến ngày:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                     <DatePicker x:Name="AttendanceToDatePicker" Width="135" Height="36" Margin="0,0,12,0" />
                     <Button Click="FilterAttendance_Click" Style="{StaticResource OutlineButton}" Height="36" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Lọc" VerticalAlignment="Center"/></StackPanel></Button>
                 </StackPanel>
@@ -136,9 +136,9 @@
         </Border>
 
         <!-- DATA GRID -->
-        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
             <Grid>
-                <DataGrid x:Name="AttendanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                <DataGrid x:Name="AttendanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="110" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                         <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.8*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -151,7 +151,7 @@
                         <DataGridTextColumn Header="MÃ ĐỢT IMPORT" Binding="{Binding ImportBatchId}" Width="160" ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
                     </DataGrid.Columns>
                 </DataGrid>
-                <TextBlock x:Name="AttendanceEmptyText" Text="Chưa có dữ liệu chấm công trong mảng và khoảng ngày đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                <TextBlock x:Name="AttendanceEmptyText" Text="Chưa có dữ liệu chấm công trong mảng và khoảng ngày đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" />
             </Grid>
         </Border>
     </Grid>

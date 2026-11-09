@@ -4,9 +4,9 @@
         <Style TargetType="ComboBox">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="Foreground" Value="#334155" />
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
             <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="Height" Value="36" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -15,7 +15,7 @@
                     <Style TargetType="ComboBoxItem">
                         <Setter Property="Padding" Value="12,8" />
                         <Setter Property="FontSize" Value="12.5" />
-                        <Setter Property="Foreground" Value="#1E293B" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
                         <Setter Property="Background" Value="Transparent" />
                         <Setter Property="Template">
                             <Setter.Value>
@@ -25,11 +25,11 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="itemBorder" Property="Background" Value="#EFF6FF" />
+                                            <Setter TargetName="itemBorder" Property="Background" Value="{DynamicResource TableHoverBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="itemBorder" Property="Background" Value="#DBEAFE" />
-                                            <Setter Property="Foreground" Value="#1D4ED8" />
+                                            <Setter TargetName="itemBorder" Property="Background" Value="{DynamicResource TableSelectionBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                                             <Setter Property="FontWeight" Value="SemiBold" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
@@ -66,19 +66,19 @@
                                                       HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"
                                                       Data="M 0 0 L 4 4 L 8 0"
-                                                      Stroke="#64748B"
+                                                      Stroke="{DynamicResource TextMutedBrush}"
                                                       StrokeThickness="1.5"
                                                       Fill="Transparent" />
                                             </Grid>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8" />
-                                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource BorderMediumBrush}" />
+                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#4F46E5" />
-                                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -103,13 +103,13 @@
                                       MinWidth="{TemplateBinding ActualWidth}"
                                       MaxHeight="260">
                                     <Border x:Name="DropDownBorder"
-                                            Background="White"
-                                            BorderBrush="#E2E8F0"
+                                            Background="{DynamicResource CardBgBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
                                             BorderThickness="1"
                                             CornerRadius="6"
                                             Margin="0,4,0,8">
                                         <Border.Effect>
-                                            <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#0F172A" Opacity="0.10" />
+                                            <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#0F172A" Opacity="0.15" />
                                         </Border.Effect>
                                         <ScrollViewer Margin="4,4" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
@@ -120,7 +120,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="ToggleButton" Property="BorderBrush" Value="#2563EB" />
+                                <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

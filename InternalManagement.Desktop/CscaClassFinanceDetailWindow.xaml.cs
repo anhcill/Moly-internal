@@ -24,6 +24,7 @@ public partial class CscaClassFinanceDetailWindow : Window
     public CscaClassFinanceDetailWindow(ApiClient apiClient, Guid classId)
     {
         InitializeComponent();
+        Services.ThemeService.SetWindowDarkMode(this, Services.ThemeService.Instance.IsDark);
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _classId = classId;
     }

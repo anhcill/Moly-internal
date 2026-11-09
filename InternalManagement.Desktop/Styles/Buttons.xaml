@@ -244,14 +244,14 @@
             </Setter>
         </Style>
 
-        <!-- Outline / Secondary Button Style -->
+        <!-- Outline / Secondary Button Style (Theme responsive) -->
         <Style x:Key="OutlineButton" TargetType="Button">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{DynamicResource ButtonOutlineTextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ButtonOutlineBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonOutlineBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="14,6" />
@@ -269,8 +269,42 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="btnBorder" Property="Background" Value="#F1F5F9" />
-                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#94A3B8" />
+                                <Setter TargetName="btnBorder" Property="Background" Value="{DynamicResource ButtonOutlineHoverBgBrush}" />
+                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="{DynamicResource BorderMediumBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Theme Toggle Button Style (Sleek modern pill button for Light/Dark switch) -->
+        <Style x:Key="ThemeToggleButtonStyle" TargetType="Button">
+            <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource ButtonOutlineTextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ButtonOutlineBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonOutlineBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="18"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="{DynamicResource ButtonOutlineHoverBgBrush}" />
+                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="{DynamicResource BorderMediumBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -312,6 +346,5 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
 
 </ResourceDictionary>

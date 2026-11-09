@@ -6,7 +6,7 @@
         Icon="Assets/app-icon.ico"
         Width="1120" Height="680" MinWidth="880" MinHeight="520"
         WindowStartupLocation="CenterOwner"
-        Background="#F8FAFC"
+        Background="{DynamicResource LightBgBrush}"
         FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
@@ -14,7 +14,7 @@
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#1E293B" />
@@ -31,7 +31,7 @@
             <Setter Property="Foreground" Value="#475569" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Padding" Value="10,8" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
         </Style>
         <Style TargetType="DataGridCell">
@@ -91,7 +91,7 @@
         </Grid.RowDefinitions>
 
         <!-- ROW 0: TOP HEADER -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
@@ -115,7 +115,7 @@
         <!-- ROW 1: METRICS SUMMARY CARDS -->
         <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,12">
             <!-- Sĩ số -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -129,7 +129,7 @@
             </Border>
 
             <!-- Học phí cần thu -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -143,7 +143,7 @@
             </Border>
 
             <!-- Thực tế đã thu -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -157,7 +157,7 @@
             </Border>
 
             <!-- Số tiền còn nợ -->
-            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -172,7 +172,7 @@
         </UniformGrid>
 
         <!-- ROW 2: SEARCH & FILTER TOOLBAR -->
-        <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,0,10">
+        <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,0,10">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#94A3B8" />
@@ -197,10 +197,10 @@
         </Border>
 
         <!-- ROW 3: STUDENTS FINANCE DATAGRID -->
-        <Border Grid.Row="3" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="6">
+        <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Padding="6">
             <DataGrid x:Name="StudentsFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                      RowHeight="44" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9"
-                      Background="White" BorderThickness="0" MouseDoubleClick="StudentsFinanceDataGrid_MouseDoubleClick"
+                      RowHeight="44" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}"
+                      Background="{DynamicResource TableBgBrush}" BorderThickness="0" MouseDoubleClick="StudentsFinanceDataGrid_MouseDoubleClick"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="MÃ HV" Binding="{Binding StudentCode}" Width="95" FontWeight="Bold" />
@@ -281,7 +281,7 @@
 
         <!-- BUSY OVERLAY -->
         <Border x:Name="BusyOverlay" Grid.RowSpan="5" Background="#66090E1D" Visibility="Collapsed" Panel.ZIndex="100" Margin="-18">
-            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280">
+            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280">
                 <StackPanel HorizontalAlignment="Center">
                     <local:MolyDualOrbitSpinner Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" />
                     <TextBlock x:Name="BusyText" Text="Đang tải dữ liệu học viên..." HorizontalAlignment="Center" FontSize="13.5" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,4" />

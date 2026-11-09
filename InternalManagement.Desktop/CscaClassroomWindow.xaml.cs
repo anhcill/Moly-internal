@@ -12,6 +12,7 @@ public partial class CscaClassroomWindow : Window
     public CscaClassroomWindow(ApiClient apiClient)
     {
         InitializeComponent();
+        Services.ThemeService.SetWindowDarkMode(this, Services.ThemeService.Instance.IsDark);
         _apiClient = apiClient;
     }
 

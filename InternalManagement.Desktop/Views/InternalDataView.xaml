@@ -8,12 +8,12 @@
         </Grid.RowDefinitions>
 
         <!-- TOOLBAR -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock x:Name="InternalDataTitleText" Text="Danh mục khách hàng" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" TextWrapping="Wrap" TextTrimming="None" />
-                    <TextBlock x:Name="InternalDataHelpText" Text="Dữ liệu chỉ thuộc mảng đang xem và không trộn với mảng còn lại." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None" />
+                    <TextBlock x:Name="InternalDataTitleText" Text="Danh mục khách hàng" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" TextWrapping="Wrap" TextTrimming="None" />
+                    <TextBlock x:Name="InternalDataHelpText" Text="Dữ liệu chỉ thuộc mảng đang xem và không trộn với mảng còn lại." FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap" TextTrimming="None" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Grid Width="250" Height="36">
@@ -41,9 +41,9 @@
 
         <Grid Grid.Row="1">
             <!-- CUSTOMERS PANEL -->
-            <Border x:Name="InternalCustomersPanel" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border x:Name="InternalCustomersPanel" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
-                    <DataGrid x:Name="InternalCustomersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                    <DataGrid x:Name="InternalCustomersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding Code}" Width="1.1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                             <DataGridTextColumn Header="TÊN KHÁCH HÀNG" Binding="{Binding Name}" Width="2.2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -54,14 +54,14 @@
                             <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusName}" Width="1.1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <TextBlock x:Name="InternalCustomersEmptyText" Text="Chưa có khách hàng trong mảng này. Bấm “Thêm mới” để bắt đầu." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                    <TextBlock x:Name="InternalCustomersEmptyText" Text="Chưa có khách hàng trong mảng này. Bấm “Thêm mới” để bắt đầu." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" />
                 </Grid>
             </Border>
 
             <!-- RESOURCES PANEL -->
-            <Border x:Name="InternalResourcesPanel" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border x:Name="InternalResourcesPanel" Visibility="Collapsed" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                 <Grid>
-                    <DataGrid x:Name="InternalResourcesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid x:Name="InternalResourcesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="MÃ" Binding="{Binding Code}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                             <DataGridTextColumn Header="TÊN TÀI LIỆU / MẪU" Binding="{Binding Title}" Width="1.8*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -72,7 +72,7 @@
                             <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusName}" Width="1.05*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <TextBlock x:Name="InternalResourcesEmptyText" Text="Chưa có tài liệu trong mảng này. Bấm “Thêm mới” để lưu thông tin." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="14" />
+                    <TextBlock x:Name="InternalResourcesEmptyText" Text="Chưa có tài liệu trong mảng này. Bấm “Thêm mới” để lưu thông tin." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" />
                 </Grid>
             </Border>
         </Grid>

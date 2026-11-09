@@ -10,48 +10,48 @@
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}" />
-            <Setter Property="RowBackground" Value="White" />
-            <Setter Property="AlternatingRowBackground" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+            <Setter Property="Background" Value="{DynamicResource TableBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
+            <Setter Property="RowBackground" Value="{DynamicResource TableRowBgBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource TableAltRowBgBrush}" />
             <Setter Property="SelectionUnit" Value="FullRow" />
             <Setter Property="GridLinesVisibility" Value="Horizontal" />
-            <Setter Property="HorizontalGridLinesBrush" Value="#F1F5F9" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource TableLinesBrush}" />
         </Style>
 
         <Style TargetType="DataGridRow">
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableHoverBrush}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableSelectionBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource TableSelectionTextBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableSelectionBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                 </Trigger>
                 <MultiTrigger>
                     <MultiTrigger.Conditions>
                         <Condition Property="IsSelected" Value="True" />
                         <Condition Property="IsMouseOver" Value="True" />
                     </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource TableSelectionHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableSelectionHoverBrush}" />
                 </MultiTrigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="DataGridCell">
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="10,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource TableSelectionTextBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                     <Setter Property="Background" Value="Transparent" />
                 </DataTrigger>
             </Style.Triggers>
@@ -61,35 +61,35 @@
              These styles keep the semantic color when idle and force white text
              when its row is selected. -->
         <Style x:Key="DataGridTextCellStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource TableSelectionTextBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="DataGridBlueTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#2563EB" />
+            <Setter Property="Foreground" Value="#3B82F6" />
         </Style>
         <Style x:Key="DataGridSkyTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
             <Setter Property="Foreground" Value="#0EA5E9" />
         </Style>
         <Style x:Key="DataGridGreenTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#059669" />
+            <Setter Property="Foreground" Value="#10B981" />
         </Style>
         <Style x:Key="DataGridEmeraldTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
             <Setter Property="Foreground" Value="#10B981" />
         </Style>
         <Style x:Key="DataGridRedTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#DC2626" />
+            <Setter Property="Foreground" Value="#EF4444" />
         </Style>
         <Style x:Key="DataGridIndigoTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#6366F1" />
+            <Setter Property="Foreground" Value="#818CF8" />
         </Style>
         <Style x:Key="DataGridMutedTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
         </Style>
         <Style x:Key="DataGridWrapTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
             <Setter Property="TextWrapping" Value="Wrap" />
@@ -100,25 +100,25 @@
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
         <Style x:Key="DataGridWrapBlueTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridWrapTextCellStyle}">
-            <Setter Property="Foreground" Value="#2563EB" />
+            <Setter Property="Foreground" Value="#3B82F6" />
         </Style>
         <Style x:Key="DataGridWrapSkyTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridWrapTextCellStyle}">
             <Setter Property="Foreground" Value="#0EA5E9" />
         </Style>
         <Style x:Key="DataGridWrapGreenTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridWrapTextCellStyle}">
-            <Setter Property="Foreground" Value="#059669" />
+            <Setter Property="Foreground" Value="#10B981" />
         </Style>
         <Style x:Key="DataGridWrapAmberTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridWrapTextCellStyle}">
             <Setter Property="Foreground" Value="#F59E0B" />
         </Style>
         <Style x:Key="DataGridWrapMutedTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridWrapTextCellStyle}">
-            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
         </Style>
         <Style x:Key="DataGridAmberTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
             <Setter Property="Foreground" Value="#F59E0B" />
         </Style>
         <Style x:Key="DataGridPurpleTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
-            <Setter Property="Foreground" Value="#7C3AED" />
+            <Setter Property="Foreground" Value="#A855F7" />
         </Style>
 
         <Style x:Key="DataGridBoldTextCellStyle" TargetType="TextBlock" BasedOn="{StaticResource DataGridTextCellStyle}">
@@ -126,12 +126,12 @@
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="Background" Value="{DynamicResource TableHeaderBgBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="11.5" />
             <Setter Property="Padding" Value="10,8" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TableHeaderBorderBrush}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="ContentTemplate">
                 <Setter.Value>
@@ -143,30 +143,30 @@
         </Style>
 
         <Style TargetType="ListViewItem">
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Padding" Value="0" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableHoverBrush}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableSelectionBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource TableSelectionTextBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableSelectionBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="ListBoxItem">
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableHoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableHoverBrush}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TableSelectionBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource TableSelectionTextBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TableSelectionBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>

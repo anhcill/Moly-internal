@@ -4,9 +4,9 @@
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
             <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="Padding" Value="12,10" />
             <Setter Property="Height" Value="42" />
@@ -24,12 +24,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8" />
-                                <Setter TargetName="border" Property="Background" Value="#FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderMediumBrush}" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#4F46E5" />
-                                <Setter TargetName="border" Property="Background" Value="#FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                                 <Setter TargetName="border" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#4F46E5" Opacity="0.25" />
@@ -42,13 +42,16 @@
             </Setter>
         </Style>
 
+        <!-- Implicit TextBox Style -->
+        <Style TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}" />
+
         <!-- Modern PasswordBox Style -->
         <Style x:Key="ModernPasswordBox" TargetType="PasswordBox">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource TextDarkBrush}" />
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
             <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="Padding" Value="12,10" />
             <Setter Property="Height" Value="42" />
@@ -66,12 +69,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8" />
-                                <Setter TargetName="border" Property="Background" Value="#FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderMediumBrush}" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#4F46E5" />
-                                <Setter TargetName="border" Property="Background" Value="#FFFFFF" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource InputBgHoverBrush}" />
                                 <Setter TargetName="border" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#4F46E5" Opacity="0.25" />
@@ -83,6 +86,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Implicit PasswordBox Style -->
+        <Style TargetType="PasswordBox" BasedOn="{StaticResource ModernPasswordBox}" />
 
         <!-- Modern Dark TextBox Style for Modals & Dark Panels -->
         <Style x:Key="DarkModernTextBox" TargetType="TextBox">

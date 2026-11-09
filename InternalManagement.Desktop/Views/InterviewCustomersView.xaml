@@ -9,7 +9,7 @@
                         </Grid.RowDefinitions>
 
                         <!-- TOOLBAR & FILTERS -->
-                        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -30,7 +30,7 @@
                         <!-- METRICS STATS BAR (SaaS Modern KPI Cards) -->
                         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,12">
                             <!-- Card 1: Tổng số ứng viên -->
-                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -41,17 +41,17 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ ỨNG VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ ỨNG VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
                                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding CustomerCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,3,0,1" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Khách hàng đăng ký" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding CustomerCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,3,0,1" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Khách hàng đăng ký" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
 
                             <!-- Card 2: Tổng số buổi phỏng vấn -->
-                            <Border Background="White" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -62,17 +62,17 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ BUỔI PHỎNG VẤN" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SỐ BUỔI PHỎNG VẤN" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
                                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding SessionCount}" FontSize="20" FontWeight="Bold" Foreground="#2563EB" Margin="0,3,0,1" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Lịch mock phỏng vấn" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Lịch mock phỏng vấn" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
 
                             <!-- Card 3: Doanh thu đã thu -->
-                            <Border Background="White" CornerRadius="10" Padding="14,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -83,19 +83,19 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DOANH THU ĐÃ THU" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                     <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" CornerRadius="6" Width="26" Height="26" HorizontalAlignment="Right">
                                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding RevenueText}" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,1" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Thực thu ghi nhận" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" />
                                 </Grid>
                             </Border>
                         </UniformGrid>
 
                         <!-- INTERVIEW DATAGRID -->
-                        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                            <DataGrid x:Name="InterviewCustomersDataGrid" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46">
+                        <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <DataGrid x:Name="InterviewCustomersDataGrid" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NGUỒN" Binding="{Binding SourceId}" Width="120" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />

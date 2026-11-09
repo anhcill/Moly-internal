@@ -5,14 +5,14 @@
         Title="Danh mục phòng học CSCA"
         Icon="Assets/app-icon.ico"
         Width="980" Height="620" MinWidth="760" MinHeight="480"
-        WindowStartupLocation="CenterOwner" Background="#F8FAFC" FontFamily="Segoe UI"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource LightBgBrush}" FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
         <Style x:Key="ToolButton" TargetType="Button">
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Cursor" Value="Hand" />
@@ -66,7 +66,7 @@
 
         <!-- SLEEK MODAL BUSY OVERLAY -->
         <Border x:Name="ClassroomBusyOverlay" Grid.RowSpan="4" Background="#66090E1D" Visibility="Collapsed" Panel.ZIndex="100" Margin="-22">
-            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280" MaxWidth="380" Effect="{StaticResource FloatingShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280" MaxWidth="380" Effect="{StaticResource FloatingShadow}">
                 <StackPanel HorizontalAlignment="Center">
                     <!-- Animated Dual-Orbit Spinner with Brand Badge (Mẫu 3) -->
                     <local:MolyDualOrbitSpinner Width="52" Height="52" HorizontalAlignment="Center" Margin="0,0,0,14" />

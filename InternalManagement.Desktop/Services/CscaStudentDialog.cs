@@ -125,9 +125,10 @@ public static partial class CscaStudentDialog
             MaxHeight = 820,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             ResizeMode = ResizeMode.NoResize,
-            Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
             ShowInTaskbar = false
         };
+        dialog.SetResourceReference(Window.BackgroundProperty, "LightBgBrush");
+        ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
         var rootGrid = new Grid { Margin = new Thickness(22, 16, 22, 16) };
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header

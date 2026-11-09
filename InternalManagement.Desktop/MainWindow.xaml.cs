@@ -42,6 +42,7 @@ public partial class MainWindow : Window, IDisposable
     private readonly HashSet<string> _loadedViews = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Task> _viewLoadTasks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, CancellationTokenSource> _searchDebouncers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly EventHandler<AppTheme> _themeChangedHandler;
 
     private List<ApiClient.CourseItem> _cachedCourses = new();
     private List<ApiClient.SalesOrderSummaryItem> _allSalesOrders = new();
@@ -181,15 +182,79 @@ public partial class MainWindow : Window, IDisposable
         _isUiReady = true;
 
         Loaded += MainWindow_Loaded;
+        _themeChangedHandler = (_, theme) => UpdateThemeButton(theme);
+        ThemeService.Instance.ThemeChanged += _themeChangedHandler;
         Closed += (_, _) => Dispose();
     }
 
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Key == Key.F10)
+        {
+            ToggleTheme();
+            e.Handled = true;
+        }
+    }
+
+    private void ThemeToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleTheme();
+    }
+
+    private void ToggleTheme()
+    {
+        var newTheme = ThemeService.Instance.ToggleTheme();
+        UpdateThemeButton(newTheme);
+        ThemeService.SetWindowDarkMode(this, ThemeService.Instance.IsDark);
+        ShowToast(ThemeService.Instance.IsDark ? "Đã chuyển sang giao diện Tối." : "Đã chuyển sang giao diện Sáng.");
+    }
+
+    private void UpdateThemeButton(AppTheme theme)
+    {
+        if (Dispatcher == null || Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            try
+            {
+                Dispatcher.Invoke(() => UpdateThemeButton(theme));
+            }
+            catch (Exception)
+            {
+                // Bỏ qua nếu Dispatcher đang hủy hoặc đã dừng
+            }
+            return;
+        }
+
+        if (ThemeToggleIcon != null && ThemeToggleText != null)
+        {
+            if (theme == AppTheme.Dark)
+            {
+                ThemeToggleIcon.Text = "☀️";
+                ThemeToggleText.Text = "Giao diện sáng";
+                ThemeToggleButton.ToolTip = "Chuyển sang giao diện Sáng (Phím tắt: F10)";
+            }
+            else
+            {
+                ThemeToggleIcon.Text = "🌙";
+                ThemeToggleText.Text = "Giao diện tối";
+                ThemeToggleButton.ToolTip = "Chuyển sang giao diện Tối (Phím tắt: F10)";
+            }
+        }
+    }
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateUsernameWatermark();
         UpdatePasswordWatermark();
         await RefreshApiHealthAsync();
         await RestoreRememberedSessionAsync();
+        UpdateThemeButton(ThemeService.Instance.CurrentTheme);
+        ThemeService.SetWindowDarkMode(this, ThemeService.Instance.IsDark);
     }
 
     private async Task RefreshApiHealthAsync()
@@ -573,6 +638,7 @@ public partial class MainWindow : Window, IDisposable
 
     public void Dispose()
     {
+        ThemeService.Instance.ThemeChanged -= _themeChangedHandler;
         foreach (var cts in _searchDebouncers.Values)
         {
             cts.Cancel();

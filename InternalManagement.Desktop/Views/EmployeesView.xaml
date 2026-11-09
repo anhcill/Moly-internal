@@ -11,16 +11,16 @@
         </Grid.RowDefinitions>
 
         <!-- COMPACT HEADER STRIP -->
-        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="12,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="12,6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="EmployeesHeaderTitle" Text="Quản lý Nhân sự &amp; Hồ sơ CV" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="EmployeesHeaderTitle" Text="Quản lý Nhân sự &amp; Hồ sơ CV" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                     <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
-                    <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự công tác, hồ sơ CV, thiếu hồ sơ, đã nghỉ việc &amp; Blacklist" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự công tác, hồ sơ CV, thiếu hồ sơ, đã nghỉ việc &amp; Blacklist" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Click="RefreshEmployees_Click" Style="{StaticResource OutlineButton}" Height="28" Padding="10,0" Margin="0,0,6,0">
@@ -55,7 +55,7 @@
                     <!-- COMPACT KPI STAT STRIP -->
                     <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,6">
                         <!-- Card 1: Total -->
-                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -66,8 +66,8 @@
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalCount}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,1,0,0" />
+                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalCount}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,1,0,0" />
                                 </StackPanel>
                                 <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
                                     <TextBlock Text="Toàn bộ" FontSize="9" FontWeight="SemiBold" Foreground="#4F46E5" />
@@ -76,7 +76,7 @@
                         </Border>
 
                         <!-- Card 2: Active -->
-                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -87,7 +87,7 @@
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="12" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="ĐANG LÀM VIỆC" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="ĐANG LÀM VIỆC" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding ActiveCount}" FontSize="14" FontWeight="Bold" Foreground="#059669" Margin="0,1,0,0" />
                                 </StackPanel>
                                 <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
@@ -97,7 +97,7 @@
                         </Border>
 
                         <!-- Card 3: Resigned -->
-                        <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,6,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -108,7 +108,7 @@
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7E8;" FontSize="12" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="ĐÃ NGHỈ VIỆC" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="ĐÃ NGHỈ VIỆC" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding ResignedCount}" FontSize="14" FontWeight="Bold" Foreground="#D97706" Margin="0,1,0,0" />
                                 </StackPanel>
                                 <Border Grid.Column="2" Background="#FEF3C7" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
@@ -118,7 +118,7 @@
                         </Border>
 
                         <!-- Card 4: Blacklist -->
-                        <Border Background="White" CornerRadius="8" Padding="10,5" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -129,7 +129,7 @@
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE711;" FontSize="12" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="BLACKLIST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Text="BLACKLIST" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding BlacklistedCount}" FontSize="14" FontWeight="Bold" Foreground="#DC2626" Margin="0,1,0,0" />
                                 </StackPanel>
                                 <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
@@ -140,7 +140,7 @@
                     </UniformGrid>
 
                     <!-- TOOLBAR & SEARCH (COMPACT UNIFIED ROW) -->
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -172,9 +172,9 @@
                     </Border>
 
                     <!-- WORKING DATAGRID -->
-                    <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesWorkingDataGrid" ItemsSource="{Binding WorkingEmployees}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesWorkingDataGrid" ItemsSource="{Binding WorkingEmployees}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -187,7 +187,7 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.9*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự đang làm việc." Visibility="{Binding IsWorkingEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
+                            <TextBlock Text="Không có nhân sự đang làm việc." Visibility="{Binding IsWorkingEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -207,16 +207,16 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Hồ sơ năng lực &amp; CV nhân sự" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Hồ sơ năng lực &amp; CV nhân sự" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                                 <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Xem xét chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV nhân sự" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Xem xét chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV nhân sự" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Click="OpenEmployeeCv_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0">
@@ -230,9 +230,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesProfilesDataGrid" ItemsSource="{Binding Profiles}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesProfilesDataGrid" ItemsSource="{Binding Profiles}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.8*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -244,7 +244,7 @@
                                     <DataGridTextColumn Header="KINH NGHIỆM" Binding="{Binding Experience}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Chưa có hồ sơ nhân sự để hiển thị." Visibility="{Binding IsProfilesEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
+                            <TextBlock Text="Chưa có hồ sơ nhân sự để hiển thị." Visibility="{Binding IsProfilesEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -292,9 +292,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesMissingCvDataGrid" ItemsSource="{Binding MissingCv}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesMissingCvDataGrid" ItemsSource="{Binding MissingCv}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -326,16 +326,16 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,5" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Nhân sự đã nghỉ việc" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Nhân sự đã nghỉ việc" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                                 <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Theo dõi hồ sơ nhân sự cũ, ngày nghỉ việc, lý do nghỉ &amp; khôi phục công tác" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Theo dõi hồ sơ nhân sự cũ, ngày nghỉ việc, lý do nghỉ &amp; khôi phục công tác" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="↩ Khôi phục làm việc" Click="ReactivateEmployee_Click" Style="{StaticResource OutlineButton}" Height="28" FontSize="11.5" Padding="8,0" Margin="0,0,6,0" />
@@ -356,9 +356,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesResignedDataGrid" ItemsSource="{Binding Resigned}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesResignedDataGrid" ItemsSource="{Binding Resigned}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -370,7 +370,7 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.85*" ElementStyle="{StaticResource DataGridWrapMutedTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự đã nghỉ việc." Visibility="{Binding IsResignedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
+                            <TextBlock Text="Không có nhân sự đã nghỉ việc." Visibility="{Binding IsResignedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -414,9 +414,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="4" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="EmployeesBlacklistDataGrid" ItemsSource="{Binding Blacklisted}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="EmployeesBlacklistDataGrid" ItemsSource="{Binding Blacklisted}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" MouseDoubleClick="EmployeesDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NHÂN VIÊN" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -428,7 +428,7 @@
                                     <DataGridTextColumn Header="TRẠNG THÁI" Binding="{Binding StatusNameVi}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridRedTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock Text="Không có nhân sự trong danh sách Blacklist." Visibility="{Binding IsBlacklistedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" />
+                            <TextBlock Text="Không có nhân sự trong danh sách Blacklist." Visibility="{Binding IsBlacklistedEmpty, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                         </Grid>
                     </Border>
                 </Grid>

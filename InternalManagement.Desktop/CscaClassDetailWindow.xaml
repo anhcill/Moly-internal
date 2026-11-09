@@ -9,7 +9,7 @@
         MinWidth="920"
         MinHeight="540"
         WindowStartupLocation="Manual"
-        Background="#F8FAFC"
+        Background="{DynamicResource LightBgBrush}"
         FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
@@ -17,7 +17,7 @@
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#1E293B" />
@@ -38,7 +38,7 @@
             <Setter Property="Foreground" Value="#475569" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Padding" Value="10,8" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
         </Style>
         <Style TargetType="DataGridCell">
@@ -95,7 +95,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="14,11" Margin="0,0,0,9">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="12" Padding="14,11" Margin="0,0,0,9">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -129,7 +129,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="18">
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Padding="18">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="170" />
@@ -205,7 +205,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Border Background="#F8FAFC" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                        <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Học phí / học viên: " Foreground="#475569" FontWeight="SemiBold" />
                                 <TextBlock x:Name="ClassTuitionText" Foreground="#0F172A" FontWeight="Bold" />
@@ -330,7 +330,7 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Margin="0,0,0,10" ClipToBounds="True">
+                    <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Margin="0,0,0,10" ClipToBounds="True">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -425,12 +425,12 @@
                         <TextBlock x:Name="AttendanceReportStatusText" Text="Mở tab để tải dữ liệu điểm danh." VerticalAlignment="Center" Foreground="#64748B" TextWrapping="Wrap" />
                     </StackPanel>
                     <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,8">
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
-                        <Border Background="White" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="10,7"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="18" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="10,7"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="18" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
                     </UniformGrid>
                     <GroupBox Grid.Row="3" Header="Thống kê theo buổi học từ web" Margin="0,0,0,10">
                         <DataGrid x:Name="AttendanceReportSessionsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
@@ -469,7 +469,7 @@
 
         <!-- SLEEK MODAL BUSY OVERLAY -->
         <Border x:Name="CscaBusyOverlay" Grid.RowSpan="3" Background="#66090E1D" Visibility="Collapsed" Panel.ZIndex="100" Margin="-22">
-            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280" MaxWidth="380" Effect="{StaticResource FloatingShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280" MaxWidth="380" Effect="{StaticResource FloatingShadow}">
                 <StackPanel HorizontalAlignment="Center">
                     <!-- Animated Dual-Orbit Spinner with Brand Badge (Mẫu 3) -->
                     <local:MolyDualOrbitSpinner Width="52" Height="52" HorizontalAlignment="Center" Margin="0,0,0,14" />

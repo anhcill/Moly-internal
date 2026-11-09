@@ -29,7 +29,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 0: Tổng kỳ lương -->
-            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <Border Grid.Column="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -39,14 +39,14 @@
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#64748B" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="TỔNG KỲ LƯƠNG" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
-                        <TextBlock x:Name="MetricPayrollTotalPeriods" Text="0" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,1,0,0" />
+                        <TextBlock Text="TỔNG KỲ LƯƠNG" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <TextBlock x:Name="MetricPayrollTotalPeriods" Text="0" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,1,0,0" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Card 1: Quỹ lương Gross -->
-            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <Border Grid.Column="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -56,14 +56,14 @@
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#2563EB" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="QUỸ LƯƠNG GROSS" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                        <TextBlock Text="QUỸ LƯƠNG GROSS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                         <TextBlock x:Name="MetricPayrollTotalGross" Text="0 đ" FontSize="15" FontWeight="Bold" Foreground="#2563EB" Margin="0,1,0,0" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Card 2: Thực chi lương Net -->
-            <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <Border Grid.Column="2" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -73,14 +73,14 @@
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="THỰC CHI LƯƠNG NET" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                        <TextBlock Text="THỰC CHI LƯƠNG NET" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                         <TextBlock x:Name="MetricPayrollTotalNet" Text="0 đ" FontSize="15" FontWeight="Bold" Foreground="#059669" Margin="0,1,0,0" />
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Card 3: Số phiếu lương đã tính -->
-            <Border Grid.Column="3" Background="White" CornerRadius="8" Padding="10,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <Border Grid.Column="3" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -90,7 +90,7 @@
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8EF;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#7C3AED" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="PHIẾU LƯƠNG ĐÃ TÍNH" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                        <TextBlock Text="PHIẾU LƯƠNG ĐÃ TÍNH" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                         <TextBlock x:Name="MetricPayrollPayslipsCount" Text="0" FontSize="15" FontWeight="Bold" Foreground="#7C3AED" Margin="0,1,0,0" />
                     </StackPanel>
                 </Grid>
@@ -98,7 +98,7 @@
         </Grid>
 
         <!-- PAYROLL TOOLBAR & PERIOD SELECTOR (COMPACT UNIFIED BAR) -->
-        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,0,8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,0,8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
             <DockPanel LastChildFill="False">
                 <!-- VÙNG BỘ LỌC (TRÁI) -->
                 <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
@@ -155,9 +155,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- WORKFLOW STEPPER & PERIOD TITLE BAR (COMPACT) -->
-                    <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,4" Margin="0,0,0,6">
+                    <Border Grid.Row="0" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,4" Margin="0,0,0,6">
                         <DockPanel LastChildFill="True">
-                            <TextBlock x:Name="PayrollPeriodHeaderTitle" Text="Kỳ lương hiện tại — Mảng Thời trang &amp; Giáo dục" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" DockPanel.Dock="Left" Margin="2,0,16,0" />
+                            <TextBlock x:Name="PayrollPeriodHeaderTitle" Text="Kỳ lương hiện tại — Mảng Thời trang &amp; Giáo dục" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" DockPanel.Dock="Left" Margin="2,0,16,0" />
                             <Grid HorizontalAlignment="Right">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -188,14 +188,14 @@
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 4 -->
-                                <Border Grid.Column="3" x:Name="PayrollStep4Border" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
+                                <Border Grid.Column="3" x:Name="PayrollStep4Border" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock x:Name="PayrollStep4Icon" Text="" FontWeight="Bold" Foreground="#64748B" FontSize="10.5" />
                                         <TextBlock Text="4. Đã chi" FontWeight="Medium" Foreground="#64748B" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 5 -->
-                                <Border Grid.Column="4" x:Name="PayrollStep5Border" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5" Padding="8,3">
+                                <Border Grid.Column="4" x:Name="PayrollStep5Border" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock x:Name="PayrollStep5Icon" Text="" FontWeight="Bold" Foreground="#64748B" FontSize="10.5" />
                                         <TextBlock Text="5. Phát hành" FontWeight="Medium" Foreground="#64748B" FontSize="11" />
@@ -224,9 +224,9 @@
                     </DockPanel>
 
                     <!-- DATA TABLE (MAXIMIZED VERTICAL SPACE) -->
-                    <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="PayslipsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="36" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="PayslipsDataGrid_MouseDoubleClick">
+                            <DataGrid x:Name="PayslipsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="36" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="PayslipsDataGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="105" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.5*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -239,7 +239,7 @@
                                     <DataGridTextColumn Header="THỰC LĨNH (NET PAY)" Binding="{Binding NetSalary, StringFormat='{}{0:N0} đ'}" Width="160" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock x:Name="PayslipsEmptyText" Text="Chưa có phiếu lương cho mảng hoặc kỳ lương đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="13" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="620" />
+                            <TextBlock x:Name="PayslipsEmptyText" Text="Chưa có phiếu lương cho mảng hoặc kỳ lương đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="620" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -260,15 +260,15 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="ĐIỀU CHỈNH LƯƠNG THEO NHÂN VIÊN" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                                <TextBlock Text="Chọn nhân sự ở bảng dưới để điều chỉnh mức lương, giờ dạy hoặc thêm thưởng / phạt." FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,8,0" />
+                                <TextBlock Text="ĐIỀU CHỈNH LƯƠNG THEO NHÂN VIÊN" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                                <TextBlock Text="Chọn nhân sự ở bảng dưới để điều chỉnh mức lương, giờ dạy hoặc thêm thưởng / phạt." FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,8,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button x:Name="BtnEditPayrollBaseSalary" Content="₫ Chỉnh mức lương" Click="EditPayrollBaseSalary_Click" Style="{StaticResource OutlineButton}" Height="28" Padding="10,0" Margin="0,0,6,0" FontSize="11.5" IsEnabled="False" />
@@ -279,9 +279,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="PayrollAdjustmentEmployeesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="34" SelectionChanged="PayrollAdjustmentEmployees_SelectionChanged" MouseDoubleClick="PayrollAdjustmentEmployees_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <DataGrid x:Name="PayrollAdjustmentEmployeesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="34" SelectionChanged="PayrollAdjustmentEmployees_SelectionChanged" MouseDoubleClick="PayrollAdjustmentEmployees_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.75*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.3*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -292,7 +292,7 @@
                                     <DataGridTextColumn Header="THỰC LĨNH" Binding="{Binding NetSalary, StringFormat='{}{0:N0} đ'}" Width="1.1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock x:Name="PayrollAdjustmentEmployeesEmptyText" Text="Kỳ lương chưa có phiếu. Hãy tính lương trước khi điều chỉnh." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="12" />
+                            <TextBlock x:Name="PayrollAdjustmentEmployeesEmptyText" Text="Kỳ lương chưa có phiếu. Hãy tính lương trước khi điều chỉnh." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
                         </Grid>
                     </Border>
 
@@ -307,9 +307,9 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
-                            <DataGrid x:Name="PayrollAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="32" SelectionChanged="PayrollAdjustments_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <DataGrid x:Name="PayrollAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="32" SelectionChanged="PayrollAdjustments_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="LOẠI KHOẢN" Binding="{Binding TypeNameVi}" Width="1.1*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="TÁC ĐỘNG" Binding="{Binding AmountEffectDisplay}" Width="1*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapSkyTextCellStyle}" />
@@ -317,7 +317,7 @@
                                     <DataGridTextColumn Header="THỜI GIAN GHI" Binding="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="1.15*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock x:Name="PayrollAdjustmentsEmptyText" Text="Nhân viên này chưa có khoản điều chỉnh trong kỳ." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="12" />
+                            <TextBlock x:Name="PayrollAdjustmentsEmptyText" Text="Nhân viên này chưa có khoản điều chỉnh trong kỳ." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -337,14 +337,14 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="12,8" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="TẠO KỲ LƯƠNG MỚI" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                            <TextBlock Text="Tạo kỳ ở đúng mảng đang chọn. Sau đó vào Bảng tính lương để tính công và sinh phiếu lương." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <TextBlock Text="TẠO KỲ LƯƠNG MỚI" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                            <TextBlock Text="Tạo kỳ ở đúng mảng đang chọn. Sau đó vào Bảng tính lương để tính công và sinh phiếu lương." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="14" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="14" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -359,20 +359,20 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="0,0,0,10">
-                                <TextBlock Text="Tên kỳ lương *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Tên kỳ lương *" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                                 <TextBox x:Name="PayrollCreateNameBox" Height="32" Style="{StaticResource ModernTextBox}" Tag="Ví dụ: Kỳ lương tháng 09/2026" Margin="0,4,0,0" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Đơn vị / mảng áp dụng *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Đơn vị / mảng áp dụng *" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                                 <ComboBox x:Name="PayrollCreateBusinessUnitCombo" Height="32" Margin="0,4,0,0" VerticalContentAlignment="Center" DisplayMemberPath="Label" FontSize="12" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,0">
-                                <TextBlock Text="Từ ngày *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Từ ngày *" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                                 <DatePicker x:Name="PayrollCreateStartDatePicker" Height="32" Margin="0,4,0,0" VerticalContentAlignment="Center" FontSize="12" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,10,0">
-                                <TextBlock Text="Đến ngày *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextDarkBrush}" />
+                                <TextBlock Text="Đến ngày *" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
                                 <DatePicker x:Name="PayrollCreateEndDatePicker" Height="32" Margin="0,4,0,0" VerticalContentAlignment="Center" FontSize="12" />
                             </StackPanel>
                             <Button x:Name="BtnCreatePayrollPeriod" Grid.Row="1" Grid.Column="3" Content="＋ Tạo bảng lương" Click="CreatePayrollPeriod_Click" Style="{StaticResource PrimaryGradientButton}" Height="32" Padding="14,0" VerticalAlignment="Bottom" FontSize="12" />
@@ -399,7 +399,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -409,7 +409,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Năm báo cáo:" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0" />
                             <ComboBox x:Name="PayrollSummaryYearCombo" Grid.Column="1" Height="30" FontSize="12" VerticalContentAlignment="Center" SelectionChanged="PayrollSummaryYear_SelectionChanged" />
-                            <TextBlock x:Name="PayrollMonthlySummaryText" Grid.Column="2" Text="Chọn một tháng để xem danh sách người nhận lương." FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,8,0" TextWrapping="Wrap" />
+                            <TextBlock x:Name="PayrollMonthlySummaryText" Grid.Column="2" Text="Chọn một tháng để xem danh sách người nhận lương." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,8,0" TextWrapping="Wrap" />
                             <Button Grid.Column="3" Click="RefreshPayrollMonthlySummary_Click" Style="{StaticResource OutlineButton}" Height="30" Padding="10,0">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,5,0" FontSize="11" VerticalAlignment="Center"/>
@@ -419,8 +419,8 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                        <DataGrid x:Name="PayrollMonthlySummaryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" SelectionChanged="PayrollMonthlySummary_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="PayrollMonthlySummaryDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" SelectionChanged="PayrollMonthlySummary_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="0.7*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                 <DataGridTextColumn Header="KỲ LƯƠNG" Binding="{Binding PeriodName}" Width="1.5*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -433,14 +433,14 @@
                         </DataGrid>
                     </Border>
 
-                    <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Text="DANH SÁCH NGƯỜI NHẬN LƯƠNG" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="4,2,4,6" />
-                            <DataGrid x:Name="PayrollMonthlyRecipientsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="34" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <TextBlock Text="DANH SÁCH NGƯỜI NHẬN LƯƠNG" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="4,2,4,6" />
+                            <DataGrid x:Name="PayrollMonthlyRecipientsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="34" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.85*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.25*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -450,7 +450,7 @@
                                     <DataGridTextColumn Header="THỰC LĨNH NET" Binding="{Binding NetSalary, StringFormat='{}{0:N0} đ'}" Width="1.25*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapGreenTextCellStyle}" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <TextBlock x:Name="PayrollMonthlyRecipientsEmptyText" Grid.Row="1" Text="Chưa có danh sách người nhận lương cho tháng đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="12" />
+                            <TextBlock x:Name="PayrollMonthlyRecipientsEmptyText" Grid.Row="1" Text="Chưa có danh sách người nhận lương cho tháng đã chọn." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -471,10 +471,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="BƯỚC 2 · KIỂM TRA VÀ GỬI DUYỆT" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                            <TextBlock x:Name="PayrollReviewExplanation" Text="Sau khi tính lương, mở tab Bảng tính lương để kiểm tra từng nhân viên. Khi số liệu đúng, xác nhận gửi duyệt để khóa điều chỉnh." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <TextBlock Text="BƯỚC 2 · KIỂM TRA VÀ GỬI DUYỆT" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                            <TextBlock x:Name="PayrollReviewExplanation" Text="Sau khi tính lương, mở tab Bảng tính lương để kiểm tra từng nhân viên. Khi số liệu đúng, xác nhận gửi duyệt để khóa điều chỉnh." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
 
@@ -500,15 +500,15 @@
                         </Border>
                     </UniformGrid>
 
-                    <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Text="CÁC KHOẢN ĐIỀU CHỈNH CẦN ĐỐI CHIẾU" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="4,2,4,6" />
+                            <TextBlock Text="CÁC KHOẢN ĐIỀU CHỈNH CẦN ĐỐI CHIẾU" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="4,2,4,6" />
                             <Grid Grid.Row="1">
-                                <DataGrid x:Name="PayrollReviewAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="34" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <DataGrid x:Name="PayrollReviewAdjustmentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="34" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="MÃ NV" Binding="{Binding EmployeeCode}" Width="0.75*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                         <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.2*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -517,7 +517,7 @@
                                         <DataGridTextColumn Header="LÝ DO" Binding="{Binding Reason}" Width="1.8*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
-                                <TextBlock x:Name="PayrollReviewAdjustmentsEmptyText" Text="Kỳ lương chưa có khoản thưởng, trợ cấp hoặc khấu trừ thủ công." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" FontSize="12" />
+                                <TextBlock x:Name="PayrollReviewAdjustmentsEmptyText" Text="Kỳ lương chưa có khoản thưởng, trợ cấp hoặc khấu trừ thủ công." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
                             </Grid>
                         </Grid>
                     </Border>
@@ -538,10 +538,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="DUYỆT, XÁC NHẬN CHI VÀ PHÁT HÀNH" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                            <TextBlock x:Name="PayrollWorkflowExplanation" Text="Chọn kỳ lương, thực hiện đúng bước đang mở; các bước đã chốt sẽ không thể sửa dữ liệu." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <TextBlock Text="DUYỆT, XÁC NHẬN CHI VÀ PHÁT HÀNH" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                            <TextBlock x:Name="PayrollWorkflowExplanation" Text="Chọn kỳ lương, thực hiện đúng bước đang mở; các bước đã chốt sẽ không thể sửa dữ liệu." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
 

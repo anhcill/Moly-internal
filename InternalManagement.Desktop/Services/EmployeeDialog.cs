@@ -56,9 +56,10 @@ public static class EmployeeDialog
             MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 20),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             ResizeMode = ResizeMode.NoResize,
-            Background = Brushes.White,
             ShowInTaskbar = false
         };
+        dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
+        ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
         var root = new StackPanel { Margin = new Thickness(24, 16, 24, 16) };
         root.Children.Add(new TextBlock
@@ -66,7 +67,7 @@ public static class EmployeeDialog
             Text = editing ? "Sửa hồ sơ nhân sự" : "Tạo hồ sơ nhân sự mới",
             FontSize = 21,
             FontWeight = FontWeights.Bold,
-            Foreground = Brush("#101936")
+            Foreground = (Brush)Application.Current.TryFindResource("TextDarkBrush") ?? Brushes.Black
         });
         root.Children.Add(new TextBlock
         {

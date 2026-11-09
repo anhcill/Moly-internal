@@ -13,8 +13,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,12"
-                BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="14,10" Margin="0,0,0,12"
+                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -22,15 +22,15 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Bảng tính tài chính" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
+                        <TextBlock Text="Bảng tính tài chính" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
                         <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="9" Padding="8,2" Margin="9,0,0,0">
                             <TextBlock Text="Thực tế + Kịch bản" FontSize="10.5" FontWeight="SemiBold" Foreground="#1D4ED8" />
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="Số thực tế không bị thay đổi bởi tham số kịch bản. Dự báo chỉ dùng để mô phỏng dòng tiền tương lai." FontSize="11.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                    <TextBlock Text="Số thực tế không bị thay đổi bởi tham số kịch bản. Dự báo chỉ dùng để mô phỏng dòng tiền tương lai." FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                     <TextBlock x:Name="ReportWarningsText" Foreground="#9A3412" FontSize="10.5" TextWrapping="Wrap" MaxWidth="1050" Margin="0,5,10,0" />
                 </StackPanel>
-                <TextBlock x:Name="FreshnessText" Grid.Column="1" Text="Chưa tải dữ liệu" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                <TextBlock x:Name="FreshnessText" Grid.Column="1" Text="Chưa tải dữ liệu" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
             </Grid>
         </Border>
 
@@ -45,7 +45,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="12,9" Margin="0,0,0,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <WrapPanel VerticalAlignment="Center">
                                 <TextBlock Text="Tháng bắt đầu" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0" />
                                 <DatePicker x:Name="ForecastFromMonthPicker" Width="130" Height="31" VerticalContentAlignment="Center" />
@@ -63,25 +63,25 @@
                         </Border>
 
                         <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,10">
-                            <Border Background="White" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="SỐ DƯ THEO SỔ" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}"/><TextBlock x:Name="CurrentCashMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0"/></StackPanel>
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                                <StackPanel><TextBlock Text="SỐ DƯ THEO SỔ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="CurrentCashMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0"/></StackPanel>
                             </Border>
-                            <Border Background="White" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="CÔNG NỢ HỌC VIÊN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}"/><TextBlock x:Name="StudentDebtMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#B45309" Margin="0,4,0,0"/></StackPanel>
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                                <StackPanel><TextBlock Text="CÔNG NỢ HỌC VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="StudentDebtMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#B45309" Margin="0,4,0,0"/></StackPanel>
                             </Border>
-                            <Border Background="White" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="PHẢI TRẢ GIÁO VIÊN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}"/><TextBlock x:Name="TeacherPayableMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#DC2626" Margin="0,4,0,0"/></StackPanel>
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                                <StackPanel><TextBlock Text="PHẢI TRẢ GIÁO VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="TeacherPayableMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#DC2626" Margin="0,4,0,0"/></StackPanel>
                             </Border>
-                            <Border Background="White" CornerRadius="10" Padding="12,9" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="SỐ DƯ CUỐI KỊCH BẢN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}"/><TextBlock x:Name="ForecastClosingMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#4F46E5" Margin="0,4,0,0"/></StackPanel>
+                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                                <StackPanel><TextBlock Text="SỐ DƯ CUỐI KỊCH BẢN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="ForecastClosingMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#4F46E5" Margin="0,4,0,0"/></StackPanel>
                             </Border>
                         </UniformGrid>
 
-                        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="12" Margin="0,0,0,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="12" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                                 <WrapPanel Margin="0,0,0,6">
-                                    <TextBlock Text="Dòng tiền theo tháng" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" Margin="0,0,18,0" />
+                                    <TextBlock Text="Dòng tiền theo tháng" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,0,18,0" />
                                     <TextBlock Text="■ Thu" Foreground="#059669" FontSize="10.5" Margin="0,0,12,0" />
                                     <TextBlock Text="■ Chi" Foreground="#DC2626" FontSize="10.5" Margin="0,0,12,0" />
                                     <TextBlock Text="● Số dư đóng kỳ" Foreground="#4F46E5" FontSize="10.5" />
@@ -91,7 +91,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Row="3" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <DataGrid x:Name="MonthlyRowsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="MonthlyRowsGrid_MouseDoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="95" />
@@ -123,9 +123,9 @@
                         <Button Content="Hoàn/điều chỉnh" Click="RefundStudent_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" />
                         <Button Content="Hẹn ngày thu" Click="ScheduleStudentDebt_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="6,0,0,0" />
                         <Button Content="Hủy công nợ" Click="CancelStudentDebt_Click" Tag="FinanceWrite" Style="{StaticResource FinanceDangerButton}" Height="31" Padding="12,0" Margin="6,0,0,0" />
-                        <TextBlock Text="Chỉ ghi giao dịch thực tế; khoản chưa thu vẫn là công nợ." FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        <TextBlock Text="Chỉ ghi giao dịch thực tế; khoản chưa thu vẫn là công nợ." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
                     </WrapPanel>
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <DataGrid x:Name="ReceivablesGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="ReceivablesGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="HỌC VIÊN" Binding="{Binding StudentName}" Width="1.4*" />
@@ -150,9 +150,9 @@
                         <Button Content="Hoàn ứng" Click="ReturnAdvance_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="0,0,6,0" />
                         <Button Content="Thanh toán công" Click="PayTeacher_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" />
                         <Button Content="↻ Đồng bộ MolyCourse" Click="SyncMolyCoursePayroll_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="6,0,0,0" />
-                        <TextBlock Text="Bấm đúp giáo viên để xem chi tiết và sửa thưởng/khấu trừ/trạng thái trên MolyCourse." FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        <TextBlock Text="Bấm đúp giáo viên để xem chi tiết và sửa thưởng/khấu trừ/trạng thái trên MolyCourse." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
                     </WrapPanel>
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <DataGrid x:Name="TeacherCostsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="TeacherCostsGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="GIÁO VIÊN" Binding="{Binding TeacherName}" Width="1.4*" />
@@ -179,7 +179,7 @@
                         <Button Content="Đánh dấu đã thu/chi" Click="SettlePlanItem_Click" Tag="FinanceWrite" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" Margin="0,0,6,0" />
                         <Button Content="Hủy kế hoạch" Click="CancelPlanItem_Click" Tag="FinanceWrite" Style="{StaticResource FinanceDangerButton}" Height="31" Padding="12,0" />
                     </WrapPanel>
-                    <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                         <DataGrid x:Name="PlanItemsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="PlanItemsGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="NGÀY DỰ KIẾN" Binding="{Binding LocalPlannedDate, StringFormat='{}{0:dd/MM/yyyy}'}" Width="115" />
@@ -196,7 +196,7 @@
             </TabItem>
 
             <TabItem Header="Nhật ký" FontWeight="SemiBold">
-                <Border Margin="0,10,0,0" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                <Border Margin="0,10,0,0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                     <DataGrid x:Name="CashMovementsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="CashMovementsGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="THỜI GIAN" Binding="{Binding LocalOccurredAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="145" />

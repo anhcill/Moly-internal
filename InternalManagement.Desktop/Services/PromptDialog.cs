@@ -46,9 +46,10 @@ public static class PromptDialog
             MinWidth = fields.Count >= 6 ? 680 : 460,
             MaxHeight = 680,
             ResizeMode = ResizeMode.NoResize,
-            Background = Brushes.White,
             ShowInTaskbar = false
         };
+        dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
+        ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
         var root = new Grid { Margin = new Thickness(24, 20, 24, 18) };
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -60,7 +61,7 @@ public static class PromptDialog
             Text = title,
             FontSize = 19,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(16, 25, 54)),
+            Foreground = (Brush)Application.Current.TryFindResource("TextDarkBrush") ?? Brushes.Black,
             Margin = new Thickness(0, 0, 0, 12)
         };
         Grid.SetRow(titleBlock, 0);
@@ -90,7 +91,7 @@ public static class PromptDialog
                 Text = field.IsRequired ? $"{field.Label} *" : field.Label,
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(52, 64, 92)),
+                Foreground = (Brush)Application.Current.TryFindResource("TextMutedBrush") ?? Brushes.Gray,
                 Margin = new Thickness(0, 0, 0, 4)
             });
 

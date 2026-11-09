@@ -5,7 +5,7 @@
         <Style x:Key="StudentRowButton" TargetType="Button">
             <Setter Property="Height" Value="28" />
             <Setter Property="Padding" Value="10,0" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#1E293B" />
@@ -26,15 +26,15 @@
         </Grid.RowDefinitions>
 
         <!-- TOOLBAR & SEARCH -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Học viên &amp; Khách hàng" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" />
-                    <TextBlock Text="Phân tách học viên chính thức, học viên học thử (miễn phí), và khách hàng đăng ký từ website. Mỗi học viên chỉ xuất hiện 1 lần duy nhất." FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,4,0,0" />
+                    <TextBlock Text="Học viên &amp; Khách hàng" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                    <TextBlock Text="Phân tách học viên chính thức, học viên học thử (miễn phí), và khách hàng đăng ký từ website. Mỗi học viên chỉ xuất hiện 1 lần duy nhất." FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBox x:Name="CustomerSearchBox" Width="280" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm tên, SĐT, email..." Margin="0,0,10,0" TextChanged="CustomerSearch_TextChanged" />
@@ -45,7 +45,7 @@
         </Border>
 
         <!-- DATA TABS -->
-        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="8" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
             <TabControl x:Name="CustomerTabs" Background="Transparent" BorderThickness="0">
                 <!-- TAB 1: HỌC VIÊN CHÍNH THỨC -->
                 <TabItem Header="Học viên chính thức (có học phí)" FontWeight="SemiBold">
@@ -56,7 +56,7 @@
                         </Grid.RowDefinitions>
 
                         <!-- ACTION SUB-TOOLBAR -->
-                        <Border Grid.Row="0" Background="#F8FAFC" CornerRadius="8" Padding="10,8" Margin="0,0,0,8" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <Border Grid.Row="0" Background="{DynamicResource CardAltBgBrush}" CornerRadius="8" Padding="10,8" Margin="0,0,0,8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -72,11 +72,11 @@
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="💡 Mỗi học viên xuất hiện duy nhất 1 lần; nếu học nhiều lớp sẽ gộp mã lớp và cộng dồn học phí." Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <TextBlock Grid.Column="1" Text="💡 Mỗi học viên xuất hiện duy nhất 1 lần; nếu học nhiều lớp sẽ gộp mã lớp và cộng dồn học phí." Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
                             </Grid>
                         </Border>
 
-                        <DataGrid Grid.Row="1" x:Name="PaidStudentsDataGrid" ItemsSource="{Binding PaidStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="PaidStudentsDataGrid_MouseDoubleClick">
+                        <DataGrid Grid.Row="1" x:Name="PaidStudentsDataGrid" ItemsSource="{Binding PaidStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="PaidStudentsDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="+ Thêm học viên mới" Click="AddStudent_Click" FontWeight="SemiBold" />
@@ -135,7 +135,7 @@
                             </Grid>
                         </Border>
 
-                        <DataGrid Grid.Row="1" x:Name="TrialStudentsDataGrid" ItemsSource="{Binding TrialStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="TrialStudentsDataGrid_MouseDoubleClick">
+                        <DataGrid Grid.Row="1" x:Name="TrialStudentsDataGrid" ItemsSource="{Binding TrialStudents}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" MouseDoubleClick="TrialStudentsDataGrid_MouseDoubleClick">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="⚡ Chuyển sang lớp chính thức" Click="ConvertSelectedTrialStudent_Click" FontWeight="Bold" />
@@ -171,7 +171,7 @@
                 <!-- TAB 3: KHÁCH HÀNG ĐĂNG KÝ (WEBSITE) -->
                 <TabItem Header="Khách hàng đăng ký (Website)" FontWeight="SemiBold">
                     <Grid Margin="0,8,0,0">
-                        <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46" CanUserResizeColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="MÃ KHÁCH HÀNG" Binding="{Binding SourceId}" MinWidth="120" Width="135" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridBoldTextCellStyle}" />
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding FullName}" MinWidth="150" Width="1.6*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />

@@ -8,7 +8,7 @@
         </Grid.RowDefinitions>
 
         <!-- SYNC TRIGGER CONTROLS -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,16" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="20,16" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -19,9 +19,9 @@
                         <Border Background="#EEF2FF" CornerRadius="8" Width="30" Height="30" Margin="0,0,10,0">
                             <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE895;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <TextBlock Text="Kích Hoạt Đồng Bộ Dữ Liệu Nguồn Ngoại" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Kích Hoạt Đồng Bộ Dữ Liệu Nguồn Ngoại" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                     </StackPanel>
-                    <TextBlock Text="Hệ thống tự động đồng bộ theo cơ chế Cursor, Idempotency và chuyển bản ghi lỗi vào Dead-Letter Queue." Margin="40,4,0,0" FontSize="12" Foreground="{StaticResource TextMutedBrush}" />
+                    <TextBlock Text="Hệ thống tự động đồng bộ theo cơ chế Cursor, Idempotency và chuyển bản ghi lỗi vào Dead-Letter Queue." Margin="40,4,0,0" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="⚡ Đồng Bộ Courses" Click="TriggerSyncCourses_Click" Style="{StaticResource PrimaryGradientButton}" Margin="0,0,8,0" Height="36" Padding="16,0" />
@@ -39,8 +39,8 @@
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="8" Margin="0,0,0,12" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
-                <DataGrid x:Name="SyncRunsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="42">
+            <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" Margin="0,0,0,12" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                <DataGrid x:Name="SyncRunsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="42">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="HỆ THỐNG NGUỒN" Binding="{Binding SourceSystem}" Width="150" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                         <DataGridTextColumn Header="LOẠI THỰC THỂ" Binding="{Binding EntityType}" Width="140" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
@@ -54,7 +54,7 @@
                 </DataGrid>
             </Border>
 
-            <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="12" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="12" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -70,16 +70,16 @@
                                 <Border Background="#FEF2F2" CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
                                     <TextBlock Text="DLQ" FontSize="10" FontWeight="Bold" Foreground="#DC2626" />
                                 </Border>
-                                <TextBlock Text="Dead-Letter Queue — Bản ghi cần xử lý" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="Dead-Letter Queue — Bản ghi cần xử lý" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                             </StackPanel>
-                            <TextBlock Text="Các bản ghi đồng bộ lỗi được giữ lại để kiểm tra và retry có kiểm soát." FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                            <TextBlock Text="Các bản ghi đồng bộ lỗi được giữ lại để kiểm tra và retry có kiểm soát." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Click="RefreshDeadLetters_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="34" Padding="12,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Dead-Letter" VerticalAlignment="Center"/></StackPanel></Button>
                             <Button Content="↻ Retry bản ghi đã chọn" Click="RetryDeadLetter_Click" Style="{StaticResource PrimaryGradientButton}" Height="34" Padding="14,0" />
                         </StackPanel>
                     </Grid>
-                    <DataGrid Grid.Row="1" x:Name="DeadLettersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" Background="White" BorderThickness="0" MinRowHeight="38">
+                    <DataGrid Grid.Row="1" x:Name="DeadLettersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="38">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="NGUỒN" Binding="{Binding SourceSystem}" Width="120" FontWeight="Bold" />
                             <DataGridTextColumn Header="LOẠI" Binding="{Binding EntityType}" Width="110" />

@@ -23,6 +23,7 @@ public partial class PayrollWorkEntriesWindow : Window
         _businessSegment = businessSegment;
         _canEdit = period.Status < 2;
         InitializeComponent();
+        Services.ThemeService.SetWindowDarkMode(this, Services.ThemeService.Instance.IsDark);
 
         PeriodText.Text = $"{period.Name} · {period.StartDate:dd/MM/yyyy}–{period.EndDate:dd/MM/yyyy}";
         WorkDatePicker.SelectedDate = DateTime.Today < period.StartDate.ToDateTime(TimeOnly.MinValue)

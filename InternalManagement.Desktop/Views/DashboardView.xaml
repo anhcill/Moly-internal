@@ -10,7 +10,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Pill" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="14" Padding="12,6" Margin="2,0">
+                        <Border x:Name="Pill" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="14" Padding="12,6" Margin="2,0">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -29,8 +29,8 @@
         </Style>
 
         <Style x:Key="DashboardSectionCard" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="18" />
@@ -93,7 +93,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="White" CornerRadius="12" Padding="15,13" Margin="5,0,5,10" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="15,13" Margin="5,0,5,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -137,7 +137,7 @@
                         <ItemsControl ItemsSource="{Binding FinanceBars}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="FinanceRow" CornerRadius="10" Padding="11" Margin="0,0,0,8" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1">
+                                    <Border x:Name="FinanceRow" CornerRadius="10" Padding="11" Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="130" />
@@ -236,7 +236,7 @@
                                 <TextBlock Text="Cảnh báo &amp; điểm cần chú ý" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
                                 <TextBlock Text="Ưu tiên xử lý theo dữ liệu vận hành mới nhất" FontSize="10.5" Foreground="#64748B" Margin="0,3,0,0" />
                             </StackPanel>
-                            <Border HorizontalAlignment="Right" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="9,3">
+                            <Border HorizontalAlignment="Right" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Padding="9,3">
                                 <TextBlock Text="LIVE REPORT" FontSize="9" FontWeight="Bold" Foreground="#0F766E" />
                             </Border>
                         </Grid>

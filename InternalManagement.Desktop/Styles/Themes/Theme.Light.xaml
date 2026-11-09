@@ -1,0 +1,133 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Primary brand colors -->
+    <Color x:Key="PrimaryColor">#4F46E5</Color>
+    <Color x:Key="PrimaryDarkColor">#3730A3</Color>
+    <Color x:Key="SecondaryColor">#3B82F6</Color>
+    <Color x:Key="AccentColor">#06B6D4</Color>
+
+    <!-- Surfaces & Backgrounds -->
+    <Color x:Key="AppBgColor">#F8FAFC</Color>
+    <Color x:Key="LightBgColor">#F8FAFC</Color>
+    <Color x:Key="CardBgColor">#FFFFFF</Color>
+    <Color x:Key="CardAltBgColor">#F1F5F9</Color>
+    <Color x:Key="TopBarBgColor">#FFFFFF</Color>
+
+    <!-- Borders -->
+    <Color x:Key="BorderLightColor">#E2E8F0</Color>
+    <Color x:Key="BorderMediumColor">#CBD5E1</Color>
+    <Color x:Key="TopBarBorderColor">#E2E8F0</Color>
+
+    <!-- Typography -->
+    <Color x:Key="TextDarkColor">#0F172A</Color>
+    <Color x:Key="TextMutedColor">#64748B</Color>
+    <Color x:Key="TextSubtleColor">#94A3B8</Color>
+
+    <!-- Inputs & Controls -->
+    <Color x:Key="InputBgColor">#F8FAFC</Color>
+    <Color x:Key="InputBgHoverColor">#FFFFFF</Color>
+    <Color x:Key="InputBorderColor">#CBD5E1</Color>
+    <Color x:Key="InputTextColor">#0F172A</Color>
+
+    <!-- Tables & Grids -->
+    <Color x:Key="TableBgColor">#FFFFFF</Color>
+    <Color x:Key="TableRowBgColor">#FFFFFF</Color>
+    <Color x:Key="TableAltRowBgColor">#F8FAFC</Color>
+    <Color x:Key="TableHeaderBgColor">#F8FAFC</Color>
+    <Color x:Key="TableHeaderTextColor">#475569</Color>
+    <Color x:Key="TableHeaderBorderColor">#E2E8F0</Color>
+    <Color x:Key="TableLinesColor">#F1F5F9</Color>
+    <Color x:Key="TableHoverColor">#EFF6FF</Color>
+    <Color x:Key="TableSelectionColor">#2563EB</Color>
+    <Color x:Key="TableSelectionHoverColor">#1D4ED8</Color>
+    <Color x:Key="TableSelectionTextColor">#FFFFFF</Color>
+
+    <!-- Buttons -->
+    <Color x:Key="ButtonOutlineBgColor">#FFFFFF</Color>
+    <Color x:Key="ButtonOutlineBorderColor">#CBD5E1</Color>
+    <Color x:Key="ButtonOutlineTextColor">#0F172A</Color>
+    <Color x:Key="ButtonOutlineHoverBgColor">#F1F5F9</Color>
+
+    <!-- Tabs -->
+    <Color x:Key="TabItemInactiveTextColor">#64748B</Color>
+    <Color x:Key="TabItemActiveIndicatorColor">#2563EB</Color>
+    <Color x:Key="TabItemActiveTextColor">#2563EB</Color>
+    <Color x:Key="TabItemHoverBgColor">#F8FAFC</Color>
+    <Color x:Key="TabStripBorderColor">#E2E8F0</Color>
+
+    <!-- Status Pills / Badges -->
+    <Color x:Key="PillOrangeBgColor">#FEF3C7</Color>
+    <Color x:Key="PillOrangeTextColor">#B45309</Color>
+    <Color x:Key="PillGreenBgColor">#DCFCE7</Color>
+    <Color x:Key="PillGreenTextColor">#15803D</Color>
+    <Color x:Key="PillBlueBgColor">#DBEAFE</Color>
+    <Color x:Key="PillBlueTextColor">#1D4ED8</Color>
+    <Color x:Key="PillPurpleBgColor">#F3E8FF</Color>
+    <Color x:Key="PillPurpleTextColor">#7E22CE</Color>
+    <Color x:Key="PillSlateBgColor">#F1F5F9</Color>
+    <Color x:Key="PillSlateTextColor">#475569</Color>
+    <Color x:Key="PillRedBgColor">#FEE2E2</Color>
+    <Color x:Key="PillRedTextColor">#B91C1C</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="LightBgBrush" Color="{StaticResource LightBgColor}" />
+    <SolidColorBrush x:Key="AppBgBrush" Color="{StaticResource AppBgColor}" />
+    <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBgColor}" />
+    <SolidColorBrush x:Key="CardAltBgBrush" Color="{StaticResource CardAltBgColor}" />
+    <SolidColorBrush x:Key="TopBarBgBrush" Color="{StaticResource TopBarBgColor}" />
+
+    <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource BorderLightColor}" />
+    <SolidColorBrush x:Key="BorderMediumBrush" Color="{StaticResource BorderMediumColor}" />
+    <SolidColorBrush x:Key="TopBarBorderBrush" Color="{StaticResource TopBarBorderColor}" />
+
+    <SolidColorBrush x:Key="TextDarkBrush" Color="{StaticResource TextDarkColor}" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+    <SolidColorBrush x:Key="TextSubtleBrush" Color="{StaticResource TextSubtleColor}" />
+
+    <SolidColorBrush x:Key="InputBgBrush" Color="{StaticResource InputBgColor}" />
+    <SolidColorBrush x:Key="InputBgHoverBrush" Color="{StaticResource InputBgHoverColor}" />
+    <SolidColorBrush x:Key="InputBorderBrush" Color="{StaticResource InputBorderColor}" />
+    <SolidColorBrush x:Key="InputTextBrush" Color="{StaticResource InputTextColor}" />
+
+    <SolidColorBrush x:Key="TableBgBrush" Color="{StaticResource TableBgColor}" />
+    <SolidColorBrush x:Key="TableRowBgBrush" Color="{StaticResource TableRowBgColor}" />
+    <SolidColorBrush x:Key="TableAltRowBgBrush" Color="{StaticResource TableAltRowBgColor}" />
+    <SolidColorBrush x:Key="TableHeaderBgBrush" Color="{StaticResource TableHeaderBgColor}" />
+    <SolidColorBrush x:Key="TableHeaderTextBrush" Color="{StaticResource TableHeaderTextColor}" />
+    <SolidColorBrush x:Key="TableHeaderBorderBrush" Color="{StaticResource TableHeaderBorderColor}" />
+    <SolidColorBrush x:Key="TableLinesBrush" Color="{StaticResource TableLinesColor}" />
+    <SolidColorBrush x:Key="TableHoverBrush" Color="{StaticResource TableHoverColor}" />
+    <SolidColorBrush x:Key="TableSelectionBrush" Color="{StaticResource TableSelectionColor}" />
+    <SolidColorBrush x:Key="TableSelectionHoverBrush" Color="{StaticResource TableSelectionHoverColor}" />
+    <SolidColorBrush x:Key="TableSelectionTextBrush" Color="{StaticResource TableSelectionTextColor}" />
+
+    <SolidColorBrush x:Key="ButtonOutlineBgBrush" Color="{StaticResource ButtonOutlineBgColor}" />
+    <SolidColorBrush x:Key="ButtonOutlineBorderBrush" Color="{StaticResource ButtonOutlineBorderColor}" />
+    <SolidColorBrush x:Key="ButtonOutlineTextBrush" Color="{StaticResource ButtonOutlineTextColor}" />
+    <SolidColorBrush x:Key="ButtonOutlineHoverBgBrush" Color="{StaticResource ButtonOutlineHoverBgColor}" />
+
+    <SolidColorBrush x:Key="TabItemInactiveTextBrush" Color="{StaticResource TabItemInactiveTextColor}" />
+    <SolidColorBrush x:Key="TabItemActiveIndicatorBrush" Color="{StaticResource TabItemActiveIndicatorColor}" />
+    <SolidColorBrush x:Key="TabItemActiveTextBrush" Color="{StaticResource TabItemActiveTextColor}" />
+    <SolidColorBrush x:Key="TabItemHoverBgBrush" Color="{StaticResource TabItemHoverBgColor}" />
+    <SolidColorBrush x:Key="TabStripBorderBrush" Color="{StaticResource TabStripBorderColor}" />
+
+    <SolidColorBrush x:Key="PillOrangeBgBrush" Color="{StaticResource PillOrangeBgColor}" />
+    <SolidColorBrush x:Key="PillOrangeTextBrush" Color="{StaticResource PillOrangeTextColor}" />
+    <SolidColorBrush x:Key="PillGreenBgBrush" Color="{StaticResource PillGreenBgColor}" />
+    <SolidColorBrush x:Key="PillGreenTextBrush" Color="{StaticResource PillGreenTextColor}" />
+    <SolidColorBrush x:Key="PillBlueBgBrush" Color="{StaticResource PillBlueBgColor}" />
+    <SolidColorBrush x:Key="PillBlueTextBrush" Color="{StaticResource PillBlueTextColor}" />
+    <SolidColorBrush x:Key="PillPurpleBgBrush" Color="{StaticResource PillPurpleBgColor}" />
+    <SolidColorBrush x:Key="PillPurpleTextBrush" Color="{StaticResource PillPurpleTextColor}" />
+    <SolidColorBrush x:Key="PillSlateBgBrush" Color="{StaticResource PillSlateBgColor}" />
+    <SolidColorBrush x:Key="PillSlateTextBrush" Color="{StaticResource PillSlateTextColor}" />
+    <SolidColorBrush x:Key="PillRedBgBrush" Color="{StaticResource PillRedBgColor}" />
+    <SolidColorBrush x:Key="PillRedTextBrush" Color="{StaticResource PillRedTextColor}" />
+
+    <!-- Shadows -->
+    <DropShadowEffect x:Key="CardShadow" BlurRadius="20" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.06" />
+    <DropShadowEffect x:Key="FloatingShadow" BlurRadius="36" ShadowDepth="10" Direction="270" Color="#0F172A" Opacity="0.10" />
+
+</ResourceDictionary>
