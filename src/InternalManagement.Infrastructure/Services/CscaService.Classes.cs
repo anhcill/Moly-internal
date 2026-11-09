@@ -384,8 +384,30 @@ public sealed partial class CscaService
             request.IsTrial, request.TuitionFee, ct);
         if (!classTypeResult.Succeeded)
             return Result<CscaClassDto>.Failure(classTypeResult.Errors.FirstOrDefault() ?? "Loại lớp học không hợp lệ.");
+        var classTypeSelection = classTypeResult.Value!;
 
-        var changingLiveToRecording = !IsRecordingClass(cls) && classTypeResult.Value!.ClassType == "RECORDING";
+        var classTypeChanged = !string.Equals(
+            string.IsNullOrWhiteSpace(cls.ClassType) ? "LIVE" : cls.ClassType,
+            classTypeSelection.ClassType,
+            StringComparison.OrdinalIgnoreCase);
+        if (classTypeChanged && cls.Students.Count > 0)
+            return Result<CscaClassDto>.Failure("Không thể đổi hình thức Live/Record khi lớp đã có học viên.");
+
+        var hasRecordingAliases = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
+            recording.SourceClassId == cls.Id &&
+            recording.ClassType == "RECORDING" &&
+            !recording.IsDeleted, ct);
+        if (hasRecordingAliases)
+        {
+            if (classTypeSelection.ClassType != "LIVE")
+                return Result<CscaClassDto>.Failure("Không thể đổi lớp Live nguồn sang Record khi vẫn có lớp Record đang tham chiếu.");
+            if (targetCourseId != cls.CourseId)
+                return Result<CscaClassDto>.Failure("Không thể chuyển lớp Live nguồn sang khóa học khác khi vẫn có lớp Record đang tham chiếu.");
+            if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                return Result<CscaClassDto>.Failure("Không thể hủy lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");
+        }
+
+        var changingLiveToRecording = !IsRecordingClass(cls) && classTypeSelection.ClassType == "RECORDING";
         if (changingLiveToRecording && (cls.Schedules.Count > 0 || cls.LessonSessions.Count > 0 || cls.Staff.Count > 0))
             return Result<CscaClassDto>.Failure("Không thể chuyển lớp Live đã có lịch học, buổi học hoặc giảng viên thành lớp Record.");
 
@@ -403,8 +425,8 @@ public sealed partial class CscaService
             : FormatScheduleSummary(cls.Schedules);
         cls.IsTrial = request.IsTrial;
         cls.TuitionFee = request.IsTrial ? 0 : request.TuitionFee;
-        cls.ClassType = classTypeResult.Value.ClassType;
-        cls.SourceClassId = classTypeResult.Value.SourceClassId;
+        cls.ClassType = classTypeSelection.ClassType;
+        cls.SourceClassId = classTypeSelection.SourceClassId;
         cls.StartDate = NormalizeClassDate(request.StartDate);
         cls.EndDate = NormalizeClassDate(request.EndDate);
         cls.Status = request.Status;
@@ -443,8 +465,8 @@ public sealed partial class CscaService
             IsTrial = cls.IsTrial,
             ClassType = cls.ClassType,
             SourceClassId = cls.SourceClassId,
-            SourceClassCode = classTypeResult.Value.SourceClass?.Code,
-            SourceClassName = classTypeResult.Value.SourceClass?.Name,
+            SourceClassCode = classTypeSelection.SourceClass?.Code,
+            SourceClassName = classTypeSelection.SourceClass?.Name,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -526,6 +548,13 @@ public sealed partial class CscaService
         {
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA cần xóa.");
         }
+
+        var hasRecordingAliases = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
+            recording.SourceClassId == id &&
+            recording.ClassType == "RECORDING" &&
+            !recording.IsDeleted, ct);
+        if (hasRecordingAliases)
+            return Result<bool>.Failure("Không thể xóa lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");
 
         cls.IsDeleted = true;
         cls.DeletedAt = DateTime.UtcNow;

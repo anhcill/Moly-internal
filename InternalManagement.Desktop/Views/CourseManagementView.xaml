@@ -128,7 +128,8 @@
                                 <ComboBox x:Name="CscaCourseFilterComboBox" Width="175" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
                                 <ComboBox x:Name="CscaClassTypeFilterComboBox" Width="150" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" SelectionChanged="CscaClassTypeFilterComboBox_SelectionChanged">
                                     <ComboBoxItem Content="Tất cả dạng lớp" IsSelected="True" />
-                                    <ComboBoxItem Content="Lớp chính thức" />
+                                    <ComboBoxItem Content="Lớp Live chính thức" />
+                                    <ComboBoxItem Content="Lớp Record" />
                                     <ComboBoxItem Content="Lớp học thử (0đ)" />
                                 </ComboBox>
                             </WrapPanel>
@@ -163,18 +164,23 @@
                                                                 <Setter Property="Background" Value="#FEF3C7" />
                                                                 <Setter Property="BorderBrush" Value="#FDE68A" />
                                                             </DataTrigger>
+                                                            <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
+                                                                <Setter Property="Background" Value="#EFF6FF" />
+                                                                <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock FontWeight="SemiBold" FontSize="11">
+                                                <TextBlock Text="{Binding ClassTypeDisplay}" FontWeight="SemiBold" FontSize="11">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="Chính thức" />
                                                             <Setter Property="Foreground" Value="#15803D" />
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                    <Setter Property="Text" Value="Học thử (0đ)" />
                                                                     <Setter Property="Foreground" Value="#B45309" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
+                                                                    <Setter Property="Foreground" Value="#1D4ED8" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -304,18 +310,23 @@
                                                                 <Setter Property="Background" Value="#FEF3C7" />
                                                                 <Setter Property="BorderBrush" Value="#FDE68A" />
                                                             </DataTrigger>
+                                                            <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
+                                                                <Setter Property="Background" Value="#EFF6FF" />
+                                                                <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock FontWeight="SemiBold" FontSize="11">
+                                                <TextBlock Text="{Binding ClassTypeDisplay}" FontWeight="SemiBold" FontSize="11">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="Chính thức" />
                                                             <Setter Property="Foreground" Value="#15803D" />
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                    <Setter Property="Text" Value="Học thử (0đ)" />
                                                                     <Setter Property="Foreground" Value="#B45309" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
+                                                                    <Setter Property="Foreground" Value="#1D4ED8" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

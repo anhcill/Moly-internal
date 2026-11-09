@@ -185,9 +185,12 @@ public partial class MainWindow
 
         if (CscaClassTypeFilterComboBox != null && CscaClassTypeFilterComboBox.SelectedIndex > 0)
         {
-            if (CscaClassTypeFilterComboBox.SelectedIndex == 1) // Lớp chính thức
-                filtered = filtered.Where(c => !c.IsTrial && c.TuitionFee > 0);
-            else if (CscaClassTypeFilterComboBox.SelectedIndex == 2) // Lớp học thử
+            if (CscaClassTypeFilterComboBox.SelectedIndex == 1) // Lớp Live chính thức
+                filtered = filtered.Where(c => !c.IsTrial && c.TuitionFee > 0 &&
+                    !string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase));
+            else if (CscaClassTypeFilterComboBox.SelectedIndex == 2) // Lớp Record
+                filtered = filtered.Where(c => string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase));
+            else if (CscaClassTypeFilterComboBox.SelectedIndex == 3) // Lớp học thử
                 filtered = filtered.Where(c => c.IsTrial || c.TuitionFee == 0);
         }
 

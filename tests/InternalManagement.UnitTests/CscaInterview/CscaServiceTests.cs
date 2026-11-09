@@ -109,6 +109,100 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task UpdateClass_ShouldRejectLearningModeChangeWhenStudentsExist()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "record-mode-lock", Title = "Khóa khóa mode" };
+        db.Courses.Add(course);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var live = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-MODE", "Lớp Live có học viên", "", "", 2_000_000m, CourseId: course.Id), default);
+        var source = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-SOURCE", "Lớp Live nguồn", "", "", 2_000_000m, CourseId: course.Id), default);
+        await service.EnrollStudentAsync(live.Value!.Id,
+            new EnrollStudentRequest("Học viên đã xếp lớp", "mode.lock@example.com", "0900000011",
+                2_000_000m, PaymentStatus.Paid), default);
+
+        var result = await service.UpdateClassAsync(live.Value.Id, new UpdateCscaClassRequest(
+            live.Value.Name, live.Value.Batch, live.Value.Schedule, live.Value.TuitionFee,
+            live.Value.StartDate, live.Value.EndDate, live.Value.Status, live.Value.CourseId,
+            ClassType: "RECORDING", SourceClassId: source.Value!.Id), default);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().ContainSingle(error => error.Contains("đã có học viên"));
+        (await db.CscaClasses.SingleAsync(item => item.Id == live.Value.Id)).ClassType.Should().Be("LIVE");
+    }
+
+    [Fact]
+    public async Task LiveSource_ShouldRejectMutationsThatBreakRecordingAliases()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "record-source-guard", Title = "Khóa nguồn Record" };
+        var otherCourse = new Course { CourseSourceId = "record-source-other", Title = "Khóa khác" };
+        db.AddRange(course, otherCourse);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var source = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-GUARDED", "Lớp Live nguồn", "", "", 3_000_000m, CourseId: course.Id), default);
+        var alternateSource = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-ALTERNATE", "Lớp Live khác", "", "", 3_000_000m, CourseId: course.Id), default);
+        var recording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "RECORD-GUARDED", "Lớp Record", "", "", 1_500_000m,
+            CourseId: course.Id, ClassType: "RECORDING", SourceClassId: source.Value!.Id), default);
+        recording.Succeeded.Should().BeTrue();
+
+        var cancel = await service.UpdateClassAsync(source.Value.Id, new UpdateCscaClassRequest(
+            source.Value.Name, source.Value.Batch, source.Value.Schedule, source.Value.TuitionFee,
+            source.Value.StartDate, source.Value.EndDate, "Cancelled", source.Value.CourseId,
+            ClassType: "LIVE"), default);
+        var moveCourse = await service.UpdateClassAsync(source.Value.Id, new UpdateCscaClassRequest(
+            source.Value.Name, source.Value.Batch, source.Value.Schedule, source.Value.TuitionFee,
+            source.Value.StartDate, source.Value.EndDate, source.Value.Status, otherCourse.Id,
+            ClassType: "LIVE"), default);
+        var changeType = await service.UpdateClassAsync(source.Value.Id, new UpdateCscaClassRequest(
+            source.Value.Name, source.Value.Batch, source.Value.Schedule, source.Value.TuitionFee,
+            source.Value.StartDate, source.Value.EndDate, source.Value.Status, source.Value.CourseId,
+            ClassType: "RECORDING", SourceClassId: alternateSource.Value!.Id), default);
+        var delete = await service.DeleteClassAsync(source.Value.Id, default);
+
+        cancel.Succeeded.Should().BeFalse();
+        moveCourse.Succeeded.Should().BeFalse();
+        changeType.Succeeded.Should().BeFalse();
+        delete.Succeeded.Should().BeFalse();
+        var persistedSource = await db.CscaClasses.SingleAsync(item => item.Id == source.Value.Id);
+        persistedSource.Status.Should().Be("Active");
+        persistedSource.CourseId.Should().Be(course.Id);
+        persistedSource.ClassType.Should().Be("LIVE");
+        persistedSource.IsDeleted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LiveSource_ShouldAllowMutationAfterRecordingAliasIsDeleted()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "record-source-release", Title = "Khóa giải phóng nguồn" };
+        db.Courses.Add(course);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var source = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-RELEASED", "Lớp Live nguồn", "", "", 3_000_000m, CourseId: course.Id), default);
+        var recording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "RECORD-RELEASED", "Lớp Record sẽ xóa", "", "", 1_500_000m,
+            CourseId: course.Id, ClassType: "RECORDING", SourceClassId: source.Value!.Id), default);
+
+        (await service.DeleteClassAsync(recording.Value!.Id, default)).Succeeded.Should().BeTrue();
+        var cancel = await service.UpdateClassAsync(source.Value.Id, new UpdateCscaClassRequest(
+            source.Value.Name, source.Value.Batch, source.Value.Schedule, source.Value.TuitionFee,
+            source.Value.StartDate, source.Value.EndDate, "Cancelled", source.Value.CourseId,
+            ClassType: "LIVE"), default);
+
+        cancel.Succeeded.Should().BeTrue();
+        (await db.CscaClasses.IgnoreQueryFilters().SingleAsync(item => item.Id == source.Value.Id))
+            .Status.Should().Be("Cancelled");
+    }
+
+    [Fact]
     public async Task RecordingClass_KeepsOwnFinance_QueuesAliasOnly_AndRejectsLiveOperations()
     {
         using var db = CreateInMemoryDb();

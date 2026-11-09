@@ -286,8 +286,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             throw new CscaLmsValidationException("Thời gian buổi học không hợp lệ.");
         if (payload.Attendance is not { Count: > 0 and <= 1000 })
             throw new CscaLmsValidationException("Danh sách điểm danh phải có từ 1 đến 1000 học viên.");
-        if (!await _db.CscaClasses.AnyAsync(cls => cls.Id == classId && !cls.IsDeleted, ct))
-            throw new CscaLmsDependencyException("Lớp Management chưa tồn tại hoặc đã bị xóa.");
+        await EnsureLiveManagementClassExistsAsync(classId, ct);
 
         var normalizedAttendance = payload.Attendance.Select(NormalizeAttendance).ToList();
         if (normalizedAttendance.Select(item => item.StudentId).Distinct().Count() != normalizedAttendance.Count)
@@ -390,7 +389,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             throw new CscaLmsValidationException("schemaVersion lịch LMS chưa được hỗ trợ.");
         var incoming = payload.LmsSchedule ?? throw new CscaLmsValidationException("lmsSchedule không được để trống.");
         ValidateSchedule(incoming);
-        await EnsureManagementClassExistsAsync(classId, ct);
+        await EnsureLiveManagementClassExistsAsync(classId, ct);
 
         var source = LmsIntegrationSourceSystems.CscaCourseLms;
         var schedule = await _db.CscaClassSchedules.FirstOrDefaultAsync(item =>
@@ -455,7 +454,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
         var incoming = payload.LmsSchedule ?? throw new CscaLmsValidationException("lmsSchedule không được để trống.");
         if (string.IsNullOrWhiteSpace(incoming.Id) || incoming.Id.Length > 128 || incoming.Version < 1)
             throw new CscaLmsValidationException("lmsSchedule archive không hợp lệ.");
-        await EnsureManagementClassExistsAsync(classId, ct);
+        await EnsureLiveManagementClassExistsAsync(classId, ct);
 
         var schedule = await _db.CscaClassSchedules.FirstOrDefaultAsync(item =>
             item.ExternalSource == LmsIntegrationSourceSystems.CscaCourseLms &&
@@ -479,7 +478,7 @@ public sealed class WebhookProcessor : IWebhookProcessor
             throw new CscaLmsValidationException("schemaVersion lịch LMS chưa được hỗ trợ.");
         var incoming = payload.LmsSession ?? throw new CscaLmsValidationException("lmsSession không được để trống.");
         ValidateSession(incoming);
-        await EnsureManagementClassExistsAsync(classId, ct);
+        await EnsureLiveManagementClassExistsAsync(classId, ct);
 
         var localStart = TimeZoneInfo.ConvertTime(incoming.StartTime!.Value, VietnamTimeZone());
         var localEnd = TimeZoneInfo.ConvertTime(incoming.EndTime!.Value, VietnamTimeZone());
@@ -595,10 +594,14 @@ public sealed class WebhookProcessor : IWebhookProcessor
         session.UpdatedBy = LmsActor;
     }
 
-    private async Task EnsureManagementClassExistsAsync(Guid classId, CancellationToken ct)
+    private async Task EnsureLiveManagementClassExistsAsync(Guid classId, CancellationToken ct)
     {
-        if (!await _db.CscaClasses.AnyAsync(cls => cls.Id == classId && !cls.IsDeleted, ct))
+        var managementClass = await _db.CscaClasses.AsNoTracking()
+            .FirstOrDefaultAsync(cls => cls.Id == classId && !cls.IsDeleted, ct);
+        if (managementClass is null)
             throw new CscaLmsDependencyException("Lớp Management chưa tồn tại hoặc đã bị xóa.");
+        if (string.Equals(managementClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase))
+            throw new CscaLmsValidationException("Lớp Record không nhận lịch học, buổi học hoặc điểm danh riêng.");
     }
 
     private static Guid ValidateManagementClass(string? managementClassId)

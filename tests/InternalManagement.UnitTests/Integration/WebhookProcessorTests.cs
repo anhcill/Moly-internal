@@ -288,6 +288,56 @@ public class WebhookProcessorTests
     }
 
     [Fact]
+    public async Task Ingest_CscaLmsCalendarAndAttendance_ShouldRejectRecordingClasses()
+    {
+        using var db = CreateInMemoryDb();
+        var classId = Guid.NewGuid();
+        var studentId = Guid.NewGuid();
+        const string secret = "test-webhook-secret";
+        db.CscaClasses.Add(new CscaClass
+        {
+            Id = classId,
+            Code = "RECORD-WEBHOOK",
+            Name = "Lớp Record",
+            ClassType = "RECORDING",
+            IsDeleted = false
+        });
+        db.CscaClassStudents.Add(new CscaClassStudent
+        {
+            Id = studentId,
+            ClassId = classId,
+            StudentName = "Học viên Record"
+        });
+        db.IntegrationSources.Add(new IntegrationSource
+        {
+            CompanyId = Guid.NewGuid(),
+            Code = "CSCA_COURSE_LMS",
+            Name = "CSCA Course LMS",
+            BaseUrl = "https://lms.example.test",
+            AuthType = "HMAC",
+            CredentialReference = secret,
+            IsActive = true
+        });
+        await db.SaveChangesAsync();
+        var processor = new WebhookProcessor(db, NullLogger<WebhookProcessor>.Instance);
+
+        var schedulePayload = CalendarSchedulePayload(classId, 1, "active");
+        var calendarResult = await processor.IngestAsync("CSCA_COURSE_LMS", "record-calendar-1",
+            "lms.schedule.upserted", schedulePayload, Sign(schedulePayload, secret), CancellationToken.None);
+        var attendancePayload = AttendancePayload(classId, studentId, "present");
+        var attendanceResult = await processor.IngestAsync("CSCA_COURSE_LMS", "record-attendance-1",
+            "lms.attendance.recorded", attendancePayload, Sign(attendancePayload, secret), CancellationToken.None);
+
+        calendarResult.Accepted.Should().BeFalse();
+        attendanceResult.Accepted.Should().BeFalse();
+        calendarResult.Message.Should().Contain("Record");
+        attendanceResult.Message.Should().Contain("Record");
+        (await db.CscaClassSchedules.CountAsync()).Should().Be(0);
+        (await db.CscaLessonSessions.CountAsync()).Should().Be(0);
+        (await db.CscaLessonAttendances.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
     public async Task Ingest_RescheduledManagementSession_ShouldReuseItsGuidInsteadOfCreatingDuplicate()
     {
         using var db = CreateInMemoryDb();
