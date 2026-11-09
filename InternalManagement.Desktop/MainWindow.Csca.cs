@@ -106,6 +106,14 @@ public partial class MainWindow
         }
 
         var defaultCourseId = _selectedCourseFilterId?.ToString() ?? courses.Items[0].Id.ToString();
+        var allClasses = await _apiClient.GetAllCscaClassesAsync() ?? Array.Empty<ApiClient.CscaClassItem>();
+        var liveSourceOptions = new[] { new PromptOption(string.Empty, "-- Chọn lớp Live nguồn nếu tạo lớp Record --") }
+            .Concat(allClasses
+                .Where(item => string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(item => item.CourseTitle).ThenBy(item => item.Code)
+                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name} [{item.CourseTitle}]")))
+            .ToArray();
 
         var nextCode = await _apiClient.GetNextCscaClassCodeAsync();
         if (string.IsNullOrWhiteSpace(nextCode))
@@ -118,18 +126,25 @@ public partial class MainWindow
             new PromptField("courseId", "Khóa học", InitialValue: defaultCourseId, Options: courses.Items
                 .Select(course => new PromptOption(course.Id.ToString(), course.Title))
                 .ToArray()),
-            new PromptField("classType", "Loại lớp học", InitialValue: "paid", Options: new[]
+            new PromptField("billingType", "Hình thức học phí", InitialValue: "paid", Options: new[]
             {
                 new PromptOption("paid", "Lớp chính thức (có học phí)"),
                 new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
             }),
+            new PromptField("learningMode", "Hình thức học", InitialValue: "LIVE", Options: new[]
+            {
+                new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
+                new PromptOption("RECORDING", "Record — xem bản ghi từ lớp Live")
+            }),
+            new PromptField("sourceClassId", "Lớp Live nguồn (bắt buộc với Record)", Options: liveSourceOptions),
             new PromptField("code", "Mã lớp (tự động tăng, có thể sửa)", InitialValue: nextCode),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
             new PromptField("tuitionFee", "Học phí (VND) - tự động về 0đ nếu là lớp học thử", InitialValue: "0")
         }, out var values)) return;
 
-        var isTrial = values.TryGetValue("classType", out var cType) && cType == "trial";
+        var isTrial = values.TryGetValue("billingType", out var billingType) && billingType == "trial";
+        var learningMode = values.TryGetValue("learningMode", out var selectedMode) ? selectedMode : "LIVE";
         decimal tuitionFee = 0;
         if (isTrial)
         {
@@ -152,13 +167,38 @@ public partial class MainWindow
             ShowToast("Hãy chọn khóa học cho lớp.", true);
             return;
         }
+        Guid? sourceClassId = Guid.TryParse(values.GetValueOrDefault("sourceClassId"), out var parsedSourceId)
+            ? parsedSourceId : null;
+        if (learningMode == "RECORDING")
+        {
+            if (isTrial || tuitionFee <= 0)
+            {
+                ShowToast("Lớp Record phải là lớp có học phí lớn hơn 0.", true);
+                return;
+            }
+            var sourceClass = allClasses.FirstOrDefault(item => item.Id == sourceClassId);
+            if (sourceClass is null || sourceClass.CourseId != courseId ||
+                !string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase))
+            {
+                ShowToast("Hãy chọn lớp Live nguồn thuộc đúng khóa học đã chọn.", true);
+                return;
+            }
+        }
+        else
+        {
+            sourceClassId = null;
+        }
 
         await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
-            await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId, isTrial: isTrial);
+            await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId,
+                isTrial: isTrial, classType: learningMode, sourceClassId: sourceClassId);
             await LoadCscaClassesAsync();
             await LoadCoursesAsync();
-            MessageBox.Show($"Tạo thành công {(isTrial ? "lớp học thử (miễn phí)" : "lớp chính thức")}: '{code}' - '{name}'!\n\nBước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+            var nextStep = learningMode == "RECORDING"
+                ? "Lớp Record sẽ kế thừa buổi học, học liệu và bản ghi từ lớp Live nguồn; không cần tạo lịch riêng."
+                : "Bước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.";
+            MessageBox.Show($"Tạo thành công lớp {learningMode}: '{code}' - '{name}'!\n\n{nextStep}", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
     }
 
@@ -209,15 +249,31 @@ public partial class MainWindow
             return;
         }
 
+        var allClasses = await _apiClient.GetAllCscaClassesAsync() ?? Array.Empty<ApiClient.CscaClassItem>();
+        var sourceOptions = new[] { new PromptOption(string.Empty, "-- Không chọn --") }
+            .Concat(allClasses
+                .Where(item => item.Id != cls.Id && item.CourseId == cls.CourseId &&
+                    string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(item => item.Code)
+                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name}")))
+            .ToArray();
+
         if (!PromptDialog.TryShow(this, $"Sửa lớp {cls.Code}", new[]
         {
             new PromptField("name", "Tên lớp", cls.Name),
             new PromptField("batch", "Đợt / khóa", cls.Batch),
-            new PromptField("classType", "Loại lớp", cls.IsTrial || cls.TuitionFee == 0 ? "trial" : "paid", Options: new[]
+            new PromptField("billingType", "Hình thức học phí", cls.IsTrial || cls.TuitionFee == 0 ? "trial" : "paid", Options: new[]
             {
                 new PromptOption("paid", "Lớp chính thức (có học phí)"),
                 new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
             }),
+            new PromptField("learningMode", "Hình thức học", cls.ClassType, Options: new[]
+            {
+                new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
+                new PromptOption("RECORDING", "Record — xem bản ghi từ lớp Live")
+            }),
+            new PromptField("sourceClassId", "Lớp Live nguồn (bắt buộc với Record)", cls.SourceClassId?.ToString() ?? string.Empty, Options: sourceOptions),
             new PromptField("tuitionFee", "Học phí", cls.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
             new PromptField("status", "Trạng thái", cls.Status, Options: new[]
             {
@@ -227,7 +283,8 @@ public partial class MainWindow
             })
         }, out var values)) return;
 
-        var isTrial = values.TryGetValue("classType", out var cType) && cType == "trial";
+        var isTrial = values.TryGetValue("billingType", out var billingType) && billingType == "trial";
+        var learningMode = values.TryGetValue("learningMode", out var selectedMode) ? selectedMode : cls.ClassType;
         decimal tuitionFee = 0;
         if (isTrial)
         {
@@ -242,10 +299,19 @@ public partial class MainWindow
         {
             tuitionFee = parsedFee;
         }
+        Guid? sourceClassId = Guid.TryParse(values.GetValueOrDefault("sourceClassId"), out var parsedSourceId)
+            ? parsedSourceId : null;
+        if (learningMode == "RECORDING" && (isTrial || tuitionFee <= 0 || sourceClassId is null))
+        {
+            ShowToast("Lớp Record phải có học phí lớn hơn 0 và chọn lớp Live nguồn.", true);
+            return;
+        }
+        if (learningMode == "LIVE") sourceClassId = null;
 
         await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
-            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"], isTrial: isTrial);
+            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"],
+                isTrial: isTrial, classType: learningMode, sourceClassId: sourceClassId);
             await LoadCscaClassesAsync();
             MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });

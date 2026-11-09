@@ -82,6 +82,85 @@ public class CscaServiceTests
     }
 
     [Fact]
+    public async Task CreateRecordingClass_RequiresPaidLiveSourceInSameCourse()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "record-course", Title = "Khóa Record" };
+        var otherCourse = new Course { CourseSourceId = "other-course", Title = "Khóa khác" };
+        db.AddRange(course, otherCourse);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+        var live = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-01", "Lớp Live", "", "", 2_000_000m, CourseId: course.Id), default);
+
+        var missingSource = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "REC-MISSING", "Record thiếu nguồn", "", "", 2_000_000m,
+            CourseId: course.Id, ClassType: "RECORDING"), default);
+        var freeRecording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "REC-FREE", "Record miễn phí", "", "", 0,
+            CourseId: course.Id, IsTrial: true, ClassType: "RECORDING", SourceClassId: live.Value!.Id), default);
+        var wrongCourse = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "REC-WRONG", "Record sai khóa", "", "", 2_000_000m,
+            CourseId: otherCourse.Id, ClassType: "RECORDING", SourceClassId: live.Value.Id), default);
+
+        missingSource.Succeeded.Should().BeFalse();
+        freeRecording.Succeeded.Should().BeFalse();
+        wrongCourse.Succeeded.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RecordingClass_KeepsOwnFinance_QueuesAliasOnly_AndRejectsLiveOperations()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "record-linked", Title = "Khóa Record Linked" };
+        db.AddRange(course, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var live = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-REC", "Lớp Live nguồn", "", "", 3_000_000m, CourseId: course.Id), default);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var recording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "RECORD-01", "Lớp Record", "", "", 1_500_000m,
+            CourseId: course.Id, ClassType: "RECORDING", SourceClassId: live.Value!.Id), default);
+
+        recording.Succeeded.Should().BeTrue();
+        recording.Value!.TuitionFee.Should().Be(1_500_000m);
+        recording.Value.ClassType.Should().Be("RECORDING");
+        var queued = await db.IntegrationOutboxes.SingleAsync();
+        GetManagementEventType(queued).Should().Be("class.upserted");
+        var payload = GetManagementPayload(queued);
+        payload.GetProperty("classType").GetString().Should().Be("RECORDING");
+        payload.GetProperty("sourceClassSourceId").GetString().Should().Be(live.Value.Id.ToString("N"));
+
+        var enrolled = await service.EnrollStudentAsync(recording.Value.Id,
+            new EnrollStudentRequest("Học viên Record", "record.student@example.com", "0900000001",
+                500_000m, PaymentStatus.Partial), default);
+        var finance = await service.GetClassFinancialSummaryAsync(recording.Value.Id, default);
+        finance.Value!.ExpectedRevenue.Should().Be(1_500_000m);
+        finance.Value.ActualRevenue.Should().Be(500_000m);
+        enrolled.Succeeded.Should().BeTrue();
+
+        var employee = new Employee { EmployeeCode = "REC-TEACHER", FullName = "Giảng viên", Email = "record.teacher@example.com" };
+        db.Employees.Add(employee);
+        await db.SaveChangesAsync();
+        (await service.AssignStaffAsync(recording.Value.Id,
+            new AssignStaffRequest(employee.Id, "Teacher", 100_000m), default)).Succeeded.Should().BeFalse();
+        (await service.AddScheduleAsync(recording.Value.Id,
+            new CreateCscaScheduleRequest(1, new TimeSpan(19, 0, 0), new TimeSpan(21, 0, 0)), default)).Succeeded.Should().BeFalse();
+        (await service.CreateLessonSessionAsync(recording.Value.Id,
+            new CreateCscaLessonSessionRequest(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+                new TimeSpan(19, 0, 0), new TimeSpan(21, 0, 0)), default)).Succeeded.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task EnrollStudent_AndCalculateProfit_ShouldUpdateRevenueAndProfit()
     {
         // Arrange

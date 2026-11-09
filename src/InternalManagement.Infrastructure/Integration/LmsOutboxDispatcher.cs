@@ -344,7 +344,10 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
                         Math.Max(0, cls.TuitionFee - student.DiscountAmount),
                         student.PaymentStatus,
                         student.UpdatedAt ?? student.JoinedAt,
-                        student.BusinessDocumentId?.ToString("N")), ct);
+                        student.BusinessDocumentId?.ToString("N"),
+                        student.StudentCode,
+                        cls.Code,
+                        cls.ClassType), ct);
                 }
             }
         }

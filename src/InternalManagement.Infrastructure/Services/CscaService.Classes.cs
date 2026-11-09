@@ -28,6 +28,7 @@ public sealed partial class CscaService
             .Where(c => !c.IsDeleted && c.CompanyId == companyId)
             .Include(c => c.Students)
             .Include(c => c.Staff)
+            .Include(c => c.SourceClass)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -62,6 +63,10 @@ public sealed partial class CscaService
                 Schedule = c.Schedule,
                 TuitionFee = (c.IsTrial || c.TuitionFee == 0) ? 0 : c.TuitionFee,
                 IsTrial = c.IsTrial || c.TuitionFee == 0,
+                ClassType = c.ClassType,
+                SourceClassId = c.SourceClassId,
+                SourceClassCode = c.SourceClass != null ? c.SourceClass.Code : null,
+                SourceClassName = c.SourceClass != null ? c.SourceClass.Name : null,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
                 Status = c.Status,
@@ -97,6 +102,7 @@ public sealed partial class CscaService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Course)
+            .Include(c => c.SourceClass)
             .Include(c => c.Students)
             .Include(c => c.Staff)
                 .ThenInclude(st => st.Employee)
@@ -127,6 +133,10 @@ public sealed partial class CscaService
             Schedule = cls.Schedule,
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
+            ClassType = cls.ClassType,
+            SourceClassId = cls.SourceClassId,
+            SourceClassCode = cls.SourceClass?.Code,
+            SourceClassName = cls.SourceClass?.Name,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -269,6 +279,12 @@ public sealed partial class CscaService
         if (!courseResult.Succeeded)
             return Result<CscaClassDto>.Failure(courseResult.Errors.FirstOrDefault() ?? "Mỗi lớp học phải thuộc một khóa học.");
 
+        var classTypeResult = await ValidateClassTypeAsync(
+            request.ClassType, request.SourceClassId, courseResult.Value!.Id, companyId, null,
+            request.IsTrial, request.TuitionFee, ct);
+        if (!classTypeResult.Succeeded)
+            return Result<CscaClassDto>.Failure(classTypeResult.Errors.FirstOrDefault() ?? "Loại lớp học không hợp lệ.");
+
         var cls = new CscaClass
         {
             CompanyId = companyId,
@@ -280,6 +296,8 @@ public sealed partial class CscaService
             Schedule = request.Schedule?.Trim() ?? string.Empty,
             TuitionFee = request.IsTrial ? 0 : request.TuitionFee,
             IsTrial = request.IsTrial,
+            ClassType = classTypeResult.Value!.ClassType,
+            SourceClassId = classTypeResult.Value.SourceClassId,
             StartDate = NormalizeClassDate(request.StartDate),
             EndDate = NormalizeClassDate(request.EndDate),
             Status = string.IsNullOrWhiteSpace(request.Status) ? "Active" : request.Status.Trim(),
@@ -306,6 +324,10 @@ public sealed partial class CscaService
             Schedule = cls.Schedule,
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
+            ClassType = cls.ClassType,
+            SourceClassId = cls.SourceClassId,
+            SourceClassCode = classTypeResult.Value.SourceClass?.Code,
+            SourceClassName = classTypeResult.Value.SourceClass?.Name,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -330,6 +352,8 @@ public sealed partial class CscaService
             .Include(c => c.Students)
             .Include(c => c.Staff)
             .Include(c => c.Schedules)
+            .Include(c => c.LessonSessions)
+            .Include(c => c.SourceClass)
             .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
 
         if (cls == null)
@@ -344,13 +368,28 @@ public sealed partial class CscaService
         if (cls.Students.Any(student => student.DiscountAmount > request.TuitionFee))
             return Result<CscaClassDto>.Failure("Học phí mới không được thấp hơn mức giảm giá đã áp dụng cho học viên.");
 
+        var targetCourseId = cls.CourseId;
         if (request.CourseId.HasValue && request.CourseId.Value != cls.CourseId)
         {
             var courseResult = await ResolveCourseAsync(request.CourseId, cls.CompanyId, cls.BusinessUnitId, ct);
             if (!courseResult.Succeeded)
                 return Result<CscaClassDto>.Failure(courseResult.Errors.FirstOrDefault() ?? "Khóa học không hợp lệ.");
-            cls.CourseId = courseResult.Value!.Id;
+            targetCourseId = courseResult.Value!.Id;
         }
+
+        var classTypeResult = await ValidateClassTypeAsync(
+            request.ClassType ?? cls.ClassType,
+            request.SourceClassId ?? (request.ClassType is null ? cls.SourceClassId : null),
+            targetCourseId, cls.CompanyId, cls.Id,
+            request.IsTrial, request.TuitionFee, ct);
+        if (!classTypeResult.Succeeded)
+            return Result<CscaClassDto>.Failure(classTypeResult.Errors.FirstOrDefault() ?? "Loại lớp học không hợp lệ.");
+
+        var changingLiveToRecording = !IsRecordingClass(cls) && classTypeResult.Value!.ClassType == "RECORDING";
+        if (changingLiveToRecording && (cls.Schedules.Count > 0 || cls.LessonSessions.Count > 0 || cls.Staff.Count > 0))
+            return Result<CscaClassDto>.Failure("Không thể chuyển lớp Live đã có lịch học, buổi học hoặc giảng viên thành lớp Record.");
+
+        cls.CourseId = targetCourseId;
 
         var calendarMetadataChanged = cls.StartDate != NormalizeClassDate(request.StartDate) ||
             cls.EndDate != NormalizeClassDate(request.EndDate) ||
@@ -364,6 +403,8 @@ public sealed partial class CscaService
             : FormatScheduleSummary(cls.Schedules);
         cls.IsTrial = request.IsTrial;
         cls.TuitionFee = request.IsTrial ? 0 : request.TuitionFee;
+        cls.ClassType = classTypeResult.Value.ClassType;
+        cls.SourceClassId = classTypeResult.Value.SourceClassId;
         cls.StartDate = NormalizeClassDate(request.StartDate);
         cls.EndDate = NormalizeClassDate(request.EndDate);
         cls.Status = request.Status;
@@ -376,7 +417,7 @@ public sealed partial class CscaService
 
         // A class date change alters the recurrence range on the teaching Web.
         // Keep its fixed slots in sync without requiring another course sync.
-        if (calendarMetadataChanged)
+        if (calendarMetadataChanged && !IsRecordingClass(cls))
         foreach (var schedule in cls.Schedules)
         {
             var syncError = await QueueScheduleForWebAsync(cls, schedule,
@@ -400,6 +441,10 @@ public sealed partial class CscaService
             Schedule = cls.Schedule,
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
+            ClassType = cls.ClassType,
+            SourceClassId = cls.SourceClassId,
+            SourceClassCode = classTypeResult.Value.SourceClass?.Code,
+            SourceClassName = classTypeResult.Value.SourceClass?.Name,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -419,6 +464,58 @@ public sealed partial class CscaService
 
     private static DateTime? NormalizeClassDate(DateTime? value)
         => value.HasValue ? DateTime.SpecifyKind(value.Value.Date, DateTimeKind.Utc) : null;
+
+    private async Task<Result<ClassTypeSelection>> ValidateClassTypeAsync(
+        string? rawClassType,
+        Guid? sourceClassId,
+        Guid courseId,
+        Guid companyId,
+        Guid? currentClassId,
+        bool isTrial,
+        decimal tuitionFee,
+        CancellationToken ct)
+    {
+        var classType = string.IsNullOrWhiteSpace(rawClassType)
+            ? "LIVE"
+            : rawClassType.Trim().ToUpperInvariant();
+        if (classType is not ("LIVE" or "RECORDING"))
+            return Result<ClassTypeSelection>.Failure("Loại lớp chỉ có thể là LIVE hoặc RECORDING.");
+
+        if (classType == "LIVE")
+        {
+            if (sourceClassId.HasValue)
+                return Result<ClassTypeSelection>.Failure("Lớp Live không được ánh xạ tới lớp nguồn.");
+            return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, null, null));
+        }
+
+        if (isTrial || tuitionFee <= 0)
+            return Result<ClassTypeSelection>.Failure("Lớp Record là lớp có học phí; học phí phải lớn hơn 0 và không thể là lớp học thử.");
+        if (!sourceClassId.HasValue)
+            return Result<ClassTypeSelection>.Failure("Lớp Record phải chọn một lớp Live nguồn.");
+        if (sourceClassId == currentClassId)
+            return Result<ClassTypeSelection>.Failure("Lớp Record không thể tự ánh xạ tới chính nó.");
+
+        var sourceClass = await _db.CscaClasses.AsNoTracking().FirstOrDefaultAsync(source =>
+            source.Id == sourceClassId.Value && source.CompanyId == companyId && !source.IsDeleted, ct);
+        if (sourceClass is null)
+            return Result<ClassTypeSelection>.Failure("Không tìm thấy lớp Live nguồn trong phạm vi quản lý hiện tại.");
+        if (!string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase))
+            return Result<ClassTypeSelection>.Failure("Lớp nguồn của lớp Record bắt buộc phải là lớp Live.");
+        if (sourceClass.CourseId != courseId)
+            return Result<ClassTypeSelection>.Failure("Lớp Record và lớp Live nguồn phải thuộc cùng một khóa học.");
+        if (string.Equals(sourceClass.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return Result<ClassTypeSelection>.Failure("Lớp Live nguồn đã bị hủy nên không thể dùng cho lớp Record.");
+
+        return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, sourceClass.Id, sourceClass));
+    }
+
+    private static bool IsRecordingClass(CscaClass cls) =>
+        string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+
+    private Task<bool> IsRecordingClassAsync(Guid classId, CancellationToken ct) =>
+        _db.CscaClasses.AsNoTracking().AnyAsync(cls => cls.Id == classId && cls.ClassType == "RECORDING", ct);
+
+    private sealed record ClassTypeSelection(string ClassType, Guid? SourceClassId, CscaClass? SourceClass);
 
     public async Task<Result<bool>> DeleteClassAsync(Guid id, CancellationToken ct)
     {

@@ -7,6 +7,7 @@ using InternalManagement.Infrastructure.Integration;
 using InternalManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Text.Json;
 
 namespace InternalManagement.UnitTests.Integration;
 
@@ -129,6 +130,41 @@ public sealed class LmsAccessLifecycleServiceTests
     }
 
     [Fact]
+    public async Task RecordingEnrollment_ShouldLabelMembershipAndKeepPaidCourseEntitlement()
+    {
+        await using var db = CreateInMemoryDb();
+        var setup = await AddMappedCourseAsync(db);
+        var service = new LmsAccessLifecycleService(db, NullLogger<LmsAccessLifecycleService>.Instance);
+
+        await service.ReconcileStudentAccessAsync(
+            CreateRequest(setup, PaymentStatus.Paid, paidAmount: 5_000_000m) with
+            {
+                LearningMode = "RECORDING"
+            },
+            CancellationToken.None);
+        await db.SaveChangesAsync();
+
+        var membershipJson = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                           item.PayloadJson.Contains("class.membership.changed"))
+            .Select(item => item.PayloadJson)
+            .SingleAsync();
+        using var membershipDocument = JsonDocument.Parse(membershipJson);
+        var membership = membershipDocument.RootElement.GetProperty("payload");
+        membership.GetProperty("learningMode").GetString().Should().Be("RECORDING");
+        membership.GetProperty("classSourceId").GetString().Should().NotBeNullOrWhiteSpace();
+
+        var accessJson = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
+            .Select(item => item.PayloadJson)
+            .SingleAsync();
+        using var accessDocument = JsonDocument.Parse(accessJson);
+        var access = accessDocument.RootElement.GetProperty("access");
+        access.GetProperty("accessStatus").GetString().Should().Be("Active");
+        access.GetProperty("courseSourceIds")[0].GetString().Should().Be("csca-foundation");
+    }
+
+    [Fact]
     public async Task RefundedPayment_AfterActiveGrant_ShouldQueueRevocation()
     {
         await using var db = CreateInMemoryDb();
@@ -151,6 +187,16 @@ public sealed class LmsAccessLifecycleServiceTests
         grant.RevokedAt.Should().NotBeNull();
         (await db.IntegrationOutboxes.CountAsync(item => item.EventType == LmsOutboxEventTypes.StudentAccessRequested))
             .Should().Be(2);
+        var revocationJson = await db.IntegrationOutboxes
+            .Where(item => item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
+            .OrderByDescending(item => item.CreatedAt)
+            .Select(item => item.PayloadJson)
+            .FirstAsync();
+        using var document = JsonDocument.Parse(revocationJson);
+        var access = document.RootElement.GetProperty("access");
+        access.GetProperty("accessStatus").GetString().Should().Be("Revoked");
+        access.GetProperty("reason").GetString().Should().Be("PAYMENT_REFUNDED");
+        access.GetProperty("courseSourceIds")[0].GetString().Should().Be("csca-foundation");
     }
 
     [Fact]

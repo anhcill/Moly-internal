@@ -43,7 +43,8 @@ public sealed record LmsAccessEvaluationRequest(
     DateTime SourceUpdatedAt,
     string? SourcePaymentId,
     string? StudentCode = null,
-    string? ClassCode = null);
+    string? ClassCode = null,
+    string? LearningMode = null);
 
 /// <summary>Payload for POST /students/provision on the CSCA Course LMS.</summary>
 public sealed record LmsProvisionCommand(

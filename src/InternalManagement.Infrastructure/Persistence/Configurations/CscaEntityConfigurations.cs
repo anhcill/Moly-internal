@@ -29,7 +29,11 @@ public sealed class CscaEntityConfigurations :
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
         builder.Property(c => c.TuitionFee).HasPrecision(18, 2);
         builder.Property(c => c.IsTrial).HasDefaultValue(false);
+        builder.Property(c => c.ClassType).HasMaxLength(20).HasDefaultValue("LIVE").IsRequired();
+        builder.HasIndex(c => c.SourceClassId);
         builder.HasOne(c => c.Course).WithMany(c => c.CscaClasses).HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(c => c.SourceClass).WithMany(c => c.RecordingClasses).HasForeignKey(c => c.SourceClassId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasQueryFilter(c => !c.IsDeleted);
     }

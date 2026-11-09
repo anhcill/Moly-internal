@@ -15,6 +15,10 @@ public sealed record CscaClassDto
     public string Schedule { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
     public bool IsTrial { get; init; }
+    public string ClassType { get; init; } = "LIVE";
+    public Guid? SourceClassId { get; init; }
+    public string? SourceClassCode { get; init; }
+    public string? SourceClassName { get; init; }
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -43,6 +47,10 @@ public sealed record CscaClassDetailDto
     public string Schedule { get; init; } = string.Empty;
     public decimal TuitionFee { get; init; }
     public bool IsTrial { get; init; }
+    public string ClassType { get; init; } = "LIVE";
+    public Guid? SourceClassId { get; init; }
+    public string? SourceClassCode { get; init; }
+    public string? SourceClassName { get; init; }
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -63,7 +71,9 @@ public sealed record CreateCscaClassRequest(
     DateTime? EndDate = null,
     string Status = "Active",
     Guid? CourseId = null,
-    bool IsTrial = false);
+    bool IsTrial = false,
+    string ClassType = "LIVE",
+    Guid? SourceClassId = null);
 
 public sealed record UpdateCscaClassRequest(
     string Name,
@@ -74,7 +84,9 @@ public sealed record UpdateCscaClassRequest(
     DateTime? EndDate = null,
     string Status = "Active",
     Guid? CourseId = null,
-    bool IsTrial = false);
+    bool IsTrial = false,
+    string? ClassType = null,
+    Guid? SourceClassId = null);
 
 // ── CSCA Schedule DTOs ──
 

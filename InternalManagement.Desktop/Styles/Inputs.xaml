@@ -42,9 +42,6 @@
             </Setter>
         </Style>
 
-        <!-- Implicit TextBox Style -->
-        <Style TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}" />
-
         <!-- Modern PasswordBox Style -->
         <Style x:Key="ModernPasswordBox" TargetType="PasswordBox">
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
@@ -86,9 +83,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <!-- Implicit PasswordBox Style -->
-        <Style TargetType="PasswordBox" BasedOn="{StaticResource ModernPasswordBox}" />
 
         <!-- Modern Dark TextBox Style for Modals & Dark Panels -->
         <Style x:Key="DarkModernTextBox" TargetType="TextBox">

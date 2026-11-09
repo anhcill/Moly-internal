@@ -36,6 +36,8 @@ public sealed partial class CscaService
         {
             return Result<CscaStaffDto>.Failure("Không tìm thấy lớp học CSCA.");
         }
+        if (IsRecordingClass(cls))
+            return Result<CscaStaffDto>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == request.EmployeeId && !e.IsDeleted, ct);
         if (employee == null)
@@ -116,6 +118,8 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == staffId && item.ClassId == classId, ct);
         if (staff is null || staff.Employee is null)
             return Result<CscaStaffDto>.Failure("Không tìm thấy phân công nhân sự trong lớp.");
+        if (staff.Class is not null && IsRecordingClass(staff.Class))
+            return Result<CscaStaffDto>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var previousTeachingRole = staff.Class is null
             ? null
@@ -171,6 +175,8 @@ public sealed partial class CscaService
         {
             return Result<bool>.Failure("Không tìm thấy phân công nhân sự trong lớp.");
         }
+        if (staff.Class is not null && IsRecordingClass(staff.Class))
+            return Result<bool>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var cls = staff.Class;
         var previousTeachingRole = cls is null

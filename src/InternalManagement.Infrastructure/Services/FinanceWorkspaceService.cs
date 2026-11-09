@@ -133,7 +133,7 @@ public sealed partial class FinanceWorkspaceService(
             allocation.AllocatedAt = DateTime.UtcNow;
         }
         if (lmsAccess is not null)
-            await lmsAccess.ReconcileStudentAccessAsync(new LmsAccessEvaluationRequest(row.CompanyId, row.BusinessUnitId, student.Id, student.PartyId, row.ClassId, student.Class.CourseId, student.Class.Course.CourseSourceId, student.StudentName, student.Email, student.PhoneNumber, student.PaidAmount, row.DueAmount, student.PaymentStatus, DateTime.UtcNow, row.Id.ToString("N"), student.StudentCode, student.Class.Code), ct);
+            await lmsAccess.ReconcileStudentAccessAsync(new LmsAccessEvaluationRequest(row.CompanyId, row.BusinessUnitId, student.Id, student.PartyId, row.ClassId, student.Class.CourseId, student.Class.Course.CourseSourceId, student.StudentName, student.Email, student.PhoneNumber, student.PaidAmount, row.DueAmount, student.PaymentStatus, DateTime.UtcNow, row.Id.ToString("N"), student.StudentCode, student.Class.Code, student.Class.ClassType), ct);
     }
 
     public async Task<Result<StudentReceivableDto>> RecordReceiptAsync(Guid receivableId, RecordStudentReceiptRequest request, CancellationToken ct)
@@ -194,7 +194,7 @@ public sealed partial class FinanceWorkspaceService(
             row.Status = "Cancelled";
             student.PaymentStatus = PaymentStatus.Cancelled;
             if (lmsAccess is not null)
-                await lmsAccess.ReconcileStudentAccessAsync(new LmsAccessEvaluationRequest(row.CompanyId, row.BusinessUnitId, student.Id, student.PartyId, row.ClassId, student.Class.CourseId, student.Class.Course.CourseSourceId, student.StudentName, student.Email, student.PhoneNumber, student.PaidAmount, row.DueAmount, student.PaymentStatus, DateTime.UtcNow, row.Id.ToString("N"), student.StudentCode, student.Class.Code), ct);
+                await lmsAccess.ReconcileStudentAccessAsync(new LmsAccessEvaluationRequest(row.CompanyId, row.BusinessUnitId, student.Id, student.PartyId, row.ClassId, student.Class.CourseId, student.Class.Course.CourseSourceId, student.StudentName, student.Email, student.PhoneNumber, student.PaidAmount, row.DueAmount, student.PaymentStatus, DateTime.UtcNow, row.Id.ToString("N"), student.StudentCode, student.Class.Code, student.Class.ClassType), ct);
         }
         await db.SaveChangesAsync(ct);
         return Result<StudentReceivableDto>.Success(ReceivableDto(row, student));

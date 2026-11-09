@@ -207,6 +207,7 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
             MembershipSourceId = legacyStudentId,
             ClassSourceId = request.ClassId.ToString("N"),
             StudentSourceId = externalStudentId,
+            LearningMode = NormalizeLearningMode(request.LearningMode),
             Status = "active",
             SourceUpdatedAt = request.SourceUpdatedAt
         }, membershipCorrelationId, ct);
@@ -398,6 +399,11 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
 
     private static string BuildExternalGrantId(Guid studentId, string courseSourceId)
         => $"grant:{studentId:N}:{courseSourceId}";
+
+    private static string NormalizeLearningMode(string? learningMode) =>
+        string.Equals(learningMode, "RECORDING", StringComparison.OrdinalIgnoreCase)
+            ? "RECORDING"
+            : "LIVE";
 
     private static string BuildAccessReason(PaymentStatus paymentStatus, LmsAccessGrantStatus grantStatus) => grantStatus switch
     {

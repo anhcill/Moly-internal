@@ -264,7 +264,21 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             if (classes.Any(cls => cls.Students.Count > 1000))
                 return Result<LmsCourseMappingDto>.Failure(
                     "Một lớp có hơn 1.000 học viên, vượt giới hạn lớp học của Web CSCA Course.");
-            var teachingStaff = classes.SelectMany(cls => cls.Staff)
+            var liveClasses = classes
+                .Where(cls => !string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            foreach (var recordingClass in classes.Except(liveClasses))
+            {
+                var sourceClass = classes.FirstOrDefault(cls => cls.Id == recordingClass.SourceClassId);
+                if (sourceClass is null ||
+                    string.Equals(sourceClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) ||
+                    sourceClass.CourseId != recordingClass.CourseId)
+                {
+                    return Result<LmsCourseMappingDto>.Failure(
+                        $"Lớp Record {recordingClass.Code} phải ánh xạ tới một lớp Live cùng khóa học trước khi đồng bộ lên Web.");
+                }
+            }
+            var teachingStaff = liveClasses.SelectMany(cls => cls.Staff)
                 .Where(staff => LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
                     LmsTeacherRosterSync.HasActiveAccount(staff.Employee) &&
                     IsValidLmsEmail(staff.Employee.Email) &&
@@ -276,13 +290,13 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             if (teachingStaff.Count == 0)
                 return Result<LmsCourseMappingDto>.Failure(
                     "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ trước khi đồng bộ lên Web.");
-            var classWithoutLead = classes.FirstOrDefault(cls => !cls.Staff.Any(staff =>
+            var classWithoutLead = liveClasses.FirstOrDefault(cls => !cls.Staff.Any(staff =>
                 string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
                 teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId)));
             if (classWithoutLead is not null)
                 return Result<LmsCourseMappingDto>.Failure(
                     $"Lớp {classWithoutLead.Code} chưa có giáo viên vai trò Teacher với email hợp lệ để đồng bộ sang Web.");
-            var scheduleWithoutDates = classes.SelectMany(cls => cls.Schedules
+            var scheduleWithoutDates = liveClasses.SelectMany(cls => cls.Schedules
                 .Where(schedule => !LmsCalendarEventFactory.HasEffectiveDates(cls, schedule))
                 .Select(schedule => (Class: cls, Schedule: schedule)))
                 .FirstOrDefault();
@@ -310,7 +324,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 CourseSourceId = externalCourseId,
                 course.Title,
                 course.Description,
-                TeacherSourceId = classes.SelectMany(cls => cls.Staff)
+                TeacherSourceId = liveClasses.SelectMany(cls => cls.Staff)
                     .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
                                     teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
                     .OrderBy(staff => staff.CreatedAt)
@@ -322,8 +336,10 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
             foreach (var cls in classes)
             {
+                var isRecording = string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
                 var activeAssignments = cls.Staff
-                    .Where(staff => LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
+                    .Where(staff => !isRecording &&
+                                    LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
                                     teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
                     .GroupBy(staff => staff.EmployeeId)
                     .Select(group => group.OrderBy(staff => staff.CreatedAt).ThenBy(staff => staff.Id).First())
@@ -332,7 +348,10 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase))
                     .OrderBy(staff => staff.CreatedAt)
                     .ThenBy(staff => staff.Id)
-                    .First();
+                    .FirstOrDefault();
+                var sourceClassSourceId = isRecording
+                    ? classes.First(source => source.Id == cls.SourceClassId).Id.ToString("N")
+                    : null;
                 QueueManagementEvent(existing, "class.upserted", new
                 {
                     ClassSourceId = cls.Id.ToString("N"),
@@ -341,15 +360,18 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     Description = cls.Batch,
                     MaxStudents = Math.Max(30, cls.Students.Count),
                     Status = NormalizeClassStatus(cls.Status),
-                    LeadTeacherSourceId = lead.EmployeeId.ToString("N"),
+                    ClassType = isRecording ? "RECORDING" : "LIVE",
+                    SourceClassSourceId = sourceClassSourceId,
+                    LeadTeacherSourceId = lead?.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
+                if (isRecording) continue;
                 foreach (var assignment in activeAssignments)
                     QueueManagementEvent(existing, "class.teacher.assigned", new
                     {
                         ClassSourceId = cls.Id.ToString("N"),
                         TeacherSourceId = assignment.EmployeeId.ToString("N"),
-                        TeachingRole = assignment.Id == lead.Id
+                        TeachingRole = assignment.Id == lead!.Id
                             ? "lead"
                             : LmsTeacherRosterSync.MapTeachingRole(assignment.RoleInClass),
                         Status = "active",
@@ -360,7 +382,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             // The Management calendar is authoritative. Include existing slots
             // and lessons in every mapping sync so a class created before this
             // bridge (including class 01) is backfilled without manual edits.
-            foreach (var cls in classes)
+            foreach (var cls in liveClasses)
             {
                 foreach (var schedule in cls.Schedules)
                     QueueManagementEvent(existing,
@@ -407,6 +429,8 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     MembershipSourceId = item.Student.Id.ToString("N"),
                     ClassSourceId = item.Class.Id.ToString("N"),
                     StudentSourceId = (item.Student.PartyId ?? item.Student.Id).ToString("N"),
+                    LearningMode = string.Equals(item.Class.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase)
+                        ? "RECORDING" : "LIVE",
                     Status = "active",
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);

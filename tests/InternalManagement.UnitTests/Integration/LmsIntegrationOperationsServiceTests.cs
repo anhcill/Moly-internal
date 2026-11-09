@@ -48,6 +48,124 @@ public sealed class LmsIntegrationOperationsServiceTests
     }
 
     [Fact]
+    public async Task UpsertCourseMapping_WithRecordingAlias_ShouldEmitAliasAndMembershipOnly()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var course = AddCourse(db, companyId, "recording-course");
+        var teacher = new Employee
+        {
+            CompanyId = companyId,
+            EmployeeCode = "T-RECORD",
+            FullName = "Teacher Live",
+            Email = "teacher-live@example.com"
+        };
+        var liveClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = course.Id,
+            Code = "LIVE-01",
+            Name = "Live source",
+            ClassType = "LIVE"
+        };
+        var recordingClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = course.Id,
+            Code = "RECORD-01",
+            Name = "Recording alias",
+            ClassType = "RECORDING",
+            SourceClassId = liveClass.Id,
+            TuitionFee = 5_000_000m
+        };
+        var recordingStudent = new CscaClassStudent
+        {
+            ClassId = recordingClass.Id,
+            StudentName = "Record Learner",
+            Email = "record-learner@example.com",
+            PaidAmount = 5_000_000m,
+            PaymentStatus = PaymentStatus.Paid
+        };
+        db.Employees.Add(teacher);
+        db.CscaClasses.AddRange(liveClass, recordingClass);
+        db.CscaClassStaffs.Add(new CscaClassStaff
+        {
+            ClassId = liveClass.Id,
+            EmployeeId = teacher.Id,
+            RoleInClass = "Teacher"
+        });
+        // RECORD aliases do not own a calendar. This invalid slot must not
+        // block mapping or be projected to the source LMS class.
+        db.CscaClassSchedules.Add(new CscaClassSchedule
+        {
+            ClassId = recordingClass.Id,
+            DayOfWeek = 2,
+            StartTime = new TimeSpan(20, 0, 0),
+            EndTime = new TimeSpan(22, 0, 0)
+        });
+        db.CscaClassStudents.Add(recordingStudent);
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(course.Id,
+            new UpsertLmsCourseMappingRequest(null, 103L, "recording-course", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
+        var events = (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone())
+            .ToList();
+        var eventTypes = events.Select(item => item.GetProperty("eventType").GetString()).ToList();
+        eventTypes.Should().NotContain("class.schedule.upserted");
+        eventTypes.Should().NotContain("class.session.upserted");
+        events.Count(item => item.GetProperty("eventType").GetString() == "class.teacher.assigned")
+            .Should().Be(1, "only the LIVE source owns teacher assignments");
+
+        var recordingClassEvent = events.Single(item =>
+            item.GetProperty("eventType").GetString() == "class.upserted" &&
+            item.GetProperty("payload").GetProperty("classSourceId").GetString() == recordingClass.Id.ToString("N"));
+        var classPayload = recordingClassEvent.GetProperty("payload");
+        classPayload.GetProperty("classType").GetString().Should().Be("RECORDING");
+        classPayload.GetProperty("sourceClassSourceId").GetString().Should().Be(liveClass.Id.ToString("N"));
+        classPayload.GetProperty("leadTeacherSourceId").ValueKind.Should().Be(JsonValueKind.Null);
+
+        var membership = events.Single(item =>
+            item.GetProperty("eventType").GetString() == "class.membership.changed");
+        membership.GetProperty("payload").GetProperty("learningMode").GetString().Should().Be("RECORDING");
+        membership.GetProperty("payload").GetProperty("classSourceId").GetString()
+            .Should().Be(recordingClass.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task UpsertCourseMapping_WhenRecordingSourceIsInvalid_ShouldRejectRequest()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var course = AddCourse(db, companyId, "invalid-recording-course");
+        var recordingClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = course.Id,
+            Code = "RECORD-BAD",
+            Name = "Invalid recording alias",
+            ClassType = "RECORDING",
+            SourceClassId = Guid.NewGuid(),
+            TuitionFee = 5_000_000m
+        };
+        db.CscaClasses.Add(recordingClass);
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(course.Id,
+            new UpsertLmsCourseMappingRequest(null, 104L, "invalid-recording-course", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeFalse();
+        result.Errors.Should().ContainSingle().Which.Should().Contain("lớp Live cùng khóa học");
+        (await db.IntegrationOutboxes.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
     public async Task UpsertCourseMapping_WhenDeletedTeacherUsedSameEmail_ShouldQueueLegacyTeacherSourceId()
     {
         await using var db = CreateInMemoryDb();

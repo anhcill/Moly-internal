@@ -38,6 +38,14 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("business_unit_id");
 
+                    b.Property<string>("ClassType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("LIVE")
+                        .HasColumnName("class_type");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -93,6 +101,10 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("schedule");
 
+                    b.Property<Guid?>("SourceClassId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_class_id");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_date");
@@ -120,6 +132,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseId")
                         .HasDatabaseName("ix_csca_classes_course_id");
+
+                    b.HasIndex("SourceClassId")
+                        .HasDatabaseName("ix_csca_classes_source_class_id");
 
                     b.HasIndex("CompanyId", "Code")
                         .IsUnique()
@@ -665,8 +680,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ReplacementForSessionId")
                         .IsUnique()
-                        .HasFilter("replacement_for_session_id IS NOT NULL AND status <> 'Cancelled'")
-                        .HasDatabaseName("ix_csca_lesson_sessions_replacement_for_session_id");
+                        .HasDatabaseName("ix_csca_lesson_sessions_replacement_for_session_id")
+                        .HasFilter("replacement_for_session_id IS NOT NULL AND status <> 'Cancelled'");
 
                     b.HasIndex("ScheduleId")
                         .HasDatabaseName("ix_csca_lesson_sessions_schedule_id");
@@ -8251,7 +8266,15 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_csca_classes_courses_course_id");
 
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "SourceClass")
+                        .WithMany("RecordingClasses")
+                        .HasForeignKey("SourceClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_csca_classes_csca_classes_source_class_id");
+
                     b.Navigation("Course");
+
+                    b.Navigation("SourceClass");
                 });
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaClassSchedule", b =>
@@ -9694,6 +9717,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaClass", b =>
                 {
                     b.Navigation("LessonSessions");
+
+                    b.Navigation("RecordingClasses");
 
                     b.Navigation("Schedules");
 

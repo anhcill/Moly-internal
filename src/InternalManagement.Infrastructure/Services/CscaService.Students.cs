@@ -405,7 +405,8 @@ public sealed partial class CscaService
             student.UpdatedAt ?? student.JoinedAt,
             student.BusinessDocumentId?.ToString("N"),
             student.StudentCode,
-            cls.Code), ct);
+            cls.Code,
+            cls.ClassType), ct);
     }
 
     private static decimal GetPayableTuition(decimal tuitionFee, decimal discountAmount) =>

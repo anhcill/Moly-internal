@@ -21,6 +21,9 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public string Schedule { get; set; } = string.Empty;
     public decimal TuitionFee { get; set; }
     public bool IsTrial { get; set; } = false;
+    public string ClassType { get; set; } = "LIVE"; // LIVE, RECORDING
+    public Guid? SourceClassId { get; set; }
+    public CscaClass? SourceClass { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string Status { get; set; } = "Active"; // Active, Completed, Cancelled
@@ -37,6 +40,7 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public ICollection<CscaClassStaff> Staff { get; set; } = new List<CscaClassStaff>();
     public ICollection<CscaClassSchedule> Schedules { get; set; } = new List<CscaClassSchedule>();
     public ICollection<CscaLessonSession> LessonSessions { get; set; } = new List<CscaLessonSession>();
+    public ICollection<CscaClass> RecordingClasses { get; set; } = new List<CscaClass>();
 }
 
 /// <summary>Danh mục phòng học dùng chung trong phạm vi công ty/đơn vị.</summary>

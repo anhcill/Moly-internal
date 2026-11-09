@@ -21,6 +21,11 @@ internal static class LmsTeacherRosterSync
     {
         if (db is null) return null;
 
+        if (IsRecordingClass(cls))
+        {
+            return await QueueClassAsync(db, currentUser, cls, ct);
+        }
+
         var link = await db.LmsCourseLinks.FirstOrDefaultAsync(item =>
             item.CompanyId == cls.CompanyId && item.CourseId == cls.CourseId &&
             item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
@@ -251,6 +256,14 @@ internal static class LmsTeacherRosterSync
             Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
                 string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
             LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
+            ClassType = NormalizeClassType(cls.ClassType),
+            SourceClassSourceId = cls.SourceClassId?.ToString("N"),
             SourceUpdatedAt = now
         }, now, correlationId);
+
+    private static bool IsRecordingClass(CscaClass cls) =>
+        string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeClassType(string? value) =>
+        string.Equals(value, "RECORDING", StringComparison.OrdinalIgnoreCase) ? "RECORDING" : "LIVE";
 }

@@ -52,6 +52,8 @@ public sealed partial class CscaService
             (!businessUnitId.HasValue || c.BusinessUnitId == businessUnitId), ct);
         if (cls == null)
             return Result<CscaScheduleDto>.Failure("Không tìm thấy lớp học CSCA.");
+        if (IsRecordingClass(cls))
+            return Result<CscaScheduleDto>.Failure("Lớp Record kế thừa nội dung từ lớp Live nguồn và không có lịch học riêng.");
         if (await HasLmsCalendarProjectionAsync(classId, ct))
             return Result<CscaScheduleDto>.Failure("Lịch của lớp này được quản lý trên LMS. Hãy tạo hoặc chỉnh sửa lịch tại LMS.");
         var validation = ValidateSchedule(request.DayOfWeek, request.StartTime, request.EndTime)
@@ -93,6 +95,8 @@ public sealed partial class CscaService
                 s.Class.CompanyId == companyId && (!businessUnitId.HasValue || s.Class.BusinessUnitId == businessUnitId), ct);
         if (schedule == null)
             return Result<CscaScheduleDto>.Failure("Không tìm thấy lịch học.");
+        if (IsRecordingClass(schedule.Class))
+            return Result<CscaScheduleDto>.Failure("Lớp Record kế thừa nội dung từ lớp Live nguồn và không có lịch học riêng.");
         if (IsLmsCalendarProjection(schedule.ExternalSource))
             return Result<CscaScheduleDto>.Failure("Lịch này được quản lý trên LMS. Hãy chỉnh sửa tại LMS.");
         var validation = ValidateSchedule(request.DayOfWeek, request.StartTime, request.EndTime)
@@ -134,6 +138,8 @@ public sealed partial class CscaService
                 s.Class.CompanyId == companyId && (!businessUnitId.HasValue || s.Class.BusinessUnitId == businessUnitId), ct);
         if (schedule == null)
             return Result<bool>.Failure("Không tìm thấy lịch học.");
+        if (IsRecordingClass(schedule.Class))
+            return Result<bool>.Failure("Lớp Record kế thừa nội dung từ lớp Live nguồn và không có lịch học riêng.");
         if (IsLmsCalendarProjection(schedule.ExternalSource))
             return Result<bool>.Failure("Lịch này được quản lý trên LMS. Hãy ngừng lịch tại LMS.");
         var syncError = await QueueScheduleForWebAsync(schedule.Class, schedule, true, ct);
@@ -334,6 +340,8 @@ public sealed partial class CscaService
             (!businessUnitId.HasValue || item.BusinessUnitId == businessUnitId), ct);
         if (cls == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
+        if (IsRecordingClass(cls))
+            return Result<CscaLessonSessionDto>.Failure("Lớp Record không có buổi học hoặc điểm danh riêng.");
         if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(request.Status, "Completed", StringComparison.OrdinalIgnoreCase))
             return Result<CscaLessonSessionDto>.Failure("Buổi mới chỉ được tạo ở trạng thái Đã lên lịch hoặc Đổi lịch.");
@@ -420,6 +428,8 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
+        if (IsRecordingClass(session.Class))
+            return Result<CscaLessonSessionDto>.Failure("Lớp Record không có buổi học hoặc điểm danh riêng.");
         if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             return Result<CscaLessonSessionDto>.Failure("Hãy dùng thao tác Hủy buổi để ghi lý do, dồn giáo trình và loại buổi khỏi lương.");
         if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase) &&
@@ -493,6 +503,8 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
+        if (IsRecordingClass(session.Class))
+            return Result<CscaLessonSessionDto>.Failure("Lớp Record không có buổi học hoặc điểm danh riêng.");
         if (string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
         if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase))
@@ -533,6 +545,8 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<bool>.Failure("Không tìm thấy buổi học.");
+        if (IsRecordingClass(session.Class))
+            return Result<bool>.Failure("Lớp Record không có buổi học hoặc điểm danh riêng.");
         if (IsLmsCalendarProjection(session.ExternalSource))
             return Result<bool>.Failure("Buổi học này được quản lý trên LMS. Hãy hủy buổi tại LMS.");
         if (session.ReplacementSessions.Count > 0 || session.ReplacementForSessionId.HasValue || session.Attendances.Count > 0)
@@ -552,6 +566,8 @@ public sealed partial class CscaService
             return Result<int>.Failure("Chỉ được tạo buổi học tối đa trong 366 ngày cho một lần thao tác.");
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<int>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await IsRecordingClassAsync(classId, ct))
+            return Result<int>.Failure("Lớp Record không có lịch hoặc buổi học riêng.");
         if (await HasLmsCalendarProjectionAsync(classId, ct))
             return Result<int>.Failure("Lớp này được LMS tự sinh buổi học theo lịch cố định. Không thể sinh thêm từ Management.");
 
@@ -617,6 +633,8 @@ public sealed partial class CscaService
     {
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<IReadOnlyList<CscaLessonAttendanceDto>>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await IsRecordingClassAsync(classId, ct))
+            return Result<IReadOnlyList<CscaLessonAttendanceDto>>.Success(Array.Empty<CscaLessonAttendanceDto>());
         var sessionExists = await _db.CscaLessonSessions.AnyAsync(session => session.Id == sessionId && session.ClassId == classId, ct);
         if (!sessionExists)
             return Result<IReadOnlyList<CscaLessonAttendanceDto>>.Failure("Không tìm thấy buổi học.");
@@ -637,6 +655,8 @@ public sealed partial class CscaService
     {
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<CscaLessonAttendanceDto>.Failure("Không tìm thấy lớp học CSCA.");
+        if (await IsRecordingClassAsync(classId, ct))
+            return Result<CscaLessonAttendanceDto>.Failure("Lớp Record không áp dụng điểm danh.");
         if (!IsValidAttendanceStatus(request.Status))
             return Result<CscaLessonAttendanceDto>.Failure("Trạng thái điểm danh không hợp lệ.");
 
