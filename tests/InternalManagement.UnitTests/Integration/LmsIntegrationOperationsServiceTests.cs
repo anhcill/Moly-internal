@@ -198,7 +198,7 @@ public sealed class LmsIntegrationOperationsServiceTests
             CancellationToken.None);
 
         result.Succeeded.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.Should().Contain("lớp Live cùng khóa học");
+        result.Errors.Should().ContainSingle().Which.Should().Contain("lớp Live nguồn hợp lệ");
         (await db.IntegrationOutboxes.CountAsync()).Should().Be(0);
     }
 

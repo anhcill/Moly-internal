@@ -23,7 +23,7 @@ public class CscaRecordingClassLifecycleTests
     }
 
     [Fact]
-    public async Task CreateRecordingClass_RequiresPaidLiveSourceInSameCourse()
+    public async Task CreateRecordingClass_AllowsPaidLiveSourceFromAnotherCourse()
     {
         using var db = CreateInMemoryDb();
         var course = new Course { CourseSourceId = "record-course", Title = "Khóa Record" };
@@ -40,13 +40,15 @@ public class CscaRecordingClassLifecycleTests
         var freeRecording = await service.CreateClassAsync(new CreateCscaClassRequest(
             "REC-FREE", "Record miễn phí", "", "", 0,
             CourseId: course.Id, IsTrial: true, ClassType: "RECORDING", SourceClassId: live.Value!.Id), default);
-        var wrongCourse = await service.CreateClassAsync(new CreateCscaClassRequest(
-            "REC-WRONG", "Record sai khóa", "", "", 2_000_000m,
+        var crossCourse = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "REC-CROSS", "Record kế thừa chéo khóa", "", "", 2_000_000m,
             CourseId: otherCourse.Id, ClassType: "RECORDING", SourceClassId: live.Value.Id), default);
 
         missingSource.Succeeded.Should().BeFalse();
         freeRecording.Succeeded.Should().BeFalse();
-        wrongCourse.Succeeded.Should().BeFalse();
+        crossCourse.Succeeded.Should().BeTrue();
+        crossCourse.Value!.CourseId.Should().Be(otherCourse.Id);
+        crossCourse.Value.SourceClassId.Should().Be(live.Value.Id);
     }
 
     [Fact]

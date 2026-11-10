@@ -109,23 +109,23 @@ public partial class MainWindow
         var allClasses = await _apiClient.GetAllCscaClassesAsync() ?? Array.Empty<ApiClient.CscaClassItem>();
         IReadOnlyList<PromptOption> LiveSourceOptionsForCourse(string selectedCourseId)
         {
-            if (!Guid.TryParse(selectedCourseId, out var selectedCourseGuid))
+            if (!Guid.TryParse(selectedCourseId, out _))
             {
                 return new[] { new PromptOption(string.Empty, "-- Hãy chọn khóa học trước --") };
             }
 
             var matchingClasses = allClasses
-                .Where(item => item.CourseId == selectedCourseGuid &&
-                    string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
+                .Where(item => string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(item => item.Code)
-                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name}"))
+                .OrderBy(item => item.CourseTitle)
+                .ThenBy(item => item.Code)
+                .Select(item => new PromptOption(item.Id.ToString(), $"[{item.CourseTitle}] {item.Code} — {item.Name}"))
                 .ToArray();
 
             return new[]
                 {
                     new PromptOption(string.Empty, matchingClasses.Length == 0
-                        ? "-- Khóa này chưa có lớp Live phù hợp --"
+                        ? "-- Chưa có lớp Live phù hợp --"
                         : "-- Chọn lớp Live nguồn nếu tạo lớp Record --")
                 }
                 .Concat(matchingClasses)
@@ -202,10 +202,10 @@ public partial class MainWindow
                 return;
             }
             var sourceClass = allClasses.FirstOrDefault(item => item.Id == sourceClassId);
-            if (recordingContentMode == "MIRROR" && (sourceClass is null || sourceClass.CourseId != courseId ||
+            if (recordingContentMode == "MIRROR" && (sourceClass is null ||
                 !string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase)))
             {
-                ShowToast("Hãy chọn lớp Live nguồn thuộc đúng khóa học đã chọn.", true);
+                ShowToast("Hãy chọn một lớp Live nguồn hợp lệ; có thể chọn từ khóa học khác.", true);
                 return;
             }
             if (recordingContentMode == "INDEPENDENT") sourceClassId = null;
@@ -242,11 +242,12 @@ public partial class MainWindow
         var allClasses = await _apiClient.GetAllCscaClassesAsync() ?? Array.Empty<ApiClient.CscaClassItem>();
         var sourceOptions = new[] { new PromptOption(string.Empty, "-- Không chọn --") }
             .Concat(allClasses
-                .Where(item => item.Id != cls.Id && item.CourseId == cls.CourseId &&
+                .Where(item => item.Id != cls.Id &&
                     string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(item => item.Code)
-                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name}")))
+                .OrderBy(item => item.CourseTitle)
+                .ThenBy(item => item.Code)
+                .Select(item => new PromptOption(item.Id.ToString(), $"[{item.CourseTitle}] {item.Code} — {item.Name}")))
             .ToArray();
 
         if (!PromptDialog.TryShow(this, $"Sửa lớp {cls.Code}", new[]

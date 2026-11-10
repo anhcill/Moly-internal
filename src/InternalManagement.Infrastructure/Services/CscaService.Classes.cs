@@ -552,8 +552,6 @@ public sealed partial class CscaService
             return Result<ClassTypeSelection>.Failure("Không tìm thấy lớp Live nguồn trong phạm vi quản lý hiện tại.");
         if (!string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase))
             return Result<ClassTypeSelection>.Failure("Lớp nguồn của lớp Record bắt buộc phải là lớp Live.");
-        if (sourceClass.CourseId != courseId)
-            return Result<ClassTypeSelection>.Failure("Lớp Record và lớp Live nguồn phải thuộc cùng một khóa học.");
         if (string.Equals(sourceClass.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             return Result<ClassTypeSelection>.Failure("Lớp Live nguồn đã bị hủy nên không thể dùng cho lớp Record.");
 

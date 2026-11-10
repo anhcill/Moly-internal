@@ -265,6 +265,19 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             if (classes.Any(cls => cls.Students.Count > 1000))
                 return Result<LmsCourseMappingDto>.Failure(
                     "Một lớp có hơn 1.000 học viên, vượt giới hạn lớp học của Web CSCA Course.");
+            var mirrorSourceIds = classes
+                .Where(cls => string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) &&
+                              NormalizeRecordingContentMode(cls) == "MIRROR" &&
+                              cls.SourceClassId.HasValue)
+                .Select(cls => cls.SourceClassId!.Value)
+                .Distinct()
+                .ToList();
+            var mirrorSourceClasses = mirrorSourceIds.Count == 0
+                ? new Dictionary<Guid, CscaClass>()
+                : await _db.CscaClasses.AsNoTracking()
+                    .Where(cls => mirrorSourceIds.Contains(cls.Id) &&
+                                  cls.CompanyId == companyId && !cls.IsDeleted)
+                    .ToDictionaryAsync(cls => cls.Id, ct);
             var liveClasses = classes
                 .Where(cls => !string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -278,13 +291,14 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                             $"Khóa video độc lập {recordingClass.Code} không được ánh xạ tới lớp Live nguồn.");
                     continue;
                 }
-                var sourceClass = classes.FirstOrDefault(cls => cls.Id == recordingClass.SourceClassId);
+                var sourceClass = recordingClass.SourceClassId.HasValue
+                    ? mirrorSourceClasses.GetValueOrDefault(recordingClass.SourceClassId.Value)
+                    : null;
                 if (sourceClass is null ||
-                    string.Equals(sourceClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) ||
-                    sourceClass.CourseId != recordingClass.CourseId)
+                    string.Equals(sourceClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase))
                 {
                     return Result<LmsCourseMappingDto>.Failure(
-                        $"Lớp Record {recordingClass.Code} phải ánh xạ tới một lớp Live cùng khóa học trước khi đồng bộ lên Web.");
+                        $"Lớp Record {recordingClass.Code} phải ánh xạ tới một lớp Live nguồn hợp lệ trước khi đồng bộ lên Web.");
                 }
             }
             var teachingStaff = liveClasses.SelectMany(cls => cls.Staff)
@@ -361,7 +375,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     .ThenBy(staff => staff.Id)
                     .FirstOrDefault();
                 var sourceClassSourceId = isRecording && recordingContentMode == "MIRROR"
-                    ? classes.First(source => source.Id == cls.SourceClassId).Id.ToString("N")
+                    ? cls.SourceClassId!.Value.ToString("N")
                     : null;
                 QueueManagementEvent(existing, "class.upserted", new
                 {
