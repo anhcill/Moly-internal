@@ -25,7 +25,9 @@ public sealed record PromptField(
     bool IsRequired = true,
     IReadOnlyList<PromptOption>? Options = null,
     bool IsMultiline = false,
-    PromptFieldKind Kind = PromptFieldKind.Text);
+    PromptFieldKind Kind = PromptFieldKind.Text,
+    string? OptionsDependOnKey = null,
+    Func<string, IReadOnlyList<PromptOption>>? OptionsFactory = null);
 
 public static class PromptDialog
 {
@@ -155,13 +157,13 @@ public static class PromptDialog
                 }
                 control = combo;
             }
-            else if (field.Options is { Count: > 0 })
+            else if (field.Options is { Count: > 0 } || field.OptionsFactory is not null)
             {
                 var combo = new ComboBox
                 {
                     Height = 34,
                     Padding = new Thickness(8, 5, 8, 5),
-                    ItemsSource = field.Options,
+                    ItemsSource = field.Options ?? Array.Empty<PromptOption>(),
                     DisplayMemberPath = nameof(PromptOption.Label),
                     SelectedValuePath = nameof(PromptOption.Value),
                     SelectedIndex = 0,
@@ -207,6 +209,47 @@ public static class PromptDialog
             Grid.SetColumn(fieldPanel, fieldColumns == 1 ? 0 : fieldIndex % 2 == 0 ? 0 : 2);
             Grid.SetRow(fieldPanel, fieldColumns == 1 ? fieldIndex : fieldIndex / 2);
             fieldsGrid.Children.Add(fieldPanel);
+        }
+
+        foreach (var field in fields.Where(item => item.OptionsFactory is not null))
+        {
+            if (controls[field.Key] is not ComboBox targetCombo ||
+                string.IsNullOrWhiteSpace(field.OptionsDependOnKey) ||
+                !controls.TryGetValue(field.OptionsDependOnKey, out var dependencyControl))
+            {
+                continue;
+            }
+
+            var dependencyField = fields.FirstOrDefault(item => item.Key == field.OptionsDependOnKey);
+            if (dependencyField is null) continue;
+
+            void RefreshOptions()
+            {
+                var previousValue = targetCombo.SelectedValue as string;
+                var dependencyValue = ReadControlValue(dependencyField, dependencyControl);
+                var options = field.OptionsFactory!(dependencyValue);
+                targetCombo.ItemsSource = options;
+
+                var preferredValue = !string.IsNullOrWhiteSpace(previousValue)
+                    ? previousValue
+                    : field.InitialValue;
+                if (!string.IsNullOrWhiteSpace(preferredValue) &&
+                    options.Any(option => option.Value == preferredValue))
+                {
+                    targetCombo.SelectedValue = preferredValue;
+                }
+                else
+                {
+                    targetCombo.SelectedIndex = options.Count > 0 ? 0 : -1;
+                }
+            }
+
+            if (dependencyControl is ComboBox dependencyCombo)
+            {
+                dependencyCombo.SelectionChanged += (_, _) => RefreshOptions();
+            }
+
+            RefreshOptions();
         }
 
         var buttons = new StackPanel

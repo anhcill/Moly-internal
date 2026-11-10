@@ -204,8 +204,9 @@ public sealed partial class CscaService
         var prefix = $"CSCA-{yearStr}-";
 
         var existingClasses = await _db.CscaClasses
+            .IgnoreQueryFilters()
             .AsNoTracking()
-            .Where(c => c.CompanyId == companyId && !c.IsDeleted)
+            .Where(c => c.CompanyId == companyId)
             .Select(c => new { c.Code, c.CreatedAt })
             .ToListAsync(ct);
 
@@ -245,7 +246,8 @@ public sealed partial class CscaService
         var nextSeq = Math.Max(maxSeq + 1, 1);
         var candidate = $"{prefix}{nextSeq:D2}";
 
-        while (await _db.CscaClasses.AnyAsync(c => c.CompanyId == companyId && c.Code == candidate, ct))
+        while (await _db.CscaClasses.IgnoreQueryFilters()
+            .AnyAsync(c => c.CompanyId == companyId && c.Code == candidate, ct))
         {
             nextSeq++;
             candidate = $"{prefix}{nextSeq:D2}";
@@ -269,10 +271,11 @@ public sealed partial class CscaService
             ? request.Code.Trim().ToUpperInvariant()
             : await GenerateNextClassCodeAsync(companyId, ct);
 
-        var exists = await _db.CscaClasses.AnyAsync(c => c.CompanyId == companyId && c.Code == codeUpper && !c.IsDeleted, ct);
+        var exists = await _db.CscaClasses.IgnoreQueryFilters()
+            .AnyAsync(c => c.CompanyId == companyId && c.Code == codeUpper, ct);
         if (exists)
         {
-            return Result<CscaClassDto>.Failure($"Mã lớp '{codeUpper}' đã tồn tại trong hệ thống.");
+            return Result<CscaClassDto>.Failure($"Mã lớp '{codeUpper}' đã tồn tại hoặc từng được sử dụng. Hãy chọn mã lớp khác.");
         }
 
         var courseResult = await ResolveCourseAsync(request.CourseId, companyId, buId, ct);

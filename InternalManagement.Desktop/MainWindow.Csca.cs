@@ -107,19 +107,32 @@ public partial class MainWindow
 
         var defaultCourseId = _selectedCourseFilterId?.ToString() ?? courses.Items[0].Id.ToString();
         var allClasses = await _apiClient.GetAllCscaClassesAsync() ?? Array.Empty<ApiClient.CscaClassItem>();
-        var liveSourceOptions = new[] { new PromptOption(string.Empty, "-- Chọn lớp Live nguồn nếu tạo lớp Record --") }
-            .Concat(allClasses
-                .Where(item => string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(item => item.CourseTitle).ThenBy(item => item.Code)
-                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name} [{item.CourseTitle}]")))
-            .ToArray();
-
-        var nextCode = await _apiClient.GetNextCscaClassCodeAsync();
-        if (string.IsNullOrWhiteSpace(nextCode))
+        IReadOnlyList<PromptOption> LiveSourceOptionsForCourse(string selectedCourseId)
         {
-            nextCode = ComputeFallbackNextClassCode();
+            if (!Guid.TryParse(selectedCourseId, out var selectedCourseGuid))
+            {
+                return new[] { new PromptOption(string.Empty, "-- Hãy chọn khóa học trước --") };
+            }
+
+            var matchingClasses = allClasses
+                .Where(item => item.CourseId == selectedCourseGuid &&
+                    string.Equals(item.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(item.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(item => item.Code)
+                .Select(item => new PromptOption(item.Id.ToString(), $"{item.Code} — {item.Name}"))
+                .ToArray();
+
+            return new[]
+                {
+                    new PromptOption(string.Empty, matchingClasses.Length == 0
+                        ? "-- Khóa này chưa có lớp Live phù hợp --"
+                        : "-- Chọn lớp Live nguồn nếu tạo lớp Record --")
+                }
+                .Concat(matchingClasses)
+                .ToArray();
         }
+
+        var nextCode = await _apiClient.GetNextCscaClassCodeAsync() ?? string.Empty;
 
         if (!PromptDialog.TryShow(this, "Tạo lớp học mới", new[]
         {
@@ -136,8 +149,12 @@ public partial class MainWindow
                 new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
                 new PromptOption("RECORDING", "Record — xem bản ghi từ lớp Live")
             }),
-            new PromptField("sourceClassId", "Lớp Live nguồn (bắt buộc với Record)", Options: liveSourceOptions),
-            new PromptField("code", "Mã lớp (tự động tăng, có thể sửa)", InitialValue: nextCode),
+            new PromptField(
+                "sourceClassId",
+                "Lớp Live nguồn (bắt buộc với Record)",
+                OptionsDependOnKey: "courseId",
+                OptionsFactory: LiveSourceOptionsForCourse),
+            new PromptField("code", "Mã lớp (để trống để hệ thống tự tạo)", InitialValue: nextCode, IsRequired: false),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
             new PromptField("tuitionFee", "Học phí (VND) - tự động về 0đ nếu là lớp học thử", InitialValue: "0")
@@ -160,7 +177,7 @@ public partial class MainWindow
             tuitionFee = parsedFee;
         }
 
-        var code = string.IsNullOrWhiteSpace(values["code"]) ? nextCode : values["code"].Trim();
+        var code = values["code"].Trim();
         var name = values["name"];
         if (!Guid.TryParse(values["courseId"], out var courseId))
         {
@@ -198,47 +215,9 @@ public partial class MainWindow
             var nextStep = learningMode == "RECORDING"
                 ? "Lớp Record sẽ kế thừa buổi học, học liệu và bản ghi từ lớp Live nguồn; không cần tạo lịch riêng."
                 : "Bước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.";
-            MessageBox.Show($"Tạo thành công lớp {learningMode}: '{code}' - '{name}'!\n\n{nextStep}", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
+            var displayedCode = string.IsNullOrWhiteSpace(code) ? "mã tự động" : code;
+            MessageBox.Show($"Tạo thành công lớp {learningMode}: '{displayedCode}' - '{name}'!\n\n{nextStep}", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });
-    }
-
-    private string ComputeFallbackNextClassCode()
-    {
-        var year = DateTime.UtcNow.Year;
-        var prefix = $"CSCA-{year}-";
-        var maxSeq = 0;
-
-        if (CscaClassesDataGrid.ItemsSource is IEnumerable<ApiClient.CscaClassItem> items)
-        {
-            foreach (var item in items)
-            {
-                var raw = item.Code?.Trim() ?? string.Empty;
-                if (string.IsNullOrEmpty(raw)) continue;
-
-                if (raw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    var suffix = raw.Substring(prefix.Length).Trim();
-                    var digits = new string(suffix.Where(char.IsDigit).ToArray());
-                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
-                        maxSeq = seq;
-                }
-                else if (raw.StartsWith("CSCA-", StringComparison.OrdinalIgnoreCase))
-                {
-                    var suffix = raw.Substring("CSCA-".Length).Trim();
-                    var digits = new string(suffix.Where(char.IsDigit).ToArray());
-                    if (int.TryParse(digits, out var seq) && seq > maxSeq)
-                        maxSeq = seq;
-                }
-                else if (raw.All(char.IsDigit) && int.TryParse(raw, out var numSeq))
-                {
-                    if (numSeq > maxSeq)
-                        maxSeq = numSeq;
-                }
-            }
-        }
-
-        var nextSeq = Math.Max(maxSeq + 1, 1);
-        return $"{prefix}{nextSeq:D2}";
     }
 
     private async void EditCscaClass_Click(object sender, RoutedEventArgs e)
