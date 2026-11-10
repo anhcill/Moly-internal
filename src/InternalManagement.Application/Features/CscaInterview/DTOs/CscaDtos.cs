@@ -16,6 +16,7 @@ public sealed record CscaClassDto
     public decimal TuitionFee { get; init; }
     public bool IsTrial { get; init; }
     public string ClassType { get; init; } = "LIVE";
+    public string? RecordingContentMode { get; init; }
     public Guid? SourceClassId { get; init; }
     public string? SourceClassCode { get; init; }
     public string? SourceClassName { get; init; }
@@ -48,6 +49,7 @@ public sealed record CscaClassDetailDto
     public decimal TuitionFee { get; init; }
     public bool IsTrial { get; init; }
     public string ClassType { get; init; } = "LIVE";
+    public string? RecordingContentMode { get; init; }
     public Guid? SourceClassId { get; init; }
     public string? SourceClassCode { get; init; }
     public string? SourceClassName { get; init; }
@@ -73,6 +75,7 @@ public sealed record CreateCscaClassRequest(
     Guid? CourseId = null,
     bool IsTrial = false,
     string ClassType = "LIVE",
+    string? RecordingContentMode = null,
     Guid? SourceClassId = null);
 
 public sealed record UpdateCscaClassRequest(
@@ -86,6 +89,7 @@ public sealed record UpdateCscaClassRequest(
     Guid? CourseId = null,
     bool IsTrial = false,
     string? ClassType = null,
+    string? RecordingContentMode = null,
     Guid? SourceClassId = null);
 
 // ── CSCA Schedule DTOs ──

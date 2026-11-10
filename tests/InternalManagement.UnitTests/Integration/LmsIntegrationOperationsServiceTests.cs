@@ -75,6 +75,7 @@ public sealed class LmsIntegrationOperationsServiceTests
             Code = "RECORD-01",
             Name = "Recording alias",
             ClassType = "RECORDING",
+            RecordingContentMode = "MIRROR",
             SourceClassId = liveClass.Id,
             TuitionFee = 5_000_000m
         };
@@ -126,6 +127,7 @@ public sealed class LmsIntegrationOperationsServiceTests
             item.GetProperty("payload").GetProperty("classSourceId").GetString() == recordingClass.Id.ToString("N"));
         var classPayload = recordingClassEvent.GetProperty("payload");
         classPayload.GetProperty("classType").GetString().Should().Be("RECORDING");
+        classPayload.GetProperty("recordingContentMode").GetString().Should().Be("MIRROR");
         classPayload.GetProperty("sourceClassSourceId").GetString().Should().Be(liveClass.Id.ToString("N"));
         classPayload.GetProperty("leadTeacherSourceId").ValueKind.Should().Be(JsonValueKind.Null);
 
@@ -134,6 +136,41 @@ public sealed class LmsIntegrationOperationsServiceTests
         membership.GetProperty("payload").GetProperty("learningMode").GetString().Should().Be("RECORDING");
         membership.GetProperty("payload").GetProperty("classSourceId").GetString()
             .Should().Be(recordingClass.Id.ToString("N"));
+    }
+
+    [Fact]
+    public async Task UpsertCourseMapping_WithIndependentRecordingOnly_ShouldNotRequireLiveTeacher()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var course = AddCourse(db, companyId, "independent-video-course");
+        var recordingClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = course.Id,
+            Code = "VIDEO-ONLY",
+            Name = "Independent video",
+            ClassType = "RECORDING",
+            RecordingContentMode = "INDEPENDENT",
+            SourceClassId = null,
+            TuitionFee = 5_000_000m
+        };
+        db.CscaClasses.Add(recordingClass);
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(course.Id,
+            new UpsertLmsCourseMappingRequest(null, 105L, "independent-video-course", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
+        var events = (await db.IntegrationOutboxes.ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone()).ToList();
+        events.Should().NotContain(item => item.GetProperty("eventType").GetString() == "teacher.upserted");
+        var classPayload = events.Single(item => item.GetProperty("eventType").GetString() == "class.upserted")
+            .GetProperty("payload");
+        classPayload.GetProperty("recordingContentMode").GetString().Should().Be("INDEPENDENT");
+        classPayload.GetProperty("sourceClassSourceId").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
     [Fact]

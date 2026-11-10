@@ -147,11 +147,12 @@ public partial class MainWindow
             new PromptField("learningMode", "Hình thức học", InitialValue: "LIVE", Options: new[]
             {
                 new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
-                new PromptOption("RECORDING", "Record — xem bản ghi từ lớp Live")
+                new PromptOption("RECORDING_MIRROR", "Record kế thừa — xem nội dung lớp Live"),
+                new PromptOption("RECORDING_INDEPENDENT", "Khóa video độc lập — tự quản lý nội dung")
             }),
             new PromptField(
                 "sourceClassId",
-                "Lớp Live nguồn (bắt buộc với Record)",
+                "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)",
                 OptionsDependOnKey: "courseId",
                 OptionsFactory: LiveSourceOptionsForCourse),
             new PromptField("code", "Mã lớp (để trống để hệ thống tự tạo)", InitialValue: nextCode, IsRequired: false),
@@ -186,7 +187,14 @@ public partial class MainWindow
         }
         Guid? sourceClassId = Guid.TryParse(values.GetValueOrDefault("sourceClassId"), out var parsedSourceId)
             ? parsedSourceId : null;
-        if (learningMode == "RECORDING")
+        var classType = learningMode == "LIVE" ? "LIVE" : "RECORDING";
+        var recordingContentMode = learningMode switch
+        {
+            "RECORDING_INDEPENDENT" => "INDEPENDENT",
+            "RECORDING_MIRROR" => "MIRROR",
+            _ => null
+        };
+        if (classType == "RECORDING")
         {
             if (isTrial || tuitionFee <= 0)
             {
@@ -194,12 +202,13 @@ public partial class MainWindow
                 return;
             }
             var sourceClass = allClasses.FirstOrDefault(item => item.Id == sourceClassId);
-            if (sourceClass is null || sourceClass.CourseId != courseId ||
-                !string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase))
+            if (recordingContentMode == "MIRROR" && (sourceClass is null || sourceClass.CourseId != courseId ||
+                !string.Equals(sourceClass.ClassType, "LIVE", StringComparison.OrdinalIgnoreCase)))
             {
                 ShowToast("Hãy chọn lớp Live nguồn thuộc đúng khóa học đã chọn.", true);
                 return;
             }
+            if (recordingContentMode == "INDEPENDENT") sourceClassId = null;
         }
         else
         {
@@ -209,11 +218,13 @@ public partial class MainWindow
         await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
             await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId,
-                isTrial: isTrial, classType: learningMode, sourceClassId: sourceClassId);
+                isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId);
             await LoadCscaClassesAsync();
             await LoadCoursesAsync();
-            var nextStep = learningMode == "RECORDING"
-                ? "Lớp Record sẽ kế thừa buổi học, học liệu và bản ghi từ lớp Live nguồn; không cần tạo lịch riêng."
+            var nextStep = classType == "RECORDING"
+                ? recordingContentMode == "INDEPENDENT"
+                    ? "Khóa video độc lập đã được tạo; quản lý nội dung chi tiết trên MolyCourse."
+                    : "Lớp Record sẽ kế thừa buổi học, học liệu và bản ghi từ lớp Live nguồn; không cần tạo lịch riêng."
                 : "Bước tiếp theo: chọn lớp và mở Chi tiết lớp → Lịch học để lập thời khóa biểu.";
             var displayedCode = string.IsNullOrWhiteSpace(code) ? "mã tự động" : code;
             MessageBox.Show($"Tạo thành công lớp {learningMode}: '{displayedCode}' - '{name}'!\n\n{nextStep}", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -247,12 +258,17 @@ public partial class MainWindow
                 new PromptOption("paid", "Lớp chính thức (có học phí)"),
                 new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
             }),
-            new PromptField("learningMode", "Hình thức học", cls.ClassType, Options: new[]
+            new PromptField("learningMode", "Hình thức học",
+                string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase)
+                    ? string.Equals(cls.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase)
+                        ? "RECORDING_INDEPENDENT" : "RECORDING_MIRROR"
+                    : "LIVE", Options: new[]
             {
                 new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
-                new PromptOption("RECORDING", "Record — xem bản ghi từ lớp Live")
+                new PromptOption("RECORDING_MIRROR", "Record kế thừa — xem nội dung lớp Live"),
+                new PromptOption("RECORDING_INDEPENDENT", "Khóa video độc lập — tự quản lý nội dung")
             }),
-            new PromptField("sourceClassId", "Lớp Live nguồn (bắt buộc với Record)", cls.SourceClassId?.ToString() ?? string.Empty, Options: sourceOptions),
+            new PromptField("sourceClassId", "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)", cls.SourceClassId?.ToString() ?? string.Empty, Options: sourceOptions),
             new PromptField("tuitionFee", "Học phí", cls.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
             new PromptField("status", "Trạng thái", cls.Status, Options: new[]
             {
@@ -280,17 +296,25 @@ public partial class MainWindow
         }
         Guid? sourceClassId = Guid.TryParse(values.GetValueOrDefault("sourceClassId"), out var parsedSourceId)
             ? parsedSourceId : null;
-        if (learningMode == "RECORDING" && (isTrial || tuitionFee <= 0 || sourceClassId is null))
+        var classType = learningMode == "LIVE" ? "LIVE" : "RECORDING";
+        var recordingContentMode = learningMode switch
         {
-            ShowToast("Lớp Record phải có học phí lớn hơn 0 và chọn lớp Live nguồn.", true);
+            "RECORDING_INDEPENDENT" => "INDEPENDENT",
+            "RECORDING_MIRROR" => "MIRROR",
+            _ => null
+        };
+        if (classType == "RECORDING" && (isTrial || tuitionFee <= 0 ||
+            (recordingContentMode == "MIRROR" && sourceClassId is null)))
+        {
+            ShowToast("Lớp Record phải có học phí lớn hơn 0; Record kế thừa phải chọn lớp Live nguồn.", true);
             return;
         }
-        if (learningMode == "LIVE") sourceClassId = null;
+        if (classType == "LIVE" || recordingContentMode == "INDEPENDENT") sourceClassId = null;
 
         await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
             await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"],
-                isTrial: isTrial, classType: learningMode, sourceClassId: sourceClassId);
+                isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId);
             await LoadCscaClassesAsync();
             MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });

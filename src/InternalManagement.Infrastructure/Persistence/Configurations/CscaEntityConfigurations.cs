@@ -30,6 +30,7 @@ public sealed class CscaEntityConfigurations :
         builder.Property(c => c.TuitionFee).HasPrecision(18, 2);
         builder.Property(c => c.IsTrial).HasDefaultValue(false);
         builder.Property(c => c.ClassType).HasMaxLength(20).HasDefaultValue("LIVE").IsRequired();
+        builder.Property(c => c.RecordingContentMode).HasMaxLength(20);
         builder.HasIndex(c => c.SourceClassId);
         builder.HasOne(c => c.Course).WithMany(c => c.CscaClasses).HasForeignKey(c => c.CourseId)
             .OnDelete(DeleteBehavior.Restrict);

@@ -257,6 +257,7 @@ internal static class LmsTeacherRosterSync
                 string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
             LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
             ClassType = NormalizeClassType(cls.ClassType),
+            RecordingContentMode = NormalizeRecordingContentMode(cls),
             SourceClassSourceId = cls.SourceClassId?.ToString("N"),
             SourceUpdatedAt = now
         }, now, correlationId);
@@ -266,4 +267,11 @@ internal static class LmsTeacherRosterSync
 
     private static string NormalizeClassType(string? value) =>
         string.Equals(value, "RECORDING", StringComparison.OrdinalIgnoreCase) ? "RECORDING" : "LIVE";
+
+    private static string? NormalizeRecordingContentMode(CscaClass cls) =>
+        IsRecordingClass(cls)
+            ? string.Equals(cls.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase)
+                ? "INDEPENDENT"
+                : "MIRROR"
+            : null;
 }

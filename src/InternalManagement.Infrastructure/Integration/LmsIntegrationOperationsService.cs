@@ -4,6 +4,7 @@ using InternalManagement.Application.Features.Integration.DTOs;
 using InternalManagement.Application.Features.Integration.Interfaces;
 using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.EdTech;
+using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Services;
@@ -269,6 +270,14 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 .ToList();
             foreach (var recordingClass in classes.Except(liveClasses))
             {
+                var recordingContentMode = NormalizeRecordingContentMode(recordingClass);
+                if (recordingContentMode == "INDEPENDENT")
+                {
+                    if (recordingClass.SourceClassId.HasValue)
+                        return Result<LmsCourseMappingDto>.Failure(
+                            $"Khóa video độc lập {recordingClass.Code} không được ánh xạ tới lớp Live nguồn.");
+                    continue;
+                }
                 var sourceClass = classes.FirstOrDefault(cls => cls.Id == recordingClass.SourceClassId);
                 if (sourceClass is null ||
                     string.Equals(sourceClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) ||
@@ -287,7 +296,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 .GroupBy(staff => staff.EmployeeId)
                 .Select(group => group.OrderBy(staff => staff.CreatedAt).ThenBy(staff => staff.Id).First().Employee)
                 .ToList();
-            if (teachingStaff.Count == 0)
+            if ((liveClasses.Count > 0 || classes.Count == 0) && teachingStaff.Count == 0)
                 return Result<LmsCourseMappingDto>.Failure(
                     "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ trước khi đồng bộ lên Web.");
             var classWithoutLead = liveClasses.FirstOrDefault(cls => !cls.Staff.Any(staff =>
@@ -329,7 +338,8 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                                     teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
                     .OrderBy(staff => staff.CreatedAt)
                     .ThenBy(staff => staff.Id)
-                    .First().EmployeeId.ToString("N"),
+                    .Select(staff => staff.EmployeeId.ToString("N"))
+                    .FirstOrDefault(),
                 IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
                 SourceUpdatedAt = now
             }, correlationId, now, actor);
@@ -337,6 +347,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             foreach (var cls in classes)
             {
                 var isRecording = string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+                var recordingContentMode = isRecording ? NormalizeRecordingContentMode(cls) : null;
                 var activeAssignments = cls.Staff
                     .Where(staff => !isRecording &&
                                     LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
@@ -349,7 +360,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     .OrderBy(staff => staff.CreatedAt)
                     .ThenBy(staff => staff.Id)
                     .FirstOrDefault();
-                var sourceClassSourceId = isRecording
+                var sourceClassSourceId = isRecording && recordingContentMode == "MIRROR"
                     ? classes.First(source => source.Id == cls.SourceClassId).Id.ToString("N")
                     : null;
                 QueueManagementEvent(existing, "class.upserted", new
@@ -361,6 +372,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     MaxStudents = Math.Max(30, cls.Students.Count),
                     Status = NormalizeClassStatus(cls.Status),
                     ClassType = isRecording ? "RECORDING" : "LIVE",
+                    RecordingContentMode = recordingContentMode,
                     SourceClassSourceId = sourceClassSourceId,
                     LeadTeacherSourceId = lead?.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
@@ -440,6 +452,11 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
         return Result<LmsCourseMappingDto>.Success(ToCourseMappingDto(course, existing));
     }
+
+    private static string NormalizeRecordingContentMode(CscaClass cls) =>
+        string.Equals(cls.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase)
+            ? "INDEPENDENT"
+            : "MIRROR";
 
     public async Task<Result<PaginatedResult<LmsOutboxItemDto>>> GetOutboxAsync(
         string? status,

@@ -96,6 +96,11 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
+                    b.Property<string>("RecordingContentMode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("recording_content_mode");
+
                     b.Property<string>("Schedule")
                         .IsRequired()
                         .HasColumnType("text")

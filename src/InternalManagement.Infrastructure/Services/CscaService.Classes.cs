@@ -64,6 +64,7 @@ public sealed partial class CscaService
                 TuitionFee = (c.IsTrial || c.TuitionFee == 0) ? 0 : c.TuitionFee,
                 IsTrial = c.IsTrial || c.TuitionFee == 0,
                 ClassType = c.ClassType,
+                RecordingContentMode = c.RecordingContentMode,
                 SourceClassId = c.SourceClassId,
                 SourceClassCode = c.SourceClass != null ? c.SourceClass.Code : null,
                 SourceClassName = c.SourceClass != null ? c.SourceClass.Name : null,
@@ -134,6 +135,7 @@ public sealed partial class CscaService
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
             ClassType = cls.ClassType,
+            RecordingContentMode = cls.RecordingContentMode,
             SourceClassId = cls.SourceClassId,
             SourceClassCode = cls.SourceClass?.Code,
             SourceClassName = cls.SourceClass?.Name,
@@ -283,7 +285,7 @@ public sealed partial class CscaService
             return Result<CscaClassDto>.Failure(courseResult.Errors.FirstOrDefault() ?? "Mỗi lớp học phải thuộc một khóa học.");
 
         var classTypeResult = await ValidateClassTypeAsync(
-            request.ClassType, request.SourceClassId, courseResult.Value!.Id, companyId, null,
+            request.ClassType, request.RecordingContentMode, request.SourceClassId, courseResult.Value!.Id, companyId, null,
             request.IsTrial, request.TuitionFee, ct);
         if (!classTypeResult.Succeeded)
             return Result<CscaClassDto>.Failure(classTypeResult.Errors.FirstOrDefault() ?? "Loại lớp học không hợp lệ.");
@@ -300,6 +302,7 @@ public sealed partial class CscaService
             TuitionFee = request.IsTrial ? 0 : request.TuitionFee,
             IsTrial = request.IsTrial,
             ClassType = classTypeResult.Value!.ClassType,
+            RecordingContentMode = classTypeResult.Value.RecordingContentMode,
             SourceClassId = classTypeResult.Value.SourceClassId,
             StartDate = NormalizeClassDate(request.StartDate),
             EndDate = NormalizeClassDate(request.EndDate),
@@ -328,6 +331,7 @@ public sealed partial class CscaService
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
             ClassType = cls.ClassType,
+            RecordingContentMode = cls.RecordingContentMode,
             SourceClassId = cls.SourceClassId,
             SourceClassCode = classTypeResult.Value.SourceClass?.Code,
             SourceClassName = classTypeResult.Value.SourceClass?.Name,
@@ -382,6 +386,7 @@ public sealed partial class CscaService
 
         var classTypeResult = await ValidateClassTypeAsync(
             request.ClassType ?? cls.ClassType,
+            request.RecordingContentMode ?? (request.ClassType is null ? cls.RecordingContentMode : null),
             request.SourceClassId ?? (request.ClassType is null ? cls.SourceClassId : null),
             targetCourseId, cls.CompanyId, cls.Id,
             request.IsTrial, request.TuitionFee, ct);
@@ -393,12 +398,17 @@ public sealed partial class CscaService
             string.IsNullOrWhiteSpace(cls.ClassType) ? "LIVE" : cls.ClassType,
             classTypeSelection.ClassType,
             StringComparison.OrdinalIgnoreCase);
-        if (classTypeChanged && cls.Students.Count > 0)
+        var recordingModeChanged = !string.Equals(
+            cls.RecordingContentMode,
+            classTypeSelection.RecordingContentMode,
+            StringComparison.OrdinalIgnoreCase);
+        if ((classTypeChanged || recordingModeChanged) && cls.Students.Count > 0)
             return Result<CscaClassDto>.Failure("Không thể đổi hình thức Live/Record khi lớp đã có học viên.");
 
         var hasRecordingAliases = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
             recording.SourceClassId == cls.Id &&
             recording.ClassType == "RECORDING" &&
+            recording.RecordingContentMode != "INDEPENDENT" &&
             !recording.IsDeleted, ct);
         if (hasRecordingAliases)
         {
@@ -429,6 +439,7 @@ public sealed partial class CscaService
         cls.IsTrial = request.IsTrial;
         cls.TuitionFee = request.IsTrial ? 0 : request.TuitionFee;
         cls.ClassType = classTypeSelection.ClassType;
+        cls.RecordingContentMode = classTypeSelection.RecordingContentMode;
         cls.SourceClassId = classTypeSelection.SourceClassId;
         cls.StartDate = NormalizeClassDate(request.StartDate);
         cls.EndDate = NormalizeClassDate(request.EndDate);
@@ -467,6 +478,7 @@ public sealed partial class CscaService
             TuitionFee = cls.IsTrial ? 0 : cls.TuitionFee,
             IsTrial = cls.IsTrial,
             ClassType = cls.ClassType,
+            RecordingContentMode = cls.RecordingContentMode,
             SourceClassId = cls.SourceClassId,
             SourceClassCode = classTypeSelection.SourceClass?.Code,
             SourceClassName = classTypeSelection.SourceClass?.Name,
@@ -492,6 +504,7 @@ public sealed partial class CscaService
 
     private async Task<Result<ClassTypeSelection>> ValidateClassTypeAsync(
         string? rawClassType,
+        string? rawRecordingContentMode,
         Guid? sourceClassId,
         Guid courseId,
         Guid companyId,
@@ -508,15 +521,28 @@ public sealed partial class CscaService
 
         if (classType == "LIVE")
         {
+            if (!string.IsNullOrWhiteSpace(rawRecordingContentMode))
+                return Result<ClassTypeSelection>.Failure("Lớp Live không có chế độ nội dung Record.");
             if (sourceClassId.HasValue)
                 return Result<ClassTypeSelection>.Failure("Lớp Live không được ánh xạ tới lớp nguồn.");
-            return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, null, null));
+            return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, null, null, null));
         }
 
         if (isTrial || tuitionFee <= 0)
             return Result<ClassTypeSelection>.Failure("Lớp Record là lớp có học phí; học phí phải lớn hơn 0 và không thể là lớp học thử.");
+        var recordingContentMode = string.IsNullOrWhiteSpace(rawRecordingContentMode)
+            ? "MIRROR"
+            : rawRecordingContentMode.Trim().ToUpperInvariant();
+        if (recordingContentMode is not ("MIRROR" or "INDEPENDENT"))
+            return Result<ClassTypeSelection>.Failure("Chế độ nội dung Record chỉ có thể là MIRROR hoặc INDEPENDENT.");
+        if (recordingContentMode == "INDEPENDENT")
+        {
+            if (sourceClassId.HasValue)
+                return Result<ClassTypeSelection>.Failure("Khóa video độc lập không được ánh xạ tới lớp Live nguồn.");
+            return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, recordingContentMode, null, null));
+        }
         if (!sourceClassId.HasValue)
-            return Result<ClassTypeSelection>.Failure("Lớp Record phải chọn một lớp Live nguồn.");
+            return Result<ClassTypeSelection>.Failure("Lớp Record kế thừa phải chọn một lớp Live nguồn.");
         if (sourceClassId == currentClassId)
             return Result<ClassTypeSelection>.Failure("Lớp Record không thể tự ánh xạ tới chính nó.");
 
@@ -531,7 +557,7 @@ public sealed partial class CscaService
         if (string.Equals(sourceClass.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             return Result<ClassTypeSelection>.Failure("Lớp Live nguồn đã bị hủy nên không thể dùng cho lớp Record.");
 
-        return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, sourceClass.Id, sourceClass));
+        return Result<ClassTypeSelection>.Success(new ClassTypeSelection(classType, recordingContentMode, sourceClass.Id, sourceClass));
     }
 
     private static bool IsRecordingClass(CscaClass cls) =>
@@ -540,7 +566,7 @@ public sealed partial class CscaService
     private Task<bool> IsRecordingClassAsync(Guid classId, CancellationToken ct) =>
         _db.CscaClasses.AsNoTracking().AnyAsync(cls => cls.Id == classId && cls.ClassType == "RECORDING", ct);
 
-    private sealed record ClassTypeSelection(string ClassType, Guid? SourceClassId, CscaClass? SourceClass);
+    private sealed record ClassTypeSelection(string ClassType, string? RecordingContentMode, Guid? SourceClassId, CscaClass? SourceClass);
 
     public async Task<Result<bool>> DeleteClassAsync(Guid id, CancellationToken ct)
     {
@@ -555,6 +581,7 @@ public sealed partial class CscaService
         var hasRecordingAliases = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
             recording.SourceClassId == id &&
             recording.ClassType == "RECORDING" &&
+            recording.RecordingContentMode != "INDEPENDENT" &&
             !recording.IsDeleted, ct);
         if (hasRecordingAliases)
             return Result<bool>.Failure("Không thể xóa lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");

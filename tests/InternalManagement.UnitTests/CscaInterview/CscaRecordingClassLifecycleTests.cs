@@ -79,6 +79,7 @@ public class CscaRecordingClassLifecycleTests
         GetManagementEventType(queued).Should().Be("class.upserted");
         var payload = GetManagementPayload(queued);
         payload.GetProperty("classType").GetString().Should().Be("RECORDING");
+        payload.GetProperty("recordingContentMode").GetString().Should().Be("MIRROR");
         payload.GetProperty("sourceClassSourceId").GetString().Should().Be(live.Value.Id.ToString("N"));
 
         var enrolled = await service.EnrollStudentAsync(recording.Value.Id,
@@ -104,6 +105,31 @@ public class CscaRecordingClassLifecycleTests
         (await service.CreateLessonSessionAsync(recording.Value.Id,
             new CreateCscaLessonSessionRequest(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
                 new TimeSpan(19, 0, 0), new TimeSpan(21, 0, 0)), default)).Succeeded.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IndependentRecordingClass_DoesNotRequireLiveSource_AndKeepsPaidFinance()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "independent-record", Title = "Khóa video độc lập" };
+        db.Courses.Add(course);
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance);
+
+        var result = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "VIDEO-01", "Khóa video độc lập", "", "", 1_800_000m,
+            CourseId: course.Id, ClassType: "RECORDING", RecordingContentMode: "INDEPENDENT"), default);
+
+        result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
+        result.Value!.ClassType.Should().Be("RECORDING");
+        result.Value.RecordingContentMode.Should().Be("INDEPENDENT");
+        result.Value.SourceClassId.Should().BeNull();
+        (await service.EnrollStudentAsync(result.Value.Id,
+            new EnrollStudentRequest("Học viên video", "video@example.com", "0900000022",
+                1_800_000m, PaymentStatus.Paid), default)).Succeeded.Should().BeTrue();
+        var finance = await service.GetClassFinancialSummaryAsync(result.Value.Id, default);
+        finance.Value!.ExpectedRevenue.Should().Be(1_800_000m);
+        finance.Value.ActualRevenue.Should().Be(1_800_000m);
     }
 
     [Fact]

@@ -22,6 +22,7 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public decimal TuitionFee { get; set; }
     public bool IsTrial { get; set; } = false;
     public string ClassType { get; set; } = "LIVE"; // LIVE, RECORDING
+    public string? RecordingContentMode { get; set; } // MIRROR, INDEPENDENT
     public Guid? SourceClassId { get; set; }
     public CscaClass? SourceClass { get; set; }
     public DateTime? StartDate { get; set; }
