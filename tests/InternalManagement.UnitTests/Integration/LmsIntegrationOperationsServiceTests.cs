@@ -144,6 +144,13 @@ public sealed class LmsIntegrationOperationsServiceTests
         await using var db = CreateInMemoryDb();
         var companyId = Guid.NewGuid();
         var course = AddCourse(db, companyId, "independent-video-course");
+        var teacher = new Employee
+        {
+            CompanyId = companyId,
+            EmployeeCode = "T-INDEPENDENT",
+            FullName = "Independent Teacher",
+            Email = "independent-teacher@example.com"
+        };
         var recordingClass = new CscaClass
         {
             CompanyId = companyId,
@@ -155,7 +162,14 @@ public sealed class LmsIntegrationOperationsServiceTests
             SourceClassId = null,
             TuitionFee = 5_000_000m
         };
+        db.Employees.Add(teacher);
         db.CscaClasses.Add(recordingClass);
+        db.CscaClassStaffs.Add(new CscaClassStaff
+        {
+            ClassId = recordingClass.Id,
+            EmployeeId = teacher.Id,
+            RoleInClass = "Teacher"
+        });
         await db.SaveChangesAsync();
         var service = CreateService(db, companyId);
 
@@ -166,11 +180,73 @@ public sealed class LmsIntegrationOperationsServiceTests
         result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
         var events = (await db.IntegrationOutboxes.ToListAsync())
             .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone()).ToList();
-        events.Should().NotContain(item => item.GetProperty("eventType").GetString() == "teacher.upserted");
+        events.Should().ContainSingle(item => item.GetProperty("eventType").GetString() == "teacher.upserted");
+        events.Single(item => item.GetProperty("eventType").GetString() == "course.upserted")
+            .GetProperty("payload").GetProperty("teacherSourceId").GetString()
+            .Should().Be(teacher.Id.ToString("N"));
         var classPayload = events.Single(item => item.GetProperty("eventType").GetString() == "class.upserted")
             .GetProperty("payload");
         classPayload.GetProperty("recordingContentMode").GetString().Should().Be("INDEPENDENT");
         classPayload.GetProperty("sourceClassSourceId").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task UpsertCourseMapping_WithCrossCourseRecordingAlias_ShouldUseSourceClassTeacher()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var sourceCourse = AddCourse(db, companyId, "live-source-course");
+        var recordingCourse = AddCourse(db, companyId, "recording-target-course");
+        var teacher = new Employee
+        {
+            CompanyId = companyId,
+            EmployeeCode = "T-CROSS-RECORD",
+            FullName = "Cross Course Teacher",
+            Email = "cross-course-teacher@example.com"
+        };
+        var liveClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = sourceCourse.Id,
+            Code = "LIVE-SOURCE",
+            Name = "Live source class",
+            ClassType = "LIVE"
+        };
+        var recordingClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = recordingCourse.Id,
+            Code = "RECORD-CROSS",
+            Name = "Cross-course recording alias",
+            ClassType = "RECORDING",
+            RecordingContentMode = "MIRROR",
+            SourceClassId = liveClass.Id,
+            TuitionFee = 5_000_000m
+        };
+        db.Employees.Add(teacher);
+        db.CscaClasses.AddRange(liveClass, recordingClass);
+        db.CscaClassStaffs.Add(new CscaClassStaff
+        {
+            ClassId = liveClass.Id,
+            EmployeeId = teacher.Id,
+            RoleInClass = "Teacher"
+        });
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(recordingCourse.Id,
+            new UpsertLmsCourseMappingRequest(null, 106L, "recording-target-course", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
+        var events = (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone())
+            .ToList();
+        events.Should().ContainSingle(item => item.GetProperty("eventType").GetString() == "teacher.upserted");
+        events.Single(item => item.GetProperty("eventType").GetString() == "course.upserted")
+            .GetProperty("payload").GetProperty("teacherSourceId").GetString()
+            .Should().Be(teacher.Id.ToString("N"));
+        events.Should().NotContain(item => item.GetProperty("eventType").GetString() == "class.teacher.assigned");
     }
 
     [Fact]

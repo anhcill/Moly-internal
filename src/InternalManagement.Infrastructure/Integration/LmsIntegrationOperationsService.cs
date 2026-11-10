@@ -275,6 +275,8 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             var mirrorSourceClasses = mirrorSourceIds.Count == 0
                 ? new Dictionary<Guid, CscaClass>()
                 : await _db.CscaClasses.AsNoTracking()
+                    .AsSplitQuery()
+                    .Include(cls => cls.Staff).ThenInclude(staff => staff.Employee)
                     .Where(cls => mirrorSourceIds.Contains(cls.Id) &&
                                   cls.CompanyId == companyId && !cls.IsDeleted)
                     .ToDictionaryAsync(cls => cls.Id, ct);
@@ -301,7 +303,16 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                         $"Lớp Record {recordingClass.Code} phải ánh xạ tới một lớp Live nguồn hợp lệ trước khi đồng bộ lên Web.");
                 }
             }
-            var teachingStaff = liveClasses.SelectMany(cls => cls.Staff)
+            var independentRecordingClasses = classes
+                .Where(cls => string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) &&
+                              NormalizeRecordingContentMode(cls) == "INDEPENDENT")
+                .ToList();
+            var teacherOwnerClasses = liveClasses
+                .Concat(mirrorSourceClasses.Values)
+                .Concat(independentRecordingClasses)
+                .DistinctBy(cls => cls.Id)
+                .ToList();
+            var teachingStaff = teacherOwnerClasses.SelectMany(cls => cls.Staff)
                 .Where(staff => LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
                     LmsTeacherRosterSync.HasActiveAccount(staff.Employee) &&
                     IsValidLmsEmail(staff.Employee.Email) &&
@@ -310,15 +321,23 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 .GroupBy(staff => staff.EmployeeId)
                 .Select(group => group.OrderBy(staff => staff.CreatedAt).ThenBy(staff => staff.Id).First().Employee)
                 .ToList();
-            if ((liveClasses.Count > 0 || classes.Count == 0) && teachingStaff.Count == 0)
+            if (teachingStaff.Count == 0)
                 return Result<LmsCourseMappingDto>.Failure(
-                    "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ trước khi đồng bộ lên Web.");
-            var classWithoutLead = liveClasses.FirstOrDefault(cls => !cls.Staff.Any(staff =>
+                    "Cần phân công giáo viên (vai trò Teacher) có họ tên và email hợp lệ cho lớp Live nguồn hoặc lớp video độc lập trước khi đồng bộ lên Web.");
+            var classWithoutLead = teacherOwnerClasses.FirstOrDefault(cls => !cls.Staff.Any(staff =>
                 string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
                 teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId)));
             if (classWithoutLead is not null)
                 return Result<LmsCourseMappingDto>.Failure(
                     $"Lớp {classWithoutLead.Code} chưa có giáo viên vai trò Teacher với email hợp lệ để đồng bộ sang Web.");
+            var courseLeadTeacherSourceId = teacherOwnerClasses
+                .SelectMany(cls => cls.Staff)
+                .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
+                                teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
+                .OrderBy(staff => staff.CreatedAt)
+                .ThenBy(staff => staff.Id)
+                .Select(staff => staff.EmployeeId.ToString("N"))
+                .First();
             var scheduleWithoutDates = liveClasses.SelectMany(cls => cls.Schedules
                 .Where(schedule => !LmsCalendarEventFactory.HasEffectiveDates(cls, schedule))
                 .Select(schedule => (Class: cls, Schedule: schedule)))
@@ -347,13 +366,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 CourseSourceId = externalCourseId,
                 course.Title,
                 course.Description,
-                TeacherSourceId = liveClasses.SelectMany(cls => cls.Staff)
-                    .Where(staff => string.Equals(staff.RoleInClass, "Teacher", StringComparison.OrdinalIgnoreCase) &&
-                                    teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
-                    .OrderBy(staff => staff.CreatedAt)
-                    .ThenBy(staff => staff.Id)
-                    .Select(staff => staff.EmployeeId.ToString("N"))
-                    .FirstOrDefault(),
+                TeacherSourceId = courseLeadTeacherSourceId,
                 IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
                 SourceUpdatedAt = now
             }, correlationId, now, actor);
