@@ -684,12 +684,13 @@ public static partial class CscaStudentDialog
                             paidAmountBox.Text = FormatMoneyInput(Math.Round(payable / 2));
                         }
                     }
+
+                    UpdateDebtCalculation();
                 }
                 finally
                 {
                     isUpdatingInternally = false;
                 }
-                UpdateDebtCalculation();
             }
         };
 

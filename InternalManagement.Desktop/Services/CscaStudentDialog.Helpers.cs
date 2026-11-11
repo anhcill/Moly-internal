@@ -12,6 +12,10 @@ public static partial class CscaStudentDialog
 {
     public static int ResolveAutomaticPaymentStatus(decimal payableAmount, decimal paidAmount, int currentStatus)
     {
+        // Preserve explicit terminal/lifecycle statuses (Failed = 3, Refunded = 4, Cancelled = 5)
+        if (currentStatus is 3 or 4 or 5)
+            return currentStatus;
+
         // A free class can still be explicitly marked Paid. Do not immediately
         // overwrite that selection just because both payable and paid are zero.
         if (payableAmount <= 0)

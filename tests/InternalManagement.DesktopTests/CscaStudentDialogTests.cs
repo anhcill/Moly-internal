@@ -18,6 +18,17 @@ public sealed class CscaStudentDialogTests
         decimal payableAmount, decimal paidAmount, int expectedStatus)
     {
         Assert.Equal(expectedStatus,
-            CscaStudentDialog.ResolveAutomaticPaymentStatus(payableAmount, paidAmount, 5));
+            CscaStudentDialog.ResolveAutomaticPaymentStatus(payableAmount, paidAmount, 0));
+    }
+
+    [Theory]
+    [InlineData(3)] // Failed
+    [InlineData(4)] // Refunded
+    [InlineData(5)] // Cancelled
+    public void ResolveAutomaticPaymentStatus_PreservesExplicitLifecycleStatuses(int explicitStatus)
+    {
+        Assert.Equal(explicitStatus, CscaStudentDialog.ResolveAutomaticPaymentStatus(1_000_000, 0, explicitStatus));
+        Assert.Equal(explicitStatus, CscaStudentDialog.ResolveAutomaticPaymentStatus(1_000_000, 500_000, explicitStatus));
+        Assert.Equal(explicitStatus, CscaStudentDialog.ResolveAutomaticPaymentStatus(1_000_000, 1_000_000, explicitStatus));
     }
 }
