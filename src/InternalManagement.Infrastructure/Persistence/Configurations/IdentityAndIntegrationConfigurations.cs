@@ -210,7 +210,7 @@ public class IntegrationConfigurations :
             .OnDelete(DeleteBehavior.SetNull);
         builder.ToTable(table => table.HasCheckConstraint(
             "ck_lms_account_links_identity",
-            "party_id IS NOT NULL OR csca_class_student_id IS NOT NULL"));
+            "party_id IS NOT NULL OR csca_class_student_id IS NOT NULL OR length(trim(external_student_id)) > 0"));
     }
 
     public void Configure(EntityTypeBuilder<LmsCourseLink> builder)
@@ -246,7 +246,7 @@ public class IntegrationConfigurations :
         builder.HasOne(x => x.LmsCourseLink).WithMany(x => x.AccessGrants).HasForeignKey(x => x.LmsCourseLinkId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.CscaClassStudent).WithMany().HasForeignKey(x => x.CscaClassStudentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     public void Configure(EntityTypeBuilder<IntegrationOutbox> builder)

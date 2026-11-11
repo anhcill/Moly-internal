@@ -37,15 +37,9 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
         var studentCode = !string.IsNullOrWhiteSpace(request.StudentCode) ? request.StudentCode : null;
         var legacyStudentId = request.StudentId.ToString("N");
         var externalStudentId = studentCode ?? (request.PartyId?.ToString("N") ?? legacyStudentId);
-        if (string.IsNullOrWhiteSpace(request.Email))
-        {
-            await AddManualReviewAsync(
-                request.StudentId,
-                "LMS_EMAIL_REQUIRED",
-                "Không thể provision LMS vì học viên chưa có email.",
-                ct);
-            return;
-        }
+        var isTerminalPaymentState = request.PaymentStatus is PaymentStatus.Refunded
+            or PaymentStatus.Cancelled
+            or PaymentStatus.Failed;
 
         var account = await _db.LmsAccountLinks
             .FirstOrDefaultAsync(link =>
@@ -75,6 +69,19 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 link.ExternalStudentId == legacyStudentId, ct);
         }
 
+        var normalizedEmail = string.IsNullOrWhiteSpace(request.Email)
+            ? account?.LmsEmail?.Trim()
+            : request.Email.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedEmail))
+        {
+            await AddManualReviewAsync(
+                request.StudentId,
+                "LMS_EMAIL_REQUIRED",
+                "Không thể provision hoặc thu hồi quyền LMS vì học viên chưa có email.",
+                ct);
+            return;
+        }
+
         if (account is not null && account.PartyId.HasValue && account.PartyId != request.PartyId)
         {
             await AddManualReviewAsync(request.StudentId, "LMS_PARTY_IDENTITY_CONFLICT",
@@ -88,17 +95,15 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
                 link.CourseId == request.CourseId,
                 ct);
-        // A course identifier alone is not enough to issue paid access. Operations
-        // must explicitly confirm the LMS target mapping first.
-        var hasUsableCourseLink = courseLink is not null
-                                  && courseLink.Status == IntegrationStatus.Success
-                                  && !string.IsNullOrWhiteSpace(courseLink.ExternalCourseId);
+        var hasKnownCourseTarget = courseLink is not null
+                                   && !string.IsNullOrWhiteSpace(courseLink.ExternalCourseId);
+        // New access requires an approved mapping. Revocation may still use a
+        // known target so stale access can be removed if approval later changed.
+        var hasUsableCourseLink = hasKnownCourseTarget
+                                  && courseLink!.Status == IntegrationStatus.Success;
 
         var isEligibleForAccess = request.PaymentStatus == PaymentStatus.Paid
                                   && request.PaidAmount >= request.TuitionFee;
-        var isTerminalPaymentState = request.PaymentStatus is PaymentStatus.Refunded
-            or PaymentStatus.Cancelled
-            or PaymentStatus.Failed;
 
         var hasOtherActiveGrant = account is not null &&
             (await _db.LmsAccessGrants.AnyAsync(grant =>
@@ -127,14 +132,13 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 PartyId = request.PartyId,
                 CscaClassStudentId = request.StudentId,
                 ExternalStudentId = externalStudentId,
-                LmsEmail = request.Email.Trim(),
+                LmsEmail = normalizedEmail,
                 Status = desiredAccountStatus
             };
             _db.LmsAccountLinks.Add(account);
         }
         else
         {
-            var normalizedEmail = request.Email.Trim();
             accountChanged = account.Status != desiredAccountStatus
                              || !string.Equals(account.ExternalStudentId, externalStudentId, StringComparison.OrdinalIgnoreCase)
                              || !string.Equals(account.LmsEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase)
@@ -175,7 +179,7 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
                 ct);
         }
 
-        if (!hasUsableCourseLink)
+        if (!hasUsableCourseLink && !(isTerminalPaymentState && hasKnownCourseTarget))
         {
             await AddManualReviewAsync(
                 request.StudentId,
@@ -196,7 +200,7 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
             StudentSourceId = externalStudentId,
             LegacyStudentSourceIds = new[] { legacyStudentId },
             FullName = request.StudentName,
-            Email = request.Email.Trim(),
+            Email = normalizedEmail,
             Phone = request.PhoneNumber,
             AccountStatus = desiredAccountStatus == LmsAccountStatus.Active ? "active" :
                 desiredAccountStatus == LmsAccountStatus.Revoked ? "revoked" : "pending_payment",
@@ -208,7 +212,7 @@ public sealed class LmsAccessLifecycleService : ILmsAccessLifecycleService
             ClassSourceId = request.ClassId.ToString("N"),
             StudentSourceId = externalStudentId,
             LearningMode = NormalizeLearningMode(request.LearningMode),
-            Status = "active",
+            Status = isTerminalPaymentState ? "revoked" : "active",
             SourceUpdatedAt = request.SourceUpdatedAt
         }, membershipCorrelationId, ct);
 

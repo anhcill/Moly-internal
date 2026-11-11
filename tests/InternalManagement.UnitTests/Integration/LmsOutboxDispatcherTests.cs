@@ -214,6 +214,36 @@ public sealed class LmsOutboxDispatcherTests
     }
 
     [Fact]
+    public async Task DispatchRevokedAccess_WhenLatestProvisionDeadLettered_ShouldStillRevokeAccess()
+    {
+        await using var db = CreateInMemoryDb();
+        var account = AddProvisionOutbox(db);
+        var provision = db.IntegrationOutboxes.Local.Single();
+        provision.Status = IntegrationStatus.DeadLetter;
+        provision.LastError = "Identity requires review";
+        provision.NextAttemptAt = null;
+        provision.CreatedAt = DateTime.UtcNow.AddMinutes(-1);
+        var access = AddAccessOutbox(db, account, DateTime.UtcNow, nameof(LmsAccessGrantStatus.Revoked));
+        await db.SaveChangesAsync();
+        var client = new Mock<ICscaCourseLmsClient>();
+        client.Setup(value => value.UpdateStudentAccessAsync(
+                "student-001",
+                It.Is<LmsAccessCommand>(command => command.AccessStatus == nameof(LmsAccessGrantStatus.Revoked)),
+                It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var dispatcher = new LmsOutboxDispatcher(db, client.Object, NullLogger<LmsOutboxDispatcher>.Instance);
+
+        var result = await dispatcher.DispatchPendingAsync(10, CancellationToken.None);
+
+        result.Should().Be(new LmsOutboxDispatchResult(1, 1, 0, 0));
+        access.Status.Should().Be(IntegrationStatus.Success);
+        client.Verify(value => value.UpdateStudentAccessAsync(
+            "student-001",
+            It.Is<LmsAccessCommand>(command => command.AccessStatus == nameof(LmsAccessGrantStatus.Revoked)),
+            It.IsAny<LmsOutboundRequestContext>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task DispatchManagement_WhenOldBatchIsBlocked_ShouldSkipItAndSendNewBatch()
     {
         await using var db = CreateInMemoryDb();
@@ -383,7 +413,7 @@ public sealed class LmsOutboxDispatcherTests
     }
 
     private static IntegrationOutbox AddAccessOutbox(
-        ApplicationDbContext db, LmsAccountLink account, DateTime createdAt)
+        ApplicationDbContext db, LmsAccountLink account, DateTime createdAt, string accessStatus = "active")
     {
         var grant = new LmsAccessGrant
         {
@@ -395,7 +425,7 @@ public sealed class LmsOutboxDispatcherTests
             Status = LmsAccessGrantStatus.Active
         };
         var payload = new LmsAccessOutboxPayload(account.ExternalStudentId, new LmsAccessCommand(
-            "active", "Paid", null, createdAt, null, ["csca-foundation"]));
+            accessStatus, "Paid", null, createdAt, null, ["csca-foundation"]));
         var item = new IntegrationOutbox
         {
             CompanyId = account.CompanyId,

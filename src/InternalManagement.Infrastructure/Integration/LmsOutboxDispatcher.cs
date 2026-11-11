@@ -80,32 +80,40 @@ public sealed class LmsOutboxDispatcher : ILmsOutboxDispatcher
             }
             if (item.EventType == LmsOutboxEventTypes.StudentAccessRequested)
             {
-                var grant = await GetAggregateAsync<LmsAccessGrant>(_db.LmsAccessGrants, item.AggregateId, ct);
-                var latestProvision = await _db.IntegrationOutboxes.AsNoTracking()
-                    .Where(other => other.CompanyId == item.CompanyId &&
-                        other.EventType == LmsOutboxEventTypes.StudentProvisionRequested &&
-                        other.AggregateId == grant.LmsAccountLinkId.ToString("N") &&
-                        other.CreatedAt <= item.CreatedAt)
-                    .OrderByDescending(other => other.CreatedAt)
-                    .ThenByDescending(other => other.Id)
-                    .Select(other => new { other.Status, other.LastError })
-                    .FirstOrDefaultAsync(ct);
-                if (latestProvision?.Status == IntegrationStatus.DeadLetter)
+                var accessPayload = Deserialize<LmsAccessOutboxPayload>(item.PayloadJson);
+                var isRevocation = string.Equals(
+                    accessPayload.Access.AccessStatus,
+                    nameof(LmsAccessGrantStatus.Revoked),
+                    StringComparison.OrdinalIgnoreCase);
+                if (!isRevocation)
                 {
-                    processed++;
-                    item.Status = IntegrationStatus.Skipped;
-                    item.NextAttemptAt = null;
-                    item.LastError = $"Không gửi quyền truy cập vì lần provision gần nhất cần được kiểm tra: {latestProvision.LastError}";
-                    item.UpdatedAt = now;
-                    item.UpdatedBy = "lms-outbox-dispatcher";
-                    await MarkSyncFailureAsync(item, item.LastError, IntegrationStatus.Skipped, ct);
-                    await _db.SaveChangesAsync(ct);
-                    continue;
+                    var grant = await GetAggregateAsync<LmsAccessGrant>(_db.LmsAccessGrants, item.AggregateId, ct);
+                    var latestProvision = await _db.IntegrationOutboxes.AsNoTracking()
+                        .Where(other => other.CompanyId == item.CompanyId &&
+                            other.EventType == LmsOutboxEventTypes.StudentProvisionRequested &&
+                            other.AggregateId == grant.LmsAccountLinkId.ToString("N") &&
+                            other.CreatedAt <= item.CreatedAt)
+                        .OrderByDescending(other => other.CreatedAt)
+                        .ThenByDescending(other => other.Id)
+                        .Select(other => new { other.Status, other.LastError })
+                        .FirstOrDefaultAsync(ct);
+                    if (latestProvision?.Status == IntegrationStatus.DeadLetter)
+                    {
+                        processed++;
+                        item.Status = IntegrationStatus.Skipped;
+                        item.NextAttemptAt = null;
+                        item.LastError = $"Không gửi quyền truy cập vì lần provision gần nhất cần được kiểm tra: {latestProvision.LastError}";
+                        item.UpdatedAt = now;
+                        item.UpdatedBy = "lms-outbox-dispatcher";
+                        await MarkSyncFailureAsync(item, item.LastError, IntegrationStatus.Skipped, ct);
+                        await _db.SaveChangesAsync(ct);
+                        continue;
+                    }
+                    if (latestProvision is not null &&
+                        latestProvision.Status != IntegrationStatus.Success &&
+                        latestProvision.Status != IntegrationStatus.Skipped)
+                        continue;
                 }
-                if (latestProvision is not null &&
-                    latestProvision.Status != IntegrationStatus.Success &&
-                    latestProvision.Status != IntegrationStatus.Skipped)
-                    continue;
             }
             processed++;
             if (TryGetInvalidCalendarCommandReason(item, out var skipReason))

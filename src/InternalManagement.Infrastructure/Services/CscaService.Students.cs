@@ -286,6 +286,9 @@ public sealed partial class CscaService
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA.");
         var student = await _db.CscaClassStudents
             .Include(s => s.Class)
+                .ThenInclude(c => c.Course)
+            .Include(s => s.Class)
+                .ThenInclude(c => c.Students)
             .FirstOrDefaultAsync(s => s.Id == studentId && s.ClassId == classId, ct);
 
         if (student == null)
@@ -295,12 +298,58 @@ public sealed partial class CscaService
 
         if (await _db.StudentReceivables.AnyAsync(x => x.StudentId == student.Id && x.CompanyId == student.Class.CompanyId, ct))
             return Result<bool>.Failure("Học viên đã có lịch sử công nợ. Hãy hoàn tiền/hủy công nợ trong Bảng tính tài chính thay vì xóa.");
-        var hasLmsAccessHistory = await _db.LmsAccessGrants
-            .AnyAsync(grant => grant.CscaClassStudentId == student.Id, ct);
-        if (hasLmsAccessHistory)
+
+        var grants = await _db.LmsAccessGrants
+            .Where(grant => grant.CscaClassStudentId == student.Id)
+            .ToListAsync(ct);
+        var accountLinks = _integrationDb is null
+            ? new List<LmsAccountLink>()
+            : await _integrationDb.LmsAccountLinks
+                .Where(link => link.CscaClassStudentId == student.Id)
+                .ToListAsync(ct);
+        var hasUncertainRemoteAccess = grants.Any(grant => grant.Status is
+            LmsAccessGrantStatus.Active or
+            LmsAccessGrantStatus.Suspended or
+            LmsAccessGrantStatus.SyncFailed);
+
+        if (hasUncertainRemoteAccess && _lmsAccessLifecycleService is null)
         {
             return Result<bool>.Failure(
-                "Học viên đã có quyền LMS/audit. Hãy cập nhật trạng thái thanh toán thành Cancelled hoặc Refunded để thu hồi quyền thay vì xóa.");
+                "Chưa thể xóa vì không kết nối được dịch vụ thu hồi quyền LMS. Vui lòng thử lại sau.");
+        }
+
+        if (grants.Count > 0 || accountLinks.Count > 0)
+        {
+            if (student.PaymentStatus is not PaymentStatus.Cancelled and not PaymentStatus.Refunded)
+                student.PaymentStatus = PaymentStatus.Cancelled;
+            student.UpdatedAt = DateTime.UtcNow;
+            student.UpdatedBy = _currentUser.Username ?? "System";
+
+            await QueueLmsAccessLifecycleAsync(student, student.Class, ct);
+
+            // Pending/expired audit rows never represent usable remote access, so
+            // they can be closed locally even when the course mapping is unapproved.
+            foreach (var grant in grants.Where(grant => grant.Status is
+                         LmsAccessGrantStatus.PendingPayment or
+                         LmsAccessGrantStatus.Expired or
+                         LmsAccessGrantStatus.Revoked))
+            {
+                grant.Status = LmsAccessGrantStatus.Revoked;
+                grant.RevokedAt ??= student.UpdatedAt;
+                grant.RevocationReason ??= "STUDENT_REMOVED_FROM_CLASS";
+                grant.LastSyncError = null;
+            }
+
+            if (grants.Any(grant => grant.Status != LmsAccessGrantStatus.Revoked))
+            {
+                return Result<bool>.Failure(
+                    "Chưa thể xóa vì quyền LMS chưa được thu hồi hoàn tất. Vui lòng kiểm tra kết nối LMS và thử lại.");
+            }
+
+            foreach (var grant in grants)
+                grant.CscaClassStudentId = null;
+            foreach (var accountLink in accountLinks)
+                accountLink.CscaClassStudentId = null;
         }
 
         var cls = student.Class;

@@ -152,8 +152,8 @@ public sealed class LmsAccessGrant : BaseEntity, IAuditableEntity, ITenantScoped
     public LmsAccountLink LmsAccountLink { get; set; } = null!;
     public Guid LmsCourseLinkId { get; set; }
     public LmsCourseLink LmsCourseLink { get; set; } = null!;
-    public Guid CscaClassStudentId { get; set; }
-    public CscaClassStudent CscaClassStudent { get; set; } = null!;
+    public Guid? CscaClassStudentId { get; set; }
+    public CscaClassStudent? CscaClassStudent { get; set; }
 
     public string SourceSystem { get; set; } = LmsIntegrationSourceSystems.CscaCourseLms;
     public string ExternalGrantId { get; set; } = string.Empty;

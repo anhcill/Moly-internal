@@ -7262,7 +7262,7 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<Guid>("CscaClassStudentId")
+                    b.Property<Guid?>("CscaClassStudentId")
                         .HasColumnType("uuid")
                         .HasColumnName("csca_class_student_id");
 
@@ -7465,7 +7465,7 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.ToTable("lms_account_links", null, t =>
                         {
-                            t.HasCheckConstraint("ck_lms_account_links_identity", "party_id IS NOT NULL OR csca_class_student_id IS NOT NULL");
+                            t.HasCheckConstraint("ck_lms_account_links_identity", "party_id IS NOT NULL OR csca_class_student_id IS NOT NULL OR length(trim(external_student_id)) > 0");
                         });
                 });
 
@@ -9585,8 +9585,7 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClassStudent", "CscaClassStudent")
                         .WithMany()
                         .HasForeignKey("CscaClassStudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lms_access_grants_csca_class_students_csca_class_student_id");
 
                     b.HasOne("InternalManagement.Domain.Entities.Integration.LmsAccountLink", "LmsAccountLink")
