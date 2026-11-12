@@ -153,8 +153,11 @@ public partial class MainWindow
             new PromptField(
                 "sourceClassId",
                 "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)",
+                IsRequired: false,
                 OptionsDependOnKey: "courseId",
-                OptionsFactory: LiveSourceOptionsForCourse),
+                OptionsFactory: LiveSourceOptionsForCourse,
+                RequiredWhenKey: "learningMode",
+                RequiredWhenValue: "RECORDING_MIRROR"),
             new PromptField("code", "Mã lớp (để trống để hệ thống tự tạo)", InitialValue: nextCode, IsRequired: false),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
@@ -269,7 +272,8 @@ public partial class MainWindow
                 new PromptOption("RECORDING_MIRROR", "Record kế thừa — xem nội dung lớp Live"),
                 new PromptOption("RECORDING_INDEPENDENT", "Khóa video độc lập — tự quản lý nội dung")
             }),
-            new PromptField("sourceClassId", "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)", cls.SourceClassId?.ToString() ?? string.Empty, Options: sourceOptions),
+            new PromptField("sourceClassId", "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)", cls.SourceClassId?.ToString() ?? string.Empty,
+                IsRequired: false, Options: sourceOptions, RequiredWhenKey: "learningMode", RequiredWhenValue: "RECORDING_MIRROR"),
             new PromptField("tuitionFee", "Học phí", cls.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
             new PromptField("status", "Trạng thái", cls.Status, Options: new[]
             {

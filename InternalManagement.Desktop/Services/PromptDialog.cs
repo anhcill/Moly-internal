@@ -27,7 +27,9 @@ public sealed record PromptField(
     bool IsMultiline = false,
     PromptFieldKind Kind = PromptFieldKind.Text,
     string? OptionsDependOnKey = null,
-    Func<string, IReadOnlyList<PromptOption>>? OptionsFactory = null);
+    Func<string, IReadOnlyList<PromptOption>>? OptionsFactory = null,
+    string? RequiredWhenKey = null,
+    string? RequiredWhenValue = null);
 
 public static class PromptDialog
 {
@@ -284,7 +286,7 @@ public static class PromptDialog
             {
                 var value = ReadControlValue(field, controls[field.Key]);
 
-                if (field.IsRequired && string.IsNullOrWhiteSpace(value))
+                if (IsFieldRequired(field, result) && string.IsNullOrWhiteSpace(value))
                 {
                     MessageBox.Show($"Vui lòng nhập {field.Label.ToLowerInvariant()}.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -310,6 +312,15 @@ public static class PromptDialog
         var accepted = dialog.ShowDialog() == true;
         values = submittedValues;
         return accepted;
+    }
+
+    public static bool IsFieldRequired(PromptField field, IReadOnlyDictionary<string, string> values)
+    {
+        if (field.IsRequired) return true;
+        if (string.IsNullOrWhiteSpace(field.RequiredWhenKey)) return false;
+
+        return values.TryGetValue(field.RequiredWhenKey, out var dependencyValue)
+            && string.Equals(dependencyValue, field.RequiredWhenValue, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ReadControlValue(PromptField field, Control control) => control switch
