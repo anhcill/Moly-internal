@@ -83,6 +83,7 @@ public class CscaRecordingClassLifecycleTests
         payload.GetProperty("classType").GetString().Should().Be("RECORDING");
         payload.GetProperty("recordingContentMode").GetString().Should().Be("MIRROR");
         payload.GetProperty("sourceClassSourceId").GetString().Should().Be(live.Value.Id.ToString("N"));
+        payload.GetProperty("priceVnd").GetDecimal().Should().Be(1_500_000m);
 
         var enrolled = await service.EnrollStudentAsync(recording.Value.Id,
             new EnrollStudentRequest("Học viên Record", "record.student@example.com", "0900000001",

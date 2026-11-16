@@ -366,6 +366,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 CourseSourceId = externalCourseId,
                 course.Title,
                 course.Description,
+                PriceVnd = course.Price,
                 TeacherSourceId = courseLeadTeacherSourceId,
                 IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
                 SourceUpdatedAt = now
@@ -396,6 +397,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     CourseSourceId = externalCourseId,
                     Title = cls.Name,
                     Description = cls.Batch,
+                    PriceVnd = cls.IsTrial ? 0 : cls.TuitionFee,
                     MaxStudents = Math.Max(30, cls.Students.Count),
                     Status = NormalizeClassStatus(cls.Status),
                     ClassType = isRecording ? "RECORDING" : "LIVE",

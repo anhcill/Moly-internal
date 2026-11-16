@@ -252,6 +252,7 @@ internal static class LmsTeacherRosterSync
             CourseSourceId = link.ExternalCourseId,
             Title = cls.Name,
             Description = cls.Batch,
+            PriceVnd = cls.IsTrial ? 0 : cls.TuitionFee,
             MaxStudents = Math.Max(30, cls.Students.Count),
             Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
                 string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",

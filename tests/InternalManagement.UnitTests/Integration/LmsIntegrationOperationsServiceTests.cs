@@ -184,8 +184,12 @@ public sealed class LmsIntegrationOperationsServiceTests
         events.Single(item => item.GetProperty("eventType").GetString() == "course.upserted")
             .GetProperty("payload").GetProperty("teacherSourceId").GetString()
             .Should().Be(teacher.Id.ToString("N"));
+        events.Single(item => item.GetProperty("eventType").GetString() == "course.upserted")
+            .GetProperty("payload").GetProperty("priceVnd").GetDecimal()
+            .Should().Be(course.Price);
         var classPayload = events.Single(item => item.GetProperty("eventType").GetString() == "class.upserted")
             .GetProperty("payload");
+        classPayload.GetProperty("priceVnd").GetDecimal().Should().Be(recordingClass.TuitionFee);
         classPayload.GetProperty("recordingContentMode").GetString().Should().Be("INDEPENDENT");
         classPayload.GetProperty("sourceClassSourceId").ValueKind.Should().Be(JsonValueKind.Null);
     }

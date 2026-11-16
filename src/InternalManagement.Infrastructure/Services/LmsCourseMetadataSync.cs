@@ -43,6 +43,7 @@ internal static class LmsCourseMetadataSync
             CourseSourceId = link.ExternalCourseId,
             course.Title,
             course.Description,
+            PriceVnd = course.Price,
             TeacherSourceId = leadTeacher.EmployeeId.ToString("N"),
             IsPublished = string.Equals(course.Status, "Published", StringComparison.OrdinalIgnoreCase),
             SourceUpdatedAt = now
