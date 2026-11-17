@@ -41,7 +41,8 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
         var mappings = _db.LmsCourseLinks.AsNoTracking().Where(link =>
             link.CompanyId == companyId &&
-            link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms);
+            link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+            !link.Course.IsDeleted);
         var outbox = _db.IntegrationOutboxes.AsNoTracking().Where(item =>
             item.CompanyId == companyId &&
             item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms);
@@ -89,7 +90,8 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
         var normalizedStatus = TrimToNull(status);
         var mappings = _db.LmsCourseLinks.AsNoTracking().Where(link =>
             link.CompanyId == companyId &&
-            link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms);
+            link.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+            !link.Course.IsDeleted);
         var courses = _db.Courses.AsNoTracking().Where(course =>
             course.CompanyId == companyId && !course.IsDeleted);
 
@@ -376,8 +378,9 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
             {
                 var isRecording = string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
                 var recordingContentMode = isRecording ? NormalizeRecordingContentMode(cls) : null;
+                var canOwnTeachers = !isRecording || recordingContentMode == "INDEPENDENT";
                 var activeAssignments = cls.Staff
-                    .Where(staff => !isRecording &&
+                    .Where(staff => canOwnTeachers &&
                                     LmsTeacherRosterSync.MapTeachingRole(staff.RoleInClass) is not null &&
                                     teachingStaff.Any(teacher => teacher.Id == staff.EmployeeId))
                     .GroupBy(staff => staff.EmployeeId)

@@ -229,6 +229,93 @@ public class CscaRecordingClassLifecycleTests
             .Status.Should().Be("Cancelled");
     }
 
+    [Fact]
+    public async Task DeleteRecordingClass_WhenLinked_ShouldCancelStatusAndQueueCancelledEventForWeb()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "live-course", Title = "Khóa Live" };
+        db.AddRange(course, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var live = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "LIVE-DEL", "Lớp Live nguồn", "", "", 3_000_000m, CourseId: course.Id), default);
+        var recording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "REC-DEL", "Lớp Record bị xóa", "Đợt 1", "", 888_000m,
+            CourseId: course.Id, ClassType: "RECORDING", SourceClassId: live.Value!.Id), default);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var deleted = await service.DeleteClassAsync(recording.Value!.Id, default);
+
+        deleted.Succeeded.Should().BeTrue(string.Join("; ", deleted.Errors));
+        var persisted = await db.CscaClasses.IgnoreQueryFilters().SingleAsync(item => item.Id == recording.Value.Id);
+        persisted.IsDeleted.Should().BeTrue();
+        persisted.Status.Should().Be("Cancelled");
+
+        var queued = await db.IntegrationOutboxes.SingleAsync();
+        GetManagementEventType(queued).Should().Be("class.upserted");
+        var payload = GetManagementPayload(queued);
+        payload.GetProperty("classSourceId").GetString().Should().Be(recording.Value.Id.ToString("N"));
+        payload.GetProperty("status").GetString().Should().Be("cancelled");
+        payload.GetProperty("classType").GetString().Should().Be("RECORDING");
+        payload.GetProperty("recordingContentMode").GetString().Should().Be("MIRROR");
+        payload.GetProperty("priceVnd").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task IndependentRecordingClass_ShouldAllowTeacherAssignmentAndSyncCourseAuthorWithoutClassTeacherAssigned()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course { CourseSourceId = "independent-video", Title = "Khóa video toán", Price = 888_000m, Status = "Published" };
+        var teacher = new Employee
+        {
+            EmployeeCode = "GV-MATH",
+            FullName = "Giáo viên Toán Video",
+            Email = "math.video@example.com"
+        };
+        db.AddRange(course, teacher, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var independent = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "VID-MATH-01", "Khóa record toán csca", "Đợt 1", "", 888_000m,
+            CourseId: course.Id, ClassType: "RECORDING", RecordingContentMode: "INDEPENDENT"), default);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var assigned = await service.AssignStaffAsync(independent.Value!.Id,
+            new AssignStaffRequest(teacher.Id, "Teacher", 0m), default);
+
+        assigned.Succeeded.Should().BeTrue(string.Join("; ", assigned.Errors));
+        var events = (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync())
+            .Select(item => new { Type = GetManagementEventType(item), Payload = GetManagementPayload(item) })
+            .ToList();
+        events.Select(item => item.Type).Should().Equal("teacher.upserted", "class.upserted", "course.upserted");
+        events.Should().NotContain(item => item.Type == "class.teacher.assigned");
+        events[1].Payload.GetProperty("leadTeacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
+        events[1].Payload.GetProperty("recordingContentMode").GetString().Should().Be("INDEPENDENT");
+        events[1].Payload.GetProperty("sourceClassSourceId").ValueKind.Should().Be(JsonValueKind.Null);
+        events[2].Payload.GetProperty("teacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
+        events[2].Payload.GetProperty("priceVnd").GetDecimal().Should().Be(888_000m);
+
+        var updated = await service.UpdateStaffAsync(independent.Value.Id, assigned.Value!.Id,
+            new UpdateCscaStaffRequest("Mentor", 0m, null), default);
+        updated.Succeeded.Should().BeTrue();
+        var removed = await service.RemoveStaffAsync(independent.Value.Id, assigned.Value.Id, default);
+        removed.Succeeded.Should().BeTrue();
+    }
+
     private static string? GetManagementEventType(IntegrationOutbox item) =>
         JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString();
 

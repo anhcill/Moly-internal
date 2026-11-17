@@ -205,4 +205,92 @@ public class EdTechServiceTests
         pubInDb.Should().NotBeNull();
         pubInDb!.PublishedBy.Should().NotBeNullOrWhiteSpace();
     }
+
+    [Fact]
+    public async Task UpdateCourse_WhenCrossCourseMirrorRecording_ShouldResolveSourceTeacherAndSyncPrice()
+    {
+        using var db = CreateInMemoryDb();
+        var liveCourse = new Course { CourseSourceId = "live-source-course", Title = "Khóa Live", Status = "Published" };
+        var mirrorCourse = new Course
+        {
+            CourseSourceId = "record-ttxh",
+            Title = "Khóa học record",
+            Price = 888_000m,
+            Status = "Published"
+        };
+        var liveClass = new CscaClass { Course = liveCourse, Code = "CSCA-LIVE", Name = "Live gốc", ClassType = "LIVE" };
+        var mirrorClass = new CscaClass
+        {
+            Course = mirrorCourse,
+            Code = "CSCA-REC",
+            Name = "Record kế thừa",
+            ClassType = "RECORDING",
+            RecordingContentMode = "MIRROR",
+            SourceClass = liveClass,
+            SourceClassId = liveClass.Id,
+            TuitionFee = 888_000m
+        };
+        var teacher = new Employee { EmployeeCode = "GV-TTXH", FullName = "Giáo viên TTXH", Email = "ttxh@example.com" };
+        var assignment = new CscaClassStaff { Class = liveClass, Employee = teacher, RoleInClass = "Teacher" };
+        db.AddRange(liveCourse, mirrorCourse, liveClass, mirrorClass, teacher, assignment, new LmsCourseLink
+        {
+            Course = mirrorCourse,
+            ExternalCourseId = mirrorCourse.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new EdTechService(db, new CurrentUserService(null!), NullLogger<EdTechService>.Instance);
+
+        var result = await service.UpdateCourseAsync(mirrorCourse.Id,
+            new UpdateCourseRequest("Khóa học record TTXH", null, "Cập nhật giá", null, 888_000m, "Published"),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue();
+        var command = await db.IntegrationOutboxes.SingleAsync();
+        using var document = System.Text.Json.JsonDocument.Parse(command.PayloadJson);
+        document.RootElement.GetProperty("eventType").GetString().Should().Be("course.upserted");
+        var payload = document.RootElement.GetProperty("payload");
+        payload.GetProperty("courseSourceId").GetString().Should().Be("record-ttxh");
+        payload.GetProperty("teacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
+        payload.GetProperty("priceVnd").GetDecimal().Should().Be(888_000m);
+        payload.GetProperty("isPublished").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteCourse_WhenLinkedWithDeletedClasses_ShouldQueueUnpublish()
+    {
+        using var db = CreateInMemoryDb();
+        var course = new Course
+        {
+            CourseSourceId = "deleted-linked-course",
+            Title = "Khóa sắp xóa",
+            Price = 500_000m,
+            Status = "Published"
+        };
+        var deletedClass = new CscaClass
+        {
+            Course = course,
+            Code = "CSCA-GONE",
+            Name = "Lớp đã xóa",
+            IsDeleted = true
+        };
+        var teacher = new Employee { EmployeeCode = "GV-DEL", FullName = "Giáo viên cũ", Email = "gv.del@example.com" };
+        var assignment = new CscaClassStaff { Class = deletedClass, Employee = teacher, RoleInClass = "Teacher" };
+        db.AddRange(course, deletedClass, teacher, assignment, new LmsCourseLink
+        {
+            Course = course,
+            ExternalCourseId = course.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new EdTechService(db, new CurrentUserService(null!), NullLogger<EdTechService>.Instance);
+
+        var deleted = await service.DeleteCourseAsync(course.Id, CancellationToken.None);
+
+        deleted.Succeeded.Should().BeTrue();
+        var command = await db.IntegrationOutboxes.SingleAsync();
+        using var document = System.Text.Json.JsonDocument.Parse(command.PayloadJson);
+        document.RootElement.GetProperty("eventType").GetString().Should().Be("course.upserted");
+        document.RootElement.GetProperty("payload").GetProperty("isPublished").GetBoolean().Should().BeFalse();
+    }
 }

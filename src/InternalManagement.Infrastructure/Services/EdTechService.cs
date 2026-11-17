@@ -218,8 +218,16 @@ public sealed class EdTechService : IEdTechService
         if (course.CscaClasses.Any(c => !c.IsDeleted))
             return Result<bool>.Failure("Không thể xóa khóa học đang có lớp học hoạt động. Vui lòng chuyển hoặc xóa các lớp học trước.");
 
+        var now = DateTime.UtcNow;
+        var actor = _currentUser.Username ?? "System";
+        course.Status = "Archived";
+        await LmsCourseMetadataSync.QueueAsync(_db, _currentUser, course, ct, includeDeletedClasses: true);
         _db.CourseModules.RemoveRange(course.Modules);
-        _db.Courses.Remove(course);
+        course.IsDeleted = true;
+        course.DeletedAt = now;
+        course.DeletedBy = actor;
+        course.UpdatedAt = now;
+        course.UpdatedBy = actor;
         await _db.SaveChangesAsync(ct);
 
         return Result<bool>.Success(true);

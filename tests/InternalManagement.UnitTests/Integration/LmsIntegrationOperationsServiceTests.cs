@@ -192,6 +192,7 @@ public sealed class LmsIntegrationOperationsServiceTests
         classPayload.GetProperty("priceVnd").GetDecimal().Should().Be(recordingClass.TuitionFee);
         classPayload.GetProperty("recordingContentMode").GetString().Should().Be("INDEPENDENT");
         classPayload.GetProperty("sourceClassSourceId").ValueKind.Should().Be(JsonValueKind.Null);
+        classPayload.GetProperty("leadTeacherSourceId").GetString().Should().Be(teacher.Id.ToString("N"));
     }
 
     [Fact]

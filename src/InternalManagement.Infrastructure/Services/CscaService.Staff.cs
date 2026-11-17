@@ -27,6 +27,7 @@ public sealed partial class CscaService
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<CscaStaffDto>.Failure("Không tìm thấy lớp học CSCA.");
         var cls = await _db.CscaClasses
+            .Include(c => c.Course)
             .Include(c => c.Staff)
                 .ThenInclude(item => item.Employee)
             .Include(c => c.Students)
@@ -36,7 +37,7 @@ public sealed partial class CscaService
         {
             return Result<CscaStaffDto>.Failure("Không tìm thấy lớp học CSCA.");
         }
-        if (IsRecordingClass(cls))
+        if (IsMirrorRecordingClass(cls))
             return Result<CscaStaffDto>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == request.EmployeeId && !e.IsDeleted, ct);
@@ -110,6 +111,8 @@ public sealed partial class CscaService
 
         var staff = await _db.CscaClassStaffs
             .Include(item => item.Class)
+                .ThenInclude(cls => cls.Course)
+            .Include(item => item.Class)
                 .ThenInclude(cls => cls.Staff)
                     .ThenInclude(item => item.Employee)
             .Include(item => item.Class)
@@ -118,7 +121,7 @@ public sealed partial class CscaService
             .FirstOrDefaultAsync(item => item.Id == staffId && item.ClassId == classId, ct);
         if (staff is null || staff.Employee is null)
             return Result<CscaStaffDto>.Failure("Không tìm thấy phân công nhân sự trong lớp.");
-        if (staff.Class is not null && IsRecordingClass(staff.Class))
+        if (staff.Class is not null && IsMirrorRecordingClass(staff.Class))
             return Result<CscaStaffDto>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var previousTeachingRole = staff.Class is null
@@ -164,6 +167,8 @@ public sealed partial class CscaService
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA.");
         var staff = await _db.CscaClassStaffs
             .Include(s => s.Class)
+                .ThenInclude(c => c.Course)
+            .Include(s => s.Class)
                 .ThenInclude(c => c.Staff)
                     .ThenInclude(item => item.Employee)
             .Include(s => s.Class)
@@ -175,7 +180,7 @@ public sealed partial class CscaService
         {
             return Result<bool>.Failure("Không tìm thấy phân công nhân sự trong lớp.");
         }
-        if (staff.Class is not null && IsRecordingClass(staff.Class))
+        if (staff.Class is not null && IsMirrorRecordingClass(staff.Class))
             return Result<bool>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
         var cls = staff.Class;

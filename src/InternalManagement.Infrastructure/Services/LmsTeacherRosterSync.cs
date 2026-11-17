@@ -21,7 +21,7 @@ internal static class LmsTeacherRosterSync
     {
         if (db is null) return null;
 
-        if (IsRecordingClass(cls))
+        if (IsMirrorRecordingClass(cls))
         {
             return await QueueClassAsync(db, currentUser, cls, ct);
         }
@@ -64,22 +64,21 @@ internal static class LmsTeacherRosterSync
             db, cls.CompanyId, employees, ct);
         foreach (var employee in employees)
         {
-            LmsManagementOutboxQueue.Queue(db, currentUser, link, "teacher.upserted", new
-            {
-                TeacherSourceId = employee.Id.ToString("N"),
-                LegacyTeacherSourceIds = legacyTeacherSourceIds.GetValueOrDefault(employee.Id, []),
-                TeacherCode = employee.EmployeeCode,
-                employee.FullName,
-                employee.Email,
-                Phone = employee.Phone,
-                Position = employee.Position,
-                Department = employee.Department?.Name,
-                AccountStatus = HasActiveAccount(employee) ? "active" : "suspended",
-                SourceUpdatedAt = now
-            }, now, correlationId);
+            QueueTeacherUpsertEvent(db, currentUser, link, employee,
+                legacyTeacherSourceIds.GetValueOrDefault(employee.Id, []), now, correlationId);
         }
 
         QueueClassEvent(db, currentUser, link, cls, lead, now, correlationId);
+
+        if (IsRecordingClass(cls))
+        {
+            if (cls.Course is not null && lead is not null)
+            {
+                LmsCourseMetadataSync.QueueEvent(
+                    db, currentUser, link, cls.Course, lead.EmployeeId, now, correlationId);
+            }
+            return null;
+        }
 
         if (revokedAssignments is not null)
         {
@@ -97,6 +96,12 @@ internal static class LmsTeacherRosterSync
             QueueAssignmentEvent(db, currentUser, link, cls.Id, assignment.EmployeeId,
                 lead is not null && assignment.Id == lead.Id ? "lead" : MapTeachingRole(assignment.RoleInClass)!,
                 "active", now, correlationId);
+        }
+
+        if (lead?.Employee is not null)
+        {
+            await QueueDependentMirrorCoursesAsync(
+                db, currentUser, cls, lead.Employee, legacyTeacherSourceIds, now, ct);
         }
 
         return null;
@@ -238,6 +243,68 @@ internal static class LmsTeacherRosterSync
             SourceUpdatedAt = now
         }, now, correlationId);
 
+    private static void QueueTeacherUpsertEvent(
+        IApplicationDbContext db,
+        ICurrentUserService currentUser,
+        LmsCourseLink link,
+        Employee employee,
+        string[] legacyTeacherSourceIds,
+        DateTime now,
+        string correlationId) =>
+        LmsManagementOutboxQueue.Queue(db, currentUser, link, "teacher.upserted", new
+        {
+            TeacherSourceId = employee.Id.ToString("N"),
+            LegacyTeacherSourceIds = legacyTeacherSourceIds,
+            TeacherCode = employee.EmployeeCode,
+            employee.FullName,
+            employee.Email,
+            Phone = employee.Phone,
+            Position = employee.Position,
+            Department = employee.Department?.Name,
+            AccountStatus = HasActiveAccount(employee) ? "active" : "suspended",
+            SourceUpdatedAt = now
+        }, now, correlationId);
+
+    private static async Task QueueDependentMirrorCoursesAsync(
+        IApplicationDbContext db,
+        ICurrentUserService currentUser,
+        CscaClass sourceLiveClass,
+        Employee leadTeacher,
+        IReadOnlyDictionary<Guid, string[]> legacyTeacherSourceIds,
+        DateTime now,
+        CancellationToken ct)
+    {
+        var mirrorCourseIds = await db.CscaClasses
+            .AsNoTracking()
+            .Where(mirror => mirror.CompanyId == sourceLiveClass.CompanyId &&
+                mirror.CourseId != sourceLiveClass.CourseId &&
+                !mirror.IsDeleted &&
+                mirror.SourceClassId == sourceLiveClass.Id &&
+                mirror.ClassType == "RECORDING" &&
+                mirror.RecordingContentMode != "INDEPENDENT")
+            .Select(mirror => mirror.CourseId)
+            .Distinct()
+            .ToListAsync(ct);
+        if (mirrorCourseIds.Count == 0) return;
+
+        var mirrorLinks = await db.LmsCourseLinks
+            .Include(item => item.Course)
+            .Where(item => item.CompanyId == sourceLiveClass.CompanyId &&
+                mirrorCourseIds.Contains(item.CourseId) &&
+                item.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                item.Status != IntegrationStatus.Pending)
+            .ToListAsync(ct);
+        foreach (var mirrorLink in mirrorLinks)
+        {
+            if (mirrorLink.Course is null || mirrorLink.Course.IsDeleted) continue;
+            var mirrorCorrelationId = Guid.NewGuid().ToString("N");
+            QueueTeacherUpsertEvent(db, currentUser, mirrorLink, leadTeacher,
+                legacyTeacherSourceIds.GetValueOrDefault(leadTeacher.Id, []), now, mirrorCorrelationId);
+            LmsCourseMetadataSync.QueueEvent(
+                db, currentUser, mirrorLink, mirrorLink.Course, leadTeacher.Id, now, mirrorCorrelationId);
+        }
+    }
+
     private static void QueueClassEvent(
         IApplicationDbContext db,
         ICurrentUserService currentUser,
@@ -246,25 +313,32 @@ internal static class LmsTeacherRosterSync
         CscaClassStaff? lead,
         DateTime now,
         string correlationId)
-        => LmsManagementOutboxQueue.Queue(db, currentUser, link, "class.upserted", new
+    {
+        var isCancelled = cls.IsDeleted || string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+        LmsManagementOutboxQueue.Queue(db, currentUser, link, "class.upserted", new
         {
             ClassSourceId = cls.Id.ToString("N"),
             CourseSourceId = link.ExternalCourseId,
             Title = cls.Name,
             Description = cls.Batch,
-            PriceVnd = cls.IsTrial ? 0 : cls.TuitionFee,
+            PriceVnd = isCancelled ? (decimal?)null : (cls.IsTrial ? 0m : cls.TuitionFee),
             MaxStudents = Math.Max(30, cls.Students.Count),
-            Status = string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" :
-                string.Equals(cls.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ? "cancelled" : "active",
+            Status = isCancelled ? "cancelled" :
+                string.Equals(cls.Status, "Completed", StringComparison.OrdinalIgnoreCase) ? "completed" : "active",
             LeadTeacherSourceId = lead is null ? null : lead.EmployeeId.ToString("N"),
             ClassType = NormalizeClassType(cls.ClassType),
             RecordingContentMode = NormalizeRecordingContentMode(cls),
-            SourceClassSourceId = cls.SourceClassId?.ToString("N"),
+            SourceClassSourceId = IsMirrorRecordingClass(cls) ? cls.SourceClassId?.ToString("N") : null,
             SourceUpdatedAt = now
         }, now, correlationId);
+    }
 
     private static bool IsRecordingClass(CscaClass cls) =>
         string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsMirrorRecordingClass(CscaClass cls) =>
+        IsRecordingClass(cls) &&
+        !string.Equals(cls.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeClassType(string? value) =>
         string.Equals(value, "RECORDING", StringComparison.OrdinalIgnoreCase) ? "RECORDING" : "LIVE";

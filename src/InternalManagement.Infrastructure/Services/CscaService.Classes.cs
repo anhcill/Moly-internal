@@ -561,6 +561,10 @@ public sealed partial class CscaService
     private static bool IsRecordingClass(CscaClass cls) =>
         string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsMirrorRecordingClass(CscaClass cls) =>
+        IsRecordingClass(cls) &&
+        !string.Equals(cls.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase);
+
     private Task<bool> IsRecordingClassAsync(Guid classId, CancellationToken ct) =>
         _db.CscaClasses.AsNoTracking().AnyAsync(cls => cls.Id == classId && cls.ClassType == "RECORDING", ct);
 
@@ -570,7 +574,12 @@ public sealed partial class CscaService
     {
         if (!await IsClassInScopeAsync(id, ct))
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA cần xóa.");
-        var cls = await _db.CscaClasses.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
+        var cls = await _db.CscaClasses
+            .AsSplitQuery()
+            .Include(c => c.Staff)
+                .ThenInclude(st => st.Employee)
+            .Include(c => c.Students)
+            .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
         if (cls == null)
         {
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA cần xóa.");
@@ -584,9 +593,18 @@ public sealed partial class CscaService
         if (hasRecordingAliases)
             return Result<bool>.Failure("Không thể xóa lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");
 
+        var now = DateTime.UtcNow;
+        var actor = _currentUser.Username ?? "System";
+        cls.Status = "Cancelled";
         cls.IsDeleted = true;
-        cls.DeletedAt = DateTime.UtcNow;
-        cls.DeletedBy = _currentUser.Username ?? "System";
+        cls.DeletedAt = now;
+        cls.DeletedBy = actor;
+        cls.UpdatedAt = now;
+        cls.UpdatedBy = actor;
+
+        var deleteSyncError = await QueueClassForWebAsync(cls, ct);
+        if (deleteSyncError is not null)
+            return Result<bool>.Failure(deleteSyncError);
 
         await _db.SaveChangesAsync(ct);
         return Result<bool>.Success(true);
