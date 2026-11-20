@@ -545,12 +545,36 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
         if (item.Status == IntegrationStatus.Processing)
             return Result<LmsOutboxItemDto>.Failure("Bản ghi outbox đang được xử lý, không thể retry đồng thời.");
 
+        var now = DateTime.UtcNow;
+        var actor = _currentUser.Username ?? "System";
         item.Status = IntegrationStatus.Pending;
         item.AttemptCount = 0;
-        item.NextAttemptAt = DateTime.UtcNow;
+        item.NextAttemptAt = now;
         item.LastError = null;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.Username ?? "System";
+        item.UpdatedAt = now;
+        item.UpdatedBy = actor;
+        if (item.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+            !string.IsNullOrWhiteSpace(item.CorrelationId))
+        {
+            var blockedFollowers = await _db.IntegrationOutboxes
+                .Where(other => other.CompanyId == companyId &&
+                    other.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
+                    other.CorrelationId == item.CorrelationId &&
+                    other.EventType == LmsOutboxEventTypes.ManagementEventRequested &&
+                    other.CreatedAt > item.CreatedAt &&
+                    other.Status == IntegrationStatus.Skipped &&
+                    other.LastError == "Không gửi vì một lệnh trước trong cùng đợt đồng bộ cần được kiểm tra lại.")
+                .ToListAsync(ct);
+            foreach (var follower in blockedFollowers)
+            {
+                follower.Status = IntegrationStatus.Pending;
+                follower.AttemptCount = 0;
+                follower.NextAttemptAt = now;
+                follower.LastError = null;
+                follower.UpdatedAt = now;
+                follower.UpdatedBy = actor;
+            }
+        }
         await _db.SaveChangesAsync(ct);
 
         return Result<LmsOutboxItemDto>.Success(ToOutboxItemDto(item));
