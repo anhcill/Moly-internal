@@ -153,6 +153,24 @@ public class CscaController : BaseApiController
         return Ok(ApiResponse<CscaClassDto>.Ok(result.Value!, "Cập nhật thông tin lớp học thành công."));
     }
 
+    [HttpPut("classes/{id:guid}/recording-curriculum-reference")]
+    [HasPermission(Permissions.CscaClassesManage)]
+    [ProducesResponseType(typeof(ApiResponse<RecordingCurriculumReferenceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<RecordingCurriculumReferenceDto>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateRecordingCurriculumReference(
+        Guid id,
+        [FromBody] UpdateRecordingCurriculumReferenceRequest request,
+        CancellationToken ct)
+    {
+        var result = await _cscaService.UpdateRecordingCurriculumReferenceAsync(id, request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<RecordingCurriculumReferenceDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Liên kết bộ nội dung dùng lại thất bại."));
+
+        return Ok(ApiResponse<RecordingCurriculumReferenceDto>.Ok(result.Value!,
+            "Đã liên kết bộ nội dung phi-video; khóa Record vẫn độc lập và video không được dùng lại."));
+    }
+
     [HttpDelete("classes/{id:guid}")]
     [HasPermission(Permissions.CscaClassesManage)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]

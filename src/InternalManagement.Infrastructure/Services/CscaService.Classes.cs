@@ -29,6 +29,7 @@ public sealed partial class CscaService
             .Include(c => c.Students)
             .Include(c => c.Staff)
             .Include(c => c.SourceClass)
+            .Include(c => c.CurriculumSourceClass)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -68,6 +69,9 @@ public sealed partial class CscaService
                 SourceClassId = c.SourceClassId,
                 SourceClassCode = c.SourceClass != null ? c.SourceClass.Code : null,
                 SourceClassName = c.SourceClass != null ? c.SourceClass.Name : null,
+                CurriculumSourceClassId = c.CurriculumSourceClassId,
+                CurriculumSourceClassCode = c.CurriculumSourceClass != null ? c.CurriculumSourceClass.Code : null,
+                CurriculumSourceClassName = c.CurriculumSourceClass != null ? c.CurriculumSourceClass.Name : null,
                 StartDate = c.StartDate,
                 EndDate = c.EndDate,
                 Status = c.Status,
@@ -104,6 +108,7 @@ public sealed partial class CscaService
             .AsSplitQuery()
             .Include(c => c.Course)
             .Include(c => c.SourceClass)
+            .Include(c => c.CurriculumSourceClass)
             .Include(c => c.Students)
             .Include(c => c.Staff)
                 .ThenInclude(st => st.Employee)
@@ -139,6 +144,11 @@ public sealed partial class CscaService
             SourceClassId = cls.SourceClassId,
             SourceClassCode = cls.SourceClass?.Code,
             SourceClassName = cls.SourceClass?.Name,
+            CurriculumSourceClassId = cls.CurriculumSourceClassId,
+            CurriculumSourceClassCode = cls.CurriculumSourceClass?.Code,
+            CurriculumSourceClassName = cls.CurriculumSourceClass?.Name,
+            CurriculumExcludedSessionIds = LmsRecordingCurriculumSync.ParseExcludedSessionIds(
+                cls.CurriculumExcludedSessionIdsJson),
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -335,6 +345,7 @@ public sealed partial class CscaService
             SourceClassId = cls.SourceClassId,
             SourceClassCode = classTypeResult.Value.SourceClass?.Code,
             SourceClassName = classTypeResult.Value.SourceClass?.Name,
+            CurriculumExcludedSessionIds = [],
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -361,6 +372,7 @@ public sealed partial class CscaService
             .Include(c => c.Schedules)
             .Include(c => c.LessonSessions)
             .Include(c => c.SourceClass)
+            .Include(c => c.CurriculumSourceClass)
             .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, ct);
 
         if (cls == null)
@@ -404,6 +416,13 @@ public sealed partial class CscaService
             StringComparison.OrdinalIgnoreCase);
         if ((classTypeChanged || recordingModeChanged) && cls.Students.Count > 0)
             return Result<CscaClassDto>.Failure("Không thể đổi hình thức Live/Record khi lớp đã có học viên.");
+        if (cls.CurriculumSourceClassId.HasValue &&
+            (classTypeSelection.ClassType != "RECORDING" ||
+             !string.Equals(classTypeSelection.RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase)))
+        {
+            return Result<CscaClassDto>.Failure(
+                "Lớp đang dùng bộ nội dung tham chiếu; không thể đổi khỏi chế độ Record INDEPENDENT.");
+        }
 
         var hasRecordingAliases = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
             recording.SourceClassId == cls.Id &&
@@ -418,6 +437,21 @@ public sealed partial class CscaService
                 return Result<CscaClassDto>.Failure("Không thể chuyển lớp Live nguồn sang khóa học khác khi vẫn có lớp Record đang tham chiếu.");
             if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
                 return Result<CscaClassDto>.Failure("Không thể hủy lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");
+        }
+
+        var hasCurriculumConsumers = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
+            recording.CurriculumSourceClassId == cls.Id &&
+            recording.ClassType == "RECORDING" &&
+            recording.RecordingContentMode == "INDEPENDENT" &&
+            !recording.IsDeleted, ct);
+        if (hasCurriculumConsumers)
+        {
+            if (classTypeSelection.ClassType != "LIVE")
+                return Result<CscaClassDto>.Failure(
+                    "Không thể đổi lớp Live sang Record khi bộ nội dung vẫn đang được khóa Record dùng lại.");
+            if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                return Result<CscaClassDto>.Failure(
+                    "Không thể hủy lớp Live khi bộ nội dung vẫn đang được khóa Record dùng lại.");
         }
 
         var changingLiveToRecording = !IsRecordingClass(cls) && classTypeSelection.ClassType == "RECORDING";
@@ -482,6 +516,11 @@ public sealed partial class CscaService
             SourceClassId = cls.SourceClassId,
             SourceClassCode = classTypeSelection.SourceClass?.Code,
             SourceClassName = classTypeSelection.SourceClass?.Name,
+            CurriculumSourceClassId = cls.CurriculumSourceClassId,
+            CurriculumSourceClassCode = cls.CurriculumSourceClass?.Code,
+            CurriculumSourceClassName = cls.CurriculumSourceClass?.Name,
+            CurriculumExcludedSessionIds = LmsRecordingCurriculumSync.ParseExcludedSessionIds(
+                cls.CurriculumExcludedSessionIdsJson),
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Status = cls.Status,
@@ -592,6 +631,15 @@ public sealed partial class CscaService
             !recording.IsDeleted, ct);
         if (hasRecordingAliases)
             return Result<bool>.Failure("Không thể xóa lớp Live nguồn khi vẫn có lớp Record đang tham chiếu.");
+
+        var hasCurriculumConsumers = await _db.CscaClasses.AsNoTracking().AnyAsync(recording =>
+            recording.CurriculumSourceClassId == id &&
+            recording.ClassType == "RECORDING" &&
+            recording.RecordingContentMode == "INDEPENDENT" &&
+            !recording.IsDeleted, ct);
+        if (hasCurriculumConsumers)
+            return Result<bool>.Failure(
+                "Không thể xóa lớp Live khi bộ nội dung vẫn đang được khóa Record dùng lại.");
 
         var now = DateTime.UtcNow;
         var actor = _currentUser.Username ?? "System";

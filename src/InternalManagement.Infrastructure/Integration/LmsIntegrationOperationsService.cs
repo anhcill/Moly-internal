@@ -309,6 +309,37 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                 .Where(cls => string.Equals(cls.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) &&
                               NormalizeRecordingContentMode(cls) == "INDEPENDENT")
                 .ToList();
+            var curriculumSourceIds = independentRecordingClasses
+                .Where(cls => cls.CurriculumSourceClassId.HasValue)
+                .Select(cls => cls.CurriculumSourceClassId!.Value)
+                .Distinct()
+                .ToList();
+            var curriculumSourceClasses = curriculumSourceIds.Count == 0
+                ? new Dictionary<Guid, CscaClass>()
+                : await _db.CscaClasses.AsNoTracking()
+                    .AsSplitQuery()
+                    .Include(cls => cls.LessonSessions)
+                    .Where(cls => curriculumSourceIds.Contains(cls.Id) &&
+                                  cls.CompanyId == companyId && !cls.IsDeleted)
+                    .ToDictionaryAsync(cls => cls.Id, ct);
+            foreach (var recordingClass in independentRecordingClasses.Where(cls => cls.CurriculumSourceClassId.HasValue))
+            {
+                var sourceClass = curriculumSourceClasses.GetValueOrDefault(recordingClass.CurriculumSourceClassId!.Value);
+                if (sourceClass is null ||
+                    string.Equals(sourceClass.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(sourceClass.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Result<LmsCourseMappingDto>.Failure(
+                        $"Khóa video độc lập {recordingClass.Code} có nguồn nội dung không còn là lớp Live hợp lệ.");
+                }
+                var sourceSessionIds = sourceClass.LessonSessions.Select(session => session.Id).ToHashSet();
+                if (LmsRecordingCurriculumSync.ParseExcludedSessionIds(recordingClass.CurriculumExcludedSessionIdsJson)
+                    .Any(sessionId => !sourceSessionIds.Contains(sessionId)))
+                {
+                    return Result<LmsCourseMappingDto>.Failure(
+                        $"Khóa video độc lập {recordingClass.Code} chứa ID buổi học loại trừ không thuộc lớp nguồn.");
+                }
+            }
             var teacherOwnerClasses = liveClasses
                 .Concat(mirrorSourceClasses.Values)
                 .Concat(independentRecordingClasses)
@@ -409,6 +440,12 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     LeadTeacherSourceId = lead?.EmployeeId.ToString("N"),
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
+                if (isRecording && recordingContentMode == "INDEPENDENT" &&
+                    cls.CurriculumSourceClassId.HasValue)
+                {
+                    LmsRecordingCurriculumSync.QueueEvent(
+                        _db, _currentUser, existing, cls, now, correlationId);
+                }
                 if (isRecording) continue;
                 foreach (var assignment in activeAssignments)
                     QueueManagementEvent(existing, "class.teacher.assigned", new

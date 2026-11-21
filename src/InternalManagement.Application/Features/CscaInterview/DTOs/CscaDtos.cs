@@ -20,6 +20,10 @@ public sealed record CscaClassDto
     public Guid? SourceClassId { get; init; }
     public string? SourceClassCode { get; init; }
     public string? SourceClassName { get; init; }
+    public Guid? CurriculumSourceClassId { get; init; }
+    public string? CurriculumSourceClassCode { get; init; }
+    public string? CurriculumSourceClassName { get; init; }
+    public IReadOnlyList<Guid> CurriculumExcludedSessionIds { get; init; } = [];
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -53,6 +57,10 @@ public sealed record CscaClassDetailDto
     public Guid? SourceClassId { get; init; }
     public string? SourceClassCode { get; init; }
     public string? SourceClassName { get; init; }
+    public Guid? CurriculumSourceClassId { get; init; }
+    public string? CurriculumSourceClassCode { get; init; }
+    public string? CurriculumSourceClassName { get; init; }
+    public IReadOnlyList<Guid> CurriculumExcludedSessionIds { get; init; } = [];
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string Status { get; init; } = "Active";
@@ -91,6 +99,26 @@ public sealed record UpdateCscaClassRequest(
     string? ClassType = null,
     string? RecordingContentMode = null,
     Guid? SourceClassId = null);
+
+/// <summary>
+/// Reuses the non-video curriculum of one LIVE class in an INDEPENDENT
+/// recording class. Session IDs are stable InternalManagement IDs; videos are
+/// intentionally never part of this reference.
+/// </summary>
+public sealed record UpdateRecordingCurriculumReferenceRequest(
+    Guid ContentSourceClassId,
+    IReadOnlyCollection<Guid>? ExcludedSessionSourceIds = null);
+
+public sealed record RecordingCurriculumReferenceDto
+{
+    public Guid RecordingClassId { get; init; }
+    public Guid ContentSourceClassId { get; init; }
+    public string ContentSourceClassCode { get; init; } = string.Empty;
+    public string ContentSourceClassName { get; init; } = string.Empty;
+    public bool IncludeVideos { get; init; }
+    public IReadOnlyList<Guid> ExcludedSessionSourceIds { get; init; } = [];
+    public DateTime SourceUpdatedAt { get; init; }
+}
 
 // ── CSCA Schedule DTOs ──
 

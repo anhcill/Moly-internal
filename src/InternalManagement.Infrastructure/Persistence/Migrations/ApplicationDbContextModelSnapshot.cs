@@ -68,6 +68,21 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("CurriculumExcludedSessionIdsJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("[]")
+                        .HasColumnName("curriculum_excluded_session_ids_json");
+
+                    b.Property<DateTime?>("CurriculumReferenceUpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("curriculum_reference_updated_at");
+
+                    b.Property<Guid?>("CurriculumSourceClassId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("curriculum_source_class_id");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
@@ -137,6 +152,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseId")
                         .HasDatabaseName("ix_csca_classes_course_id");
+
+                    b.HasIndex("CurriculumSourceClassId")
+                        .HasDatabaseName("ix_csca_classes_curriculum_source_class_id");
 
                     b.HasIndex("SourceClassId")
                         .HasDatabaseName("ix_csca_classes_source_class_id");
@@ -8264,6 +8282,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaClass", b =>
                 {
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "CurriculumSourceClass")
+                        .WithMany("CurriculumLinkedRecordingClasses")
+                        .HasForeignKey("CurriculumSourceClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_csca_classes_csca_classes_curriculum_source_class_id");
+
                     b.HasOne("InternalManagement.Domain.Entities.EdTech.Course", "Course")
                         .WithMany("CscaClasses")
                         .HasForeignKey("CourseId")
@@ -8278,6 +8302,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_csca_classes_csca_classes_source_class_id");
 
                     b.Navigation("Course");
+
+                    b.Navigation("CurriculumSourceClass");
 
                     b.Navigation("SourceClass");
                 });
@@ -9720,6 +9746,8 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaClass", b =>
                 {
+                    b.Navigation("CurriculumLinkedRecordingClasses");
+
                     b.Navigation("LessonSessions");
 
                     b.Navigation("RecordingClasses");

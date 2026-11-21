@@ -196,6 +196,73 @@ public sealed class LmsIntegrationOperationsServiceTests
     }
 
     [Fact]
+    public async Task UpsertCourseMapping_WithIndependentCurriculumReference_ShouldReplayLinkWithoutCopyingSessions()
+    {
+        await using var db = CreateInMemoryDb();
+        var companyId = Guid.NewGuid();
+        var sourceCourse = AddCourse(db, companyId, "math-live-source");
+        var recordingCourse = AddCourse(db, companyId, "math-record-target");
+        var teacher = new Employee
+        {
+            CompanyId = companyId,
+            EmployeeCode = "T-RECORD-CURRICULUM",
+            FullName = "Independent Teacher",
+            Email = "independent-curriculum@example.com"
+        };
+        var sourceClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = sourceCourse.Id,
+            Code = "MATH-01",
+            Name = "Toán CSCA - Lớp 01",
+            ClassType = "LIVE"
+        };
+        var excludedMakeup = new CscaLessonSession
+        {
+            ClassId = sourceClass.Id,
+            LessonDate = new DateOnly(2026, 10, 26),
+            StartTime = new TimeSpan(20, 0, 0),
+            EndTime = new TimeSpan(22, 0, 0),
+            SessionKind = "Makeup"
+        };
+        var recordingClass = new CscaClass
+        {
+            CompanyId = companyId,
+            CourseId = recordingCourse.Id,
+            Code = "VIDEO-MATH",
+            Name = "Khóa record toán csca",
+            ClassType = "RECORDING",
+            RecordingContentMode = "INDEPENDENT",
+            TuitionFee = 888_000m,
+            CurriculumSourceClassId = sourceClass.Id,
+            CurriculumExcludedSessionIdsJson = JsonSerializer.Serialize(new[] { excludedMakeup.Id }),
+            CurriculumReferenceUpdatedAt = DateTime.UtcNow.AddMinutes(-1)
+        };
+        db.AddRange(teacher, sourceClass, excludedMakeup, recordingClass,
+            new CscaClassStaff { ClassId = recordingClass.Id, EmployeeId = teacher.Id, RoleInClass = "Teacher" });
+        await db.SaveChangesAsync();
+        var service = CreateService(db, companyId);
+
+        var result = await service.UpsertCourseMappingAsync(recordingCourse.Id,
+            new UpsertLmsCourseMappingRequest(null, 106L, "math-record-target", true),
+            CancellationToken.None);
+
+        result.Succeeded.Should().BeTrue(string.Join("; ", result.Errors));
+        var events = (await db.IntegrationOutboxes.OrderBy(item => item.CreatedAt).ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.Clone())
+            .ToList();
+        var classIndex = events.FindIndex(item => item.GetProperty("eventType").GetString() == "class.upserted");
+        var curriculumIndex = events.FindIndex(item => item.GetProperty("eventType").GetString() == "class.curriculum.linked");
+        curriculumIndex.Should().BeGreaterThan(classIndex);
+        var payload = events[curriculumIndex].GetProperty("payload");
+        payload.GetProperty("classSourceId").GetString().Should().Be(recordingClass.Id.ToString("N"));
+        payload.GetProperty("contentSourceClassSourceId").GetString().Should().Be(sourceClass.Id.ToString("N"));
+        payload.GetProperty("includeVideos").GetBoolean().Should().BeFalse();
+        payload.GetProperty("excludedSessionSourceIds")[0].GetString().Should().Be(excludedMakeup.Id.ToString("N"));
+        (await db.CscaLessonSessions.CountAsync(session => session.ClassId == recordingClass.Id)).Should().Be(0);
+    }
+
+    [Fact]
     public async Task UpsertCourseMapping_WithCrossCourseRecordingAlias_ShouldUseSourceClassTeacher()
     {
         await using var db = CreateInMemoryDb();

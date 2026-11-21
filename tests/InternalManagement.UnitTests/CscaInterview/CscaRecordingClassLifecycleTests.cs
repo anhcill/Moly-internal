@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using InternalManagement.Application.Features.CscaInterview.DTOs;
+using InternalManagement.Domain.Entities.CscaInterview;
 using InternalManagement.Domain.Entities.EdTech;
 using InternalManagement.Domain.Entities.HrPayroll;
 using InternalManagement.Domain.Entities.Integration;
@@ -314,6 +315,81 @@ public class CscaRecordingClassLifecycleTests
         updated.Succeeded.Should().BeTrue();
         var removed = await service.RemoveStaffAsync(independent.Value.Id, assigned.Value.Id, default);
         removed.Succeeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IndependentRecording_CurriculumReference_ShouldBeReferenceOnlyValidatedAndIdempotent()
+    {
+        using var db = CreateInMemoryDb();
+        var sourceCourse = new Course { CourseSourceId = "math-01", Title = "Toán 01" };
+        var recordingCourse = new Course { CourseSourceId = "math-record", Title = "Khóa record toán csca" };
+        db.AddRange(sourceCourse, recordingCourse, new LmsCourseLink
+        {
+            Course = recordingCourse,
+            ExternalCourseId = recordingCourse.CourseSourceId,
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+        var service = new CscaService(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
+            integrationDb: db);
+        var source = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "MATH-01", "Toán CSCA - Lớp 01", "", "", 3_000_000m, CourseId: sourceCourse.Id), default);
+        var unrelatedSource = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "MATH-02", "Toán CSCA - Lớp 02", "", "", 3_000_000m, CourseId: sourceCourse.Id), default);
+        var recording = await service.CreateClassAsync(new CreateCscaClassRequest(
+            "MATH-REC", "Khóa record toán csca", "", "", 888_000m,
+            CourseId: recordingCourse.Id, ClassType: "RECORDING", RecordingContentMode: "INDEPENDENT"), default);
+        var makeup = new CscaLessonSession
+        {
+            ClassId = source.Value!.Id,
+            LessonDate = new DateOnly(2026, 10, 26),
+            StartTime = new TimeSpan(20, 0, 0),
+            EndTime = new TimeSpan(22, 0, 0),
+            SessionKind = "Makeup",
+            Notes = "Imported from CSCA Course LMS: Buổi học bù 26/10"
+        };
+        var foreignSession = new CscaLessonSession
+        {
+            ClassId = unrelatedSource.Value!.Id,
+            LessonDate = new DateOnly(2026, 10, 27),
+            StartTime = new TimeSpan(20, 0, 0),
+            EndTime = new TimeSpan(22, 0, 0)
+        };
+        db.AddRange(makeup, foreignSession);
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+
+        var invalidDestination = await service.UpdateRecordingCurriculumReferenceAsync(source.Value.Id,
+            new UpdateRecordingCurriculumReferenceRequest(source.Value.Id, [makeup.Id]), default);
+        var invalidExclusion = await service.UpdateRecordingCurriculumReferenceAsync(recording.Value!.Id,
+            new UpdateRecordingCurriculumReferenceRequest(source.Value.Id, [foreignSession.Id]), default);
+        var linked = await service.UpdateRecordingCurriculumReferenceAsync(recording.Value.Id,
+            new UpdateRecordingCurriculumReferenceRequest(source.Value.Id, [makeup.Id]), default);
+
+        invalidDestination.Succeeded.Should().BeFalse();
+        invalidExclusion.Succeeded.Should().BeFalse();
+        linked.Succeeded.Should().BeTrue(string.Join("; ", linked.Errors));
+        linked.Value!.IncludeVideos.Should().BeFalse();
+        linked.Value.ExcludedSessionSourceIds.Should().Equal(makeup.Id);
+        var queued = await db.IntegrationOutboxes.SingleAsync();
+        GetManagementEventType(queued).Should().Be("class.curriculum.linked");
+        var payload = GetManagementPayload(queued);
+        payload.GetProperty("classSourceId").GetString().Should().Be(recording.Value.Id.ToString("N"));
+        payload.GetProperty("contentSourceClassSourceId").GetString().Should().Be(source.Value.Id.ToString("N"));
+        payload.GetProperty("includeVideos").GetBoolean().Should().BeFalse();
+        payload.GetProperty("excludedSessionSourceIds")[0].GetString().Should().Be(makeup.Id.ToString("N"));
+
+        var linkedAgain = await service.UpdateRecordingCurriculumReferenceAsync(recording.Value.Id,
+            new UpdateRecordingCurriculumReferenceRequest(source.Value.Id, [makeup.Id, makeup.Id]), default);
+
+        linkedAgain.Succeeded.Should().BeTrue();
+        (await db.IntegrationOutboxes.CountAsync()).Should().Be(1,
+            "an unchanged reference must not enqueue duplicate work");
+        (await db.CscaLessonSessions.CountAsync(session => session.ClassId == recording.Value.Id)).Should().Be(0,
+            "curriculum reuse is a reference and must not copy sessions or videos");
+        var persisted = await db.CscaClasses.SingleAsync(cls => cls.Id == recording.Value.Id);
+        persisted.SourceClassId.Should().BeNull("the independent recording must never become MIRROR");
+        persisted.CurriculumSourceClassId.Should().Be(source.Value.Id);
     }
 
     private static string? GetManagementEventType(IntegrationOutbox item) =>

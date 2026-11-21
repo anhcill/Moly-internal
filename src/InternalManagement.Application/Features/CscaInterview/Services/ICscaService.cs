@@ -13,6 +13,8 @@ public interface ICscaService
     Task<Result<CscaClassDto>> CreateClassAsync(CreateCscaClassRequest request, CancellationToken ct);
     Task<Result<CscaClassDto>> UpdateClassAsync(Guid id, UpdateCscaClassRequest request, CancellationToken ct);
     Task<Result<bool>> DeleteClassAsync(Guid id, CancellationToken ct);
+    Task<Result<RecordingCurriculumReferenceDto>> UpdateRecordingCurriculumReferenceAsync(
+        Guid id, UpdateRecordingCurriculumReferenceRequest request, CancellationToken ct);
 
     Task<IReadOnlyList<CscaScheduleDto>> GetSchedulesAsync(Guid classId, CancellationToken ct);
     Task<Result<CscaScheduleDto>> AddScheduleAsync(Guid classId, CreateCscaScheduleRequest request, CancellationToken ct);

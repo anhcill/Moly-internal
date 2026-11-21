@@ -25,6 +25,13 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public string? RecordingContentMode { get; set; } // MIRROR, INDEPENDENT
     public Guid? SourceClassId { get; set; }
     public CscaClass? SourceClass { get; set; }
+    // Optional curriculum-only reference for an INDEPENDENT recording class.
+    // This is deliberately separate from SourceClassId: it never changes the
+    // recording into MIRROR mode and source videos are never reused.
+    public Guid? CurriculumSourceClassId { get; set; }
+    public CscaClass? CurriculumSourceClass { get; set; }
+    public string CurriculumExcludedSessionIdsJson { get; set; } = "[]";
+    public DateTime? CurriculumReferenceUpdatedAt { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string Status { get; set; } = "Active"; // Active, Completed, Cancelled
@@ -42,6 +49,7 @@ public class CscaClass : BaseEntity, IAuditableEntity, ITenantScoped, ISoftDelet
     public ICollection<CscaClassSchedule> Schedules { get; set; } = new List<CscaClassSchedule>();
     public ICollection<CscaLessonSession> LessonSessions { get; set; } = new List<CscaLessonSession>();
     public ICollection<CscaClass> RecordingClasses { get; set; } = new List<CscaClass>();
+    public ICollection<CscaClass> CurriculumLinkedRecordingClasses { get; set; } = new List<CscaClass>();
 }
 
 /// <summary>Danh mục phòng học dùng chung trong phạm vi công ty/đơn vị.</summary>
