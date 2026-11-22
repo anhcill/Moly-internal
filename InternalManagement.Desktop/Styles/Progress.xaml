@@ -3,7 +3,7 @@
         <!-- Modern Indeterminate Gradient Progress Bar Style -->
         <Style x:Key="ModernProgressBarStyle" TargetType="ProgressBar">
             <Setter Property="Foreground" Value="{StaticResource PrimaryGradient}" />
-            <Setter Property="Background" Value="#EEF2FF" />
+            <Setter Property="Background" Value="{DynamicResource CardAltBgBrush}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Height" Value="4" />
             <Setter Property="Template">

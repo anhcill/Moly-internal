@@ -35,8 +35,8 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Background="#F1F5F9" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
-                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#64748B" />
+                    <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE787;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="TỔNG KỲ LƯƠNG" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
@@ -52,7 +52,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Background="#EFF6FF" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfaceInfoBgBrush}" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#2563EB" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -69,7 +69,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Background="#ECFDF5" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfaceSuccessBgBrush}" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
                         <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D4;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#059669" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -86,8 +86,8 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Border Background="#FAF5FF" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
-                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8EF;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#7C3AED" />
+                    <Border Background="{DynamicResource SurfaceAccentBgBrush}" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8EF;" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource SurfaceAccentTextBrush}" />
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="PHIẾU LƯƠNG ĐÃ TÍNH" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
@@ -104,11 +104,11 @@
                 <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Kỳ lương:" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0" />
                     <ComboBox x:Name="PayrollPeriodSelectorCombo" Width="200" Height="30" FontSize="12" SelectionChanged="PayrollPeriodSelector_SelectionChanged" VerticalContentAlignment="Center" Margin="0,0,6,0" />
-                    <Border x:Name="PayrollStatusBadgeBorder" Background="#EEF2FF" CornerRadius="5" Padding="8,4" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <Border x:Name="PayrollStatusBadgeBorder" Background="{DynamicResource SurfaceAccentBgBrush}" CornerRadius="5" Padding="8,4" VerticalAlignment="Center" Margin="0,0,10,0">
                         <TextBlock x:Name="PayrollStatusBadgeText" Text="Draft" FontSize="10.5" FontWeight="Bold" Foreground="#4F46E5" />
                     </Border>
 
-                    <Rectangle Width="1" Height="18" Fill="#E2E8F0" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <Rectangle Width="1" Height="18" Fill="{DynamicResource BorderLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
 
                     <!-- Search Box -->
                     <Grid Width="200" Height="30" Margin="0,0,6,0">
@@ -125,6 +125,7 @@
 
                 <!-- VÙNG THAO TÁC (PHẢI) -->
                 <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <Button x:Name="BtnSyncCoursePayroll" Content="↻ Đồng bộ lương Course/LMS" Click="SyncCoursePayroll_Click" Style="{StaticResource OutlineButton}" Height="30" Padding="10,0" Margin="0,0,6,0" ToolTip="Kéo bảng công &amp; thù lao giảng dạy mới nhất từ MolyCourse LMS để tính vào kỳ lương" />
                     <Button x:Name="BtnCalculatePayrollShortcut" Content="⚡ Tính lương" Click="CalculatePayroll_Click" Style="{StaticResource PrimaryGradientButton}" Height="30" Padding="10,0" Margin="0,0,6,0" Visibility="Collapsed" />
                     <Button x:Name="BtnCancelPayroll" Content="Hủy nháp" Click="CancelPayroll_Click" Style="{StaticResource OutlineButton}" Foreground="#DC2626" Height="30" Padding="10,0" Margin="0,0,6,0" Visibility="Collapsed" />
                     <Button x:Name="BtnExportPayroll" Content="⬇ Xuất Excel" Click="ExportPayrollExcel_Click" Style="{StaticResource OutlineButton}" Height="30" Padding="10,0" Margin="0,0,6,0" Visibility="Collapsed" />
@@ -167,38 +168,38 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <!-- Step 1 -->
-                                <Border Grid.Column="0" x:Name="PayrollStep1Border" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
+                                <Border Grid.Column="0" x:Name="PayrollStep1Border" Background="{DynamicResource PillGreenBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock x:Name="PayrollStep1Icon" Text="✓ " FontWeight="Bold" Foreground="#16A34A" FontSize="10.5" />
                                         <TextBlock Text="1. Tính toán" FontWeight="SemiBold" Foreground="#15803D" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 2 -->
-                                <Border Grid.Column="1" x:Name="PayrollStep2Border" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
+                                <Border Grid.Column="1" x:Name="PayrollStep2Border" Background="{DynamicResource PillGreenBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock x:Name="PayrollStep2Icon" Text="✓ " FontWeight="Bold" Foreground="#16A34A" FontSize="10.5" />
                                         <TextBlock Text="2. Gửi duyệt" FontWeight="SemiBold" Foreground="#15803D" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 3 -->
-                                <Border Grid.Column="2" x:Name="PayrollStep3Border" Background="#CCFBF1" BorderBrush="#5EEAD4" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
+                                <Border Grid.Column="2" x:Name="PayrollStep3Border" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock x:Name="PayrollStep3Icon" Text="" FontWeight="Bold" Foreground="#0F766E" FontSize="10.5" />
-                                        <TextBlock Text="3. Phê duyệt" FontWeight="Bold" Foreground="#0F766E" FontSize="11" />
+                                        <TextBlock x:Name="PayrollStep3Icon" Text="" FontWeight="Bold" Foreground="{DynamicResource SurfaceInfoTextBrush}" FontSize="10.5" />
+                                        <TextBlock Text="3. Phê duyệt" FontWeight="Bold" Foreground="{DynamicResource SurfaceInfoTextBrush}" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 4 -->
                                 <Border Grid.Column="3" x:Name="PayrollStep4Border" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock x:Name="PayrollStep4Icon" Text="" FontWeight="Bold" Foreground="#64748B" FontSize="10.5" />
-                                        <TextBlock Text="4. Đã chi" FontWeight="Medium" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock x:Name="PayrollStep4Icon" Text="" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" FontSize="10.5" />
+                                        <TextBlock Text="4. Đã chi" FontWeight="Medium" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                                 <!-- Step 5 -->
                                 <Border Grid.Column="4" x:Name="PayrollStep5Border" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="5" Padding="8,3">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock x:Name="PayrollStep5Icon" Text="" FontWeight="Bold" Foreground="#64748B" FontSize="10.5" />
-                                        <TextBlock Text="5. Phát hành" FontWeight="Medium" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock x:Name="PayrollStep5Icon" Text="" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" FontSize="10.5" />
+                                        <TextBlock Text="5. Phát hành" FontWeight="Medium" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -208,7 +209,7 @@
                     <!-- ACTION BAR (COMPACT) -->
                     <DockPanel Grid.Row="1" LastChildFill="False" Margin="0,0,0,6">
                         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Danh sách phiếu lương chi tiết" FontSize="12.5" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" />
+                            <TextBlock Text="Danh sách phiếu lương chi tiết" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             <TextBlock Text=" · Nhấp đúp để xem chi tiết" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" Margin="6,0,0,0" />
                         </StackPanel>
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
@@ -296,7 +297,7 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="2" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -360,7 +361,7 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Margin="0,0,0,10">
                                 <TextBlock Text="Tên kỳ lương *" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextDarkBrush}" />
-                                <TextBox x:Name="PayrollCreateNameBox" Height="32" Style="{StaticResource ModernTextBox}" Tag="Ví dụ: Kỳ lương tháng 09/2026" Margin="0,4,0,0" FontSize="12" />
+                                <TextBox x:Name="PayrollCreateNameBox" Height="36" Style="{StaticResource ModernTextBox}" Tag="Ví dụ: Kỳ lương tháng 09/2026" Margin="0,4,0,0" FontSize="12" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,0">
@@ -377,7 +378,7 @@
                             </StackPanel>
                             <Button x:Name="BtnCreatePayrollPeriod" Grid.Row="1" Grid.Column="3" Content="＋ Tạo bảng lương" Click="CreatePayrollPeriod_Click" Style="{StaticResource PrimaryGradientButton}" Height="32" Padding="14,0" VerticalAlignment="Bottom" FontSize="12" />
 
-                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,10,0,0">
+                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,10,0,0">
                                 <TextBlock Text="Kỳ mới luôn bắt đầu ở trạng thái Bản nháp. Hệ thống chỉ lấy dữ liệu nhân sự thuộc đơn vị đã chọn, giúp không trộn lương giữa Giáo dục và Fashion." FontSize="11" Foreground="#1E40AF" TextWrapping="Wrap" />
                             </Border>
                         </Grid>
@@ -395,7 +396,7 @@
                 <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="130" />
+                        <RowDefinition Height="240" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -483,17 +484,17 @@
                             <Button x:Name="BtnCalculatePayroll" Content="⚡ Bước 1: Tính lương &amp; mở bảng kiểm tra" Click="CalculatePayroll_Click" Style="{StaticResource PrimaryGradientButton}" Margin="0,0,6,0" Height="30" Padding="10,0" FontSize="11.5" Visibility="Collapsed" />
                             <Button x:Name="BtnSubmitReview" Content="✓ Bước 2: Xác nhận gửi duyệt" Click="SubmitReview_Click" Style="{StaticResource PrimaryGradientButton}" Height="30" Padding="10,0" FontSize="11.5" Visibility="Collapsed" />
                         </WrapPanel>
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="8,5" Margin="0,6,0,0">
+                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8,5" Margin="0,6,0,0">
                             <TextBlock Text="Cách kiểm tra nhanh: mở tab “Bảng tính lương”, đối chiếu từng nhân viên; nhấp đúp một dòng khi cần xem chi tiết. Quay lại đây chỉ khi đã kiểm tra xong." FontSize="10.5" Foreground="#1E40AF" TextWrapping="Wrap" />
                         </Border>
                     </StackPanel>
 
                     <UniformGrid Grid.Row="2" Columns="3" Margin="0,0,0,6">
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,6,0">
+                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,6,0">
                             <StackPanel><TextBlock Text="SỐ PHIẾU CẦN XEM" FontSize="9.5" FontWeight="Bold" Foreground="#1E40AF" /><TextBlock x:Name="PayrollReviewPayslipCountText" Text="0" FontSize="15" FontWeight="Bold" Foreground="#2563EB" Margin="0,2,0,0" /></StackPanel>
                         </Border>
-                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,6,0">
-                            <StackPanel><TextBlock Text="KHOẢN ĐIỀU CHỈNH" FontSize="9.5" FontWeight="Bold" Foreground="#92400E" /><TextBlock x:Name="PayrollReviewAdjustmentCountText" Text="0" FontSize="15" FontWeight="Bold" Foreground="#D97706" Margin="0,2,0,0" /></StackPanel>
+                        <Border Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,6,0">
+                            <StackPanel><TextBlock Text="KHOẢN ĐIỀU CHỈNH" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource SurfaceWarningTextBrush}" /><TextBlock x:Name="PayrollReviewAdjustmentCountText" Text="0" FontSize="15" FontWeight="Bold" Foreground="#D97706" Margin="0,2,0,0" /></StackPanel>
                         </Border>
                         <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="8" Padding="10,6">
                             <StackPanel><TextBlock Text="TỔNG THỰC LĨNH" FontSize="9.5" FontWeight="Bold" Foreground="#166534" /><TextBlock x:Name="PayrollReviewNetText" Text="0 đ" FontSize="15" FontWeight="Bold" Foreground="#059669" Margin="0,2,0,0" /></StackPanel>
@@ -562,20 +563,20 @@
                     </WrapPanel>
 
                     <UniformGrid Grid.Row="2" Columns="5" VerticalAlignment="Top">
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
-                            <StackPanel><TextBlock Text="01" FontSize="15" FontWeight="Bold" Foreground="#2563EB" /><TextBlock Text="Tính lương" FontWeight="SemiBold" FontSize="11.5" Foreground="#1E3A8A" /><TextBlock Text="Chấm công + thu nhập" FontSize="10" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
+                            <StackPanel><TextBlock Text="01" FontSize="15" FontWeight="Bold" Foreground="#2563EB" /><TextBlock Text="Tính lương" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource SurfaceInfoTextBrush}" /><TextBlock Text="Chấm công + thu nhập" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" /></StackPanel>
                         </Border>
-                        <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
-                            <StackPanel><TextBlock Text="02" FontSize="15" FontWeight="Bold" Foreground="#D97706" /><TextBlock Text="Trình duyệt" FontWeight="SemiBold" FontSize="11.5" Foreground="#92400E" /><TextBlock Text="Khóa điều chỉnh" FontSize="10" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                        <Border Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
+                            <StackPanel><TextBlock Text="02" FontSize="15" FontWeight="Bold" Foreground="#D97706" /><TextBlock Text="Trình duyệt" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource SurfaceWarningTextBrush}" /><TextBlock Text="Khóa điều chỉnh" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" /></StackPanel>
                         </Border>
                         <Border Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
-                            <StackPanel><TextBlock Text="03" FontSize="15" FontWeight="Bold" Foreground="#16A34A" /><TextBlock Text="Phê duyệt" FontWeight="SemiBold" FontSize="11.5" Foreground="#166534" /><TextBlock Text="Chốt ngân sách" FontSize="10" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                            <StackPanel><TextBlock Text="03" FontSize="15" FontWeight="Bold" Foreground="#16A34A" /><TextBlock Text="Phê duyệt" FontWeight="SemiBold" FontSize="11.5" Foreground="#166534" /><TextBlock Text="Chốt ngân sách" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" /></StackPanel>
                         </Border>
-                        <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
-                            <StackPanel><TextBlock Text="04" FontSize="15" FontWeight="Bold" Foreground="#4F46E5" /><TextBlock Text="Chi lương" FontWeight="SemiBold" FontSize="11.5" Foreground="#3730A3" /><TextBlock Text="Xác nhận giải ngân" FontSize="10" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                        <Border Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,6,0">
+                            <StackPanel><TextBlock Text="04" FontSize="15" FontWeight="Bold" Foreground="#4F46E5" /><TextBlock Text="Chi lương" FontWeight="SemiBold" FontSize="11.5" Foreground="#3730A3" /><TextBlock Text="Xác nhận giải ngân" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" /></StackPanel>
                         </Border>
                         <Border Background="#FAF5FF" BorderBrush="#E9D5FF" BorderThickness="1" CornerRadius="8" Padding="10,8">
-                            <StackPanel><TextBlock Text="05" FontSize="15" FontWeight="Bold" Foreground="#9333EA" /><TextBlock Text="Phát hành" FontWeight="SemiBold" FontSize="11.5" Foreground="#6B21A8" /><TextBlock Text="Gửi phiếu lương" FontSize="10" Foreground="#64748B" TextWrapping="Wrap" /></StackPanel>
+                            <StackPanel><TextBlock Text="05" FontSize="15" FontWeight="Bold" Foreground="#9333EA" /><TextBlock Text="Phát hành" FontWeight="SemiBold" FontSize="11.5" Foreground="#6B21A8" /><TextBlock Text="Gửi phiếu lương" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" /></StackPanel>
                         </Border>
                     </UniformGrid>
                 </Grid>
@@ -584,7 +585,7 @@
             <TabItem FontWeight="SemiBold">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE897;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#64748B" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE897;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
                         <TextBlock Text="Hướng dẫn" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                     </StackPanel>
                 </TabItem.Header>

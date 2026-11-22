@@ -89,10 +89,18 @@ public sealed partial class OrderCostingService
         }
         var warehouseId = warehouse.Id;
 
+        var requestedVariantIds = request.Items.Select(x => x.ProductVariantId).Distinct().ToList();
+        var balancesByVariant = await _db.InventoryBalances
+            .Where(x => x.CompanyId == companyId
+                && x.BusinessUnitId == businessUnitId
+                && x.WarehouseId == warehouseId
+                && requestedVariantIds.Contains(x.ProductVariantId))
+            .ToDictionaryAsync(x => x.ProductVariantId, ct);
+
         foreach (var item in request.Items)
         {
-            var balance = await _db.InventoryBalances.FirstOrDefaultAsync(x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.WarehouseId == warehouseId && x.ProductVariantId == item.ProductVariantId, ct);
-            if (balance == null || balance.OnHandQuantity - balance.ReservedQuantity < item.Quantity)
+            if (!balancesByVariant.TryGetValue(item.ProductVariantId, out var balance)
+                || balance.OnHandQuantity - balance.ReservedQuantity < item.Quantity)
             {
                 return Result<SalesOrderCostDto>.Failure($"Tồn kho khả dụng không đủ cho SKU {variants[item.ProductVariantId].Sku}.");
             }
@@ -197,7 +205,7 @@ public sealed partial class OrderCostingService
                 CostStatus = CostStatus.Actual,
                 TotalCogs = item.Quantity * variant.CostPrice
             });
-            var balance = await _db.InventoryBalances.FirstAsync(x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.WarehouseId == warehouseId && x.ProductVariantId == item.ProductVariantId, ct);
+            var balance = balancesByVariant[item.ProductVariantId];
             balance.ReservedQuantity += item.Quantity;
         }
 

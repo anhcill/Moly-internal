@@ -164,7 +164,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext,
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ApplyAuditAndSoftDelete();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyAuditAndSoftDelete();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyAuditAndSoftDelete()
     {
         var utcNow = _dateTimeProvider?.UtcNow ?? DateTime.UtcNow;
         var currentUsername = _currentUserService?.Username ?? "System";
@@ -197,7 +209,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext,
                 entry.Entity.DeletedBy = currentUsername;
             }
         }
-
-        return base.SaveChangesAsync(cancellationToken);
     }
 }

@@ -5,8 +5,13 @@
              blue selection from hiding semantic column colors. -->
         <Style TargetType="DataGrid">
             <Setter Property="behaviors:DataGridColumnWidthPersistence.IsEnabled" Value="True" />
+            <Setter Property="behaviors:ScrollBubbleBehavior.EnableBubble" Value="True" />
+            <Setter Property="behaviors:DataGridEmptyStateBehavior.IsEnabled" Value="True" />
+            <Setter Property="MaxHeight" Value="620" />
             <Setter Property="CanUserResizeColumns" Value="True" />
             <Setter Property="MinColumnWidth" Value="90" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="HeadersVisibility" Value="Column" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
             <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
             <Setter Property="FontSize" Value="13" />
@@ -44,6 +49,7 @@
         </Style>
 
         <Style TargetType="DataGridCell">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -128,11 +134,13 @@
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{DynamicResource TableHeaderBgBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="11.5" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="Padding" Value="12,10" />
             <Setter Property="BorderBrush" Value="{DynamicResource TableHeaderBorderBrush}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="ContentTemplate">
                 <Setter.Value>
                     <DataTemplate>
@@ -140,6 +148,12 @@
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource CardAltBgBrush}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="ListViewItem">

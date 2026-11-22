@@ -264,10 +264,49 @@ public sealed class EmployeeService : IEmployeeService
         return $"MOLY-{yearPrefix}{nextSeq:D3}";
     }
 
+    private async Task<bool> IsEducationTeacherCandidateAsync(Employee employee, CancellationToken ct)
+    {
+        if (employee.BusinessUnitId.HasValue)
+        {
+            var buCode = await _db.BusinessUnits.AsNoTracking()
+                .Where(b => b.Id == employee.BusinessUnitId.Value && b.CompanyId == employee.CompanyId)
+                .Select(b => b.Code)
+                .FirstOrDefaultAsync(ct);
+            if (!string.IsNullOrWhiteSpace(buCode))
+            {
+                if (string.Equals(buCode, "CSCA", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(buCode, "EDTECH", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Explicitly skip non-education units (e.g., Fashion/Warehouse) unless assigned to a class.
+                return await _db.CscaClassStaffs.AsNoTracking()
+                    .AnyAsync(s => s.EmployeeId == employee.Id && s.Class.CompanyId == employee.CompanyId && !s.Class.IsDeleted, ct);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(employee.Position))
+        {
+            var pos = employee.Position.Trim().ToLowerInvariant();
+            if (pos.Contains("giáo viên") || pos.Contains("giảng viên") || pos.Contains("trợ giảng") ||
+                pos.Contains("teacher") || pos.Contains("mentor") || pos.Contains("tutor"))
+            {
+                return true;
+            }
+        }
+
+        return await _db.CscaClassStaffs.AsNoTracking()
+            .AnyAsync(s => s.EmployeeId == employee.Id && s.Class.CompanyId == employee.CompanyId && !s.Class.IsDeleted, ct);
+    }
+
     private async Task TrySyncTeacherToLmsAsync(Employee employee, CancellationToken ct)
     {
         try
         {
+            if (!await IsEducationTeacherCandidateAsync(employee, ct))
+                return;
+
             var link = await _db.LmsCourseLinks.FirstOrDefaultAsync(l =>
                 l.CompanyId == employee.CompanyId &&
                 l.SourceSystem == LmsIntegrationSourceSystems.CscaCourseLms &&
@@ -294,6 +333,8 @@ public sealed class EmployeeService : IEmployeeService
                 Phone = employee.Phone,
                 employee.Position,
                 Department = deptName,
+                HourlyRate = employee.PartTimeUnitRate ?? 0m,
+                BaseSalary = employee.BaseSalary,
                 AccountStatus = LmsTeacherRosterSync.HasActiveAccount(employee) ? "active" : "suspended",
                 SourceUpdatedAt = now
             }, now, correlationId);
@@ -462,6 +503,8 @@ public sealed class EmployeeService : IEmployeeService
         var previousFullName = emp.FullName;
         var previousEmail = emp.Email;
         var previousStatus = emp.Status;
+        var previousBaseSalary = emp.BaseSalary;
+        var previousPartTimeUnitRate = emp.PartTimeUnitRate;
         var linkedTeacherClasses = await LoadLinkedTeacherClassesAsync(emp, ct);
 
         var employmentType = request.EmploymentType ?? emp.EmploymentType;
@@ -545,7 +588,9 @@ public sealed class EmployeeService : IEmployeeService
         var teacherIdentityChanged =
             !string.Equals(previousFullName, emp.FullName, StringComparison.Ordinal) ||
             !string.Equals(previousEmail, emp.Email, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(previousStatus, emp.Status, StringComparison.OrdinalIgnoreCase);
+            !string.Equals(previousStatus, emp.Status, StringComparison.OrdinalIgnoreCase) ||
+            previousBaseSalary != emp.BaseSalary ||
+            previousPartTimeUnitRate != emp.PartTimeUnitRate;
         if (teacherIdentityChanged)
         {
             var syncError = await QueueTeacherRosterUpdatesAsync(

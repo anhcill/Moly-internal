@@ -84,7 +84,7 @@ public partial class FinanceWorkspaceView : UserControl
     }
 
     private void Refresh_Click(object sender, RoutedEventArgs e) => RefreshRequested?.Invoke(this, e);
-    private void ExportCsv_Click(object sender, RoutedEventArgs e)
+    private async void ExportCsv_Click(object sender, RoutedEventArgs e)
     {
         if (_report is null) return;
         try
@@ -94,7 +94,7 @@ public partial class FinanceWorkspaceView : UserControl
             var csv = new StringBuilder("Month,Kind,OpeningCash,Inflow,Outflow,ActualInflow,ActualOutflow,ForecastInflow,ForecastOutflow,StudentCollections,TeacherPayments,PlannedIncome,PlannedExpense,ClosingCash\r\n");
             foreach (var row in _report.Months)
                 csv.AppendLine(string.Join(',', new object[] { row.Month.ToString("yyyy-MM", CultureInfo.InvariantCulture), row.Kind, row.OpeningCash, row.TotalInflow, row.TotalOutflow, row.ActualInflow, row.ActualOutflow, row.ForecastInflow, row.ForecastOutflow, row.StudentCollections, row.TeacherPayments, row.PlannedIncome, row.PlannedExpense, row.ClosingCash }.Select(Csv)));
-            File.WriteAllText(dialog.FileName, csv.ToString(), new UTF8Encoding(true));
+            await File.WriteAllTextAsync(dialog.FileName, csv.ToString(), new UTF8Encoding(true));
         }
         catch (Exception ex) { ShowError(ex.Message); }
     }
@@ -339,17 +339,25 @@ public partial class FinanceWorkspaceView : UserControl
         var min = Math.Min(0m, values.Min()); var max = Math.Max(1m, values.Max()); var range = max - min;
         double Y(decimal amount) => top + (double)((max - amount) / range) * plotHeight;
         var step = plotWidth / rows.Count;
+        var gridLineBrush = ThemeService.GetBrush("BorderLightBrush", "#CBD5E1");
+        var zeroLineBrush = ThemeService.GetBrush("BorderMediumBrush", "#64748B");
+        var axisLabelBrush = ThemeService.GetBrush("TextMutedBrush", "#64748B");
+        var inflowBrush = (Brush)new SolidColorBrush(Color.FromRgb(16, 185, 129));
+        var outflowBrush = (Brush)new SolidColorBrush(Color.FromRgb(239, 68, 68));
+        var balanceBrush = ThemeService.GetBrush("PrimaryBrush", "#6366F1");
+        var mixedBrush = (Brush)new SolidColorBrush(Color.FromRgb(245, 158, 11));
+
         for (var i = 0; i <= 4; i++)
         {
             var value = min + range * i / 4; var y = Y(value);
-            FinanceChartCanvas.Children.Add(new Line { X1 = left, X2 = width - right, Y1 = y, Y2 = y, Stroke = value == 0 ? Brushes.SlateGray : Brushes.LightGray, StrokeThickness = value == 0 ? 1.2 : .6 });
-            Label($"{value / 1_000_000m:0.#}tr", 0, y - 7, Brushes.Gray, 9);
+            FinanceChartCanvas.Children.Add(new Line { X1 = left, X2 = width - right, Y1 = y, Y2 = y, Stroke = value == 0 ? zeroLineBrush : gridLineBrush, StrokeThickness = value == 0 ? 1.2 : .6 });
+            Label($"{value / 1_000_000m:0.#}tr", 0, y - 7, axisLabelBrush, 9);
         }
-        var series = new[] { (Brush: (Brush)Brushes.SeaGreen, Values: rows.Select(x => x.TotalInflow).ToArray()), (Brush: (Brush)Brushes.IndianRed, Values: rows.Select(x => x.TotalOutflow).ToArray()), (Brush: (Brush)Brushes.Indigo, Values: rows.Select(x => x.ClosingCash).ToArray()) };
+        var series = new[] { (Brush: inflowBrush, Values: rows.Select(x => x.TotalInflow).ToArray()), (Brush: outflowBrush, Values: rows.Select(x => x.TotalOutflow).ToArray()), (Brush: balanceBrush, Values: rows.Select(x => x.ClosingCash).ToArray()) };
         for (var i = 0; i < rows.Count; i++)
         {
             var x = left + step * (i + .5); var forecast = rows[i].Kind.Equals("Forecast", StringComparison.OrdinalIgnoreCase); var mixed = rows[i].Kind.Equals("Mixed", StringComparison.OrdinalIgnoreCase);
-            var shade = new Rectangle { Width = step, Height = plotHeight, Fill = forecast ? new SolidColorBrush(Color.FromArgb(16, 99, 102, 241)) : mixed ? new SolidColorBrush(Color.FromArgb(20, 245, 158, 11)) : Brushes.Transparent };
+            var shade = new Rectangle { Width = step, Height = plotHeight, Fill = forecast ? new SolidColorBrush(Color.FromArgb(24, 99, 102, 241)) : mixed ? new SolidColorBrush(Color.FromArgb(24, 245, 158, 11)) : Brushes.Transparent };
             Canvas.SetLeft(shade, left + i * step); Canvas.SetTop(shade, top); FinanceChartCanvas.Children.Insert(0, shade);
             foreach (var data in series)
             {
@@ -357,8 +365,8 @@ public partial class FinanceWorkspaceView : UserControl
                 if (i > 0) FinanceChartCanvas.Children.Add(new Line { X1 = x - step, X2 = x, Y1 = Y(data.Values[i - 1]), Y2 = y, Stroke = data.Brush, StrokeThickness = 2, StrokeDashArray = forecast || mixed ? new DoubleCollection { 4, 3 } : null });
                 var point = new Ellipse { Width = 5, Height = 5, Fill = data.Brush, ToolTip = $"{rows[i].MonthLabel} · {rows[i].KindLabel}: {data.Values[i]:N0} đ" }; Canvas.SetLeft(point, x - 2.5); Canvas.SetTop(point, y - 2.5); FinanceChartCanvas.Children.Add(point);
             }
-            Label(rows[i].MonthLabel, x - 21, height - 33, Brushes.SlateGray, rows.Count > 12 ? 8 : 9);
-            Label(forecast ? "DB" : mixed ? "TT+DB" : "TT", x - 11, height - 19, forecast ? Brushes.Indigo : mixed ? Brushes.DarkGoldenrod : Brushes.SlateGray, 8);
+            Label(rows[i].MonthLabel, x - 21, height - 33, axisLabelBrush, rows.Count > 12 ? 8 : 9);
+            Label(forecast ? "DB" : mixed ? "TT+DB" : "TT", x - 11, height - 19, forecast ? balanceBrush : mixed ? mixedBrush : axisLabelBrush, 8);
         }
     }
     private void Label(string text, double x, double y, Brush color, double size)

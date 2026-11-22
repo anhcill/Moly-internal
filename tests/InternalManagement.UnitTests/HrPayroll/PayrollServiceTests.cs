@@ -448,7 +448,7 @@ public class PayrollServiceTests
             {
                 ClassId = cls.Id, LessonDate = new DateOnly(2026, 8, day),
                 StartTime = new TimeSpan(8, 0, 0), EndTime = new TimeSpan(10, 0, 0),
-                Status = "Scheduled"
+                Status = "Completed"
             });
         db.CscaLessonSessions.Add(new CscaLessonSession
         {
@@ -501,7 +501,7 @@ public class PayrollServiceTests
                 LessonDate = new DateOnly(2026, 8, day),
                 StartTime = new TimeSpan(8, 0, 0),
                 EndTime = new TimeSpan(10, 0, 0),
-                Status = "Scheduled"
+                Status = "Completed"
             })
             .ToList();
         db.CscaLessonSessions.AddRange(sessions);

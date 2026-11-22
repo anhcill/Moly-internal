@@ -66,17 +66,26 @@ public partial class CscaClassDetailWindow
         for (var day = 0; day < 7; day++)
             ScheduleHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 100 });
 
+        var cardBg = ThemeService.GetBrush("CardBgBrush", "#FFFFFF");
+        var cardAltBg = ThemeService.GetBrush("CardAltBgBrush", "#F8FAFC");
+        var borderLight = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0");
+        var textDark = ThemeService.GetBrush("TextDarkBrush", "#0F172A");
+        var textMuted = ThemeService.GetBrush("TextMutedBrush", "#64748B");
+        var textSubtle = ThemeService.GetBrush("TextSubtleBrush", "#94A3B8");
+        var todayBg = ThemeService.GetBrush("SurfaceAccentBgBrush", "#EEF2FF");
+        var primaryBrush = ThemeService.GetBrush("PrimaryBrush", "#4F46E5");
+
         var corner = new Border
         {
-            Background = Brush("#F8FAFC"),
-            BorderBrush = Brush("#E2E8F0"),
+            Background = cardAltBg,
+            BorderBrush = borderLight,
             BorderThickness = new Thickness(0, 0, 1, 1),
             Child = new TextBlock
             {
                 Text = "GIỜ",
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = Brush("#94A3B8"),
+                Foreground = textSubtle,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             }
@@ -93,10 +102,10 @@ public partial class CscaClassDetailWindow
         for (var day = 0; day < 7; day++)
             ScheduleCalendarGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 100 });
 
-        var gutter = new Canvas { Height = calendarHeight, Background = Brushes.White };
+        var gutter = new Canvas { Height = calendarHeight, Background = cardBg };
         for (var hour = firstHour; hour <= lastHour; hour++)
         {
-            var label = new TextBlock { Text = $"{hour:00}:00", FontSize = 11, Foreground = Brush("#64748B") };
+            var label = new TextBlock { Text = $"{hour:00}:00", FontSize = 11, Foreground = textMuted };
             Canvas.SetTop(label, Math.Min(calendarHeight - 16, Math.Max(0, (hour - firstHour) * hourHeight - 7)));
             Canvas.SetLeft(label, 8);
             gutter.Children.Add(label);
@@ -104,9 +113,9 @@ public partial class CscaClassDetailWindow
         var gutterBorder = new Border
         {
             Child = gutter,
-            BorderBrush = Brush("#E2E8F0"),
+            BorderBrush = borderLight,
             BorderThickness = new Thickness(0, 0, 1, 0),
-            Background = Brushes.White
+            Background = cardBg
         };
         Grid.SetColumn(gutterBorder, 0);
         ScheduleCalendarGrid.Children.Add(gutterBorder);
@@ -120,8 +129,8 @@ public partial class CscaClassDetailWindow
             var isToday = date.Date == DateTime.Today;
             var header = new Border
             {
-                Background = isToday ? Brush("#EEF2FF") : Brushes.White,
-                BorderBrush = Brush("#E2E8F0"),
+                Background = isToday ? todayBg : cardBg,
+                BorderBrush = borderLight,
                 BorderThickness = new Thickness(0, 0, 1, 1),
                 Child = new StackPanel
                 {
@@ -129,15 +138,15 @@ public partial class CscaClassDetailWindow
                     VerticalAlignment = VerticalAlignment.Center,
                     Children =
                     {
-                        new TextBlock { Text = dayIndex == 6 ? "CHỦ NHẬT" : $"THỨ {dayIndex + 2}", FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = Brush("#64748B"), HorizontalAlignment = HorizontalAlignment.Center },
-                        new TextBlock { Text = date.ToString("dd/MM"), FontSize = 16, FontWeight = FontWeights.Bold, Foreground = isToday ? Brush("#4F46E5") : Brush("#0F172A"), HorizontalAlignment = HorizontalAlignment.Center }
+                        new TextBlock { Text = dayIndex == 6 ? "CHỦ NHẬT" : $"THỨ {dayIndex + 2}", FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = textMuted, HorizontalAlignment = HorizontalAlignment.Center },
+                        new TextBlock { Text = date.ToString("dd/MM"), FontSize = 16, FontWeight = FontWeights.Bold, Foreground = isToday ? primaryBrush : textDark, HorizontalAlignment = HorizontalAlignment.Center }
                     }
                 }
             };
             Grid.SetColumn(header, dayIndex + 1);
             ScheduleHeaderGrid.Children.Add(header);
 
-            var canvas = new Canvas { Height = calendarHeight, Background = dateIsInCourse ? Brushes.White : Brush("#F8FAFC") };
+            var canvas = new Canvas { Height = calendarHeight, Background = dateIsInCourse ? cardBg : cardAltBg };
             canvas.SizeChanged += (s, e) =>
             {
                 var newW = Math.Max(70, e.NewSize.Width - 10);
@@ -148,17 +157,6 @@ public partial class CscaClassDetailWindow
                     else if (child is Border b && b.Height == 1)
                         b.Width = e.NewSize.Width;
                 }
-            };
-            canvas.SizeChanged += (s, e) =>
-            {
-                var newW = Math.Max(70, e.NewSize.Width - 10);
-                foreach (UIElement child in canvas.Children)
-                {
-                    if (child is Button btn)
-                        btn.Width = newW;
-                    else if (child is Border b && b.Height == 1)
-                        b.Width = e.NewSize.Width;
-                }
             };
             for (var hour = firstHour; hour <= lastHour; hour++)
             {
@@ -409,8 +407,8 @@ public partial class CscaClassDetailWindow
         try
         {
             if (!await _apiClient.UpdateCscaClassAsync(_classId, _detail.Name, _detail.Batch, _detail.Schedule,
-                    _detail.TuitionFee, fromDate.ToDateTime(TimeOnly.MinValue), toDate.ToDateTime(TimeOnly.MinValue),
-                    _detail.Status, _detail.CourseId))
+                    _detail.IsTrial ? 0m : _detail.TuitionFee, fromDate.ToDateTime(TimeOnly.MinValue), toDate.ToDateTime(TimeOnly.MinValue),
+                    _detail.Status, _detail.CourseId, _detail.IsTrial, _detail.ClassType, _detail.RecordingContentMode, _detail.SourceClassId))
             {
                 ShowInvalid("Không lưu được ngày bắt đầu và kết thúc của lớp. Hãy kiểm tra quyền hoặc dữ liệu lớp.");
                 return;

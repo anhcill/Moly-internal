@@ -37,6 +37,8 @@ public sealed class FinanceEntityConfigurations :
     {
         builder.HasKey(t => t.Id);
         builder.HasIndex(t => new { t.CompanyId, t.TransactionDate });
+        builder.HasIndex(t => new { t.CompanyId, t.BusinessUnitId, t.TransactionDate });
+        builder.HasIndex(t => new { t.CompanyId, t.ReferenceType, t.ReferenceId });
         builder.Property(t => t.Amount).HasPrecision(18, 2);
         builder.Property(t => t.TransactionType).HasConversion<string>();
         builder.HasOne(t => t.Category).WithMany().HasForeignKey(t => t.CategoryId).OnDelete(DeleteBehavior.SetNull);

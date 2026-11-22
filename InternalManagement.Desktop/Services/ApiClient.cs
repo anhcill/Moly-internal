@@ -16,6 +16,7 @@ public sealed partial class ApiClient : IDisposable
         PropertyNameCaseInsensitive = true
     };
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private readonly object _authHeaderLock = new();
     private int _authenticationExpired;
 
     public string? CurrentAccessToken { get; private set; }
@@ -49,17 +50,20 @@ public sealed partial class ApiClient : IDisposable
 
     public void SetBearerToken(string? token)
     {
-        CurrentAccessToken = token;
-        if (!string.IsNullOrWhiteSpace(token))
+        lock (_authHeaderLock)
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        else
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            CurrentRefreshToken = null;
-            TokenExpiresAt = null;
-            CurrentSession = null;
+            CurrentAccessToken = token;
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = null;
+                CurrentRefreshToken = null;
+                TokenExpiresAt = null;
+                CurrentSession = null;
+            }
         }
     }
 
@@ -78,11 +82,14 @@ public sealed partial class ApiClient : IDisposable
 
     private void ExpireAuthentication()
     {
-        CurrentAccessToken = null;
-        CurrentRefreshToken = null;
-        TokenExpiresAt = null;
-        CurrentSession = null;
-        _httpClient.DefaultRequestHeaders.Authorization = null;
+        lock (_authHeaderLock)
+        {
+            CurrentAccessToken = null;
+            CurrentRefreshToken = null;
+            TokenExpiresAt = null;
+            CurrentSession = null;
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
 
         if (Interlocked.Exchange(ref _authenticationExpired, 1) == 0)
         {
@@ -120,8 +127,24 @@ public sealed partial class ApiClient : IDisposable
                 new { RefreshToken = CurrentRefreshToken },
                 _jsonOptions,
                 ct);
-            var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LoginResponse>>(_jsonOptions, ct);
-            if (!response.IsSuccessStatusCode || envelope?.Success != true || envelope.Data is null)
+            if (!response.IsSuccessStatusCode)
+            {
+                ExpireAuthentication();
+                return false;
+            }
+
+            ApiEnvelope<LoginResponse>? envelope;
+            try
+            {
+                envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<LoginResponse>>(_jsonOptions, ct);
+            }
+            catch (JsonException)
+            {
+                ExpireAuthentication();
+                return false;
+            }
+
+            if (envelope?.Success != true || envelope.Data is null)
             {
                 ExpireAuthentication();
                 return false;

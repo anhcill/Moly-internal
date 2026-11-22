@@ -161,7 +161,9 @@ public partial class MainWindow
             new PromptField("code", "Mã lớp (để trống để hệ thống tự tạo)", InitialValue: nextCode, IsRequired: false),
             new PromptField("name", "Tên lớp học"),
             new PromptField("batch", "Đợt / Khóa tuyển sinh"),
-            new PromptField("tuitionFee", "Học phí (VND) - tự động về 0đ nếu là lớp học thử", InitialValue: "0")
+            new PromptField("tuitionFee", "Học phí (VND) - tự động về 0đ nếu là lớp học thử", InitialValue: "0"),
+            new PromptField("startDate", "Ngày bắt đầu (tùy chọn)", IsRequired: false, Kind: PromptFieldKind.Date),
+            new PromptField("endDate", "Ngày kết thúc (tùy chọn)", IsRequired: false, Kind: PromptFieldKind.Date)
         }, out var values)) return;
 
         var isTrial = values.TryGetValue("billingType", out var billingType) && billingType == "trial";
@@ -218,10 +220,19 @@ public partial class MainWindow
             sourceClassId = null;
         }
 
+        DateTime? parsedStartDate = DateTime.TryParseExact(values.GetValueOrDefault("startDate")?.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var sDate) ? sDate : null;
+        DateTime? parsedEndDate = DateTime.TryParseExact(values.GetValueOrDefault("endDate")?.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var eDate) ? eDate : null;
+        if (parsedStartDate.HasValue && parsedEndDate.HasValue && parsedEndDate.Value < parsedStartDate.Value)
+        {
+            MessageBox.Show("Ngày kết thúc không được trước ngày bắt đầu.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         await RunWithBusyAsync("Đang tạo lớp học mới...", async () =>
         {
             await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId,
-                isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId);
+                isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId,
+                startDate: parsedStartDate, endDate: parsedEndDate);
             await LoadCscaClassesAsync();
             await LoadCoursesAsync();
             var nextStep = classType == "RECORDING"
@@ -275,6 +286,8 @@ public partial class MainWindow
             new PromptField("sourceClassId", "Lớp Live nguồn (chỉ bắt buộc với Record kế thừa)", cls.SourceClassId?.ToString() ?? string.Empty,
                 IsRequired: false, Options: sourceOptions, RequiredWhenKey: "learningMode", RequiredWhenValue: "RECORDING_MIRROR"),
             new PromptField("tuitionFee", "Học phí", cls.TuitionFee.ToString("0", CultureInfo.InvariantCulture)),
+            new PromptField("startDate", "Ngày bắt đầu", cls.StartDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
+            new PromptField("endDate", "Ngày kết thúc", cls.EndDate?.ToString("yyyy-MM-dd"), IsRequired: false, Kind: PromptFieldKind.Date),
             new PromptField("status", "Trạng thái", cls.Status, Options: new[]
             {
                 new PromptOption("Active", "Active (Đang hoạt động)"),
@@ -316,9 +329,17 @@ public partial class MainWindow
         }
         if (classType == "LIVE" || recordingContentMode == "INDEPENDENT") sourceClassId = null;
 
+        DateTime? editStartDate = DateTime.TryParseExact(values.GetValueOrDefault("startDate")?.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var editStart) ? editStart : cls.StartDate;
+        DateTime? editEndDate = DateTime.TryParseExact(values.GetValueOrDefault("endDate")?.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var editEnd) ? editEnd : cls.EndDate;
+        if (editStartDate.HasValue && editEndDate.HasValue && editEndDate.Value < editStartDate.Value)
+        {
+            MessageBox.Show("Ngày kết thúc không được trước ngày bắt đầu.", "Dữ liệu không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         await RunWithBusyAsync("Đang cập nhật lớp học...", async () =>
         {
-            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, cls.StartDate, cls.EndDate, values["status"],
+            await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, editStartDate, editEndDate, values["status"],
                 isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId);
             await LoadCscaClassesAsync();
             MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);

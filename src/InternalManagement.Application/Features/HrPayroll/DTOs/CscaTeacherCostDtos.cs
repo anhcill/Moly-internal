@@ -81,4 +81,6 @@ public sealed record CscaTeacherCostSyncResultDto(
     int Inserted,
     int Updated,
     DateTime CalculatedAt,
-    DateTime SyncedAt);
+    DateTime SyncedAt,
+    int UnmappedTeacherCount = 0,
+    IReadOnlyList<string>? UnmappedTeachers = null);

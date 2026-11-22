@@ -18,20 +18,27 @@ public class HealthController : BaseApiController
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var report = await _healthCheckService.CheckHealthAsync(cancellationToken);
+        var isAuthenticated = User.Identity?.IsAuthenticated == true;
 
-        var result = new
-        {
-            Status = report.Status.ToString(),
-            TotalDuration = report.TotalDuration.TotalMilliseconds,
-            Entries = report.Entries.Select(e => new
+        object result = isAuthenticated
+            ? new
             {
-                Key = e.Key,
-                Status = e.Value.Status.ToString(),
-                Description = e.Value.Description,
-                Duration = e.Value.Duration.TotalMilliseconds,
-                Data = e.Value.Data
-            })
-        };
+                Status = report.Status.ToString(),
+                TotalDuration = report.TotalDuration.TotalMilliseconds,
+                Entries = report.Entries.Select(e => new
+                {
+                    Key = e.Key,
+                    Status = e.Value.Status.ToString(),
+                    Description = e.Value.Description,
+                    Duration = e.Value.Duration.TotalMilliseconds,
+                    Data = e.Value.Data
+                })
+            }
+            : new
+            {
+                Status = report.Status.ToString(),
+                TotalDuration = report.TotalDuration.TotalMilliseconds
+            };
 
         return report.Status == HealthStatus.Healthy
             ? Ok(result)

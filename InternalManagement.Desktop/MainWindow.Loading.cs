@@ -23,10 +23,10 @@ public partial class MainWindow
     {
         await _dashboardViewModel.RefreshAsync(ViewDashboardContainer.SelectedScope);
         var isHealthy = _dashboardViewModel.IsApiHealthy;
-        ApiHealthBorder.Background = isHealthy ? new SolidColorBrush(Color.FromRgb(236, 253, 245)) : new SolidColorBrush(Color.FromRgb(254, 242, 242));
-        ApiHealthBorder.BorderBrush = isHealthy ? new SolidColorBrush(Color.FromRgb(167, 243, 208)) : new SolidColorBrush(Color.FromRgb(254, 202, 202));
+        ApiHealthBorder.SetResourceReference(Border.BackgroundProperty, isHealthy ? "SurfaceSuccessBgBrush" : "SurfaceDangerBgBrush");
+        ApiHealthBorder.SetResourceReference(Border.BorderBrushProperty, isHealthy ? "SurfaceSuccessBorderBrush" : "SurfaceDangerBorderBrush");
         ApiHealthDot.Fill = isHealthy ? new SolidColorBrush(Color.FromRgb(16, 185, 129)) : new SolidColorBrush(Color.FromRgb(239, 68, 68));
-        ApiHealthText.Foreground = isHealthy ? new SolidColorBrush(Color.FromRgb(6, 95, 70)) : new SolidColorBrush(Color.FromRgb(153, 27, 27));
+        ApiHealthText.SetResourceReference(TextBlock.ForegroundProperty, isHealthy ? "SurfaceSuccessTextBrush" : "SurfaceDangerTextBrush");
         ApiHealthText.Text = isHealthy ? "API Trực Tuyến" : "API Không Khả Dụng";
     }
 
@@ -375,17 +375,23 @@ public partial class MainWindow
 
     private async Task LoadSyncRunsAsync()
     {
-        var data = await _apiClient.GetSyncRunsAsync();
+        var runsTask = _apiClient.GetSyncRunsAsync();
+        var deadLettersTask = _apiClient.GetDeadLettersAsync(resolved: false);
+        await Task.WhenAll(runsTask, deadLettersTask);
+
+        var data = await runsTask;
+        var deadLetters = await deadLettersTask;
+
         if (data is null)
         {
             ViewSyncContainer.SetRuns(null);
-            ViewSyncContainer.SetDeadLetters(null);
+            ViewSyncContainer.SetDeadLetters(deadLetters?.Items);
             SetViewStatus("Không tải được lịch sử đồng bộ. Vui lòng thử lại.", isError: true);
             return;
         }
 
         ViewSyncContainer.SetRuns(data.Items);
-        await LoadDeadLettersAsync();
+        ViewSyncContainer.SetDeadLetters(deadLetters?.Items);
         SetLoadedStatus("Đợt đồng bộ", data.Items.Count);
     }
 

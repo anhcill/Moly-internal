@@ -27,10 +27,6 @@ public partial class InterviewCustomersView : UserControl
 
     private void InterviewSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (InterviewSearchPlaceholder is null) return;
-        InterviewSearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchText)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
         SearchChanged?.Invoke(sender, e);
     }
 

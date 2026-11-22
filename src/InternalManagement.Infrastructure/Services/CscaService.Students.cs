@@ -18,15 +18,17 @@ namespace InternalManagement.Infrastructure.Services;
 
 public sealed partial class CscaService
 {
-    private async Task<string> GenerateNextStudentCodeAsync(string? email, string? phoneNumber, CancellationToken ct)
+    private async Task<string> GenerateNextStudentCodeAsync(Guid companyId, string? email, string? phoneNumber, CancellationToken ct)
     {
         var normalizedEmail = NormalizeStudentEmail(email);
         var normalizedPhone = NormalizeStudentPhone(phoneNumber);
+        var scopedStudents = _db.CscaClassStudents
+            .AsNoTracking()
+            .Where(s => s.Class.CompanyId == companyId && !s.Class.IsDeleted);
 
         if (normalizedEmail is not null)
         {
-            var existingByEmail = await _db.CscaClassStudents
-                .AsNoTracking()
+            var existingByEmail = await scopedStudents
                 .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.Email != null && s.Email.ToUpper() == normalizedEmail)
                 .OrderBy(s => s.CreatedAt)
                 .Select(s => s.StudentCode)
@@ -38,8 +40,7 @@ public sealed partial class CscaService
 
         if (normalizedPhone is not null)
         {
-            var existingByPhone = await _db.CscaClassStudents
-                .AsNoTracking()
+            var existingByPhone = await scopedStudents
                 .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.PhoneNumber != null && s.PhoneNumber.Contains(normalizedPhone))
                 .OrderBy(s => s.CreatedAt)
                 .Select(s => s.StudentCode)
@@ -49,8 +50,7 @@ public sealed partial class CscaService
                 return existingByPhone;
         }
 
-        var studentCodes = await _db.CscaClassStudents
-            .AsNoTracking()
+        var studentCodes = await scopedStudents
             .Where(s => !string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.StartsWith("CSCA-"))
             .Select(s => s.StudentCode)
             .ToListAsync(ct);
@@ -96,6 +96,15 @@ public sealed partial class CscaService
         {
             return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {cls.TuitionFee:N0} đ.");
         }
+        var payableTuition = cls.IsTrial ? 0m : GetPayableTuition(cls.TuitionFee, request.DiscountAmount);
+        if (request.PaidAmount > payableTuition)
+        {
+            return Result<CscaStudentDto>.Failure($"Số tiền đã thanh toán ({request.PaidAmount:N0} đ) không được vượt quá học phí phải đóng ({payableTuition:N0} đ).");
+        }
+        if (request.PaidAmount > 0 && request.PaymentStatus == PaymentStatus.Cancelled)
+        {
+            return Result<CscaStudentDto>.Failure("Học viên đã hủy không thể có số tiền đã thanh toán lớn hơn 0.");
+        }
 
         var email = CleanStudentContact(request.Email);
         var phoneNumber = CleanStudentContact(request.PhoneNumber);
@@ -107,7 +116,7 @@ public sealed partial class CscaService
 
         var studentCode = !string.IsNullOrWhiteSpace(request.StudentCode)
             ? request.StudentCode.Trim().ToUpperInvariant()
-            : await GenerateNextStudentCodeAsync(email, phoneNumber, ct);
+            : await GenerateNextStudentCodeAsync(cls.CompanyId, email, phoneNumber, ct);
 
         var student = new CscaClassStudent
         {
@@ -191,6 +200,13 @@ public sealed partial class CscaService
         {
             return Result<CscaStudentDto>.Failure($"Mức giảm giá phải từ 0 đến {student.Class.TuitionFee:N0} đ.");
         }
+        var updatedPayableTuition = student.Class.IsTrial ? 0m : GetPayableTuition(student.Class.TuitionFee, request.DiscountAmount);
+        if (request.PaidAmount > updatedPayableTuition)
+        {
+            return Result<CscaStudentDto>.Failure($"Số tiền đã thanh toán ({request.PaidAmount:N0} đ) không được vượt quá học phí phải đóng ({updatedPayableTuition:N0} đ).");
+        }
+        var previousPaymentStatus = student.PaymentStatus;
+        var previousPaidAmount = student.PaidAmount;
 
         var updatedEmail = request.Email is null ? student.Email : CleanStudentContact(request.Email);
         var updatedPhoneNumber = request.PhoneNumber is null ? student.PhoneNumber : CleanStudentContact(request.PhoneNumber);
@@ -220,7 +236,7 @@ public sealed partial class CscaService
         }
         else if (string.IsNullOrWhiteSpace(student.StudentCode))
         {
-            student.StudentCode = await GenerateNextStudentCodeAsync(student.Email, student.PhoneNumber, ct);
+            student.StudentCode = await GenerateNextStudentCodeAsync(student.Class.CompanyId, student.Email, student.PhoneNumber, ct);
         }
 
         if (request.StudentName != null)
@@ -247,6 +263,23 @@ public sealed partial class CscaService
         if (student.Class != null)
         {
             await SyncStudentDataLinksAsync(student, student.Class, ct);
+            if (_financePostingService is not null &&
+                managedReceivable is null &&
+                previousPaidAmount > 0 &&
+                previousPaymentStatus is PaymentStatus.Paid or PaymentStatus.Partial &&
+                student.PaymentStatus is PaymentStatus.Cancelled or PaymentStatus.Pending)
+            {
+                await _financePostingService.PostAsync(new FinancePostingRequest(
+                    student.Class.CompanyId,
+                    student.Class.BusinessUnitId,
+                    TransactionType.Expense,
+                    previousPaidAmount,
+                    DateTime.UtcNow,
+                    "CscaClassStudentReversal",
+                    student.Id,
+                    $"Đảo bút toán học phí CSCA {student.StudentName} ({student.Class.Code}) do đổi trạng thái {student.PaymentStatus}",
+                    student.BusinessDocumentId), ct);
+            }
             await QueueLmsAccessLifecycleAsync(student, student.Class, ct);
         }
 
@@ -318,6 +351,7 @@ public sealed partial class CscaService
                 "Chưa thể xóa vì không kết nối được dịch vụ thu hồi quyền LMS. Vui lòng thử lại sau.");
         }
 
+        var originalPaymentStatus = student.PaymentStatus;
         if (grants.Count > 0 || accountLinks.Count > 0)
         {
             if (student.PaymentStatus is not PaymentStatus.Cancelled and not PaymentStatus.Refunded)
@@ -353,6 +387,23 @@ public sealed partial class CscaService
         }
 
         var cls = student.Class;
+        if (_financePostingService is not null &&
+            cls != null &&
+            student.PaidAmount > 0 &&
+            originalPaymentStatus is PaymentStatus.Paid or PaymentStatus.Partial)
+        {
+            await _financePostingService.PostAsync(new FinancePostingRequest(
+                cls.CompanyId,
+                cls.BusinessUnitId,
+                TransactionType.Expense,
+                student.PaidAmount,
+                DateTime.UtcNow,
+                "CscaClassStudentReversal",
+                student.Id,
+                $"Đảo bút toán học phí CSCA {student.StudentName} ({cls.Code}) khi xóa học viên",
+                student.BusinessDocumentId), ct);
+        }
+
         _db.CscaClassStudents.Remove(student);
 
         if (cls != null)
@@ -550,9 +601,9 @@ public sealed partial class CscaService
                 IsTrial = s.Class.IsTrial || s.Class.TuitionFee == 0,
                 DiscountAmount = s.DiscountAmount,
                 DiscountNote = s.DiscountNote,
-                PayableAmount = s.Class.TuitionFee - s.DiscountAmount,
+                PayableAmount = (s.Class.IsTrial || s.Class.TuitionFee == 0) ? 0 : Math.Max(0, s.Class.TuitionFee - s.DiscountAmount),
                 PaidAmount = s.PaidAmount,
-                DebtAmount = Math.Max(0, s.Class.TuitionFee - s.DiscountAmount - s.PaidAmount),
+                DebtAmount = (s.Class.IsTrial || s.Class.TuitionFee == 0) ? 0 : Math.Max(0, s.Class.TuitionFee - s.DiscountAmount - s.PaidAmount),
                 DebtDueDate = s.DebtDueDate,
                 PaymentStatus = s.PaymentStatus,
                 JoinedAt = s.JoinedAt,

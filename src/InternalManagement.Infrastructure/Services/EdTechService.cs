@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using InternalManagement.Application.Common.Interfaces;
@@ -44,16 +47,34 @@ public sealed class EdTechService : IEdTechService
         return (companyId.Value, buId);
     }
 
+    private static string BuildSlug(string title)
+    {
+        var normalized = title.Trim().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+        foreach (var ch in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) == UnicodeCategory.NonSpacingMark)
+                continue;
+            sb.Append(ch switch { 'đ' => 'd', 'Đ' => 'd', _ => char.ToLowerInvariant(ch) });
+        }
+
+        var slug = Regex.Replace(sb.ToString().Normalize(NormalizationForm.FormC), @"[^a-z0-9]+", "-").Trim('-');
+        return string.IsNullOrEmpty(slug) ? $"course-{Guid.NewGuid():N}"[..15] : slug;
+    }
+
     // ── Courses ──
 
     public async Task<PaginatedResult<CourseDto>> GetCoursesAsync(
         string? search, string? status, int pageIndex, int pageSize, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var query = _db.Courses
             .AsNoTracking()
             .Include(c => c.Modules)
             .Include(c => c.CscaClasses)
             .AsQueryable();
+        if (companyId != Guid.Empty)
+            query = query.Where(c => c.CompanyId == companyId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -100,11 +121,12 @@ public sealed class EdTechService : IEdTechService
 
     public async Task<Result<CourseDto>> GetCourseByIdAsync(Guid id, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var course = await _db.Courses
             .AsNoTracking()
             .Include(c => c.Modules)
             .Include(c => c.CscaClasses)
-            .FirstOrDefaultAsync(c => c.Id == id, ct);
+            .FirstOrDefaultAsync(c => c.Id == id && (companyId == Guid.Empty || c.CompanyId == companyId), ct);
 
         if (course == null)
             return Result<CourseDto>.Failure("Không tìm thấy khóa học.");
@@ -145,13 +167,20 @@ public sealed class EdTechService : IEdTechService
 
         var (companyId, buId) = await GetContextAsync(ct);
 
+        var baseSlug = string.IsNullOrWhiteSpace(request.Slug) ? BuildSlug(request.Title) : BuildSlug(request.Slug);
+        var slug = baseSlug;
+        if (await _db.Courses.AsNoTracking().AnyAsync(c => c.CompanyId == companyId && c.Slug == slug, ct))
+        {
+            slug = $"{baseSlug}-{Guid.NewGuid().ToString("N")[..6]}";
+        }
+
         var course = new Course
         {
             CompanyId = companyId,
             BusinessUnitId = buId,
             CourseSourceId = $"internal_{Guid.NewGuid():N}"[..16],
             Title = request.Title.Trim(),
-            Slug = request.Slug ?? request.Title.Trim().ToLowerInvariant().Replace(" ", "-"),
+            Slug = slug,
             Description = request.Description,
             ThumbnailUrl = request.ThumbnailUrl,
             Price = request.Price,
@@ -182,15 +211,18 @@ public sealed class EdTechService : IEdTechService
 
     public async Task<Result<CourseDto>> UpdateCourseAsync(Guid id, UpdateCourseRequest request, CancellationToken ct)
     {
-        var course = await _db.Courses.FirstOrDefaultAsync(c => c.Id == id, ct);
+        var (companyId, _) = await GetContextAsync(ct);
+        var course = await _db.Courses.FirstOrDefaultAsync(c => c.Id == id && (companyId == Guid.Empty || c.CompanyId == companyId), ct);
         if (course == null)
             return Result<CourseDto>.Failure("Không tìm thấy khóa học.");
 
         if (string.IsNullOrWhiteSpace(request.Title))
             return Result<CourseDto>.Failure("Tiêu đề không được để trống.");
+        if (request.Price < 0)
+            return Result<CourseDto>.Failure("Học phí không thể là số âm.");
 
         course.Title = request.Title.Trim();
-        course.Slug = request.Slug ?? course.Slug;
+        course.Slug = string.IsNullOrWhiteSpace(request.Slug) ? course.Slug : BuildSlug(request.Slug);
         course.Description = request.Description;
         course.ThumbnailUrl = request.ThumbnailUrl;
         course.Price = request.Price;
@@ -207,10 +239,11 @@ public sealed class EdTechService : IEdTechService
 
     public async Task<Result<bool>> DeleteCourseAsync(Guid id, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var course = await _db.Courses
             .Include(c => c.CscaClasses)
             .Include(c => c.Modules)
-            .FirstOrDefaultAsync(c => c.Id == id, ct);
+            .FirstOrDefaultAsync(c => c.Id == id && (companyId == Guid.Empty || c.CompanyId == companyId), ct);
 
         if (course == null)
             return Result<bool>.Failure("Không tìm thấy khóa học cần xóa.");
@@ -238,6 +271,7 @@ public sealed class EdTechService : IEdTechService
     public async Task<PaginatedResult<QuestionDto>> GetQuestionsAsync(
         string? search, string? difficulty, string? status, int pageIndex, int pageSize, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var query = _db.Questions
             .AsNoTracking()
             .Include(q => q.QuestionBank)
@@ -247,6 +281,8 @@ public sealed class EdTechService : IEdTechService
             .Include(q => q.Versions)
                 .ThenInclude(v => v.Choices)
             .AsQueryable();
+        if (companyId != Guid.Empty)
+            query = query.Where(q => q.QuestionBank.CompanyId == companyId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -279,6 +315,7 @@ public sealed class EdTechService : IEdTechService
 
     public async Task<Result<QuestionDto>> GetQuestionByIdAsync(Guid id, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var question = await _db.Questions
             .AsNoTracking()
             .Include(q => q.QuestionBank)
@@ -287,7 +324,7 @@ public sealed class EdTechService : IEdTechService
             .Include(q => q.Tags)
             .Include(q => q.Versions)
                 .ThenInclude(v => v.Choices)
-            .FirstOrDefaultAsync(q => q.Id == id, ct);
+            .FirstOrDefaultAsync(q => q.Id == id && (companyId == Guid.Empty || q.QuestionBank.CompanyId == companyId), ct);
 
         if (question == null)
             return Result<QuestionDto>.Failure("Không tìm thấy câu hỏi.");
@@ -312,84 +349,93 @@ public sealed class EdTechService : IEdTechService
         var bankName = request.BankName?.Trim();
         if (string.IsNullOrWhiteSpace(bankName))
             return Result<QuestionDto>.Failure("Ngân hàng câu hỏi là bắt buộc.");
+        var createdBy = _currentUser.Username ?? "System";
         var bank = await _db.QuestionBanks.FirstOrDefaultAsync(b => b.Name == bankName && b.CompanyId == companyId, ct);
         if (bank == null)
         {
             bank = new QuestionBank
             {
+                Id = Guid.NewGuid(),
                 CompanyId = companyId,
                 BusinessUnitId = buId,
                 Name = bankName,
-                CreatedBy = _currentUser.Username ?? "System"
+                CreatedBy = createdBy
             };
             _db.QuestionBanks.Add(bank);
-            await _db.SaveChangesAsync(ct);
         }
 
         // Resolve Subject & Topic
-        Guid? subjectId = null;
-        Guid? topicId = null;
+        Subject? subject = null;
+        Topic? topic = null;
 
         if (!string.IsNullOrWhiteSpace(request.SubjectName))
         {
-            var subject = await _db.Subjects.FirstOrDefaultAsync(s => s.Name == request.SubjectName && s.CompanyId == companyId, ct);
+            subject = await _db.Subjects.FirstOrDefaultAsync(s => s.Name == request.SubjectName && s.CompanyId == companyId, ct);
             if (subject == null)
             {
                 subject = new Subject
                 {
+                    Id = Guid.NewGuid(),
                     CompanyId = companyId,
                     BusinessUnitId = buId,
                     Code = request.SubjectName.ToUpperInvariant().Replace(" ", "_"),
                     Name = request.SubjectName
                 };
                 _db.Subjects.Add(subject);
-                await _db.SaveChangesAsync(ct);
             }
-            subjectId = subject.Id;
 
             if (!string.IsNullOrWhiteSpace(request.TopicName))
             {
-                var topic = await _db.Topics.FirstOrDefaultAsync(t => t.SubjectId == subject.Id && t.Name == request.TopicName, ct);
+                topic = await _db.Topics.FirstOrDefaultAsync(t => t.SubjectId == subject.Id && t.Name == request.TopicName, ct);
                 if (topic == null)
                 {
-                    topic = new Topic { SubjectId = subject.Id, Name = request.TopicName };
+                    topic = new Topic
+                    {
+                        Id = Guid.NewGuid(),
+                        SubjectId = subject.Id,
+                        Subject = subject,
+                        Name = request.TopicName
+                    };
                     _db.Topics.Add(topic);
-                    await _db.SaveChangesAsync(ct);
                 }
-                topicId = topic.Id;
             }
         }
 
+        var questionId = Guid.NewGuid();
+        var versionId = Guid.NewGuid();
         var question = new Question
         {
+            Id = questionId,
             QuestionBankId = bank.Id,
-            SubjectId = subjectId,
-            TopicId = topicId,
+            QuestionBank = bank,
+            SubjectId = subject?.Id,
+            Subject = subject,
+            TopicId = topic?.Id,
+            Topic = topic,
             DifficultyLevel = request.DifficultyLevel ?? "Medium",
-            CreatedBy = _currentUser.Username ?? "System"
+            CurrentVersionId = versionId,
+            CreatedBy = createdBy
         };
-        _db.Questions.Add(question);
-        await _db.SaveChangesAsync(ct);
 
         var version = new QuestionVersion
         {
-            QuestionId = question.Id,
+            Id = versionId,
+            QuestionId = questionId,
+            Question = question,
             VersionNumber = 1,
             ContentHtml = request.ContentHtml,
             ExplanationHtml = request.ExplanationHtml,
             Status = QuestionPublicationStatus.Draft,
-            CreatedBy = _currentUser.Username ?? "System"
+            CreatedBy = createdBy
         };
-        _db.QuestionVersions.Add(version);
-        await _db.SaveChangesAsync(ct);
-
-        question.CurrentVersionId = version.Id;
 
         foreach (var c in request.Choices)
         {
-            _db.QuestionChoices.Add(new QuestionChoice
+            version.Choices.Add(new QuestionChoice
             {
-                QuestionVersionId = version.Id,
+                Id = Guid.NewGuid(),
+                QuestionVersionId = versionId,
+                QuestionVersion = version,
                 Label = c.Label,
                 ContentHtml = c.ContentHtml,
                 IsCorrect = c.IsCorrect,
@@ -397,18 +443,23 @@ public sealed class EdTechService : IEdTechService
             });
         }
 
+        question.Versions.Add(version);
+
         if (request.Tags != null)
         {
             foreach (var t in request.Tags)
             {
-                _db.QuestionTags.Add(new QuestionTag
+                question.Tags.Add(new QuestionTag
                 {
-                    QuestionId = question.Id,
+                    Id = Guid.NewGuid(),
+                    QuestionId = questionId,
+                    Question = question,
                     Tag = t
                 });
             }
         }
 
+        _db.Questions.Add(question);
         await _db.SaveChangesAsync(ct);
 
         return await GetQuestionByIdAsync(question.Id, ct);
@@ -430,7 +481,12 @@ public sealed class EdTechService : IEdTechService
         if (request.Choices == null || request.Choices.Count < 2)
             return Result<QuestionDto>.Failure("Câu hỏi trắc nghiệm phải có ít nhất 2 đáp án.");
 
+        if (!request.Choices.Any(c => c.IsCorrect))
+            return Result<QuestionDto>.Failure("Câu hỏi trắc nghiệm phải có ít nhất 1 đáp án đúng.");
+
         var nextVersionNumber = (question.Versions.Max(v => (int?)v.VersionNumber) ?? 0) + 1;
+        var hasPublishedCurrent = question.CurrentVersionId.HasValue &&
+            question.Versions.Any(v => v.Id == question.CurrentVersionId.Value && v.Status == QuestionPublicationStatus.Published);
 
         var newVersion = new QuestionVersion
         {
@@ -445,7 +501,8 @@ public sealed class EdTechService : IEdTechService
         _db.QuestionVersions.Add(newVersion);
         await _db.SaveChangesAsync(ct);
 
-        question.CurrentVersionId = newVersion.Id;
+        if (!hasPublishedCurrent)
+            question.CurrentVersionId = newVersion.Id;
         question.UpdatedAt = DateTime.UtcNow;
         question.UpdatedBy = _currentUser.Username ?? "System";
 
@@ -522,11 +579,14 @@ public sealed class EdTechService : IEdTechService
     public async Task<PaginatedResult<CustomerSummaryDto>> GetCustomersAsync(
         string? search, int pageIndex, int pageSize, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var query = _db.EdTechCustomers
             .AsNoTracking()
             .Include(c => c.Subscriptions)
             .Include(c => c.Payments)
             .AsQueryable();
+        if (companyId != Guid.Empty)
+            query = query.Where(c => c.CompanyId == companyId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -560,10 +620,13 @@ public sealed class EdTechService : IEdTechService
     public async Task<PaginatedResult<SubscriptionDto>> GetSubscriptionsAsync(
         string? status, int pageIndex, int pageSize, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var query = _db.Subscriptions
             .AsNoTracking()
             .Include(s => s.Customer)
             .AsQueryable();
+        if (companyId != Guid.Empty)
+            query = query.Where(s => s.CompanyId == companyId);
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<SubscriptionStatus>(status, true, out var subStatus))
         {
@@ -593,10 +656,13 @@ public sealed class EdTechService : IEdTechService
     public async Task<PaginatedResult<PaymentDto>> GetPaymentsAsync(
         string? status, int pageIndex, int pageSize, CancellationToken ct)
     {
+        var (companyId, _) = await GetContextAsync(ct);
         var query = _db.Payments
             .AsNoTracking()
             .Include(p => p.Customer)
             .AsQueryable();
+        if (companyId != Guid.Empty)
+            query = query.Where(p => p.CompanyId == companyId);
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<PaymentStatus>(status, true, out var paymentStatus))
         {

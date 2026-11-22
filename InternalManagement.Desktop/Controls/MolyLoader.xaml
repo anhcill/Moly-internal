@@ -1,0 +1,51 @@
+<UserControl x:Class="InternalManagement.Desktop.Controls.MolyLoader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="48" Height="48"
+             IsHitTestVisible="False">
+    <UserControl.Resources>
+        <!-- Exact geometric folded ribbon 'M' matching Assets/moly-glyph-standalone.png
+             Each of the 4 strokes is 34px -> total path length = 136px (~18.13 units at thickness 7.5).
+             StrokeDashArray="11 11" has exact period = 22 units -> 100% seamless continuous roll. -->
+        <PathGeometry x:Key="MolyMGeometry"
+                      Figures="M 12,46 L 12,12 L 28,42 L 44,12 L 44,46" />
+
+        <LinearGradientBrush x:Key="MolyBrandRibbonBrush" StartPoint="0,0.2" EndPoint="1,0.8">
+            <GradientStop Color="#00B4FF" Offset="0" />
+            <GradientStop Color="#2B9BFF" Offset="0.35" />
+            <GradientStop Color="#2563EB" Offset="0.7" />
+            <GradientStop Color="#1E3A8A" Offset="1" />
+        </LinearGradientBrush>
+
+        <Storyboard x:Key="RollStoryboard" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="RollingMStroke"
+                             Storyboard.TargetProperty="StrokeDashOffset"
+                             From="22" To="0"
+                             Duration="0:0:1.2" />
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Viewbox Stretch="Uniform">
+        <Grid Width="56" Height="56">
+            <!-- Subtle geometric 'M' track -->
+            <Path Data="{StaticResource MolyMGeometry}"
+                  Stroke="{StaticResource MolyBrandRibbonBrush}"
+                  Opacity="0.18"
+                  StrokeThickness="7.5"
+                  StrokeStartLineCap="Flat"
+                  StrokeEndLineCap="Flat"
+                  StrokeLineJoin="Bevel" />
+
+            <!-- Continuous rolling MOLY ribbon along the exact 'M' shape -->
+            <Path x:Name="RollingMStroke"
+                  Data="{StaticResource MolyMGeometry}"
+                  Stroke="{StaticResource MolyBrandRibbonBrush}"
+                  StrokeThickness="7.5"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  StrokeLineJoin="Bevel"
+                  StrokeDashArray="11 11"
+                  StrokeDashOffset="22" />
+        </Grid>
+    </Viewbox>
+</UserControl>

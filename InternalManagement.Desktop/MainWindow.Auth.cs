@@ -15,7 +15,16 @@ namespace InternalManagement.Desktop;
 
 public partial class MainWindow
 {
-    // ── Login Workflow ──
+    // ── Login & Quick Login Workflow ──
+
+    private void RefreshQuickLoginAccounts()
+    {
+        if (QuickLoginSection == null || QuickLoginItemsControl == null) return;
+
+        var accounts = _sessionStore.LoadQuickAccounts();
+        QuickLoginItemsControl.ItemsSource = accounts;
+        QuickLoginSection.Visibility = accounts.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private void SetLoginBusy(bool isBusy, string? title = null, string? subText = null)
     {
@@ -40,7 +49,7 @@ public partial class MainWindow
         if (LoginButton != null)
         {
             LoginButton.IsEnabled = !isBusy;
-            LoginButton.Content = isBusy ? "ĐANG XÁC THỰC BẢO MẬT..." : "ĐĂNG NHẬP VÀO HỆ THỐNG →";
+            LoginButton.Content = isBusy ? "Đang xác thực..." : "Đăng nhập";
         }
         if (UsernameTextBox != null) UsernameTextBox.IsEnabled = !isBusy;
         if (PasswordBox != null) PasswordBox.IsEnabled = !isBusy;
@@ -61,19 +70,43 @@ public partial class MainWindow
             return;
         }
 
-        SetLoginBusy(true, "Đang xác thực bảo mật...", "Kiểm tra thông tin tài khoản và phân quyền truy cập MOLY...");
+        SetLoginBusy(true, "Đang đăng nhập...", "Xác thực tài khoản MOLY...");
         ResultBanner.Visibility = Visibility.Collapsed;
 
         try
         {
-            if (!await WaitForApiReadyAsync())
-            {
-                SetLoginBusy(false);
-                ShowLoginError("Máy chủ đang khởi động hoặc chưa kết nối được cơ sở dữ liệu. Vui lòng chờ vài giây rồi thử lại.");
-                return;
-            }
+            ApiClient.LoginResult result;
+            var apiRecentlyHealthy = _lastApiHealthyAtUtc.HasValue
+                && DateTime.UtcNow - _lastApiHealthyAtUtc.Value <= TimeSpan.FromSeconds(45);
 
-            var result = await _apiClient.LoginAsync(username, password);
+            if (apiRecentlyHealthy)
+            {
+                try
+                {
+                    result = await _apiClient.LoginAsync(username, password);
+                }
+                catch (HttpRequestException)
+                {
+                    _lastApiHealthyAtUtc = null;
+                    if (!await WaitForApiReadyAsync())
+                    {
+                        SetLoginBusy(false);
+                        ShowLoginError("Máy chủ đang khởi động hoặc chưa kết nối được cơ sở dữ liệu. Vui lòng chờ vài giây rồi thử lại.");
+                        return;
+                    }
+                    result = await _apiClient.LoginAsync(username, password);
+                }
+            }
+            else
+            {
+                if (!await WaitForApiReadyAsync())
+                {
+                    SetLoginBusy(false);
+                    ShowLoginError("Máy chủ đang khởi động hoặc chưa kết nối được cơ sở liệu. Vui lòng chờ vài giây rồi thử lại.");
+                    return;
+                }
+                result = await _apiClient.LoginAsync(username, password);
+            }
 
             if (!result.Succeeded || result.User is null)
             {
@@ -94,15 +127,7 @@ public partial class MainWindow
                 _sessionStore.Clear();
             }
 
-            if (LoginBusinessUnitCombo?.SelectedIndex == 1)
-            {
-                _activeSegment = TechnologySegment;
-            }
-            else if (LoginBusinessUnitCombo?.SelectedIndex == 2)
-            {
-                _activeSegment = FashionSegment;
-            }
-
+            ApplySelectedLoginBusinessUnit();
             await EnterAppShellAsync();
         }
         catch (HttpRequestException)
@@ -118,6 +143,92 @@ public partial class MainWindow
         finally
         {
             SetLoginBusy(false);
+        }
+    }
+
+    private async void QuickLoginAccount_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string username } || string.IsNullOrWhiteSpace(username))
+            return;
+
+        var entry = _sessionStore.LoadQuickAccounts()
+            .FirstOrDefault(a => string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
+        if (entry is null)
+        {
+            RefreshQuickLoginAccounts();
+            return;
+        }
+
+        UsernameTextBox.Text = entry.Username;
+        UpdateUsernameWatermark();
+        RememberMeCheckBox.IsChecked = true;
+        ResultBanner.Visibility = Visibility.Collapsed;
+
+        SetLoginBusy(true, $"Đang vào nhanh — {entry.FullName}...");
+        try
+        {
+            _sessionUsername = entry.Username;
+            _rememberSession = true;
+            _apiClient.RestoreSession(entry.Response);
+
+            var sessionUsable = entry.Response.ExpiresAt > DateTime.UtcNow.AddSeconds(30)
+                || await _apiClient.RefreshTokenAsync();
+            if (!sessionUsable)
+            {
+                _apiClient.SetBearerToken(null);
+                SetLoginBusy(false);
+                ShowLoginError($"Phiên của {entry.FullName} đã hết hạn. Vui lòng nhập mật khẩu để đăng nhập lại.");
+                PasswordBox.Focus();
+                return;
+            }
+
+            var activeSession = _apiClient.CurrentSession ?? entry.Response;
+            _currentUser = activeSession.User ?? entry.Response.User;
+            _sessionStore.Save(entry.Username, activeSession);
+            ApplySelectedLoginBusinessUnit();
+            await EnterAppShellAsync();
+        }
+        catch (HttpRequestException)
+        {
+            _apiClient.SetBearerToken(null);
+            SetLoginBusy(false);
+            ShowLoginError("Không thể kết nối máy chủ để đăng nhập nhanh. Vui lòng kiểm tra mạng nội bộ.");
+        }
+        catch (Exception)
+        {
+            _apiClient.SetBearerToken(null);
+            SetLoginBusy(false);
+            ShowLoginError($"Không thể đăng nhập nhanh bằng tài khoản {entry.Username}. Vui lòng nhập mật khẩu.");
+            PasswordBox.Focus();
+        }
+        finally
+        {
+            SetLoginBusy(false);
+        }
+    }
+
+    private void RemoveQuickAccount_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string username } || string.IsNullOrWhiteSpace(username))
+            return;
+
+        _sessionStore.RemoveQuickAccount(username);
+        if (string.Equals(_sessionUsername, username, StringComparison.OrdinalIgnoreCase))
+        {
+            _sessionStore.Clear();
+        }
+        RefreshQuickLoginAccounts();
+    }
+
+    private void ApplySelectedLoginBusinessUnit()
+    {
+        if (LoginBusinessUnitCombo?.SelectedIndex == 2)
+        {
+            _activeSegment = TechnologySegment;
+        }
+        else if (LoginBusinessUnitCombo?.SelectedIndex == 3)
+        {
+            _activeSegment = FashionSegment;
         }
     }
 
@@ -154,7 +265,7 @@ public partial class MainWindow
         }
     }
 
-    private async Task EnterAppShellAsync()
+    private Task EnterAppShellAsync()
     {
         SetLoginBusy(false);
         LoginContainer.Visibility = Visibility.Collapsed;
@@ -164,23 +275,20 @@ public partial class MainWindow
         {
             UserFullNameText.Text = _currentUser.FullName;
             UserRoleBadge.Text = string.Join(", ", _currentUser.Roles);
-            var initials = string.Join("", _currentUser.FullName.Split(' ').Select(w => w.FirstOrDefault())).ToUpperInvariant();
+            var initials = string.Join("", _currentUser.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])).ToUpperInvariant();
             UserAvatarText.Text = initials.Length > 2 ? initials[..2] : initials;
         }
 
+        // Enter shell immediately; Nav_Checked loads Dashboard + BusinessUnits concurrently.
         ApplyNavigationPermissions();
-
-        await RunWithBusyAsync("Đang khởi tạo không gian làm việc...", async () =>
-        {
-            _cachedBusinessUnits = await _apiClient.GetBusinessUnitProfitSummaryAsync() ?? new List<ApiClient.BusinessUnitProfitItem>();
-            await LoadDashboardMetricsAsync();
-        }, "Đồng bộ quyền hạn, mảng kinh doanh & số liệu tổng quan");
+        return Task.CompletedTask;
     }
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
         ClearRememberedSession();
-        _currentUser = null;
+        ResetSessionState();
+        RefreshQuickLoginAccounts();
 
         AppShellContainer.Visibility = Visibility.Collapsed;
         LoginContainer.Visibility = Visibility.Visible;

@@ -578,8 +578,10 @@ public sealed partial class CscaService
         if (schedules.Count == 0)
             return Result<int>.Failure("Lớp chưa có lịch tuần. Hãy tạo lịch tuần trước khi sinh buổi học.");
 
+        var (companyId, _) = await GetContextAsync(ct);
         var existing = await _db.CscaLessonSessions
-            .Where(session => session.LessonDate >= request.FromDate && session.LessonDate <= request.ToDate)
+            .Where(session => session.Class.CompanyId == companyId && !session.Class.IsDeleted &&
+                session.LessonDate >= request.FromDate && session.LessonDate <= request.ToDate)
             .ToListAsync(ct);
         var generated = new List<CscaLessonSession>();
         for (var date = request.FromDate; date <= request.ToDate; date = date.AddDays(1))

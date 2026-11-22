@@ -23,6 +23,7 @@ public partial class PayrollView : UserControl
     public event RoutedEventHandler? RefreshPayrollRequested;
     public event RoutedEventHandler? RefreshPayrollMonthlySummaryRequested;
     public event RoutedEventHandler? SubmitReviewRequested;
+    public event RoutedEventHandler? SyncCoursePayrollRequested;
     public event RoutedEventHandler? ViewPayslipDetailRequested;
     public event MouseButtonEventHandler? PayrollAdjustmentEmployeesDoubleClickRequested;
     public event MouseButtonEventHandler? PayslipsDataGridDoubleClickRequested;
@@ -50,6 +51,7 @@ public partial class PayrollView : UserControl
     private void RefreshPayroll_Click(object sender, RoutedEventArgs e) => RefreshPayrollRequested?.Invoke(sender, e);
     private void RefreshPayrollMonthlySummary_Click(object sender, RoutedEventArgs e) => RefreshPayrollMonthlySummaryRequested?.Invoke(sender, e);
     private void SubmitReview_Click(object sender, RoutedEventArgs e) => SubmitReviewRequested?.Invoke(sender, e);
+    private void SyncCoursePayroll_Click(object sender, RoutedEventArgs e) => SyncCoursePayrollRequested?.Invoke(sender, e);
     private void ViewPayslipDetail_Click(object sender, RoutedEventArgs e) => ViewPayslipDetailRequested?.Invoke(sender, e);
     private void PayrollAdjustmentEmployees_MouseDoubleClick(object sender, MouseButtonEventArgs e) => PayrollAdjustmentEmployeesDoubleClickRequested?.Invoke(sender, e);
     private void PayslipsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e) => PayslipsDataGridDoubleClickRequested?.Invoke(sender, e);

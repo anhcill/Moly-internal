@@ -118,7 +118,7 @@ public static partial class CscaStudentDialog
         Text = text ?? string.Empty,
         Height = 36,
         Padding = new Thickness(10, 7, 10, 7),
-        Background = Brushes.White,
+        Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
         BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
         BorderThickness = new Thickness(1),
         FontSize = 13,

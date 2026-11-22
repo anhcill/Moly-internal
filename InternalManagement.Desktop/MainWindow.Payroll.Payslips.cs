@@ -290,18 +290,17 @@ public partial class MainWindow
     {
         if (PayrollStep1Border == null) return;
 
-        var converter = new System.Windows.Media.BrushConverter();
-        var greenBg = converter.ConvertFromString("#DCFCE7") as System.Windows.Media.Brush;
-        var greenBorder = converter.ConvertFromString("#86EFAC") as System.Windows.Media.Brush;
-        var greenFg = converter.ConvertFromString("#15803D") as System.Windows.Media.Brush;
+        var greenBg = ThemeService.GetBrush("SurfaceSuccessBgBrush", "#DCFCE7");
+        var greenBorder = ThemeService.GetBrush("SurfaceSuccessBorderBrush", "#86EFAC");
+        var greenFg = ThemeService.GetBrush("SurfaceSuccessTextBrush", "#15803D");
 
-        var tealBg = converter.ConvertFromString("#CCFBF1") as System.Windows.Media.Brush;
-        var tealBorder = converter.ConvertFromString("#5EEAD4") as System.Windows.Media.Brush;
-        var tealFg = converter.ConvertFromString("#0F766E") as System.Windows.Media.Brush;
+        var tealBg = ThemeService.GetBrush("SurfaceInfoBgBrush", "#CCFBF1");
+        var tealBorder = ThemeService.GetBrush("SurfaceInfoBorderBrush", "#5EEAD4");
+        var tealFg = ThemeService.GetBrush("SurfaceInfoTextBrush", "#0F766E");
 
-        var whiteBg = System.Windows.Media.Brushes.White;
-        var grayBorder = converter.ConvertFromString("#E2E8F0") as System.Windows.Media.Brush;
-        var grayFg = converter.ConvertFromString("#64748B") as System.Windows.Media.Brush;
+        var whiteBg = ThemeService.GetBrush("CardBgBrush", "#FFFFFF");
+        var grayBorder = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0");
+        var grayFg = ThemeService.GetBrush("TextMutedBrush", "#64748B");
 
         void SetStep(Border border, TextBlock icon, bool isCompleted, bool isActive)
         {

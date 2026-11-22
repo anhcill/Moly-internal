@@ -3,25 +3,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <Style x:Key="DashboardScopeRadio" TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#475569" />
-            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Pill" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="14" Padding="12,6" Margin="2,0">
+                        <Border x:Name="Pill" Background="Transparent" BorderThickness="0" CornerRadius="7" Padding="12,6">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Pill" Property="Background" Value="#0F172A" />
-                                <Setter TargetName="Pill" Property="BorderBrush" Value="#0F172A" />
+                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource PrimaryBrush}" />
                                 <Setter Property="Foreground" Value="White" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Pill" Property="BorderBrush" Value="#0EA5E9" />
+                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource GhostHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
                             </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsChecked" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource PrimaryHoverBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -32,52 +40,48 @@
             <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="18" />
-            <Setter Property="Effect" Value="{StaticResource CardShadow}" />
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="0,0,4,12">
+    <StackPanel Margin="0,0,0,16">
             <!-- Report header and scope -->
-            <Border CornerRadius="16" Padding="22,18" Margin="0,0,0,14" BorderBrush="#CBD5E1" BorderThickness="1" Effect="{StaticResource CardShadow}">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#F8FAFC" Offset="0" />
-                        <GradientStop Color="#ECFEFF" Offset="0.56" />
-                        <GradientStop Color="#FFF7ED" Offset="1" />
-                    </LinearGradientBrush>
-                </Border.Background>
+            <Border CornerRadius="12" Padding="20,16" Margin="0,0,0,14" Background="{DynamicResource HeroBannerBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#0F172A" CornerRadius="7" Width="34" Height="34" Margin="0,0,10,0">
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="9" Width="36" Height="36" Margin="0,0,12,0">
                                 <TextBlock Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <StackPanel>
-                                <TextBlock Text="Báo cáo điều hành" FontSize="11" FontWeight="Bold" Foreground="#0891B2" />
-                                <TextBlock Text="{Binding ScopeTitle}" FontSize="21" FontWeight="Bold" Foreground="#0F172A" />
+                            <StackPanel VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="BÁO CÁO ĐIỀU HÀNH" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text=" · " FontSize="10" Foreground="{DynamicResource TextSubtleBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding UpdatedAt}" FontSize="10.5" Foreground="{DynamicResource TextSubtleBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding ScopeTitle}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,1,0,0" />
                             </StackPanel>
                         </StackPanel>
-                        <TextBlock Text="{Binding ScopeDescription}" Margin="44,7,0,0" FontSize="12.5" Foreground="#475569" />
-                        <TextBlock Text="{Binding UpdatedAt}" Margin="44,3,0,0" FontSize="10.5" Foreground="#94A3B8" />
+                        <TextBlock Text="{Binding ScopeDescription}" Margin="48,4,0,0" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,9">
-                            <RadioButton x:Name="CompanyScopeButton" GroupName="DashboardScope" Tag="company" Content="Toàn công ty" IsChecked="True" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
-                            <RadioButton x:Name="EducationScopeButton" GroupName="DashboardScope" Tag="education" Content="Giáo dục" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
-                            <RadioButton x:Name="FashionScopeButton" GroupName="DashboardScope" Tag="fashion" Content="Thời trang" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
-                        </StackPanel>
-                        <Button Click="Refresh_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="12,0" HorizontalAlignment="Right">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="9" Padding="3" Margin="0,0,0,8">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" Margin="0,0,6,0" />
-                                <TextBlock Text="Cập nhật báo cáo" />
+                                <RadioButton x:Name="CompanyScopeButton" GroupName="DashboardScope" Tag="company" Content="Toàn công ty" IsChecked="True" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
+                                <RadioButton x:Name="EducationScopeButton" GroupName="DashboardScope" Tag="education" Content="Giáo dục" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
+                                <RadioButton x:Name="FashionScopeButton" GroupName="DashboardScope" Tag="fashion" Content="Thời trang" Checked="Scope_Checked" Style="{StaticResource DashboardScopeRadio}" />
+                            </StackPanel>
+                        </Border>
+                        <Button Click="Refresh_Click" Style="{StaticResource OutlineButton}" Height="32" Padding="12,0" HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Cập nhật báo cáo" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -85,7 +89,7 @@
             </Border>
 
             <!-- KPI grid -->
-            <ItemsControl ItemsSource="{Binding Kpis}" Margin="-5,0,-5,9">
+            <ItemsControl ItemsSource="{Binding Kpis}" Margin="-6,0,-6,8">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="3" />
@@ -93,18 +97,18 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="15,13" Margin="5,0,5,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="16,14" Margin="6,0,6,12" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding Label}" FontSize="10" FontWeight="Bold" Foreground="#64748B" />
-                                    <TextBlock Text="{Binding Value}" FontSize="22" FontWeight="Bold" Foreground="{Binding Accent}" Margin="0,4,0,2" />
-                                    <TextBlock Text="{Binding Detail}" FontSize="10.5" Foreground="#64748B" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Label}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                                    <TextBlock Text="{Binding Value}" FontSize="22" FontWeight="Bold" Foreground="{Binding Accent}" Margin="0,5,0,3" />
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
-                                <Border Grid.Column="1" Width="34" Height="34" CornerRadius="9" Background="{Binding Background}" VerticalAlignment="Top">
+                                <Border Grid.Column="1" Width="36" Height="36" CornerRadius="10" Background="{Binding Background}" VerticalAlignment="Top">
                                     <TextBlock Text="{Binding Icon}" FontFamily="Segoe MDL2 Assets" Foreground="{Binding Accent}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                             </Grid>
@@ -124,14 +128,14 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="So sánh tài chính theo mảng" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
-                                <TextBlock Text="{Binding FinanceNote}" FontSize="10.5" Foreground="#64748B" Margin="0,3,0,0" />
+                                <TextBlock Text="So sánh tài chính theo mảng" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                                <TextBlock Text="{Binding FinanceNote}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
                                 <Ellipse Width="8" Height="8" Fill="#14B8A6" Margin="0,0,5,0" />
-                                <TextBlock Text="Thu" FontSize="10.5" Foreground="#475569" Margin="0,0,10,0" />
+                                <TextBlock Text="Thu" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,10,0" />
                                 <Ellipse Width="8" Height="8" Fill="#F59E0B" Margin="0,0,5,0" />
-                                <TextBlock Text="Chi" FontSize="10.5" Foreground="#475569" />
+                                <TextBlock Text="Chi" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" />
                             </StackPanel>
                         </Grid>
                         <ItemsControl ItemsSource="{Binding FinanceBars}">
@@ -145,23 +149,23 @@
                                                 <ColumnDefinition Width="105" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Label}" FontSize="11.5" FontWeight="Bold" Foreground="#1E293B" TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding Profit, StringFormat='{}Lợi nhuận: {0}'}" FontSize="9.5" Foreground="#64748B" Margin="0,3,0,0" />
+                                                <TextBlock Text="{Binding Label}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Profit, StringFormat='{}Lợi nhuận: {0}'}" FontSize="9.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Margin="8,0,14,0">
                                                 <Border Height="12" Width="{Binding IncomeWidth}" Background="#14B8A6" CornerRadius="6" HorizontalAlignment="Left" />
                                                 <Border Height="12" Width="{Binding ExpenseWidth}" Background="#F59E0B" CornerRadius="6" HorizontalAlignment="Left" Margin="0,7,0,0" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding Income}" FontSize="10.5" FontWeight="Bold" Foreground="#0F766E" HorizontalAlignment="Right" />
-                                                <TextBlock Text="{Binding Expense}" FontSize="10.5" FontWeight="SemiBold" Foreground="#B45309" Margin="0,5,0,0" HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding Income}" FontSize="10.5" FontWeight="Bold" Foreground="#10B981" HorizontalAlignment="Right" />
+                                                <TextBlock Text="{Binding Expense}" FontSize="10.5" FontWeight="SemiBold" Foreground="#F59E0B" Margin="0,5,0,0" HorizontalAlignment="Right" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter TargetName="FinanceRow" Property="BorderBrush" Value="#0EA5E9" />
-                                            <Setter TargetName="FinanceRow" Property="Background" Value="#F0F9FF" />
+                                            <Setter TargetName="FinanceRow" Property="BorderBrush" Value="{DynamicResource SecondaryBrush}" />
+                                            <Setter TargetName="FinanceRow" Property="Background" Value="{DynamicResource SurfaceInfoBgBrush}" />
                                         </DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
@@ -172,18 +176,18 @@
 
                 <Border Grid.Column="1" Style="{StaticResource DashboardSectionCard}" Margin="7,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="Cơ cấu hoạt động" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
-                        <TextBlock Text="Quy mô thực tế trong phạm vi đang xem" FontSize="10.5" Foreground="#64748B" Margin="0,3,0,14" />
+                        <TextBlock Text="Cơ cấu hoạt động" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                        <TextBlock Text="Quy mô thực tế trong phạm vi đang xem" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,14" />
                         <ItemsControl ItemsSource="{Binding OperationBars}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,0,0,13">
                                         <Grid Margin="0,0,0,5">
-                                            <TextBlock Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="#334155" />
-                                            <TextBlock Text="{Binding Value}" FontSize="10.5" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Right" />
+                                            <TextBlock Text="{Binding Label}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                                            <TextBlock Text="{Binding Value}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" HorizontalAlignment="Right" />
                                         </Grid>
                                         <Grid Height="10">
-                                            <Border Background="#E2E8F0" CornerRadius="5" />
+                                            <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="5" />
                                             <Border Width="{Binding Width}" Background="{Binding Color}" CornerRadius="5" HorizontalAlignment="Left" />
                                         </Grid>
                                     </StackPanel>
@@ -202,27 +206,27 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource DashboardSectionCard}" Margin="0,0,7,0">
                     <StackPanel>
-                        <TextBlock Text="Nhân sự &amp; chấm công" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
-                        <TextBlock Text="Theo phạm vi báo cáo đang chọn" FontSize="10.5" Foreground="#64748B" Margin="0,3,0,16" />
-                        <Border Background="#F0FDFA" BorderBrush="#99F6E4" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,0,0,10">
+                        <TextBlock Text="Nhân sự &amp; chấm công" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                        <TextBlock Text="Theo phạm vi báo cáo đang chọn" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,16" />
+                        <Border Background="{DynamicResource SurfaceSuccessBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,0,0,10">
                             <StackPanel Orientation="Horizontal">
-                                <Border Width="34" Height="34" Background="#CCFBF1" CornerRadius="9" Margin="0,0,10,0">
-                                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" Foreground="#0F766E" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="34" Height="34" Background="{DynamicResource PillGreenBgBrush}" CornerRadius="9" Margin="0,0,10,0">
+                                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SurfaceSuccessTextBrush}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Nhân sự" FontSize="10" Foreground="#0F766E" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding PeopleSummary}" FontSize="12" Foreground="#134E4A" FontWeight="SemiBold" />
+                                    <TextBlock Text="Nhân sự" FontSize="10" Foreground="{DynamicResource SurfaceSuccessTextBrush}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding PeopleSummary}" FontSize="12" Foreground="{DynamicResource TextDarkBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="13">
+                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13">
                             <StackPanel Orientation="Horizontal">
-                                <Border Width="34" Height="34" Background="#DBEAFE" CornerRadius="9" Margin="0,0,10,0">
-                                    <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" Foreground="#1D4ED8" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="34" Height="34" Background="{DynamicResource PillBlueBgBrush}" CornerRadius="9" Margin="0,0,10,0">
+                                    <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SurfaceInfoTextBrush}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Chấm công tháng này" FontSize="10" Foreground="#1D4ED8" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding AttendanceSummary}" FontSize="11.5" Foreground="#1E3A8A" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="Chấm công tháng này" FontSize="10" Foreground="{DynamicResource SurfaceInfoTextBrush}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding AttendanceSummary}" FontSize="11.5" Foreground="{DynamicResource TextDarkBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -233,11 +237,11 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Cảnh báo &amp; điểm cần chú ý" FontSize="15" FontWeight="Bold" Foreground="#0F172A" />
-                                <TextBlock Text="Ưu tiên xử lý theo dữ liệu vận hành mới nhất" FontSize="10.5" Foreground="#64748B" Margin="0,3,0,0" />
+                                <TextBlock Text="Cảnh báo &amp; điểm cần chú ý" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                                <TextBlock Text="Ưu tiên xử lý theo dữ liệu vận hành mới nhất" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                             </StackPanel>
                             <Border HorizontalAlignment="Right" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10" Padding="9,3">
-                                <TextBlock Text="LIVE REPORT" FontSize="9" FontWeight="Bold" Foreground="#0F766E" />
+                                <TextBlock Text="LIVE REPORT" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource SurfaceSuccessTextBrush}" />
                             </Border>
                         </Grid>
                         <ItemsControl ItemsSource="{Binding Alerts}">
@@ -252,7 +256,7 @@
                                             <TextBlock Text="{Binding Icon}" FontFamily="Segoe MDL2 Assets" Foreground="{Binding Foreground}" FontSize="14" VerticalAlignment="Center" />
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Text="{Binding Title}" FontSize="11" FontWeight="Bold" Foreground="{Binding Foreground}" />
-                                                <TextBlock Text="{Binding Detail}" FontSize="10.5" Foreground="#475569" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Detail}" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -262,6 +266,5 @@
                     </StackPanel>
                 </Border>
             </Grid>
-        </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
 </UserControl>

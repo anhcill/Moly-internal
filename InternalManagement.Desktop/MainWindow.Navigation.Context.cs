@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace InternalManagement.Desktop;
@@ -14,10 +15,12 @@ public partial class MainWindow
         var label = isCompany ? "TỔNG HỢP TOÀN CÔNG TY" : ActiveSegmentName.ToUpperInvariant();
         ActiveSegmentText.Text = label;
         ActiveSegmentBadgeText.Text = isCompany ? "TOÀN CÔNG TY" : label;
-        ActiveSegmentBadge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-            isCompany ? "#EEF2FF" : _activeSegment == FashionSegment ? "#FDF2F8" : "#ECFEFF"));
-        ActiveSegmentBadgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-            isCompany ? "#4F46E5" : _activeSegment == FashionSegment ? "#BE185D" : "#0F766E"));
+        ActiveSegmentBadge.SetResourceReference(Border.BackgroundProperty,
+            isCompany ? "SurfaceAccentBgBrush" : _activeSegment == FashionSegment ? "SurfaceDangerBgBrush" : "SurfaceSuccessBgBrush");
+        ActiveSegmentBadge.SetResourceReference(Border.BorderBrushProperty,
+            isCompany ? "SurfaceAccentBorderBrush" : _activeSegment == FashionSegment ? "SurfaceDangerBorderBrush" : "SurfaceSuccessBorderBrush");
+        ActiveSegmentBadgeText.SetResourceReference(TextBlock.ForegroundProperty,
+            isCompany ? "SurfaceAccentTextBrush" : _activeSegment == FashionSegment ? "SurfaceDangerTextBrush" : "SurfaceSuccessTextBrush");
     }
 
     private void ShowInternalDataView(InternalDataViewMode mode)

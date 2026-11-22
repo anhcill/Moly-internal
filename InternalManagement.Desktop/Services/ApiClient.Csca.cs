@@ -122,6 +122,27 @@ public sealed partial class ApiClient
         return await EnsureCscaSuccessAsync(response, "Đồng bộ bảng lương từ MolyCourse thất bại", ct);
     }
 
+    public async Task<CscaTeacherCostSyncResultItem?> SyncCscaTeacherCostsForPayrollAsync(
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken ct = default)
+    {
+        var req = new
+        {
+            From = from?.ToUniversalTime(),
+            To = to?.ToUniversalTime(),
+            IncludeProjected = true
+        };
+        using var response = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync(
+            "api/v1/payroll/csca-teacher-costs/sync-payroll",
+            req,
+            _jsonOptions,
+            ct), ct);
+        await EnsureCscaSuccessAsync(response, "Đồng bộ bảng lương giảng viên từ MolyCourse thất bại", ct);
+        var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<CscaTeacherCostSyncResultItem>>(_jsonOptions, ct);
+        return envelope?.Data;
+    }
+
     public async Task<CscaClassBreakEvenItem?> GetCscaClassBreakEvenAsync(
         Guid classId,
         DateTime? from = null,
@@ -196,9 +217,10 @@ public sealed partial class ApiClient
     }
 
     public async Task<bool> CreateCscaClassAsync(string code, string name, string batch, string schedule, decimal tuitionFee, Guid? courseId = null,
-        bool isTrial = false, string classType = "LIVE", string? recordingContentMode = null, Guid? sourceClassId = null, CancellationToken ct = default)
+        bool isTrial = false, string classType = "LIVE", string? recordingContentMode = null, Guid? sourceClassId = null,
+        DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
     {
-        var req = new { Code = code, Name = name, Batch = batch, Schedule = schedule, TuitionFee = isTrial ? 0 : tuitionFee, CourseId = courseId, Status = "Active", IsTrial = isTrial, ClassType = classType, RecordingContentMode = recordingContentMode, SourceClassId = sourceClassId };
+        var req = new { Code = code, Name = name, Batch = batch, Schedule = schedule, TuitionFee = isTrial ? 0 : tuitionFee, StartDate = startDate, EndDate = endDate, CourseId = courseId, Status = "Active", IsTrial = isTrial, ClassType = classType, RecordingContentMode = recordingContentMode, SourceClassId = sourceClassId };
         using var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync("api/v1/csca/classes", req, _jsonOptions, ct), ct);
         return await EnsureCscaSuccessAsync(res, "Tạo lớp CSCA thất bại", ct);
     }

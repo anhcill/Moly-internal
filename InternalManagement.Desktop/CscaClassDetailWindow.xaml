@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:InternalManagement.Desktop"
+        xmlns:controls="clr-namespace:InternalManagement.Desktop.Controls"
         Title="Chi tiết lớp CSCA"
         Icon="Assets/app-icon.ico"
         Width="1260"
@@ -13,76 +14,30 @@
         FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
-        <Style x:Key="ToolbarButton" TargetType="Button">
+        <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource OutlineButton}">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryGradientButton}">
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="Margin" Value="0,0,8,0" />
-            <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
-            <Setter Property="BorderBrush" Value="#CBD5E1" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#1E293B" />
-            <Setter Property="Cursor" Value="Hand" />
         </Style>
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
-            <Setter Property="Background" Value="#4F46E5" />
-            <Setter Property="BorderBrush" Value="#4F46E5" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
-            <Setter Property="Foreground" Value="#B91C1C" />
-            <Setter Property="BorderBrush" Value="#FECACA" />
-        </Style>
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F1F5F9" />
-            <Setter Property="Foreground" Value="#475569" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Padding" Value="10,8" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
-            <Setter Property="BorderThickness" Value="0,0,1,1" />
-        </Style>
-        <Style TargetType="DataGridCell">
-            <Setter Property="Foreground" Value="#0F172A" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Padding" Value="10,0" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
-                    <Setter Property="Foreground" Value="White" />
-                    <Setter Property="Background" Value="Transparent" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="DataGridRow">
-            <Setter Property="Foreground" Value="#0F172A" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#EFF6FF" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#2563EB" />
-                    <Setter Property="Foreground" Value="White" />
-                </Trigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsSelected" Value="True" />
-                        <Condition Property="IsMouseOver" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="#1D4ED8" />
-                </MultiTrigger>
-            </Style.Triggers>
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource OutlineButton}">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Foreground" Value="{DynamicResource SurfaceDangerTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceDangerBorderBrush}" />
         </Style>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="FieldValue" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
@@ -102,20 +57,20 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock x:Name="ClassTitleText" Text="Chi tiết lớp" FontSize="20" FontWeight="Bold" Foreground="#0F172A" />
-                    <TextBlock x:Name="ClassSubtitleText" Text="Đang tải dữ liệu..." FontSize="12" Foreground="#64748B" Margin="0,3,0,0" />
+                    <TextBlock x:Name="ClassTitleText" Text="Chi tiết lớp" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                    <TextBlock x:Name="ClassSubtitleText" Text="Đang tải dữ liệu..." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border x:Name="ClassTypeBadge" CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
                         <TextBlock x:Name="ClassTypeText" Text="Lớp chính thức" FontWeight="Bold" FontSize="12" />
                     </Border>
-                    <Border Background="#EEF2FF" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                    <Border Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Học viên: " Foreground="#6366F1" FontWeight="SemiBold" />
-                            <TextBlock x:Name="StudentCountText" Text="0" Foreground="#312E81" FontWeight="Bold" />
+                            <TextBlock Text="Học viên: " Foreground="{DynamicResource SurfaceAccentTextBrush}" FontWeight="SemiBold" />
+                            <TextBlock x:Name="StudentCountText" Text="0" Foreground="{DynamicResource SurfaceAccentTextBrush}" FontWeight="Bold" />
                         </StackPanel>
                     </Border>
-                    <Button Content="Đóng" Click="Close_Click" Width="86" Height="34" />
+                    <Button Content="Đóng" Click="Close_Click" Style="{StaticResource ToolbarButton}" Width="86" Margin="0" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -179,9 +134,9 @@
                         <Button Content="+ Thêm học viên" Click="AddStudent_Click" Style="{StaticResource PrimaryButton}" />
                         <Button Content="✎ Sửa học viên" Click="EditStudent_Click" Style="{StaticResource ToolbarButton}" />
                         <Button Content="Xóa học viên" Click="RemoveStudent_Click" Style="{StaticResource DangerButton}" />
-                        <TextBlock Text="Double-click một dòng để chỉnh sửa nhanh." VerticalAlignment="Center" Foreground="#64748B" FontSize="12" Margin="8,0,0,0" />
+                        <TextBlock Text="Double-click một dòng để chỉnh sửa nhanh." VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="8,0,0,0" />
                     </StackPanel>
-                    <DataGrid Grid.Row="1" x:Name="StudentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" MouseDoubleClick="StudentsDataGrid_MouseDoubleClick">
+                    <DataGrid Grid.Row="1" x:Name="StudentsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" MouseDoubleClick="StudentsDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="MÃ HỌC VIÊN" Binding="{Binding StudentCode}" Width="110" FontWeight="Bold" />
                             <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.6*" />
@@ -207,26 +162,26 @@
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                         <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Học phí / học viên: " Foreground="#475569" FontWeight="SemiBold" />
-                                <TextBlock x:Name="ClassTuitionText" Foreground="#0F172A" FontWeight="Bold" />
+                                <TextBlock Text="Học phí / học viên: " Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" />
+                                <TextBlock x:Name="ClassTuitionText" Foreground="{DynamicResource TextDarkBrush}" FontWeight="Bold" />
                             </StackPanel>
                         </Border>
-                        <Border Background="#ECFDF5" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
+                        <Border Background="{DynamicResource SurfaceSuccessBgBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,12,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Đã thu: " Foreground="#059669" FontWeight="SemiBold" />
-                                <TextBlock x:Name="RevenueText" Text="0 đ" Foreground="#065F46" FontWeight="Bold" />
+                                <TextBlock x:Name="RevenueText" Text="0 đ" Foreground="{DynamicResource SurfaceSuccessTextBrush}" FontWeight="Bold" />
                             </StackPanel>
                         </Border>
-                        <Border Background="#FEF3C7" CornerRadius="8" Padding="12,8" Margin="0,0,16,0">
+                        <Border Background="{DynamicResource PillOrangeBgBrush}" CornerRadius="8" Padding="12,8" Margin="0,0,16,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Còn nợ: " Foreground="#D97706" FontWeight="SemiBold" />
-                                <TextBlock x:Name="DebtText" Text="0 đ" Foreground="#92400E" FontWeight="Bold" />
+                                <TextBlock x:Name="DebtText" Text="0 đ" Foreground="{DynamicResource SurfaceWarningTextBrush}" FontWeight="Bold" />
                             </StackPanel>
                     </Border>
                     </StackPanel>
-                    <TextBlock Grid.Row="1" x:Name="FinancialSummaryText" TextWrapping="Wrap" Foreground="#475569" FontSize="13" Margin="0,0,0,12" />
+                    <TextBlock Grid.Row="1" x:Name="FinancialSummaryText" TextWrapping="Wrap" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" Margin="0,0,0,12" />
                     <GroupBox Grid.Row="2" Header="Học phí và công nợ học viên" Margin="0,0,0,10">
-                        <DataGrid x:Name="StudentFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40" MouseDoubleClick="StudentFinanceDataGrid_MouseDoubleClick">
+                        <DataGrid x:Name="StudentFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" RowHeight="40" MouseDoubleClick="StudentFinanceDataGrid_MouseDoubleClick">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="MÃ HV" Binding="{Binding StudentCode}" Width="95" FontWeight="SemiBold" />
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="1.5*" />
@@ -247,10 +202,10 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,0,8">
+                            <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,0,8">
                                 <TextBlock Text="Chi phí giáo viên là dữ liệu chỉ đọc, đồng bộ từ snapshot CSCA Course/LMS; không nhập thù lao thủ công tại lớp." FontSize="11.5" Foreground="#1D4ED8" TextWrapping="Wrap" />
                             </Border>
-                            <DataGrid Grid.Row="1" x:Name="TeacherFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="40">
+                            <DataGrid Grid.Row="1" x:Name="TeacherFinanceDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" RowHeight="40">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.5*" />
                                     <DataGridTextColumn Header="VAI TRÒ" Binding="{Binding RoleInClass}" Width="1.2*" />
@@ -272,9 +227,9 @@
                         <Button Content="+ Phân công giáo viên" Click="AddTeacher_Click" Style="{StaticResource PrimaryButton}" />
                         <Button Content="✎ Sửa phân công" Click="EditTeacher_Click" Style="{StaticResource ToolbarButton}" />
                         <Button Content="Hủy phân công" Click="RemoveTeacher_Click" Style="{StaticResource DangerButton}" />
-                        <TextBlock Text="Bấm đúp để sửa vai trò và ghi chú. Chi phí lấy từ CSCA Course/LMS, không nhập tại đây." VerticalAlignment="Center" Foreground="#64748B" FontSize="12" Margin="8,0,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="Bấm đúp để sửa vai trò và ghi chú. Chi phí lấy từ CSCA Course/LMS, không nhập tại đây." VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="8,0,0,0" TextWrapping="Wrap" />
                     </StackPanel>
-                    <DataGrid Grid.Row="1" x:Name="TeachersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="44" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" MouseDoubleClick="TeachersDataGrid_MouseDoubleClick">
+                    <DataGrid Grid.Row="1" x:Name="TeachersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" RowHeight="44" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" MouseDoubleClick="TeachersDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding EmployeeName}" Width="1.7*" />
                             <DataGridTextColumn Header="MÃ NHÂN SỰ" Binding="{Binding EmployeeCode}" Width="130" />
@@ -296,34 +251,37 @@
                     <Grid Grid.Row="0" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Lịch học cố định" FontSize="18" FontWeight="Bold" Foreground="#0F172A" />
-                            <TextBlock Text="Chọn khung giờ hằng tuần, sau đó đặt ngày bắt đầu và kết thúc để tạo các buổi học." FontSize="12" Foreground="#64748B" Margin="0,3,0,0" />
+                            <TextBlock Text="Lịch học cố định" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
+                            <TextBlock Text="Chọn khung giờ hằng tuần, sau đó đặt ngày bắt đầu và kết thúc để tạo các buổi học." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                             <Button Content="+ Thêm khung giờ" Click="AddSchedule_Click" Style="{StaticResource ToolbarButton}" />
                             <Button Content="+ Thêm buổi" Click="AddLessonSession_Click" Style="{StaticResource ToolbarButton}" ToolTip="Thêm một buổi bổ sung, không dồn các buổi hiện có" />
+                            <Button Content="+ Dạy bù" Click="AddMakeupSession_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tạo buổi dạy bù cho một buổi đã hủy" />
+                            <Button Content="✓ Điểm danh / Chốt buổi" Click="CompleteAndAttendSession_Click" Style="{StaticResource PrimaryButton}" ToolTip="Điểm danh học viên và chốt trạng thái Completed để tính lương giáo viên" />
                             <Button Content="Hủy buổi" Click="CancelLessonSession_Click" Style="{StaticResource ToolbarButton}" ToolTip="Không tính lương và dồn giáo trình của buổi thường" />
-                            <Button Content="Thiết lập kỳ học" Click="SetupCourseSchedule_Click" Style="{StaticResource PrimaryButton}" />
+                            <Button Content="Xóa buổi" Click="RemoveLessonSession_Click" Style="{StaticResource DangerButton}" ToolTip="Xóa vĩnh viễn một buổi học tạo nhầm" />
+                            <Button Content="Thiết lập kỳ học" Click="SetupCourseSchedule_Click" Style="{StaticResource ToolbarButton}" />
                             <Button Content="Quản lý phòng" Click="ManageClassrooms_Click" Style="{StaticResource ToolbarButton}" />
-                        </StackPanel>
+                        </WrapPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                    <Border Grid.Row="1" Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock x:Name="ScheduleSummaryText" FontWeight="SemiBold" Foreground="#312E81" />
-                                <TextBlock x:Name="ScheduleCoverageText" Foreground="#475569" FontSize="12" Margin="0,4,0,0" />
+                                <TextBlock x:Name="ScheduleSummaryText" FontWeight="SemiBold" Foreground="{DynamicResource SurfaceAccentTextBrush}" />
+                                <TextBlock x:Name="ScheduleCoverageText" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,4,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="‹" Width="34" Click="PreviousScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần trước" />
                                 <Button Content="Hôm nay" Click="CurrentScheduleWeek_Click" Style="{StaticResource ToolbarButton}" />
                                 <Button Content="›" Width="34" Click="NextScheduleWeek_Click" Style="{StaticResource ToolbarButton}" ToolTip="Tuần sau" />
-                                <TextBlock x:Name="ScheduleWeekLabel" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#312E81" Margin="10,0,14,0" />
-                                <Border Width="1" Height="22" Background="#CBD5E1" Margin="0,0,10,0" />
+                                <TextBlock x:Name="ScheduleWeekLabel" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource SurfaceAccentTextBrush}" Margin="10,0,14,0" />
+                                <Border Width="1" Height="22" Background="{DynamicResource BorderMediumBrush}" Margin="0,0,10,0" />
                                 <Button Content="🌙 Ca tối" Click="ScrollToEvening_Click" Style="{StaticResource ToolbarButton}" ToolTip="Cuộn nhanh xuống ca tối (17:00 – 22:00)" Padding="10,0" />
                                 <Button Content="☀️ Ca sáng" Click="ScrollToMorning_Click" Style="{StaticResource ToolbarButton}" ToolTip="Cuộn nhanh lên ca sáng (06:00 – 12:00)" Margin="6,0,0,0" Padding="10,0" />
                             </StackPanel>
@@ -356,7 +314,7 @@
                         </Grid>
                     </Border>
 
-                    <Expander Grid.Row="3" Header="Danh sách khung giờ cố định · Chọn dòng để sửa hoặc xóa" IsExpanded="False" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="8">
+                    <Expander Grid.Row="3" Header="Danh sách khung giờ cố định · Chọn dòng để sửa hoặc xóa" IsExpanded="False" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Padding="8">
                     <DataGrid x:Name="SchedulesDataGrid" Height="180" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" RowHeight="42" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MouseDoubleClick="SchedulesDataGrid_MouseDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="THỨ" Binding="{Binding DayLabel}" Width="110" />
@@ -404,7 +362,7 @@
                         <RowDefinition Height="8" />
                         <RowDefinition Height="1.2*" MinHeight="170" />
                     </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,0,8">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,0,8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -412,28 +370,28 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="BÁO CÁO ĐIỂM DANH TỪ CSCA COURSE" FontWeight="Bold" Foreground="#1E40AF" />
-                                <TextBlock Text="Dữ liệu chỉ đọc, được đồng bộ sau khi giáo viên chốt điểm danh trên web. Lớp và học viên cần liên kết với web trước khi có báo cáo." TextWrapping="Wrap" Foreground="#475569" FontSize="12" Margin="0,4,0,0" />
+                                <TextBlock Text="Dữ liệu chỉ đọc, được đồng bộ sau khi giáo viên chốt điểm danh trên web. Lớp và học viên cần liên kết với web trước khi có báo cáo." TextWrapping="Wrap" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,4,0,0" />
                             </StackPanel>
                             <Button Grid.Column="1" Content="Tải lại báo cáo" Click="RefreshAttendanceReport_Click" Style="{StaticResource ToolbarButton}" Height="34" Padding="12,0" Margin="12,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Từ ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
+                        <TextBlock Text="Từ ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMutedBrush}" />
                         <DatePicker x:Name="AttendanceReportFromDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
-                        <TextBlock Text="Đến ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569" />
+                        <TextBlock Text="Đến ngày" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMutedBrush}" />
                         <DatePicker x:Name="AttendanceReportToDatePicker" Width="135" Height="34" Margin="0,0,14,0" />
-                        <TextBlock x:Name="AttendanceReportStatusText" Text="Mở tab để tải dữ liệu điểm danh." VerticalAlignment="Center" Foreground="#64748B" TextWrapping="Wrap" />
+                        <TextBlock x:Name="AttendanceReportStatusText" Text="Mở tab để tải dữ liệu điểm danh." VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <UniformGrid Grid.Row="2" Columns="6" Margin="0,0,0,8">
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
-                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="8" Padding="10,7"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="#64748B" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="18" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="HỌC VIÊN" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportStudentCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="BUỔI ĐÃ CHỐT" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportSessionCountText" Text="0" FontSize="18" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ MẶT + ĐI MUỘN" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportPresentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#059669"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="VẮNG" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportAbsentCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#DC2626"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="0,0,8,0"><StackPanel><TextBlock Text="CÓ PHÉP" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportExcusedCountText" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D97706"/></StackPanel></Border>
+                        <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7"><StackPanel><TextBlock Text="TỶ LỆ THAM GIA" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/><TextBlock x:Name="ReportAttendanceRateText" Text="0%" FontSize="18" FontWeight="Bold" Foreground="#4F46E5"/></StackPanel></Border>
                     </UniformGrid>
                     <GroupBox Grid.Row="3" Header="Thống kê theo buổi học từ web" Margin="0,0,0,10">
-                        <DataGrid x:Name="AttendanceReportSessionsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
+                        <DataGrid x:Name="AttendanceReportSessionsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" RowHeight="38">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="NGÀY HỌC" Binding="{Binding DateLabel}" Width="120" />
                                 <DataGridTextColumn Header="GIỜ HỌC" Binding="{Binding TimeLabel}" Width="130" />
@@ -447,9 +405,9 @@
                         </DataGrid>
                     </GroupBox>
                     <GridSplitter Grid.Row="4" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="#CBD5E1" Cursor="SizeNS" />
+                                  ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="{DynamicResource BorderMediumBrush}" Cursor="SizeNS" />
                     <GroupBox Grid.Row="5" Header="Thống kê theo học viên">
-                        <DataGrid x:Name="AttendanceReportStudentsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="38">
+                        <DataGrid x:Name="AttendanceReportStudentsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" RowHeight="38">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="HỌ VÀ TÊN" Binding="{Binding StudentName}" Width="2*" />
                                 <DataGridTextColumn Header="SỐ BUỔI" Binding="{Binding TotalRecords}" Width="100" />
@@ -465,19 +423,14 @@
             </TabItem>
         </TabControl>
 
-        <TextBlock Grid.Row="2" x:Name="LoadingText" Text="" Foreground="#64748B" FontSize="12" Margin="2,10,0,0" />
+        <TextBlock Grid.Row="2" x:Name="LoadingText" Text="" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="2,10,0,0" />
 
-        <!-- SLEEK MODAL BUSY OVERLAY -->
-        <Border x:Name="CscaBusyOverlay" Grid.RowSpan="3" Background="#66090E1D" Visibility="Collapsed" Panel.ZIndex="100" Margin="-22">
-            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="16" Padding="28,24" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="280" MaxWidth="380" Effect="{StaticResource FloatingShadow}">
-                <StackPanel HorizontalAlignment="Center">
-                    <!-- Animated Dual-Orbit Spinner with Brand Badge (Mẫu 3) -->
-                    <local:MolyDualOrbitSpinner Width="52" Height="52" HorizontalAlignment="Center" Margin="0,0,0,14" />
-                    <TextBlock x:Name="CscaBusyText" Text="Đang xử lý dữ liệu..." HorizontalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,4" />
-                    <TextBlock Text="Vui lòng đợi trong giây lát..." HorizontalAlignment="Center" FontSize="11.5" Foreground="#64748B" Margin="0,0,0,14" />
-                    <ProgressBar IsIndeterminate="True" Width="200" Height="3.5" Style="{StaticResource ModernProgressBarStyle}" />
-                </StackPanel>
-            </Border>
+        <!-- MINIMALIST ROLLING 'M' BUSY OVERLAY -->
+        <Border x:Name="CscaBusyOverlay" Grid.RowSpan="3" Background="{DynamicResource OverlayBackdropBrush}" Visibility="Collapsed" Panel.ZIndex="100" Margin="-16">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <controls:MolyLoader Width="52" Height="52" HorizontalAlignment="Center" />
+                <TextBlock x:Name="CscaBusyText" Text="Đang xử lý..." HorizontalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#F8FAFC" Margin="0,10,0,0" />
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

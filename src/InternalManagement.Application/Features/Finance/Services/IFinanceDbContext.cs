@@ -26,6 +26,7 @@ public interface IFinanceDbContext
     DbSet<OrderCostSnapshot> OrderCostSnapshots { get; }
     DbSet<Payment> Payments { get; }
     DbSet<PayrollPeriod> PayrollPeriods { get; }
+    DbSet<Payslip> Payslips { get; }
     DbSet<ProductionOrderOutput> ProductionOrderOutputs { get; }
     DbSet<ProductionOrder> ProductionOrders { get; }
     DbSet<ProfitAllocation> ProfitAllocations { get; }

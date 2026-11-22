@@ -92,6 +92,15 @@ public sealed partial class ApiClient
                 : "Live";
     }
 
+    public sealed record CscaTeacherCostSyncResultItem(
+        int Received,
+        int Inserted,
+        int Updated,
+        DateTime CalculatedAt,
+        DateTime SyncedAt,
+        int UnmappedTeacherCount = 0,
+        IReadOnlyList<string>? UnmappedTeachers = null);
+
     public sealed record CscaTeacherCostSummaryItem(
         int ItemCount,
         int TeacherCount,

@@ -17,7 +17,8 @@ namespace InternalManagement.Infrastructure.Services;
 public sealed partial class FinanceWorkspaceService(
     IFinanceDbContext db,
     ICurrentUserService? currentUser = null,
-    ILmsAccessLifecycleService? lmsAccess = null) : IFinanceWorkspaceService
+    ILmsAccessLifecycleService? lmsAccess = null,
+    ICscaCourseLmsClient? lmsClient = null) : IFinanceWorkspaceService
 {
     private async Task<Guid?> CompanyAsync(CancellationToken ct)
     {
@@ -320,8 +321,36 @@ public sealed partial class FinanceWorkspaceService(
         var toApply = request.ApplyAdvanceAmount;
         foreach (var advance in advances) { var applied = Math.Min(toApply, advance.Amount - advance.ReturnedAmount - advance.AppliedAmount); advance.AppliedAmount += applied; toApply -= applied; advance.Status = advance.Amount == advance.ReturnedAmount + advance.AppliedAmount ? "Settled" : "Open"; }
         var payment = new TeacherPayment { CompanyId = company.Value, BusinessUnitId = unit, EmployeeId = employee.Id, Amount = request.Amount, AdvanceAppliedAmount = request.ApplyAdvanceAmount, PaidAt = Utc(request.PaidAt), Description = Text(request.Description, $"Thanh toán công giáo viên {employee.FullName}"), IdempotencyKey = Key(request.IdempotencyKey) };
-        var facts = (await Scope(db.CscaTeacherCostSnapshots, company.Value).Where(x => x.SourceSystem == "CSCA_COURSE" && x.IsCurrent && x.EmployeeId == employee.Id).OrderBy(x => x.StartTime).ThenBy(x => x.Id).ToListAsync(ct))
+        var factsQuery = db.CscaTeacherCostSnapshots
+            .Where(x => x.CompanyId == company.Value && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent && x.EmployeeId == employee.Id);
+        if (currentUser?.BusinessUnitId is { } snapshotUnit)
+            factsQuery = factsQuery.Where(x => x.BusinessUnitId == snapshotUnit || x.BusinessUnitId == null);
+        var facts = (await factsQuery.OrderBy(x => x.StartTime).ThenBy(x => x.Id).ToListAsync(ct))
             .Where(x => !string.Equals(x.Status, "cancelled", StringComparison.OrdinalIgnoreCase) && !string.Equals(x.Status, "canceled", StringComparison.OrdinalIgnoreCase)).ToList();
+
+        // Guard against double-paying snapshots already included in an Approved/Paid/Published payroll period.
+        if (facts.Count > 0)
+        {
+            var paidOrApprovedPeriods = await db.PayrollPeriods.AsNoTracking()
+                .Where(p => p.CompanyId == company.Value &&
+                    (p.Status == PayrollStatus.Approved || p.Status == PayrollStatus.Paid || p.Status == PayrollStatus.Published) &&
+                    db.Payslips.Any(ps => ps.PayrollPeriodId == p.Id && ps.EmployeeId == employee.Id))
+                .Select(p => new { p.Name, p.StartDate, p.EndDate })
+                .ToListAsync(ct);
+
+            var overlappingPeriod = paidOrApprovedPeriods.FirstOrDefault(p =>
+            {
+                var startUtc = p.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                var endUtc = p.EndDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                return facts.Any(f => f.IsCompleted && !IsSourcePaid(f.PaymentStatus, f.PaidAt) && f.StartTime >= startUtc && f.StartTime < endUtc);
+            });
+            if (overlappingPeriod is not null)
+            {
+                return Result<TeacherCostWorkspaceDto>.Failure(
+                    $"Công giảng dạy của giáo viên này đã nằm trong kỳ lương '{overlappingPeriod.Name}' đã duyệt/chi. Không thể thanh toán trùng tại Finance Workspace.");
+            }
+        }
+
         var oldAllocations = await Scope(db.TeacherPaymentAllocations, company.Value).ToListAsync(ct);
         var toAllocate = request.Amount + request.ApplyAdvanceAmount;
         foreach (var fact in facts)
@@ -331,6 +360,11 @@ public sealed partial class FinanceWorkspaceService(
             if (allocated == 0) continue;
             db.TeacherPaymentAllocations.Add(new TeacherPaymentAllocation { CompanyId = company.Value, BusinessUnitId = fact.BusinessUnitId, TeacherPaymentId = payment.Id, TeacherCostSnapshotId = fact.Id, Amount = allocated });
             fact.LocalSettlementVersion++;
+            if (alreadySettled + allocated >= fact.AccruedAmount && fact.AccruedAmount > 0)
+            {
+                fact.PaymentStatus = "paid";
+                fact.PaidAt = payment.PaidAt;
+            }
             toAllocate -= allocated;
         }
         // Bonus/penalty adjustments belong to the teacher settlement rather than
@@ -338,7 +372,34 @@ public sealed partial class FinanceWorkspaceService(
         if (payment.Amount > 0) payment.FinanceTransactionId = Post(company.Value, unit, TransactionType.Expense, payment.Amount, payment.PaidAt, nameof(TeacherPayment), payment.Id, payment.Description).Id;
         db.TeacherPayments.Add(payment);
         await db.SaveChangesAsync(ct);
-        return Result<TeacherCostWorkspaceDto>.Success(await Teacher(company.Value, employee.Id, ct));
+
+        var updatedWorkspace = await Teacher(company.Value, employee.Id, ct);
+        if (lmsClient is not null && updatedWorkspace.UnpaidEarned == 0 && updatedWorkspace.TeacherLmsId is { } teacherLmsId && teacherLmsId > 0)
+        {
+            try
+            {
+                var correlationId = Guid.NewGuid().ToString("N");
+                var latestPeriod = facts.Count > 0 ? $"{facts.Max(f => f.StartTime):yyyy-MM}" : "all";
+                await lmsClient.UpdateTeacherSettlementAsync(
+                    new LmsTeacherSettlementUpdate(
+                        teacherLmsId,
+                        updatedWorkspace.BonusAmount,
+                        updatedWorkspace.DeductionAmount,
+                        "paid",
+                        payment.Description,
+                        payment.PaidAt,
+                        latestPeriod),
+                    new LmsOutboundRequestContext($"finance-pay:{payment.Id:N}", correlationId),
+                    ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Local finance transaction is already committed; LMS status can be re-synced later.
+                System.Diagnostics.Debug.WriteLine($"Unable to push teacher payment status to LMS: {ex.Message}");
+            }
+        }
+
+        return Result<TeacherCostWorkspaceDto>.Success(updatedWorkspace);
     }
 
     public async Task<Result<IReadOnlyList<PlannedCashMovementDto>>> GetPlannedMovementsAsync(CancellationToken ct)

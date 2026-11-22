@@ -138,33 +138,37 @@ public sealed class DashboardViewModel : ObservableViewModel
         int classCount, int studentCount, decimal educationDebt, int productCount, int variantCount,
         int stockUnits, int orderCount, decimal attendanceRate, int deadLetters)
     {
+        var dark = ThemeService.Instance.IsDark;
+        string Bg(string lightHex, string darkHex) => dark ? darkHex : lightHex;
+        string Fg(string lightHex, string darkHex) => dark ? darkHex : lightHex;
+
         var income = finance?.TotalIncome ?? 0m;
         var profit = finance?.OperatingProfit ?? 0m;
         var margin = income == 0 ? 0 : profit / income * 100m;
         var common = new List<DashboardKpiItem>
         {
-            new("DOANH THU TỪ ĐẦU NĂM", CompactMoney(income), "Thực thu đã ghi nhận", "\uE8C7", "#0F766E", "#ECFDF5"),
-            new("LỢI NHUẬN HOẠT ĐỘNG", CompactMoney(profit), $"Biên lợi nhuận {margin:N1}%", "\uE9D2", profit >= 0 ? "#2563EB" : "#DC2626", profit >= 0 ? "#EFF6FF" : "#FEF2F2"),
-            new("NHÂN SỰ ĐANG LÀM VIỆC", activeEmployees.ToString("N0"), $"Trên tổng {totalEmployees:N0} hồ sơ", "\uE716", "#7C3AED", "#F5F3FF")
+            new("DOANH THU TỪ ĐẦU NĂM", CompactMoney(income), "Thực thu đã ghi nhận", "\uE8C7", Fg("#0F766E", "#2DD4BF"), Bg("#ECFDF5", "#064E3B")),
+            new("LỢI NHUẬN HOẠT ĐỘNG", CompactMoney(profit), $"Biên lợi nhuận {margin:N1}%", "\uE9D2", profit >= 0 ? Fg("#2563EB", "#60A5FA") : Fg("#DC2626", "#F87171"), profit >= 0 ? Bg("#EFF6FF", "#1E3A8A") : Bg("#FEF2F2", "#7F1D1D")),
+            new("NHÂN SỰ ĐANG LÀM VIỆC", activeEmployees.ToString("N0"), $"Trên tổng {totalEmployees:N0} hồ sơ", "\uE716", Fg("#7C3AED", "#C084FC"), Bg("#F5F3FF", "#3B0764"))
         };
 
         if (Scope == EducationScope)
         {
-            common.Add(new("LỚP & HỌC VIÊN", $"{classCount:N0} · {studentCount:N0}", "Lớp đang quản lý · học viên", "\uE7BE", "#0284C7", "#F0F9FF"));
-            common.Add(new("CÔNG NỢ HỌC PHÍ", CompactMoney(educationDebt), educationDebt > 0 ? "Cần theo dõi thu học phí" : "Không có công nợ", "\uE8C7", "#D97706", "#FFFBEB"));
+            common.Add(new("LỚP & HỌC VIÊN", $"{classCount:N0} · {studentCount:N0}", "Lớp đang quản lý · học viên", "\uE7BE", Fg("#0284C7", "#38BDF8"), Bg("#F0F9FF", "#0C4A6E")));
+            common.Add(new("CÔNG NỢ HỌC PHÍ", CompactMoney(educationDebt), educationDebt > 0 ? "Cần theo dõi thu học phí" : "Không có công nợ", "\uE8C7", Fg("#D97706", "#FBBF24"), Bg("#FFFBEB", "#451A03")));
         }
         else if (Scope == FashionScope)
         {
-            common.Add(new("SẢN PHẨM & SKU", $"{productCount:N0} · {variantCount:N0}", "Danh mục sản phẩm · biến thể", "\uE719", "#BE185D", "#FDF2F8"));
-            common.Add(new("TỒN KHO & ĐƠN HÀNG", $"{stockUnits:N0} · {orderCount:N0}", "Sản phẩm tồn · tổng đơn", "\uE7B8", "#C2410C", "#FFF7ED"));
+            common.Add(new("SẢN PHẨM & SKU", $"{productCount:N0} · {variantCount:N0}", "Danh mục sản phẩm · biến thể", "\uE719", Fg("#BE185D", "#F472B6"), Bg("#FDF2F8", "#500724")));
+            common.Add(new("TỒN KHO & ĐƠN HÀNG", $"{stockUnits:N0} · {orderCount:N0}", "Sản phẩm tồn · tổng đơn", "\uE7B8", Fg("#C2410C", "#FB923C"), Bg("#FFF7ED", "#431407")));
         }
         else
         {
-            common.Add(new("QUY MÔ GIÁO DỤC", $"{classCount:N0} lớp", $"{studentCount:N0} học viên đang quản lý", "\uE7BE", "#0284C7", "#F0F9FF"));
-            common.Add(new("QUY MÔ THỜI TRANG", $"{productCount:N0} sản phẩm", $"{orderCount:N0} đơn · {stockUnits:N0} tồn kho", "\uE719", "#BE185D", "#FDF2F8"));
+            common.Add(new("QUY MÔ GIÁO DỤC", $"{classCount:N0} lớp", $"{studentCount:N0} học viên đang quản lý", "\uE7BE", Fg("#0284C7", "#38BDF8"), Bg("#F0F9FF", "#0C4A6E")));
+            common.Add(new("QUY MÔ THỜI TRANG", $"{productCount:N0} sản phẩm", $"{orderCount:N0} đơn · {stockUnits:N0} tồn kho", "\uE719", Fg("#BE185D", "#F472B6"), Bg("#FDF2F8", "#500724")));
         }
 
-        common.Add(new("SỨC KHỎE VẬN HÀNH", IsApiHealthy ? "Ổn định" : "Gián đoạn", deadLetters > 0 ? $"{deadLetters:N0} lỗi đồng bộ cần xử lý" : $"Chấm công hiện diện {attendanceRate:N0}%", "\uE9D9", IsApiHealthy && deadLetters == 0 ? "#059669" : "#DC2626", IsApiHealthy && deadLetters == 0 ? "#ECFDF5" : "#FEF2F2"));
+        common.Add(new("SỨC KHỎE VẬN HÀNH", IsApiHealthy ? "Ổn định" : "Gián đoạn", deadLetters > 0 ? $"{deadLetters:N0} lỗi đồng bộ cần xử lý" : $"Chấm công hiện diện {attendanceRate:N0}%", "\uE9D9", IsApiHealthy && deadLetters == 0 ? Fg("#059669", "#34D399") : Fg("#DC2626", "#F87171"), IsApiHealthy && deadLetters == 0 ? Bg("#ECFDF5", "#064E3B") : Bg("#FEF2F2", "#7F1D1D")));
         return common;
     }
 
@@ -222,16 +226,20 @@ public sealed class DashboardViewModel : ObservableViewModel
         ApiClient.CompanyFinancialOverviewItem? finance, ApiClient.AttendanceSummaryItem? attendance,
         decimal educationDebt, IReadOnlyList<ApiClient.FashionVariantItem> variants, int deadLetters, bool apiHealthy)
     {
+        var dark = ThemeService.Instance.IsDark;
+        string Bg(string lightHex, string darkHex) => dark ? darkHex : lightHex;
+        string Fg(string lightHex, string darkHex) => dark ? darkHex : lightHex;
+
         var alerts = new List<DashboardAlertItem>();
-        if (!apiHealthy) alerts.Add(new("API nội bộ đang gián đoạn", "Một số chỉ số có thể chưa cập nhật.", "#DC2626", "#FEF2F2", "\uEA39"));
-        if (deadLetters > 0) alerts.Add(new("Đồng bộ cần xử lý", $"{deadLetters:N0} bản ghi đang nằm trong Dead-Letter Queue.", "#DC2626", "#FEF2F2", "\uE7BA"));
-        if (finance?.HasUnclassifiedTransactions == true) alerts.Add(new("Giao dịch chưa phân loại", "Có dòng tiền chưa được gắn đúng mảng hoạt động.", "#D97706", "#FFFBEB", "\uE9CE"));
-        if (educationDebt > 0) alerts.Add(new("Công nợ học phí", $"Còn {CompactMoney(educationDebt)} cần theo dõi thu.", "#D97706", "#FFFBEB", "\uE8C7"));
+        if (!apiHealthy) alerts.Add(new("API nội bộ đang gián đoạn", "Một số chỉ số có thể chưa cập nhật.", Fg("#DC2626", "#FCA5A5"), Bg("#FEF2F2", "#450A0A"), "\uEA39"));
+        if (deadLetters > 0) alerts.Add(new("Đồng bộ cần xử lý", $"{deadLetters:N0} bản ghi đang nằm trong Dead-Letter Queue.", Fg("#DC2626", "#FCA5A5"), Bg("#FEF2F2", "#450A0A"), "\uE7BA"));
+        if (finance?.HasUnclassifiedTransactions == true) alerts.Add(new("Giao dịch chưa phân loại", "Có dòng tiền chưa được gắn đúng mảng hoạt động.", Fg("#D97706", "#FCD34D"), Bg("#FFFBEB", "#451A03"), "\uE9CE"));
+        if (educationDebt > 0) alerts.Add(new("Công nợ học phí", $"Còn {CompactMoney(educationDebt)} cần theo dõi thu.", Fg("#D97706", "#FCD34D"), Bg("#FFFBEB", "#451A03"), "\uE8C7"));
         var outOfStock = variants.Count(x => x.OnHandQuantity <= 0);
-        if (outOfStock > 0) alerts.Add(new("SKU hết hàng", $"{outOfStock:N0} SKU đang có tồn kho bằng 0.", "#C2410C", "#FFF7ED", "\uE7B8"));
+        if (outOfStock > 0) alerts.Add(new("SKU hết hàng", $"{outOfStock:N0} SKU đang có tồn kho bằng 0.", Fg("#C2410C", "#FDBA74"), Bg("#FFF7ED", "#431407"), "\uE7B8"));
         if (attendance is { } summary && summary.LateCount + summary.AbsentCount > 0)
-            alerts.Add(new("Chấm công tháng này", $"{summary.LateCount:N0} lượt đi muộn · {summary.AbsentCount:N0} lượt vắng.", "#7C3AED", "#F5F3FF", "\uE823"));
-        if (alerts.Count == 0) alerts.Add(new("Vận hành ổn định", "Chưa phát hiện cảnh báo cần ưu tiên xử lý.", "#059669", "#ECFDF5", "\uE73E"));
+            alerts.Add(new("Chấm công tháng này", $"{summary.LateCount:N0} lượt đi muộn · {summary.AbsentCount:N0} lượt vắng.", Fg("#7C3AED", "#D8B4FE"), Bg("#F5F3FF", "#3B0764"), "\uE823"));
+        if (alerts.Count == 0) alerts.Add(new("Vận hành ổn định", "Chưa phát hiện cảnh báo cần ưu tiên xử lý.", Fg("#059669", "#6EE7B7"), Bg("#ECFDF5", "#064E3B"), "\uE73E"));
         return alerts.Take(5).ToArray();
     }
 

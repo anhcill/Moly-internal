@@ -24,12 +24,42 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        RegisterGlobalExceptionHandlers();
         Services.ThemeService.Instance.Initialize();
 
         // Do not block the first window while the release feed is contacted.
         _ = CheckForUpdatesAsync();
     }
 
+    
+    private void RegisterGlobalExceptionHandlers()
+    {
+        DispatcherUnhandledException += (_, args) =>
+        {
+            Debug.WriteLine($"[WPF Unhandled UI Exception] {args.Exception}");
+            args.Handled = true;
+            try
+            {
+                MessageBox.Show(
+                    $"Đã xảy ra lỗi không mong muốn khi thao tác:\n{args.Exception.Message}\n\nỨng dụng vẫn tiếp tục chạy; bạn có thể tải lại màn hình và thử lại.",
+                    "Cảnh báo lỗi hệ thống",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            catch { }
+        };
+
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Debug.WriteLine($"[Unobserved Task Exception] {args.Exception}");
+            args.SetObserved();
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            Debug.WriteLine($"[AppDomain Unhandled Exception] {args.ExceptionObject}");
+        };
+    }
     private async Task CheckForUpdatesAsync()
     {
 #if DEBUG

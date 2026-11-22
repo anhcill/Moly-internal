@@ -6,13 +6,13 @@
         <StackPanel>
             <TextBlock Text="HƯỚNG DẪN VẬN HÀNH" FontSize="13" FontWeight="Bold"
                        Foreground="{DynamicResource TextDarkBrush}" />
-            <TextBlock Text="1. Giáo viên theo giờ: khai báo đơn giá trong hồ sơ, gán giáo viên vào lớp và tạo các buổi học có giờ bắt đầu/kết thúc. Khi tính kỳ lương, hệ thống cộng giờ của các buổi trong kỳ (trừ buổi hủy) × đơn giá.&#xA;2. Nếu giờ thực dạy khác lịch, chọn giáo viên trong Điều chỉnh lương rồi bấm Sửa giờ dạy, nhập ngày và số giờ. Giờ chấm công sẽ thay giờ của buổi học trong ngày đó; kỳ lương nháp được tính lại ngay.&#xA;3. Với cộng tác viên theo sản phẩm, mở Đầu việc &amp; tiền công, chọn nhân sự và ghi số đề/dự án/đơn/người marketing kiếm được cùng mã tham chiếu và đơn giá. Khoản tiền tự cộng ngay khi nhập; kỳ nháp sẽ cộng khi tính lương lần đầu.&#xA;4. Vào Bảng tính lương, double-click nhân sự để xem giờ công, lương thời gian và tiền công đầu việc tách riêng. Ghi các khoản điều chỉnh khác kèm lý do; hủy đầu việc sai để giữ lịch sử.&#xA;5. Sau khi gửi duyệt, hệ thống khóa thêm/hủy đầu việc và điều chỉnh. Thực hiện Phê duyệt → Đã chi lương → Phát hành theo trạng thái được mở."
+            <TextBlock Text="1. Đồng bộ lương Giáo dục (Course / LMS): Bấm '↻ Đồng bộ lương Course/LMS' trước khi tính lương để kéo mới nhất các buổi đã hoàn thành (Completed) từ MolyCourse LMS. Hệ thống tự động lấy Snapshot LMS làm nguồn chuẩn cho lớp đã nối LMS, và lấy các buổi học đã chốt Completed (hỗ trợ đủ Giáo viên, Trợ giảng, Mentor — cả Full-time &amp; Part-time) cho lớp nội bộ.&#xA;2. Chỉ buổi đã chốt 'Completed' mới được tính lương (buổi Scheduled chưa dạy hoặc buổi Cancelled không tạo tiền). Nếu lớp có đặt thù lao riêng cho từng nhân sự thì ưu tiên dùng mức đó; nếu để 0 sẽ dùng đơn giá theo hồ sơ nhân sự.&#xA;3. Chống trả lương trùng &amp; tự khấu trừ tạm ứng: Mọi khoản đã thanh toán trực tiếp qua Finance Workspace đều tự động trừ ra khỏi kỳ lương; các khoản tạm ứng giáo viên (TeacherAdvance) chưa hoàn được tự động đối trừ vào phiếu lương.&#xA;4. Khi HR bấm 'Đã chi lương' trên kỳ lương, hệ thống tự động ghi 1 phiếu chi duy nhất trên Sổ cái Tài chính, chốt trạng thái 'paid' lên MolyCourse LMS và khóa không cho chi trùng.&#xA;5. Với cộng tác viên theo đầu việc/sản phẩm, mở 'Đầu việc &amp; tiền công' để ghi nhận số lượng và đơn giá kèm mã tham chiếu; sau khi gửi duyệt, hệ thống khóa thêm/sửa dữ liệu để đảm bảo minh bạch."
                        FontSize="13" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"
                        LineHeight="24" Margin="0,12,0,0" />
-            <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1"
+            <Border Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1"
                     CornerRadius="10" Padding="12" Margin="0,16,0,0">
                 <TextBlock Text="Mỗi đầu việc chỉ được ghi một lần cho cùng nhân sự, loại việc và mã tham chiếu. Khi kỳ đã gửi duyệt hoặc chi lương, không tự ý tính lại hay thay đổi dữ liệu."
-                           FontSize="12" Foreground="#92400E" TextWrapping="Wrap" />
+                           FontSize="12" Foreground="{DynamicResource SurfaceWarningTextBrush}" TextWrapping="Wrap" />
             </Border>
         </StackPanel>
     </Border>

@@ -1155,6 +1155,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_courses");
 
+                    b.HasIndex("CompanyId", "BusinessUnitId")
+                        .HasDatabaseName("ix_courses_company_id_business_unit_id");
+
                     b.ToTable("courses", (string)null);
                 });
 
@@ -1254,6 +1257,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PartyId")
                         .HasDatabaseName("ix_ed_tech_customers_party_id");
+
+                    b.HasIndex("CompanyId", "Email")
+                        .HasDatabaseName("ix_ed_tech_customers_company_id_email");
 
                     b.HasIndex("SourceSystem", "SourceId")
                         .IsUnique()
@@ -1469,6 +1475,9 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_question_banks");
+
+                    b.HasIndex("CompanyId", "Name")
+                        .HasDatabaseName("ix_question_banks_company_id_name");
 
                     b.ToTable("question_banks", (string)null);
                 });
@@ -4116,6 +4125,12 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CompanyId", "TransactionDate")
                         .HasDatabaseName("ix_finance_transactions_company_id_transaction_date");
+
+                    b.HasIndex("CompanyId", "BusinessUnitId", "TransactionDate")
+                        .HasDatabaseName("ix_finance_transactions_company_id_business_unit_id_transactio");
+
+                    b.HasIndex("CompanyId", "ReferenceType", "ReferenceId")
+                        .HasDatabaseName("ix_finance_transactions_company_id_reference_type_reference_id");
 
                     b.ToTable("finance_transactions", (string)null);
                 });
@@ -8282,18 +8297,18 @@ namespace InternalManagement.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("InternalManagement.Domain.Entities.CscaInterview.CscaClass", b =>
                 {
-                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "CurriculumSourceClass")
-                        .WithMany("CurriculumLinkedRecordingClasses")
-                        .HasForeignKey("CurriculumSourceClassId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_csca_classes_csca_classes_curriculum_source_class_id");
-
                     b.HasOne("InternalManagement.Domain.Entities.EdTech.Course", "Course")
                         .WithMany("CscaClasses")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_csca_classes_courses_course_id");
+
+                    b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "CurriculumSourceClass")
+                        .WithMany("CurriculumLinkedRecordingClasses")
+                        .HasForeignKey("CurriculumSourceClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_csca_classes_csca_classes_curriculum_source_class_id");
 
                     b.HasOne("InternalManagement.Domain.Entities.CscaInterview.CscaClass", "SourceClass")
                         .WithMany("RecordingClasses")

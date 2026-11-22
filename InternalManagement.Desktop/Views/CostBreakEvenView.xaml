@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,14"
-                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -26,7 +26,7 @@
                     <TextBlock Text="Tập trung doanh thu thực nhận, chi phí giáo viên lấy từ CSCA Course/LMS và các khoản chi khác để tính điểm hòa vốn." FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10" Padding="10,6" HorizontalAlignment="Right">
+                    <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10,6" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="#2563EB" Margin="0,0,6,0" />
                             <TextBlock x:Name="LmsStatusText" Text="Chưa đồng bộ dữ liệu LMS" FontSize="11" FontWeight="SemiBold" Foreground="#1D4ED8" />
@@ -69,28 +69,28 @@
         </Border>
 
         <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,14">
-            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="DOANH THU KHÓA HỌC" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                     <TextBlock x:Name="RevenueMetricText" Text="Chưa có dữ liệu" FontSize="18" FontWeight="Bold" Foreground="#059669" Margin="0,5,0,2" />
                     <TextBlock Text="Lấy từ các khoản đã thu thực tế" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" />
                 </StackPanel>
             </Border>
-            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="CHI PHÍ GIÁO VIÊN" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                     <TextBlock x:Name="TeacherCostMetricText" Text="Chờ dữ liệu LMS" FontSize="18" FontWeight="Bold" Foreground="#DC2626" Margin="0,5,0,2" />
                     <TextBlock Text="Không nhập lương thủ công" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" />
                 </StackPanel>
             </Border>
-            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="CHI PHÍ KHÁC" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                     <TextBlock x:Name="OtherCostMetricText" Text="Chưa cấu hình" FontSize="18" FontWeight="Bold" Foreground="#B45309" Margin="0,5,0,2" />
                     <TextBlock Text="Lấy từ sổ chi phí được phân loại" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" />
                 </StackPanel>
             </Border>
-            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="ĐIỂM HÒA VỐN" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                     <TextBlock x:Name="BreakEvenMetricText" Text="Chờ cấu hình" FontSize="18" FontWeight="Bold" Foreground="#4F46E5" Margin="0,5,0,2" />
@@ -104,7 +104,7 @@
                 <ColumnDefinition Width="1.1*" />
                 <ColumnDefinition Width="0.9*" />
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,16" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Grid.Column="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,16" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="Công thức dự kiến" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
                     <TextBlock Text="Điểm hòa vốn = Chi phí cố định / (Doanh thu bình quân mỗi học viên - Chi phí biến đổi mỗi học viên)" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource TextDarkBrush}" Margin="0,12,0,8" />
@@ -113,7 +113,7 @@
                     </Border>
                 </StackPanel>
             </Border>
-            <Border Grid.Column="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border Grid.Column="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <StackPanel>
                     <TextBlock Text="Nguồn dữ liệu" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
                     <TextBlock Text="• Doanh thu: khoản học phí đã thu trong lớp CSCA" FontSize="12" Foreground="{DynamicResource TextDarkBrush}" Margin="0,12,0,4" />

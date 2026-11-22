@@ -867,7 +867,7 @@ public partial class CscaServiceTests
         enroll1.Succeeded.Should().BeTrue();
 
         var enroll2 = await service.EnrollStudentAsync(class2.Value!.Id, new EnrollStudentRequest(
-            "Học Viên Trùng", "trung@test.com", "0912345678", 3_000_000m, PaymentStatus.Paid,
+            "Học Viên Trùng", "trung@test.com", "0912345678", 2_900_000m, PaymentStatus.Paid,
             DiscountAmount: 100_000m), CancellationToken.None);
 
         enroll2.Succeeded.Should().BeTrue();

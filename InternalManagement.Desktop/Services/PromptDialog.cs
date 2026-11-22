@@ -46,30 +46,13 @@ public static class PromptDialog
             Owner = owner,
             Title = title,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Width = fields.Count >= 6 ? 760 : 520,
+            Width = fields.Count >= 6 ? 780 : 540,
             MinWidth = fields.Count >= 6 ? 680 : 460,
-            MaxHeight = 680,
-            ResizeMode = ResizeMode.NoResize,
+            Height = Math.Min(fields.Count >= 6 ? 640 : Math.Max(340, 190 + fields.Count * 72), Math.Max(460, SystemParameters.WorkArea.Height - 40)),
+            MaxHeight = Math.Max(520, SystemParameters.WorkArea.Height - 36),
+            ResizeMode = ResizeMode.CanResizeWithGrip,
             ShowInTaskbar = false
         };
-        dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
-        ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
-
-        var root = new Grid { Margin = new Thickness(24, 20, 24, 18) };
-        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        var titleBlock = new TextBlock
-        {
-            Text = title,
-            FontSize = 19,
-            FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)Application.Current.TryFindResource("TextDarkBrush") ?? Brushes.Black,
-            Margin = new Thickness(0, 0, 0, 12)
-        };
-        Grid.SetRow(titleBlock, 0);
-        root.Children.Add(titleBlock);
 
         var isTwoColumn = fields.Count >= 6;
         var fieldsGrid = new Grid();
@@ -83,8 +66,6 @@ public static class PromptDialog
         var fieldRows = (int)Math.Ceiling(fields.Count / (double)fieldColumns);
         for (var row = 0; row < fieldRows; row++)
             fieldsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        Grid.SetRow(fieldsGrid, 1);
-        root.Children.Add(fieldsGrid);
 
         for (var fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
         {
@@ -257,14 +238,13 @@ public static class PromptDialog
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(0, 8, 0, 0)
+            HorizontalAlignment = HorizontalAlignment.Right
         };
         var cancelButton = new Button
         {
             Content = "Hủy",
-            Width = 90,
-            Height = 34,
+            Width = 96,
+            Height = 36,
             Margin = new Thickness(0, 0, 8, 0),
             IsCancel = true,
             Style = Application.Current.TryFindResource("OutlineButton") as Style
@@ -274,8 +254,8 @@ public static class PromptDialog
         var saveButton = new Button
         {
             Content = "Lưu dữ liệu",
-            Width = 120,
-            Height = 34,
+            Width = 128,
+            Height = 36,
             IsDefault = true,
             Style = Application.Current.TryFindResource("PrimaryGradientButton") as Style
         };
@@ -301,13 +281,13 @@ public static class PromptDialog
 
         buttons.Children.Add(cancelButton);
         buttons.Children.Add(saveButton);
-        Grid.SetRow(buttons, 2);
-        root.Children.Add(buttons);
-        dialog.Content = new ScrollViewer
-        {
-            Content = root,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-        };
+        DialogChrome.BuildModalShell(
+            dialog,
+            title,
+            "Các trường có dấu (*) là bắt buộc.",
+            "\uE70F",
+            fieldsGrid,
+            buttons);
 
         var accepted = dialog.ShowDialog() == true;
         values = submittedValues;

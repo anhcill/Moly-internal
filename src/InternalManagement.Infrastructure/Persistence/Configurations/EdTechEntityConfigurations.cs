@@ -28,6 +28,7 @@ public sealed class EdTechEntityConfigurations :
     public void Configure(EntityTypeBuilder<Course> builder)
     {
         builder.HasKey(c => c.Id);
+        builder.HasIndex(c => new { c.CompanyId, c.BusinessUnitId });
         builder.Property(c => c.Title).HasMaxLength(300).IsRequired();
         builder.Property(c => c.Price).HasPrecision(18, 2);
         builder.HasMany(c => c.CscaClasses).WithOne(c => c.Course).HasForeignKey(c => c.CourseId)
@@ -61,6 +62,7 @@ public sealed class EdTechEntityConfigurations :
     public void Configure(EntityTypeBuilder<QuestionBank> builder)
     {
         builder.HasKey(b => b.Id);
+        builder.HasIndex(b => new { b.CompanyId, b.Name });
         builder.Property(b => b.Name).HasMaxLength(200).IsRequired();
     }
 
@@ -107,6 +109,7 @@ public sealed class EdTechEntityConfigurations :
     {
         builder.HasKey(c => c.Id);
         builder.HasIndex(c => new { c.SourceSystem, c.SourceId }).IsUnique();
+        builder.HasIndex(c => new { c.CompanyId, c.Email });
         builder.Property(c => c.FullName).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Email).HasMaxLength(200).IsRequired();
     }

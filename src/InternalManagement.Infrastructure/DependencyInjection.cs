@@ -134,6 +134,7 @@ public static class DependencyInjection
         {
             services.AddHostedService<LmsOutboxWorker>();
             services.AddHostedService<CscaAttendanceInboxReplayWorker>();
+            services.AddHostedService<CscaTeacherCostSyncWorker>();
         }
 
         // Module Services

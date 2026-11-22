@@ -56,12 +56,12 @@ public static class PayrollPayslipDialog
             Owner = owner,
             Title = $"Phiếu lương — {payslip.EmployeeName}",
             Width = 920,
-            Height = Math.Min(700, Math.Max(620, SystemParameters.WorkArea.Height - 24)),
-            MinWidth = 780,
-            MinHeight = 620,
-            MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 20),
+            Height = Math.Min(700, Math.Max(520, SystemParameters.WorkArea.Height - 24)),
+            MinWidth = 740,
+            MinHeight = 480,
+            MaxHeight = Math.Max(520, SystemParameters.WorkArea.Height - 20),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            ResizeMode = ResizeMode.NoResize,
+            ResizeMode = ResizeMode.CanResizeWithGrip,
             ShowInTaskbar = false
         };
         dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
@@ -266,26 +266,48 @@ public static class PayrollPayslipDialog
             {
                 Text = "Kỳ lương đã gửi duyệt hoặc khóa. Phiếu lương chỉ được xem, không thể chỉnh sửa.",
                 FontSize = 11,
-                Foreground = Brush("#B45309"),
-                Background = Brush("#FFFBEB"),
+                Foreground = ThemeService.GetBrush("SurfaceWarningTextBrush", "#B45309"),
+                Background = ThemeService.GetBrush("SurfaceWarningBgBrush", "#FFFBEB"),
                 Padding = new Thickness(10, 7, 10, 7),
                 Margin = new Thickness(0, 0, 0, 10),
                 TextWrapping = TextWrapping.Wrap
             });
         }
 
+        var shell = new Grid();
+        shell.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        shell.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var scroll = new ScrollViewer
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = root
+        };
+        Grid.SetRow(scroll, 0);
+        shell.Children.Add(scroll);
+
+        var footerBorder = new Border
+        {
+            BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
+            BorderThickness = new Thickness(0, 1, 0, 0),
+            Padding = new Thickness(24, 10, 24, 12),
+            Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF")
+        };
         var close = new Button
         {
             Content = "Đóng",
-            Width = 90,
+            Width = 96,
             Height = 34,
             HorizontalAlignment = HorizontalAlignment.Right,
             Style = Application.Current.TryFindResource("OutlineButton") as Style
         };
         close.Click += (_, _) => dialog.DialogResult = false;
-        root.Children.Add(close);
+        footerBorder.Child = close;
+        Grid.SetRow(footerBorder, 1);
+        shell.Children.Add(footerBorder);
 
-        dialog.Content = root;
+        dialog.Content = shell;
         var accepted = dialog.ShowDialog() == true && (requestedAdjustment is not null || requestedAdjustmentToDelete.HasValue);
         newAdjustment = requestedAdjustment;
         adjustmentToDelete = requestedAdjustmentToDelete;
@@ -303,7 +325,7 @@ public static class PayrollPayslipDialog
         var type = new FrameworkElementFactory(typeof(TextBlock));
         type.SetValue(TextBlock.WidthProperty, 104d);
         type.SetValue(TextBlock.FontWeightProperty, FontWeights.SemiBold);
-        type.SetValue(TextBlock.ForegroundProperty, Brush("#334155"));
+        type.SetValue(TextBlock.ForegroundProperty, ThemeService.GetBrush("TextDarkBrush", "#334155"));
         type.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
         type.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding(nameof(AdjustmentDisplayItem.TypeLabel)));
         type.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 4, 0));
@@ -311,7 +333,7 @@ public static class PayrollPayslipDialog
 
         var amount = new FrameworkElementFactory(typeof(TextBlock));
         amount.SetValue(TextBlock.WidthProperty, 82d);
-        amount.SetValue(TextBlock.ForegroundProperty, Brush("#2563EB"));
+        amount.SetValue(TextBlock.ForegroundProperty, ThemeService.GetBrush("SecondaryBrush", "#2563EB"));
         amount.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding(nameof(AdjustmentDisplayItem.AmountLabel)));
         amount.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 4, 0));
         amount.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
@@ -320,7 +342,7 @@ public static class PayrollPayslipDialog
         var reason = new FrameworkElementFactory(typeof(TextBlock));
         reason.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
         reason.SetValue(TextBlock.WidthProperty, 180d);
-        reason.SetValue(TextBlock.ForegroundProperty, Brush("#64748B"));
+        reason.SetValue(TextBlock.ForegroundProperty, ThemeService.GetBrush("TextMutedBrush", "#64748B"));
         reason.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding(nameof(AdjustmentDisplayItem.Reason)));
         reason.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 0, 4, 0));
         panel.AppendChild(reason);
@@ -364,15 +386,15 @@ public static class PayrollPayslipDialog
     {
         var border = new Border
         {
-            Background = Brush("#F8FAFC"),
-            BorderBrush = Brush("#E2E8F0"),
+            Background = ThemeService.GetBrush("CardAltBgBrush", "#F8FAFC"),
+            BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(10),
             Margin = new Thickness(column == 0 ? 0 : 5, 0, column == 3 ? 0 : 5, 0)
         };
         var content = new StackPanel();
-        content.Children.Add(new TextBlock { Text = label, FontSize = 10, FontWeight = FontWeights.Bold, Foreground = Brush("#64748B") });
+        content.Children.Add(new TextBlock { Text = label, FontSize = 10, FontWeight = FontWeights.Bold, Foreground = ThemeService.GetBrush("TextMutedBrush", "#64748B") });
         content.Children.Add(new TextBlock { Text = value, FontSize = 16, FontWeight = FontWeights.Bold, Foreground = Brush(color), Margin = new Thickness(0, 4, 0, 0) });
         border.Child = content;
         Grid.SetColumn(border, column);
@@ -384,7 +406,7 @@ public static class PayrollPayslipDialog
         Text = text,
         FontSize = 11,
         FontWeight = FontWeights.Bold,
-        Foreground = Brush("#475569"),
+        Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
         Margin = new Thickness(0, 0, 0, 5)
     });
 
@@ -393,13 +415,13 @@ public static class PayrollPayslipDialog
         var grid = new Grid { Margin = new Thickness(0, 1, 0, 1) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.Children.Add(new TextBlock { Text = label, FontSize = 11, Foreground = Brush("#64748B") });
+        grid.Children.Add(new TextBlock { Text = label, FontSize = 11, Foreground = ThemeService.GetBrush("TextMutedBrush", "#64748B") });
         var valueText = new TextBlock
         {
             Text = value,
             FontSize = 11,
             FontWeight = bold ? FontWeights.Bold : FontWeights.SemiBold,
-            Foreground = valueBrush ?? Brush("#1E293B"),
+            Foreground = valueBrush ?? ThemeService.GetBrush("TextDarkBrush", "#1E293B"),
             TextWrapping = TextWrapping.Wrap,
             TextAlignment = TextAlignment.Right
         };

@@ -5,6 +5,7 @@ using InternalManagement.Application.Common.Models;
 using InternalManagement.Application.Features.HrPayroll.DTOs;
 using InternalManagement.Application.Features.HrPayroll.Services;
 using InternalManagement.Application.Features.Finance.Services;
+using InternalManagement.Application.Features.Integration.Interfaces;
 using InternalManagement.Application.Features.MasterData.Services;
 using InternalManagement.Domain.Entities.Documents;
 using InternalManagement.Domain.Entities.HrPayroll;
@@ -20,19 +21,22 @@ public sealed partial class PayrollService : IPayrollService
     private readonly ILogger<PayrollService> _logger;
     private readonly IBusinessDocumentRegistry? _documentRegistry;
     private readonly IFinancePostingService? _financePostingService;
+    private readonly ICscaCourseLmsClient? _lmsClient;
 
     public PayrollService(
         IPayrollDbContext db,
         ICurrentUserService currentUser,
         ILogger<PayrollService> logger,
         IBusinessDocumentRegistry? documentRegistry = null,
-        IFinancePostingService? financePostingService = null)
+        IFinancePostingService? financePostingService = null,
+        ICscaCourseLmsClient? lmsClient = null)
     {
         _db = db;
         _currentUser = currentUser;
         _logger = logger;
         _documentRegistry = documentRegistry;
         _financePostingService = financePostingService;
+        _lmsClient = lmsClient;
     }
 
     public IReadOnlyList<PayrollComponentTypeDto> GetPayrollComponentTypes() =>

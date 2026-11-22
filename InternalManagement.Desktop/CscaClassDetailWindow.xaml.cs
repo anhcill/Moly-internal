@@ -172,7 +172,20 @@ public partial class CscaClassDetailWindow : Window
         }
 
         await SaveAsync(
-            () => _apiClient.UpdateCscaClassAsync(_classId, values["name"], values["batch"], _detail.Schedule, tuitionFee, startDate, endDate, values["status"]),
+            () => _apiClient.UpdateCscaClassAsync(
+                _classId,
+                values["name"],
+                values["batch"],
+                _detail.Schedule,
+                _detail.IsTrial ? 0m : tuitionFee,
+                startDate,
+                endDate,
+                values["status"],
+                _detail.CourseId,
+                _detail.IsTrial,
+                _detail.ClassType,
+                _detail.RecordingContentMode,
+                _detail.SourceClassId),
             "Cập nhật thông tin lớp thành công.");
     }
 

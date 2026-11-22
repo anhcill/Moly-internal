@@ -379,4 +379,46 @@ public partial class MainWindow
         await ShowPayrollAdjustmentDialogAsync(payslip, returnToAdjustmentTab: false);
     }
 
+    private async void SyncCoursePayroll_Click(object sender, RoutedEventArgs e)
+    {
+        DateTime? from = null;
+        DateTime? to = null;
+        if (PayrollPeriodSelectorCombo.SelectedValue is Guid selectedPeriodId)
+        {
+            var period = _cachedPayrollPeriods.FirstOrDefault(p => p.Id == selectedPeriodId);
+            if (period is not null)
+            {
+                from = period.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                to = period.EndDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            }
+        }
+
+        await RunWithBusyAsync("Đang đồng bộ bảng công giảng dạy từ MolyCourse LMS...", async () =>
+        {
+            var result = await _apiClient.SyncCscaTeacherCostsForPayrollAsync(from, to);
+            if (result is null)
+            {
+                ShowToast("Đã đồng bộ dữ liệu giảng dạy từ MolyCourse.");
+                return;
+            }
+
+            var message = $"Đồng bộ lương Course/LMS thành công: nhận {result.Received} buổi ({result.Inserted} mới, {result.Updated} cập nhật).";
+            if (result.UnmappedTeacherCount > 0 && result.UnmappedTeachers is { Count: > 0 })
+            {
+                var sample = string.Join(", ", result.UnmappedTeachers.Take(5));
+                message += $"\n⚠️ Có {result.UnmappedTeacherCount} giảng viên chưa khớp hồ sơ nhân sự: {sample}.";
+                MessageBox.Show(this, message, "Đồng bộ lương Course/LMS (có cảnh báo)", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                ShowToast(message);
+            }
+
+            if (PayrollPeriodSelectorCombo.SelectedValue is Guid periodId)
+            {
+                await LoadPayslipsForPeriodAsync(periodId);
+            }
+        });
+    }
+
 }

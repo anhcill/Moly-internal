@@ -103,25 +103,32 @@ public partial class MainWindow
         }
     }
 
-    private async Task RunWithBusyAsync(string message, Func<Task> operation, string? subMessage = null)
+    private async Task<bool> RunWithBusyAsync(string message, Func<Task> operation, string? subMessage = null)
     {
         _apiClient.ClearLastApiError();
         SetBusy(true, message, subMessage);
         try
         {
             await operation();
-            if (HandleExpiredAuthentication()) return;
+            if (HandleExpiredAuthentication()) return false;
 
             var apiError = _apiClient.TakeLastApiError();
             if (!string.IsNullOrWhiteSpace(apiError))
             {
                 SetViewStatus($"Lỗi khi {message}: {apiError}", isError: true);
                 ShowToast($"BƯỚC LỖI: {message}\nCHI TIẾT API: {apiError}", isError: true);
+                return false;
             }
+
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
         }
         catch (Exception ex)
         {
-            if (HandleExpiredAuthentication()) return;
+            if (HandleExpiredAuthentication()) return false;
 
             var detail = ToFriendlyError(ex);
             var apiError = _apiClient.TakeLastApiError();
@@ -129,6 +136,7 @@ public partial class MainWindow
                 detail += $"\nChi tiết API: {apiError}";
             SetViewStatus($"Lỗi khi {message}: {detail}", isError: true);
             ShowToast($"BƯỚC LỖI: {message}\nCHI TIẾT: {detail}", isError: true);
+            return false;
         }
         finally
         {
@@ -170,7 +178,7 @@ public partial class MainWindow
         }
         if (TopContentProgressBar != null)
         {
-            TopContentProgressBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+            TopContentProgressBar.Visibility = Visibility.Collapsed;
         }
         Mouse.OverrideCursor = busy ? Cursors.Wait : null;
     }
@@ -189,8 +197,12 @@ public partial class MainWindow
         _viewLoadTasks[key] = task;
         try
         {
-            await task;
-            _loadedViews.Add(key);
+            var succeeded = await task;
+            // Never cache a failed view as loaded so returning to the tab retries cleanly.
+            if (succeeded)
+            {
+                _loadedViews.Add(key);
+            }
         }
         finally
         {

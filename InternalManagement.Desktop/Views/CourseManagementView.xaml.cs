@@ -21,6 +21,7 @@ public partial class CourseManagementView : UserControl
     }
 
     public event EventHandler<FeatureViewActionEventArgs>? ActionRequested;
+    public event MouseButtonEventHandler? OpenCourseClassesRequested;
 
     private void ClearCscaCourseFilter_Click(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(ClearCscaCourseFilter_Click), sender, e));
@@ -58,8 +59,8 @@ public partial class CourseManagementView : UserControl
     private void ViewCscaFinanceDetails_Click(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(ViewCscaFinanceDetails_Click), sender, e));
 
-    private void CoursesDataGrid_MouseDoubleClick(object sender, RoutedEventArgs e) =>
-        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CoursesDataGrid_MouseDoubleClick), sender, e));
+    private void CoursesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e) =>
+        OpenCourseClassesRequested?.Invoke(sender, e);
 
     private void CscaClassesDataGrid_MouseDoubleClick(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(CscaClassesDataGrid_MouseDoubleClick), sender, e));

@@ -70,17 +70,27 @@ public sealed class AttendanceService : IAttendanceService
     {
         var companyId = await GetCompanyIdAsync(ct);
         var scopedUnitIds = await ResolveBusinessUnitIdsAsync(companyId, businessUnitId, businessSegment, ct);
-        var query = _db.AttendanceRecords.AsNoTracking().Where(a => a.CompanyId == companyId).Include(a => a.Employee).AsQueryable();
+        var query = _db.AttendanceRecords.AsNoTracking().Where(a => a.CompanyId == companyId);
         if (scopedUnitIds != null)
             query = query.Where(a => a.Employee.BusinessUnitId.HasValue && scopedUnitIds.Contains(a.Employee.BusinessUnitId.Value));
         if (fromDate.HasValue) query = query.Where(a => a.Date >= fromDate.Value);
         if (toDate.HasValue) query = query.Where(a => a.Date <= toDate.Value);
         if (departmentId is { } id && id != Guid.Empty) query = query.Where(a => a.Employee.DepartmentId == id);
 
-        var records = await query.ToListAsync(ct);
+        var grouped = await query
+            .GroupBy(a => a.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count(), WorkHours = g.Sum(x => x.WorkHours) })
+            .ToListAsync(ct);
+
+        var total = grouped.Sum(x => x.Count);
+        var present = grouped.FirstOrDefault(x => x.Status == "Present")?.Count ?? 0;
+        var late = grouped.FirstOrDefault(x => x.Status == "Late")?.Count ?? 0;
+        var absent = grouped.FirstOrDefault(x => x.Status == "Absent")?.Count ?? 0;
+        var leave = grouped.FirstOrDefault(x => x.Status == "Leave")?.Count ?? 0;
+        var totalHours = grouped.Sum(x => x.WorkHours);
+
         return Result<AttendanceSummaryDto>.Success(new AttendanceSummaryDto(
-            records.Count, records.Count(a => a.Status == "Present"), records.Count(a => a.Status == "Late"),
-            records.Count(a => a.Status == "Absent"), records.Count(a => a.Status == "Leave"), records.Sum(a => a.WorkHours)));
+            total, present, late, absent, leave, totalHours));
     }
 
     public async Task<Result<AttendanceRecordDto>> RecordAttendanceAsync(CreateAttendanceRecordRequest request, CancellationToken ct)

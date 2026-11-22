@@ -58,6 +58,38 @@ public sealed partial class ApiClient
         return envelope?.Data;
     }
 
+    public async Task<bool> CreateQuestionAsync(
+        string questionBankName,
+        string subjectName,
+        string topicName,
+        string difficultyLevel,
+        string contentHtml,
+        string? explanationHtml,
+        IReadOnlyList<(string Label, string ContentHtml, bool IsCorrect, int OrderIndex)> choices,
+        IReadOnlyList<string>? tags = null,
+        CancellationToken ct = default)
+    {
+        var req = new
+        {
+            QuestionBankName = questionBankName,
+            SubjectName = subjectName,
+            TopicName = topicName,
+            DifficultyLevel = difficultyLevel,
+            ContentHtml = contentHtml,
+            ExplanationHtml = explanationHtml,
+            Choices = choices.Select(c => new
+            {
+                c.Label,
+                c.ContentHtml,
+                c.IsCorrect,
+                c.OrderIndex
+            }).ToList(),
+            Tags = tags ?? []
+        };
+        using var res = await SendWithRefreshAsync(() => _httpClient.PostAsJsonAsync("api/v1/edtech/questions", req, _jsonOptions, ct), ct);
+        return res.IsSuccessStatusCode;
+    }
+
     public async Task<bool> PublishQuestionVersionAsync(Guid versionId, string notes, CancellationToken ct = default)
     {
         var req = new { Notes = notes };

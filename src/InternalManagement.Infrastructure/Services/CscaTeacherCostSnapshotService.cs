@@ -96,23 +96,35 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
                 .ToListAsync(ct);
         var byKey = existing.ToDictionary(x => x.SourceKey, StringComparer.Ordinal);
 
-        var employeeIds = report.Items
-            .Select(x => ParseGuid(x.TeacherSourceId))
-            .Where(x => x.HasValue)
-            .Select(x => x!.Value)
-            .Distinct()
-            .ToList();
-        var validEmployeeIds = employeeIds.Count == 0
-            ? new HashSet<Guid>()
-            : (await _db.Employees.AsNoTracking()
-                .Where(x => x.CompanyId == companyId && employeeIds.Contains(x.Id))
-                .Select(x => x.Id)
-                .ToListAsync(ct)).ToHashSet();
+        var companyEmployees = await _db.Employees.AsNoTracking()
+            .Where(x => x.CompanyId == companyId && !x.IsDeleted)
+            .Select(x => new
+            {
+                x.Id,
+                x.EmployeeCode,
+                x.Email,
+                Username = x.User != null ? x.User.Username : null
+            })
+            .ToListAsync(ct);
+
+        var validEmployeeIds = companyEmployees.Select(x => x.Id).ToHashSet();
+        var employeeByCode = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var employeeByEmail = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var employeeByUsername = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        foreach (var emp in companyEmployees)
+        {
+            if (!string.IsNullOrWhiteSpace(emp.EmployeeCode))
+                employeeByCode.TryAdd(emp.EmployeeCode.Trim(), emp.Id);
+            if (!string.IsNullOrWhiteSpace(emp.Email))
+                employeeByEmail.TryAdd(emp.Email.Trim(), emp.Id);
+            if (!string.IsNullOrWhiteSpace(emp.Username))
+                employeeByUsername.TryAdd(emp.Username.Trim(), emp.Id);
+        }
 
         var classSourceIds = report.Items
             .Select(x => x.ClassSourceId)
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct(StringComparer.Ordinal)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         var classIds = classSourceIds
             .Select(ParseGuid)
@@ -120,36 +132,41 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
             .Select(x => x!.Value)
             .Distinct()
             .ToList();
-        var classBusinessUnits = new Dictionary<string, Guid?>(StringComparer.Ordinal);
+        var classBusinessUnits = new Dictionary<string, Guid?>(StringComparer.OrdinalIgnoreCase);
         var cscaBusinessUnitId = await _db.BusinessUnits.AsNoTracking()
             .Where(x => x.CompanyId == companyId && x.Code == "CSCA" && x.IsActive)
             .Select(x => (Guid?)x.Id)
             .FirstOrDefaultAsync(ct);
-        var classesById = classIds.Count == 0
-            ? new Dictionary<Guid, Guid?>()
-            : await _db.CscaClasses.AsNoTracking()
-                .Where(x => x.CompanyId == companyId && classIds.Contains(x.Id))
-                .ToDictionaryAsync(x => x.Id, x => x.BusinessUnitId, ct);
-        foreach (var classId in classIds)
-        {
-            var businessUnitId = classesById.GetValueOrDefault(classId) ?? cscaBusinessUnitId;
-            classBusinessUnits[classId.ToString()] = businessUnitId;
-            classBusinessUnits[classId.ToString("N")] = businessUnitId;
-        }
 
         // LMS class IDs are often external mapping keys rather than the internal
-        // CscaClass GUID; resolve those keys before assigning tenant scope.
-        if (classSourceIds.Count > 0)
-        {
-            var mappings = await _db.ApplicationClassMaps.AsNoTracking()
+        // CscaClass GUID; load mappings before querying CscaClasses so mapped
+        // class IDs also resolve their actual BusinessUnitId.
+        var mappings = classSourceIds.Count == 0
+            ? []
+            : await _db.ApplicationClassMaps.AsNoTracking()
                 .Where(x => x.CompanyId == companyId && classSourceIds.Contains(x.ExternalClassId))
                 .Select(x => new { x.ExternalClassId, x.CscaClassId })
                 .ToListAsync(ct);
-            foreach (var mapping in mappings)
-            {
-                var businessUnitId = classesById.GetValueOrDefault(mapping.CscaClassId) ?? cscaBusinessUnitId;
-                classBusinessUnits[mapping.ExternalClassId] = businessUnitId;
-            }
+        var allClassIdsToLookup = classIds
+            .Concat(mappings.Select(x => x.CscaClassId))
+            .Distinct()
+            .ToList();
+        var classesById = allClassIdsToLookup.Count == 0
+            ? new Dictionary<Guid, Guid?>()
+            : await _db.CscaClasses.AsNoTracking()
+                .Where(x => x.CompanyId == companyId && allClassIdsToLookup.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, x => x.BusinessUnitId, ct);
+        foreach (var classId in allClassIdsToLookup)
+        {
+            var businessUnitId = classesById.GetValueOrDefault(classId) ?? cscaBusinessUnitId;
+            classBusinessUnits[classId.ToString("D")] = businessUnitId;
+            classBusinessUnits[classId.ToString("N")] = businessUnitId;
+        }
+
+        foreach (var mapping in mappings)
+        {
+            var businessUnitId = classesById.GetValueOrDefault(mapping.CscaClassId) ?? cscaBusinessUnitId;
+            classBusinessUnits[mapping.ExternalClassId] = businessUnitId;
         }
         if (cscaBusinessUnitId.HasValue)
         {
@@ -160,6 +177,7 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
         var now = DateTime.UtcNow;
         var inserted = 0;
         var updated = 0;
+        var unmappedTeachers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in report.Items)
         {
             var key = BuildSourceKey(item);
@@ -181,17 +199,34 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
                 updated++;
             }
 
-            Apply(entity, item, report.CalculatedAt, now, validEmployeeIds, classBusinessUnits);
+            var resolvedEmployeeId = ResolveEmployeeId(
+                item,
+                validEmployeeIds,
+                employeeByCode,
+                employeeByEmail,
+                employeeByUsername);
+            if (!resolvedEmployeeId.HasValue)
+            {
+                var label = !string.IsNullOrWhiteSpace(item.TeacherName)
+                    ? $"{item.TeacherName} ({item.TeacherSourceId ?? item.TeacherUsername ?? $"LMS#{item.TeacherLmsId}"})"
+                    : item.TeacherSourceId ?? item.TeacherUsername ?? $"LMS#{item.TeacherLmsId}";
+                unmappedTeachers.Add(label);
+            }
+
+            Apply(entity, item, report.CalculatedAt, now, resolvedEmployeeId, classBusinessUnits);
         }
 
         await _db.SaveChangesAsync(ct);
         await RefreshClassProfitAllocationsAsync(companyId, affectedClassSourceIds, ct);
+        var unmappedList = unmappedTeachers.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
         return Result<CscaTeacherCostSyncResultDto>.Success(new(
             report.Items.Count,
             inserted,
             updated,
             report.CalculatedAt,
-            now));
+            now,
+            unmappedList.Count,
+            unmappedList));
     }
 
     public async Task<Result<CscaTeacherCostSummaryDto>> UpdateSettlementAsync(
@@ -335,20 +370,57 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
             .FirstOrDefaultAsync(ct);
     }
 
+    private static Guid? ResolveEmployeeId(
+        LmsTeacherCostItem item,
+        HashSet<Guid> validEmployeeIds,
+        Dictionary<string, Guid> employeeByCode,
+        Dictionary<string, Guid> employeeByEmail,
+        Dictionary<string, Guid> employeeByUsername)
+    {
+        var teacherSourceId = Normalize(item.TeacherSourceId);
+        if (teacherSourceId is not null)
+        {
+            var parsedGuid = ParseGuid(teacherSourceId);
+            if (parsedGuid.HasValue && validEmployeeIds.Contains(parsedGuid.Value))
+                return parsedGuid.Value;
+
+            if (employeeByCode.TryGetValue(teacherSourceId, out var byCode))
+                return byCode;
+
+            if (employeeByEmail.TryGetValue(teacherSourceId, out var byEmail))
+                return byEmail;
+
+            if (employeeByUsername.TryGetValue(teacherSourceId, out var byUser))
+                return byUser;
+        }
+
+        var teacherUsername = Normalize(item.TeacherUsername);
+        if (teacherUsername is not null)
+        {
+            if (employeeByUsername.TryGetValue(teacherUsername, out var byUsername))
+                return byUsername;
+            if (employeeByEmail.TryGetValue(teacherUsername, out var byEmail))
+                return byEmail;
+            if (employeeByCode.TryGetValue(teacherUsername, out var byCode))
+                return byCode;
+        }
+
+        return null;
+    }
+
     private static void Apply(
         CscaTeacherCostSnapshot entity,
         LmsTeacherCostItem item,
         DateTime calculatedAt,
         DateTime syncedAt,
-        HashSet<Guid> validEmployeeIds,
-        IReadOnlyDictionary<string, Guid?> classBusinessUnits)
+        Guid? resolvedEmployeeId,
+        Dictionary<string, Guid?> classBusinessUnits)
     {
-        var employeeId = ParseGuid(item.TeacherSourceId);
         var classId = ParseGuid(item.ClassSourceId);
-        entity.EmployeeId = employeeId.HasValue && validEmployeeIds.Contains(employeeId.Value) ? employeeId : null;
+        entity.EmployeeId = resolvedEmployeeId;
         entity.BusinessUnitId = classBusinessUnits.TryGetValue(item.ClassSourceId, out var unitId)
             ? unitId
-            : classId.HasValue && classBusinessUnits.TryGetValue(classId.Value.ToString(), out unitId)
+            : classId.HasValue && classBusinessUnits.TryGetValue(classId.Value.ToString("D"), out unitId)
                 ? unitId
                 : null;
         entity.TeacherSourceId = Normalize(item.TeacherSourceId);
@@ -420,18 +492,31 @@ public sealed class CscaTeacherCostSnapshotService : ICscaTeacherCostSnapshotSer
             .Where(x => x.CompanyId == companyId && sourceIds.Contains(x.ExternalClassId))
             .Select(x => new { x.CscaClassId, x.ExternalClassId })
             .ToListAsync(ct);
-        var sourceToClass = mappings.ToDictionary(x => x.ExternalClassId, x => x.CscaClassId, StringComparer.Ordinal);
+        var sourceToClass = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mapping in mappings)
+        {
+            sourceToClass[mapping.ExternalClassId] = mapping.CscaClassId;
+            sourceToClass[mapping.CscaClassId.ToString("N")] = mapping.CscaClassId;
+            sourceToClass[mapping.CscaClassId.ToString("D")] = mapping.CscaClassId;
+        }
         foreach (var sourceId in sourceIds)
-            if (Guid.TryParse(sourceId, out var classId)) sourceToClass[sourceId] = classId;
+        {
+            if (Guid.TryParse(sourceId, out var classId))
+            {
+                sourceToClass[sourceId] = classId;
+                sourceToClass[classId.ToString("N")] = classId;
+                sourceToClass[classId.ToString("D")] = classId;
+            }
+        }
 
         var classIds = sourceToClass.Values.Distinct().ToList();
         if (classIds.Count == 0) return;
-        var mappedClassSourceIds = sourceToClass.Where(x => classIds.Contains(x.Value)).Select(x => x.Key).ToList();
+        var mappedClassSourceIds = sourceToClass.Where(x => classIds.Contains(x.Value)).Select(x => x.Key).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var expenses = await _db.CscaTeacherCostSnapshots.AsNoTracking()
             .Where(x => x.CompanyId == companyId && x.SourceSystem == SourceSystem && x.IsCurrent && mappedClassSourceIds.Contains(x.ClassSourceId))
             .GroupBy(x => x.ClassSourceId)
             .Select(x => new { SourceId = x.Key, Amount = x.Sum(row => row.AccruedAmount) })
-            .ToDictionaryAsync(x => x.SourceId, x => x.Amount, StringComparer.Ordinal, ct);
+            .ToDictionaryAsync(x => x.SourceId, x => x.Amount, StringComparer.OrdinalIgnoreCase, ct);
         var classes = await _db.CscaClasses
             .Include(x => x.Students)
             .Where(x => x.CompanyId == companyId && classIds.Contains(x.Id))

@@ -15,6 +15,10 @@
 **/.audit-build/
 .tmp-*
 **/.tmp-*
+tmp/
+**/tmp/
+output/
+**/output/
 
 # Build/test logs and generated artifacts
 *.log

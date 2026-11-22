@@ -39,6 +39,15 @@ public sealed class ThemeService
     public AppTheme CurrentTheme => _currentTheme;
     public bool IsDark => _currentTheme == AppTheme.Dark;
 
+    public static Brush GetBrush(string resourceKey, string fallbackHex)
+    {
+        if (Application.Current?.TryFindResource(resourceKey) is Brush b)
+            return b;
+        var created = (SolidColorBrush)new BrushConverter().ConvertFromString(fallbackHex)!;
+        if (created.CanFreeze) created.Freeze();
+        return created;
+    }
+
     public event EventHandler<AppTheme>? ThemeChanged;
 
     private sealed record ThemeConfig(string Theme);
@@ -150,19 +159,22 @@ public sealed class ThemeService
             }
             else
             {
-                window.SourceInitialized += (s, e) =>
+                EventHandler? onInit = null;
+                onInit = (s, e) =>
                 {
+                    window.SourceInitialized -= onInit;
                     try
                     {
                         var h = new WindowInteropHelper(window).Handle;
                         if (h != IntPtr.Zero)
                         {
-                            int val = isDark ? 1 : 0;
+                            int val = Instance.IsDark ? 1 : 0;
                             DwmSetWindowAttribute(h, DWMWA_USE_IMMERSIVE_DARK_MODE, ref val, sizeof(int));
                         }
                     }
                     catch { }
                 };
+                window.SourceInitialized += onInit;
             }
         }
         catch

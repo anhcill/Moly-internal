@@ -3,18 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:InternalManagement.Desktop"
         xmlns:views="clr-namespace:InternalManagement.Desktop.Views"
+        xmlns:controls="clr-namespace:InternalManagement.Desktop.Controls"
         Title="MOLY — Không gian điều hành nội bộ"
         Icon="Assets/app-icon.ico"
         Height="820"
         Width="1360"
-        MinHeight="680"
-        MinWidth="1080"
+        MinHeight="540"
+        MinWidth="960"
         WindowStyle="SingleBorderWindow"
         ResizeMode="CanResize"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         FontFamily="{StaticResource MainFont}"
-        Background="{StaticResource LightBgBrush}">
+        Background="{DynamicResource LightBgBrush}">
 
     <Grid>
         <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -98,7 +99,7 @@
                     </StackPanel>
 
                     <!-- GROUPED NAVIGATION: chỉ hiện chức năng của phân hệ đang chọn -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" Focusable="False">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
                         <StackPanel>
                             <StackPanel x:Name="CompanyNavigationGroup">
                                 <TextBlock x:Name="CompanyNavigationLabel" Text="TỔNG HỢP TOÀN CÔNG TY" Style="{StaticResource SidebarSectionLabel}" Margin="8,2,0,4" />
@@ -196,7 +197,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="UserAvatarBadge" Grid.Row="0" Grid.Column="0" Background="{StaticResource PrimaryBrush}" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
+                            <Border x:Name="UserAvatarBadge" Grid.Row="0" Grid.Column="0" Background="{DynamicResource PrimaryBrush}" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
                                 <TextBlock x:Name="UserAvatarText" Text="AD" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <StackPanel x:Name="UserProfileDetails" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
@@ -212,14 +213,14 @@
             </Border>
 
             <!-- ── RIGHT CONTENT AREA ── -->
-            <Grid Grid.Column="1">
+            <Grid Grid.Column="1" Background="{DynamicResource LightBgBrush}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="64" />
+                    <RowDefinition Height="Auto" MinHeight="56" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <!-- TOP BAR HEADER -->
-                <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,0,0,1" Padding="28,0">
+                <Border Grid.Row="0" Background="{DynamicResource TopBarBgBrush}" BorderBrush="{DynamicResource TopBarBorderBrush}" BorderThickness="0,0,0,1" Padding="24,10">
                     <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -229,122 +230,116 @@
                         <!-- BREADCRUMB & TITLE -->
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="ViewHeaderTitle" Text="Tổng Quan Hệ Thống" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDarkBrush}" VerticalAlignment="Center" />
-                                <Border x:Name="ActiveSegmentBadge" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="ActiveSegmentBadgeText" Text="TOÀN CÔNG TY" FontSize="9.5" FontWeight="SemiBold" Foreground="#2563EB" />
+                                <TextBlock x:Name="ViewHeaderTitle" Text="Tổng Quan Hệ Thống" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
+                                <Border x:Name="ActiveSegmentBadge" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="ActiveSegmentBadgeText" Text="TOÀN CÔNG TY" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource SurfaceInfoTextBrush}" />
                                 </Border>
                             </StackPanel>
-                            <TextBlock x:Name="ViewHeaderSubtitle" Text="Không gian làm việc MOLY Internal Management" FontSize="12" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
-                            <TextBlock x:Name="ViewHeaderStatusText" Text="Sẵn sàng" FontSize="11" Foreground="#64748B" Margin="0,1,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                <TextBlock x:Name="ViewHeaderSubtitle" Text="Không gian làm việc MOLY Internal Management" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" />
+                                <TextBlock Text=" · " FontSize="12" Foreground="{DynamicResource TextSubtleBrush}" />
+                                <TextBlock x:Name="ViewHeaderStatusText" Text="Sẵn sàng" FontSize="11.5" Foreground="{DynamicResource TextSubtleBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- QUICK ACTIONS & HEALTH -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button x:Name="ThemeToggleButton" Click="ThemeToggleButton_Click" Style="{DynamicResource ThemeToggleButtonStyle}" Margin="0,0,10,0" ToolTip="Chuyển đổi giao diện Sáng / Tối (F10)">
-
+                        <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="ThemeToggleButton" Click="ThemeToggleButton_Click" Style="{DynamicResource ThemeToggleButtonStyle}" Height="34" Margin="0,0,8,0" ToolTip="Chuyển đổi giao diện Sáng / Tối (F10)">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-
-                                    <TextBlock x:Name="ThemeToggleIcon" Text="🌙" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center" />
-
+                                    <TextBlock x:Name="ThemeToggleIcon" FontFamily="Segoe MDL2 Assets" Text="&#xE708;" FontSize="13" Margin="0,0,7,0" VerticalAlignment="Center" />
                                     <TextBlock x:Name="ThemeToggleText" Text="Giao diện tối" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
-
                                 </StackPanel>
-
                             </Button>
 
-                            <Button x:Name="QuickSyncButton" Content="↻ Nhập khóa học từ Website" Click="QuickSync_Click" Style="{StaticResource OutlineButton}" Height="36" Padding="14,0" Margin="0,0,12,0" />
-                            <Border x:Name="ApiHealthBorder" Background="#F8FAFC" CornerRadius="16" Padding="12,6" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Button x:Name="QuickSyncButton" Content="↻ Nhập khóa học từ Website" Click="QuickSync_Click" Style="{StaticResource OutlineButton}" Height="34" Padding="12,0" Margin="0,0,8,0" />
+                            <Border x:Name="ApiHealthBorder" Background="{DynamicResource CardAltBgBrush}" CornerRadius="17" Height="34" Padding="12,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse x:Name="ApiHealthDot" Width="8" Height="8" Fill="#94A3B8" Margin="0,0,6,0" />
-                                    <TextBlock x:Name="ApiHealthText" Text="Đang kiểm tra API" FontSize="12" FontWeight="SemiBold" Foreground="#475569" />
+                                    <Ellipse x:Name="ApiHealthDot" Width="7" Height="7" Fill="#94A3B8" Margin="0,0,7,0" />
+                                    <TextBlock x:Name="ApiHealthText" Text="Đang kiểm tra API" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
+                        </WrapPanel>
                     </Grid>
                 </Border>
 
-                <!-- SLIM TOP CONTENT PROGRESS BAR FOR FLUID TAB TRANSITIONS -->
-                <ProgressBar x:Name="TopContentProgressBar" Grid.Row="0" VerticalAlignment="Bottom" Height="3" IsIndeterminate="True" Visibility="Collapsed" Style="{StaticResource TopProgressBarStyle}" Panel.ZIndex="50" Margin="0,0,0,-1" />
+                <!-- Kept hidden for compatibility; minimalist MolyLoader handles loading cleanly -->
+                <ProgressBar x:Name="TopContentProgressBar" Grid.Row="0" VerticalAlignment="Bottom" Height="2" IsIndeterminate="True" Visibility="Collapsed" Style="{StaticResource TopProgressBarStyle}" Panel.ZIndex="50" />
 
-                <!-- TAB CONTENT VIEWS -->
-                <Grid Grid.Row="1" Background="{StaticResource LightBgBrush}" Margin="24">
+                <!-- SCROLLABLE TAB CONTENT VIEWS (Fixes 1-screen viewport trap!) -->
+                <Grid Grid.Row="1" Background="{DynamicResource LightBgBrush}">
+                    <ScrollViewer x:Name="MainContentScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  PanningMode="VerticalOnly"
+                                  Background="{DynamicResource LightBgBrush}">
+                        <Grid Margin="20,16,20,24">
 
-                    <!-- ── TAB 1: DASHBOARD VIEW ── -->
-                    <views:DashboardView x:Name="ViewDashboardContainer" Visibility="Visible" />
+                            <!-- ── TAB 1: DASHBOARD VIEW ── -->
+                            <views:DashboardView x:Name="ViewDashboardContainer" Visibility="Visible" />
 
-                    <!-- ── TAB 2: COURSES & CLASSES VIEW (KHÓA HỌC & LỚP HỌC) ── -->
-                    <views:CourseManagementView x:Name="ViewCoursesContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 2: COURSES & CLASSES VIEW (KHÓA HỌC & LỚP HỌC) ── -->
+                            <views:CourseManagementView x:Name="ViewCoursesContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB 3: QUESTIONS & PUBLICATION (NGÀY 9 CORE) ── -->
-                    <views:QuestionBankView x:Name="ViewQuestionsContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 3: QUESTIONS & PUBLICATION (NGÀY 9 CORE) ── -->
+                            <views:QuestionBankView x:Name="ViewQuestionsContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB: MOCK INTERVIEW & KHÁCH HÀNG (NGÀY 10) ── -->
-                    <views:InterviewCustomersView x:Name="ViewInterviewContainer" Visibility="Collapsed" />
+                            <!-- ── TAB: MOCK INTERVIEW & KHÁCH HÀNG (NGÀY 10) ── -->
+                            <views:InterviewCustomersView x:Name="ViewInterviewContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB: EMPLOYEES & CV VIEW (NGÀY 11 + PHÂN HỆ 5 NGHIỆP VỤ) ── -->
-                    <views:EmployeesView x:Name="ViewEmployeesContainer" Visibility="Collapsed" />
+                            <!-- ── TAB: EMPLOYEES & CV VIEW (NGÀY 11 + PHÂN HỆ 5 NGHIỆP VỤ) ── -->
+                            <views:EmployeesView x:Name="ViewEmployeesContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB: ATTENDANCE & EXCEL IMPORT VIEW (NGÀY 11) ── -->
-                    <views:AttendanceView x:Name="ViewAttendanceContainer" Visibility="Collapsed" />
+                            <!-- ── TAB: ATTENDANCE & EXCEL IMPORT VIEW (NGÀY 11) ── -->
+                            <views:AttendanceView x:Name="ViewAttendanceContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB 4: STUDENTS & CUSTOMERS VIEW ── -->
-                    <views:CustomersView x:Name="ViewCustomersContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 4: STUDENTS & CUSTOMERS VIEW ── -->
+                            <views:CustomersView x:Name="ViewCustomersContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB 5: SYNC RUNS VIEW ── -->
-                    <views:SyncRunsView x:Name="ViewSyncContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 5: SYNC RUNS VIEW ── -->
+                            <views:SyncRunsView x:Name="ViewSyncContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB 6: CSCA COURSE LMS ACCESS OPERATIONS ── -->
-                    <views:LmsOperationsView x:Name="ViewLmsContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 6: CSCA COURSE LMS ACCESS OPERATIONS ── -->
+                            <views:LmsOperationsView x:Name="ViewLmsContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB 8: PAYROLL & CALCULATION VIEW (DAY 12) ── -->
-                    <views:PayrollView x:Name="ViewPayrollContainer" Visibility="Collapsed" />
+                            <!-- ── TAB 8: PAYROLL & CALCULATION VIEW (DAY 12) ── -->
+                            <views:PayrollView x:Name="ViewPayrollContainer" Visibility="Collapsed" />
 
-                    <!-- ── TAB: FASHION & INVENTORY VIEW (NGÀY 14) ── -->
-                    <views:FashionView x:Name="ViewFashionContainer" Visibility="Collapsed" />
+                            <!-- ── TAB: FASHION & INVENTORY VIEW (NGÀY 14) ── -->
+                            <views:FashionView x:Name="ViewFashionContainer" Visibility="Collapsed" />
 
-                    <!-- MỘT KHÔNG GIAN TÀI CHÍNH, CHIA THÀNH CÁC TAB CON -->
-                    <Grid x:Name="ViewFinanceHubContainer" Visibility="Collapsed">
-                        <TabControl x:Name="FinanceHubTabs" Background="Transparent" BorderThickness="0">
-                            <TabItem Header="Tổng quan dòng tiền" FontWeight="SemiBold">
-                                <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" />
-                            </TabItem>
-                            <TabItem Header="Vận hành &amp; công nợ" FontWeight="SemiBold">
-                                <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" />
-                            </TabItem>
-                            <TabItem Header="Chi phí &amp; hòa vốn" FontWeight="SemiBold">
-                                <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" />
-                            </TabItem>
-                        </TabControl>
-                    </Grid>
+                            <!-- MỘT KHÔNG GIAN TÀI CHÍNH, CHIA THÀNH CÁC TAB CON -->
+                            <Grid x:Name="ViewFinanceHubContainer" Visibility="Collapsed">
+                                <TabControl x:Name="FinanceHubTabs" Background="Transparent" BorderThickness="0">
+                                    <TabItem Header="Tổng quan dòng tiền" FontWeight="SemiBold">
+                                        <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" />
+                                    </TabItem>
+                                    <TabItem Header="Vận hành &amp; công nợ" FontWeight="SemiBold">
+                                        <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" />
+                                    </TabItem>
+                                    <TabItem Header="Chi phí &amp; hòa vốn" FontWeight="SemiBold">
+                                        <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" />
+                                    </TabItem>
+                                </TabControl>
+                            </Grid>
 
-                    <!-- KHÁCH HÀNG / TÀI LIỆU NỘI BỘ DÙNG CHUNG, LUÔN LỌC THEO MẢNG -->
-                    <views:InternalDataView x:Name="ViewInternalDataContainer" Visibility="Collapsed" />
+                            <!-- KHÁCH HÀNG / TÀI LIỆU NỘI BỘ DÙNG CHUNG, LUÔN LỌC THEO MẢNG -->
+                            <views:InternalDataView x:Name="ViewInternalDataContainer" Visibility="Collapsed" />
 
+                        </Grid>
+                    </ScrollViewer>
+
+                    <!-- MINIMALIST ROLLING 'M' LOADING OVERLAY (Covers Content Only, Sidebar Stays Free!) -->
+                    <Border x:Name="GlobalBusyOverlay" Background="{DynamicResource OverlayBackdropBrush}" Visibility="Collapsed" Panel.ZIndex="100">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <controls:MolyLoader Width="54" Height="54" HorizontalAlignment="Center" />
+                            <TextBlock x:Name="GlobalBusyText" Text="Đang tải..." HorizontalAlignment="Center" FontSize="12.5" FontWeight="SemiBold" Foreground="#F8FAFC" Margin="0,10,0,0" />
+                            <TextBlock x:Name="GlobalBusySubText" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Grid>
 
-            <!-- ═══════════════════════════════════════════════════════════════════ -->
-            <!-- MODERN GLOBAL LOADING OVERLAY (ENTERPRISE GLASSMORPHISM)             -->
-            <!-- ═══════════════════════════════════════════════════════════════════ -->
-            <Border x:Name="GlobalBusyOverlay" Grid.ColumnSpan="2" Background="#66090E1D" Visibility="Collapsed" Panel.ZIndex="100">
-                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="18" Padding="32,28" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="340" MaxWidth="440" Effect="{StaticResource FloatingShadow}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <!-- Animated Dual-Orbit Spinner with Brand Badge (Mẫu 3) -->
-                        <local:MolyDualOrbitSpinner Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,18" />
-
-                        <!-- Dynamic Operation Title -->
-                        <TextBlock x:Name="GlobalBusyText" Text="Đang tải dữ liệu..." HorizontalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,4" />
-
-                        <!-- Subtitle Context Information -->
-                        <TextBlock x:Name="GlobalBusySubText" Text="Hệ thống đang đồng bộ dữ liệu, vui lòng đợi trong giây lát..." HorizontalAlignment="Center" TextAlignment="Center" FontSize="12" Foreground="#64748B" TextWrapping="Wrap" MaxWidth="290" Margin="0,0,0,16" />
-
-                        <!-- Modern Gradient Indeterminate Progress Bar -->
-                        <ProgressBar IsIndeterminate="True" Width="260" Height="4" Style="{StaticResource ModernProgressBarStyle}" />
-                    </StackPanel>
-                </Border>
-            </Border>
-
-            <Border x:Name="GlobalToastBanner" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,24" MaxWidth="720" Visibility="Collapsed" Panel.ZIndex="101" CornerRadius="10" Padding="16,12" Background="#0F172A">
+            <Border x:Name="GlobalToastBanner" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,28,24" MaxWidth="720" Visibility="Collapsed" Panel.ZIndex="101" CornerRadius="10" Padding="16,12" Background="#0F172A" BorderBrush="#334155" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                     <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">

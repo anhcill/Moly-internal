@@ -390,16 +390,24 @@ public sealed partial class CscaService
         if (_integrationDb is null)
             return (0, 0, null);
 
-        var sourceIds = new List<string> { cls.Id.ToString("N") };
+        var sourceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            cls.Id.ToString("N"),
+            cls.Id.ToString("D")
+        };
         var mappedSourceIds = await _integrationDb.ApplicationClassMaps.AsNoTracking()
             .Where(x => x.CompanyId == cls.CompanyId && x.CscaClassId == cls.Id)
             .Select(x => x.ExternalClassId)
             .ToListAsync(ct);
-        sourceIds.AddRange(mappedSourceIds.Where(x => !string.IsNullOrWhiteSpace(x)));
+        foreach (var mappedId in mappedSourceIds.Where(x => !string.IsNullOrWhiteSpace(x)))
+        {
+            sourceIds.Add(mappedId.Trim());
+        }
 
+        var exactSourceIds = sourceIds.ToList();
         var rows = await _integrationDb.CscaTeacherCostSnapshots.AsNoTracking()
             .Where(x => x.CompanyId == cls.CompanyId && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent &&
-                        sourceIds.Contains(x.ClassSourceId))
+                        exactSourceIds.Contains(x.ClassSourceId))
             .ToListAsync(ct);
         if (from.HasValue) rows = rows.Where(x => x.StartTime >= from.Value).ToList();
         if (to.HasValue) rows = rows.Where(x => x.StartTime < to.Value).ToList();
@@ -415,19 +423,26 @@ public sealed partial class CscaService
             return result;
 
         var idList = classIds.ToList();
-        var sourceToClass = idList.ToDictionary(id => id.ToString("N"), id => id, StringComparer.Ordinal);
+        var sourceToClass = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        foreach (var id in idList)
+        {
+            sourceToClass[id.ToString("N")] = id;
+            sourceToClass[id.ToString("D")] = id;
+        }
+
         var mapped = await _integrationDb.ApplicationClassMaps.AsNoTracking()
             .Where(x => x.CompanyId == companyId && idList.Contains(x.CscaClassId))
             .Select(x => new { x.CscaClassId, x.ExternalClassId })
             .ToListAsync(ct);
         foreach (var map in mapped.Where(x => !string.IsNullOrWhiteSpace(x.ExternalClassId)))
-            sourceToClass[map.ExternalClassId] = map.CscaClassId;
+            sourceToClass[map.ExternalClassId.Trim()] = map.CscaClassId;
 
+        var sourceKeys = sourceToClass.Keys.ToList();
         var rows = await _integrationDb.CscaTeacherCostSnapshots.AsNoTracking()
             .Where(x => x.CompanyId == companyId && x.SourceSystem == "CSCA_COURSE" && x.IsCurrent &&
-                        sourceToClass.Keys.Contains(x.ClassSourceId))
+                        sourceKeys.Contains(x.ClassSourceId))
             .ToListAsync(ct);
-        foreach (var group in rows.GroupBy(x => sourceToClass[x.ClassSourceId]))
+        foreach (var group in rows.Where(x => sourceToClass.ContainsKey(x.ClassSourceId)).GroupBy(x => sourceToClass[x.ClassSourceId]))
             result[group.Key] = (group.Sum(x => x.AccruedAmount), group.Sum(x => x.ProjectedAmount ?? 0),
                 group.Max(x => (DateTime?)x.SyncedAt));
         return result;

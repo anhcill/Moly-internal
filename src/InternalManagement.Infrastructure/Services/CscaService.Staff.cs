@@ -40,10 +40,16 @@ public sealed partial class CscaService
         if (IsMirrorRecordingClass(cls))
             return Result<CscaStaffDto>.Failure("Lớp Record kế thừa giảng viên từ lớp Live nguồn và không có phân công riêng.");
 
-        var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == request.EmployeeId && !e.IsDeleted, ct);
+        var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == request.EmployeeId && e.CompanyId == cls.CompanyId && !e.IsDeleted, ct);
         if (employee == null)
         {
-            return Result<CscaStaffDto>.Failure("Không tìm thấy nhân viên/giảng viên được chọn.");
+            return Result<CscaStaffDto>.Failure("Không tìm thấy nhân viên/giảng viên được chọn trong công ty hiện tại.");
+        }
+        if (string.Equals(employee.Status, "Resigned", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(employee.Status, "Inactive", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(employee.Status, "Blacklisted", StringComparison.OrdinalIgnoreCase))
+        {
+            return Result<CscaStaffDto>.Failure($"Không thể phân công nhân sự đang ở trạng thái '{employee.Status}'.");
         }
 
         var existingStaff = cls.Staff.FirstOrDefault(s => s.EmployeeId == request.EmployeeId);

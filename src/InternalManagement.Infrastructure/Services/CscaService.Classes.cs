@@ -475,9 +475,13 @@ public sealed partial class CscaService
         cls.ClassType = classTypeSelection.ClassType;
         cls.RecordingContentMode = classTypeSelection.RecordingContentMode;
         cls.SourceClassId = classTypeSelection.SourceClassId;
+        var normalizedStatus = NormalizeClassStatus(request.Status);
+        if (normalizedStatus is null)
+            return Result<CscaClassDto>.Failure("Trạng thái lớp phải là Draft, Planned, Active, Completed hoặc Cancelled.");
+
         cls.StartDate = NormalizeClassDate(request.StartDate);
         cls.EndDate = NormalizeClassDate(request.EndDate);
-        cls.Status = request.Status;
+        cls.Status = normalizedStatus;
         cls.UpdatedAt = DateTime.UtcNow;
         cls.UpdatedBy = _currentUser.Username ?? "System";
 
@@ -536,6 +540,20 @@ public sealed partial class CscaService
         };
 
         return Result<CscaClassDto>.Success(dto);
+    }
+
+    private static string? NormalizeClassStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return "Active";
+        return status.Trim().ToLowerInvariant() switch
+        {
+            "draft" => "Draft",
+            "planned" => "Planned",
+            "active" => "Active",
+            "completed" => "Completed",
+            "cancelled" or "canceled" => "Cancelled",
+            _ => null
+        };
     }
 
     private static DateTime? NormalizeClassDate(DateTime? value)
@@ -615,6 +633,7 @@ public sealed partial class CscaService
             return Result<bool>.Failure("Không tìm thấy lớp học CSCA cần xóa.");
         var cls = await _db.CscaClasses
             .AsSplitQuery()
+            .Include(c => c.Course)
             .Include(c => c.Staff)
                 .ThenInclude(st => st.Employee)
             .Include(c => c.Students)
@@ -641,8 +660,20 @@ public sealed partial class CscaService
             return Result<bool>.Failure(
                 "Không thể xóa lớp Live khi bộ nội dung vẫn đang được khóa Record dùng lại.");
 
+        if (cls.Students.Any(s => s.PaidAmount > 0 && s.PaymentStatus is PaymentStatus.Paid or PaymentStatus.Partial))
+            return Result<bool>.Failure(
+                "Không thể xóa lớp khi vẫn còn học viên đã đóng học phí. Hãy hoàn học phí hoặc chuyển lớp cho học viên trước.");
+
         var now = DateTime.UtcNow;
         var actor = _currentUser.Username ?? "System";
+        foreach (var student in cls.Students.Where(s => s.PaymentStatus is not PaymentStatus.Cancelled and not PaymentStatus.Refunded))
+        {
+            student.PaymentStatus = PaymentStatus.Cancelled;
+            student.UpdatedAt = now;
+            student.UpdatedBy = actor;
+            await QueueLmsAccessLifecycleAsync(student, cls, ct);
+        }
+
         cls.Status = "Cancelled";
         cls.IsDeleted = true;
         cls.DeletedAt = now;

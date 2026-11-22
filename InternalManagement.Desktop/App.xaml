@@ -6,8 +6,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles/Palette.xaml" />
                 <ResourceDictionary Source="Styles/Themes/Theme.Light.xaml" />
+                <ResourceDictionary Source="Styles/Palette.xaml" />
+                <ResourceDictionary Source="Styles/ScrollBars.xaml" />
+                <ResourceDictionary Source="Styles/Controls.xaml" />
+                <ResourceDictionary Source="Styles/DatePickers.xaml" />
                 <ResourceDictionary Source="Styles/Tables.xaml" />
                 <ResourceDictionary Source="Styles/Inputs.xaml" />
                 <ResourceDictionary Source="Styles/Buttons.xaml" />

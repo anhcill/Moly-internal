@@ -237,11 +237,29 @@ public partial class MainWindow
             return;
         }
 
-        // Refresh the selected course and its classes even if a previous batch succeeded.
-        // Dispatch alone only processes commands already in the outbox.
+        // Refresh the selected course and its classes even if a previous batch succeeded,
+        // then immediately dispatch pending outbox commands so sync does not stay stuck when worker is off.
         if (!await SaveLmsMappingAsync(activateForSync: true)) return;
 
-        ShowToast("Đã xếp dữ liệu vào hàng chờ. Hệ thống đang gửi sang Web trong nền; bạn có thể tiếp tục làm việc và bấm Cập nhật trạng thái để theo dõi.");
+        await RunWithBusyAsync("Đang đẩy dữ liệu hàng chờ sang Web Course...", async () =>
+        {
+            var dispatch = await _apiClient.DispatchLmsOutboxAsync(batchSize: 50);
+            await LoadLmsIntegrationAsync();
+            if (dispatch is null)
+            {
+                ShowToast("Đã xếp hàng chờ LMS và yêu cầu gửi sang Web.");
+                return;
+            }
+
+            if (dispatch.DeadLettered > 0 || dispatch.Retrying > 0)
+            {
+                ShowToast($"Đã gửi {dispatch.Succeeded}/{dispatch.Processed} lệnh sang Web ({dispatch.Retrying} thử lại, {dispatch.DeadLettered} lỗi).", isError: dispatch.Succeeded == 0);
+            }
+            else
+            {
+                ShowToast($"Đồng bộ Web Course hoàn tất: {dispatch.Succeeded}/{dispatch.Processed} lệnh thành công.");
+            }
+        });
     }
 
     private async void RetryDeadLetter_Click(object sender, RoutedEventArgs e)
@@ -617,9 +635,73 @@ public partial class MainWindow
         SyncCscaMolyNavigationSelection(CscaMolyTabControl.SelectedIndex);
     }
 
-    private void CreateQuestionDialog_Click(object sender, RoutedEventArgs e)
+    private async void CreateQuestionDialog_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Chức năng tạo câu hỏi tương tác hoàn chỉnh sẽ mở modal nhập chi tiết. Đang hỗ trợ tạo tự động qua API & Sync.", "Thông Báo", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (!PromptDialog.TryShow(this, "Tạo câu hỏi trắc nghiệm mới", new[]
+        {
+            new PromptField("bank", "Ngân hàng câu hỏi", "CSCA Bank"),
+            new PromptField("subject", "Môn học", "CSCA"),
+            new PromptField("topic", "Chủ đề", "Tổng hợp"),
+            new PromptField("difficulty", "Độ khó", "Medium", Options: new[]
+            {
+                new PromptOption("Easy", "Easy (Dễ)"),
+                new PromptOption("Medium", "Medium (Trung bình)"),
+                new PromptOption("Hard", "Hard (Khó)")
+            }),
+            new PromptField("content", "Nội dung câu hỏi"),
+            new PromptField("choiceA", "Đáp án A"),
+            new PromptField("choiceB", "Đáp án B"),
+            new PromptField("choiceC", "Đáp án C", IsRequired: false),
+            new PromptField("choiceD", "Đáp án D", IsRequired: false),
+            new PromptField("correct", "Đáp án đúng", "A", Options: new[]
+            {
+                new PromptOption("A", "Đáp án A"),
+                new PromptOption("B", "Đáp án B"),
+                new PromptOption("C", "Đáp án C"),
+                new PromptOption("D", "Đáp án D")
+            }),
+            new PromptField("explanation", "Giải thích đáp án", IsRequired: false),
+            new PromptField("tags", "Thẻ (phân tách bằng dấu phẩy)", IsRequired: false)
+        }, out var values)) return;
+
+        var choices = new List<(string Label, string ContentHtml, bool IsCorrect, int OrderIndex)>
+        {
+            ("A", values["choiceA"].Trim(), values["correct"] == "A", 0),
+            ("B", values["choiceB"].Trim(), values["correct"] == "B", 1)
+        };
+        if (!string.IsNullOrWhiteSpace(values["choiceC"]))
+            choices.Add(("C", values["choiceC"].Trim(), values["correct"] == "C", 2));
+        if (!string.IsNullOrWhiteSpace(values["choiceD"]))
+            choices.Add(("D", values["choiceD"].Trim(), values["correct"] == "D", 3));
+
+        if (!choices.Any(c => c.IsCorrect))
+        {
+            ShowToast("Đáp án đúng phải thuộc các đáp án đã nhập nội dung.", isError: true);
+            return;
+        }
+
+        var tags = (values["tags"] ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        await RunWithBusyAsync("Đang tạo câu hỏi mới...", async () =>
+        {
+            var created = await _apiClient.CreateQuestionAsync(
+                values["bank"].Trim(),
+                values["subject"].Trim(),
+                values["topic"].Trim(),
+                values["difficulty"],
+                values["content"].Trim(),
+                string.IsNullOrWhiteSpace(values["explanation"]) ? null : values["explanation"].Trim(),
+                choices,
+                tags);
+            if (!created)
+                throw new InvalidOperationException("Không thể tạo câu hỏi. Vui lòng kiểm tra quyền Questions.Manage và dữ liệu nhập.");
+
+            ShowToast("Đã tạo câu hỏi mới thành công (trạng thái Draft).");
+            await LoadQuestionsAsync(ViewQuestionsContainer.SearchText);
+        });
     }
 
     private async void PublishQuestion_Click(object sender, RoutedEventArgs e)

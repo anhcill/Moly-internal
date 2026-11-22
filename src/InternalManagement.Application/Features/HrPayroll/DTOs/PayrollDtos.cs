@@ -60,6 +60,8 @@ public record CreatePayrollAdjustmentRequest(
 
 public static class PayrollWorkTypes
 {
+    public const string TeachingSession = "TEACHING_SESSION";
+    public const string LmsTeachingSnapshot = "LMS_TEACHING_SNAPSHOT";
     public const string QuestionPosted = "QUESTION_POSTED";
     public const string QuestionCompleted = "QUESTION_COMPLETED";
     public const string Project = "PROJECT";
@@ -71,7 +73,7 @@ public static class PayrollWorkTypes
 
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
-        QuestionPosted, QuestionCompleted, Project, SalesCommission, StudentReferral, Marketing, MarketingReferral, Other
+        TeachingSession, LmsTeachingSnapshot, QuestionPosted, QuestionCompleted, Project, SalesCommission, StudentReferral, Marketing, MarketingReferral, Other
     };
 }
 

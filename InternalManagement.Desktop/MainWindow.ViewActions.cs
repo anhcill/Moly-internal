@@ -28,6 +28,8 @@ public partial class MainWindow
             case nameof(VisiblePasswordTextBox_LostFocus): VisiblePasswordTextBox_LostFocus(action.Sender, action.Args); break;
             case nameof(UsernameTextBox_TextChanged): UsernameTextBox_TextChanged(action.Sender, (TextChangedEventArgs)action.Args); break;
             case nameof(VisiblePasswordTextBox_TextChanged): VisiblePasswordTextBox_TextChanged(action.Sender, (TextChangedEventArgs)action.Args); break;
+            case nameof(QuickLoginAccount_Click): QuickLoginAccount_Click(action.Sender, action.Args); break;
+            case nameof(RemoveQuickAccount_Click): RemoveQuickAccount_Click(action.Sender, action.Args); break;
             case nameof(ClearCscaCourseFilter_Click): ClearCscaCourseFilter_Click(action.Sender, action.Args); break;
             case nameof(CreateCourseDialog_Click): CreateCourseDialog_Click(action.Sender, action.Args); break;
             case nameof(CreateCscaClassDialog_Click): CreateCscaClassDialog_Click(action.Sender, action.Args); break;
@@ -40,7 +42,6 @@ public partial class MainWindow
             case nameof(ViewCourseClasses_Click): ViewCourseClasses_Click(action.Sender, action.Args); break;
             case nameof(ViewCscaClassDetails_Click): ViewCscaClassDetails_Click(action.Sender, action.Args); break;
             case nameof(ViewCscaFinanceDetails_Click): ViewCscaFinanceDetails_Click(action.Sender, action.Args); break;
-            case nameof(CoursesDataGrid_MouseDoubleClick): CoursesDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
             case nameof(CscaClassesDataGrid_MouseDoubleClick): CscaClassesDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
             case nameof(CscaFinanceDataGrid_MouseDoubleClick): CscaFinanceDataGrid_MouseDoubleClick(action.Sender, (MouseButtonEventArgs)action.Args); break;
             case nameof(CscaFinanceDataGrid_KeyDown): CscaFinanceDataGrid_KeyDown(action.Sender, (KeyEventArgs)action.Args); break;

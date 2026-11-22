@@ -100,12 +100,19 @@ public sealed partial class OrderCostingService
             return Result<SalesOrderSummaryDto>.Failure("Chỉ hủy trực tiếp đơn chưa giao. Đơn đang/đã giao phải dùng quy trình đổi trả để giữ đúng sổ kho và doanh thu.");
 
         var warehouse = await GetOrderWarehouseAsync(order, companyId, businessUnitId, ct);
+        var orderVariantIds = order.Items.Select(x => x.ProductVariantId).Distinct().ToList();
+        var cancelBalances = orderVariantIds.Count == 0
+            ? new Dictionary<Guid, InventoryBalance>()
+            : await _db.InventoryBalances
+                .Where(b => b.CompanyId == companyId
+                    && b.BusinessUnitId == businessUnitId
+                    && b.WarehouseId == warehouse.Id
+                    && orderVariantIds.Contains(b.ProductVariantId))
+                .ToDictionaryAsync(b => b.ProductVariantId, ct);
+
         foreach (var item in order.Items)
         {
-            var balance = await _db.InventoryBalances.FirstOrDefaultAsync(b =>
-                b.CompanyId == companyId && b.BusinessUnitId == businessUnitId &&
-                b.WarehouseId == warehouse.Id && b.ProductVariantId == item.ProductVariantId, ct);
-            if (balance == null || balance.ReservedQuantity < item.Quantity)
+            if (!cancelBalances.TryGetValue(item.ProductVariantId, out var balance) || balance.ReservedQuantity < item.Quantity)
                 return Result<SalesOrderSummaryDto>.Failure($"Không thể hủy {order.OrderNumber}: số lượng giữ kho của SKU {item.SkuSnapshot} không còn khớp. Hãy kiểm tra lịch sử giao hàng.");
             balance.ReservedQuantity -= item.Quantity;
             balance.LastUpdated = DateTime.UtcNow;
@@ -149,6 +156,13 @@ public sealed partial class OrderCostingService
 
         var warehouse = await GetOrderWarehouseAsync(order, companyId, businessUnitId, ct);
         var warehouseId = warehouse.Id;
+        var deliverVariantIds = request.Items.Select(x => x.ProductVariantId).Distinct().ToList();
+        var deliverBalances = await _db.InventoryBalances
+            .Where(x => x.CompanyId == companyId
+                && x.BusinessUnitId == businessUnitId
+                && x.WarehouseId == warehouseId
+                && deliverVariantIds.Contains(x.ProductVariantId))
+            .ToDictionaryAsync(x => x.ProductVariantId, ct);
 
         foreach (var requestItem in request.Items)
         {
@@ -169,9 +183,9 @@ public sealed partial class OrderCostingService
                 return Result<SalesOrderFulfillmentDto>.Failure($"SKU {orderItem.SkuSnapshot} chỉ còn {remaining} sản phẩm chưa giao.");
             }
 
-            var balance = await _db.InventoryBalances.FirstOrDefaultAsync(
-                x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.WarehouseId == warehouseId && x.ProductVariantId == requestItem.ProductVariantId, ct);
-            if (balance == null || balance.OnHandQuantity < requestItem.Quantity || balance.ReservedQuantity < requestItem.Quantity)
+            if (!deliverBalances.TryGetValue(requestItem.ProductVariantId, out var balance)
+                || balance.OnHandQuantity < requestItem.Quantity
+                || balance.ReservedQuantity < requestItem.Quantity)
             {
                 return Result<SalesOrderFulfillmentDto>.Failure($"Tồn kho giữ cho SKU {orderItem.SkuSnapshot} không đủ để giao.");
             }

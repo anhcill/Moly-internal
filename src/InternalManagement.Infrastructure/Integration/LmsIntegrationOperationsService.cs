@@ -505,6 +505,9 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
 
             foreach (var item in validStudents)
             {
+                var membershipStatus = item.Student.PaymentStatus is PaymentStatus.Cancelled or PaymentStatus.Refunded
+                    ? "revoked"
+                    : "active";
                 QueueManagementEvent(existing, "class.membership.changed", new
                 {
                     MembershipSourceId = item.Student.Id.ToString("N"),
@@ -512,7 +515,7 @@ public sealed class LmsIntegrationOperationsService : ILmsIntegrationOperationsS
                     StudentSourceId = (item.Student.PartyId ?? item.Student.Id).ToString("N"),
                     LearningMode = string.Equals(item.Class.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase)
                         ? "RECORDING" : "LIVE",
-                    Status = "active",
+                    Status = membershipStatus,
                     SourceUpdatedAt = now
                 }, correlationId, now, actor);
             }

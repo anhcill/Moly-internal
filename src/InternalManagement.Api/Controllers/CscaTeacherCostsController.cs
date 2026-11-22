@@ -62,6 +62,46 @@ public sealed class CscaTeacherCostsController : BaseApiController
             result.Value!, "Đã đồng bộ snapshot chi phí giảng viên từ CSCA Course."));
     }
 
+    [HttpGet("payroll")]
+    [HasPermission(Permissions.PayrollViewAll)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSummaryDto>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetForPayroll(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string? courseSourceId,
+        [FromQuery] string? classSourceId,
+        [FromQuery] string? teacherSourceId,
+        [FromQuery] bool includeProjected = true,
+        CancellationToken ct = default)
+    {
+        var result = await _service.GetAsync(
+            from, to, courseSourceId, classSourceId, teacherSourceId, includeProjected, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaTeacherCostSummaryDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Không thể đọc chi phí giảng viên CSCA Course."));
+
+        return Ok(ApiResponse<CscaTeacherCostSummaryDto>.Ok(
+            result.Value!, "Lấy chi phí giảng viên CSCA Course thành công."));
+    }
+
+    [HttpPost("sync-payroll")]
+    [HasPermission(Permissions.PayrollCalculate)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSyncResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CscaTeacherCostSyncResultDto>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SyncForPayroll(
+        [FromBody] SyncCscaTeacherCostsRequest request,
+        CancellationToken ct = default)
+    {
+        var result = await _service.SyncAsync(request, ct);
+        if (!result.Succeeded)
+            return BadRequest(ApiResponse<CscaTeacherCostSyncResultDto>.Fail(
+                result.Errors.FirstOrDefault() ?? "Không thể đồng bộ bảng lương giảng viên từ MolyCourse."));
+
+        return Ok(ApiResponse<CscaTeacherCostSyncResultDto>.Ok(
+            result.Value!, "Đã đồng bộ bảng lương giảng viên từ MolyCourse cho kỳ lương."));
+    }
+
     [HttpPost("sync-finance")]
     [HasPermission(Permissions.FinanceTransactionsManage)]
     public async Task<IActionResult> SyncForFinance(

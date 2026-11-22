@@ -50,51 +50,45 @@ public static class EmployeeDialog
             Owner = owner,
             Title = editing ? "Sửa hồ sơ nhân sự" : "Thêm nhân sự",
             Width = 920,
-            Height = Math.Min(700, Math.Max(620, SystemParameters.WorkArea.Height - 24)),
-            MinWidth = 760,
-            MinHeight = 620,
-            MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 20),
+            Height = Math.Min(700, Math.Max(500, SystemParameters.WorkArea.Height - 24)),
+            MinWidth = 740,
+            MinHeight = 460,
+            MaxHeight = Math.Max(520, SystemParameters.WorkArea.Height - 20),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            ResizeMode = ResizeMode.NoResize,
+            ResizeMode = ResizeMode.CanResizeWithGrip,
             ShowInTaskbar = false
         };
         dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
         ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
-        var root = new StackPanel { Margin = new Thickness(24, 16, 24, 16) };
-        root.Children.Add(new TextBlock
-        {
-            Text = editing ? "Sửa hồ sơ nhân sự" : "Tạo hồ sơ nhân sự mới",
-            FontSize = 21,
-            FontWeight = FontWeights.Bold,
-            Foreground = (Brush)Application.Current.TryFindResource("TextDarkBrush") ?? Brushes.Black
-        });
-        root.Children.Add(new TextBlock
-        {
-            Text = $"Mảng: {segmentName}. Hồ sơ sẽ chỉ xuất hiện trong đúng mảng này.",
-            FontSize = 12,
-            Foreground = Brush("#64748B"),
-            Margin = new Thickness(0, 3, 0, 10)
-        });
+        var root = new StackPanel();
 
-        var identity = TwoColumns(root);
+        var identitySection = DialogChrome.CreateSectionCard(
+            root,
+            "1. Thông tin định danh & liên hệ",
+            "Mã nhân viên, thông tin cơ bản và phòng ban công tác.");
+        var identity = TwoColumns(identitySection);
         var initialCode = employee?.EmployeeCode ?? defaultEmployeeCode;
         var code = TextField(identity.Left, editing ? "Mã nhân viên *" : "Mã nhân viên (tự động tăng, có thể sửa)", initialCode, editing);
         var name = TextField(identity.Right, "Họ và tên *", employee?.FullName);
 
-        var contact = TwoColumns(root);
+        var contact = TwoColumns(identitySection);
         var email = TextField(contact.Left, "Email *", employee?.Email);
         var phone = TextField(contact.Right, "Số điện thoại", employee?.Phone);
 
-        var job = TwoColumns(root);
+        var job = TwoColumns(identitySection);
         var position = TextField(job.Left, "Vị trí / chức vụ", employee?.Position);
         var joined = DateField(job.Right, "Ngày vào làm", employee?.JoinedDate ?? DateTime.Today);
 
-        var assignment = TwoColumns(root);
+        var assignment = TwoColumns(identitySection);
         var bu = ComboField(assignment.Left, "Đơn vị kinh doanh *", businessUnits, employee?.BusinessUnitId);
         var dept = ComboField(assignment.Right, "Phòng ban", departments, employee?.DepartmentId);
 
-        var compensation = TwoColumns(root);
+        var paySection = DialogChrome.CreateSectionCard(
+            root,
+            "2. Hình thức trả công & tài khoản ngân hàng",
+            "Đồng bộ tự động sang bảng lương và thanh toán giáo viên.");
+        var compensation = TwoColumns(paySection);
         Label(compensation.Left, "Hình thức trả công *");
         var employmentType = new ComboBox
         {
@@ -145,12 +139,16 @@ public static class EmployeeDialog
         salaryPanel.Children.Add(partTimePanel);
         compensation.Right.Children.Add(salaryPanel);
 
-        var payment = ThreeColumns(root);
+        var payment = ThreeColumns(paySection);
         var bankName = TextField(payment.Left, "Ngân hàng nhận lương", paymentDetails?.BankName);
         var bankAccountNumber = TextField(payment.Center, "Số tài khoản", paymentDetails?.BankAccountNumber);
         var bankAccountHolder = TextField(payment.Right, "Tên chủ tài khoản", paymentDetails?.BankAccountHolder);
 
-        Label(root, "CV (đường dẫn tệp hoặc liên kết)");
+        var cvSection = DialogChrome.CreateSectionCard(
+            root,
+            "3. Hồ sơ năng lực & CV",
+            "Đính kèm tệp CV hoặc liên kết trực tuyến cùng tóm tắt chuyên môn.");
+        Label(cvSection, "CV (đường dẫn tệp hoặc liên kết)");
         var cvGrid = new Grid { Margin = new Thickness(0, 0, 0, 8) };
         cvGrid.ColumnDefinitions.Add(new ColumnDefinition());
         cvGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -175,9 +173,9 @@ public static class EmployeeDialog
         Grid.SetColumn(browse, 1);
         cvGrid.Children.Add(cv);
         cvGrid.Children.Add(browse);
-        root.Children.Add(cvGrid);
+        cvSection.Children.Add(cvGrid);
 
-        var notes = ThreeColumns(root);
+        var notes = ThreeColumns(cvSection);
         var summary = TextArea(notes.Left, "Tóm tắt chuyên môn", employee?.ProfessionalSummary);
         var skills = TextArea(notes.Center, "Kỹ năng", employee?.Skills);
         var experience = TextArea(notes.Right, "Kinh nghiệm", employee?.Experience);
@@ -271,13 +269,13 @@ public static class EmployeeDialog
         };
         buttons.Children.Add(cancel);
         buttons.Children.Add(save);
-        root.Children.Add(buttons);
-
-        dialog.Content = new ScrollViewer
-        {
-            Content = root,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-        };
+        DialogChrome.BuildModalShell(
+            dialog,
+            editing ? "Sửa hồ sơ nhân sự" : "Tạo hồ sơ nhân sự mới",
+            $"Mảng: {segmentName}. Hồ sơ sẽ chỉ xuất hiện trong đúng mảng này.",
+            "\uE77B",
+            root,
+            buttons);
         var accepted = dialog.ShowDialog() == true && submitted is not null;
         result = submitted;
         return accepted;
@@ -366,14 +364,18 @@ public static class EmployeeDialog
         return combo;
     }
 
-    private static void Label(Panel parent, string text) => parent.Children.Add(new TextBlock
+    private static void Label(Panel parent, string text)
     {
-        Text = text,
-        FontSize = 12,
-        FontWeight = FontWeights.SemiBold,
-        Foreground = Brush("#34405C"),
-        Margin = new Thickness(0, 0, 0, 4)
-    });
+        var label = new TextBlock
+        {
+            Text = text,
+            FontSize = 11.5,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 4)
+        };
+        label.SetResourceReference(TextBlock.ForegroundProperty, "TextMutedBrush");
+        parent.Children.Add(label);
+    }
 
     private static TextBox NewTextBox(string? value) => new()
     {

@@ -261,6 +261,8 @@ internal static class LmsTeacherRosterSync
             Phone = employee.Phone,
             Position = employee.Position,
             Department = employee.Department?.Name,
+            HourlyRate = employee.PartTimeUnitRate ?? 0m,
+            BaseSalary = employee.BaseSalary,
             AccountStatus = HasActiveAccount(employee) ? "active" : "suspended",
             SourceUpdatedAt = now
         }, now, correlationId);

@@ -19,44 +19,47 @@ public partial class MainWindow
 
     private async void RecordAttendance_Click(object sender, RoutedEventArgs e)
     {
-        var employees = await _apiClient.GetEmployeesAsync(status: "Active", businessSegment: _activeSegment);
-        if (employees is null || employees.Items.Count == 0)
+        await RunWithBusyAsync("Đang tải danh sách nhân sự...", async () =>
         {
-            ShowToast("Chưa tải được nhân sự đang làm việc trong mảng này.", true);
-            return;
-        }
+            var employees = await _apiClient.GetEmployeesAsync(status: "Active", businessSegment: _activeSegment);
+            if (employees is null || employees.Items.Count == 0)
+            {
+                ShowToast("Chưa tải được nhân sự đang làm việc trong mảng này.", true);
+                return;
+            }
 
-        var employeeOptions = employees.Items
-            .Select(item => new PromptOption(item.Id.ToString(), $"{item.EmployeeCode} — {item.FullName}"))
-            .ToList();
-        if (!PromptDialog.TryShow(this, "Nhập giờ công theo ngày", new[]
-        {
-            new PromptField("employeeId", "Nhân sự", Options: employeeOptions),
-            new PromptField("date", "Ngày làm việc (dd/MM/yyyy)", DateTime.Today.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"))),
-            new PromptField("hours", "Số giờ thực làm (0–24)", "8")
-        }, out var values)) return;
+            var employeeOptions = employees.Items
+                .Select(item => new PromptOption(item.Id.ToString(), $"{item.EmployeeCode} — {item.FullName}"))
+                .ToList();
+            if (!PromptDialog.TryShow(this, "Nhập giờ công theo ngày", new[]
+            {
+                new PromptField("employeeId", "Nhân sự", Options: employeeOptions),
+                new PromptField("date", "Ngày làm việc (dd/MM/yyyy)", DateTime.Today.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"))),
+                new PromptField("hours", "Số giờ thực làm (0–24)", "8")
+            }, out var values)) return;
 
-        if (!Guid.TryParse(values["employeeId"], out var employeeId) ||
-            !DateOnly.TryParseExact(values["date"], "dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"),
-                DateTimeStyles.None, out var workDate) ||
-            !(decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.GetCultureInfo("vi-VN"), out var hours) ||
-              decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.InvariantCulture, out hours)) ||
-            hours is <= 0 or > 24 || decimal.Round(hours, 2) != hours)
-        {
-            ShowToast("Ngày phải theo dd/MM/yyyy; số giờ phải lớn hơn 0, tối đa 24 và có tối đa 2 chữ số thập phân.", true);
-            return;
-        }
+            if (!Guid.TryParse(values["employeeId"], out var employeeId) ||
+                !DateOnly.TryParseExact(values["date"], "dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"),
+                    DateTimeStyles.None, out var workDate) ||
+                !(decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.GetCultureInfo("vi-VN"), out var hours) ||
+                  decimal.TryParse(values["hours"], NumberStyles.Number, CultureInfo.InvariantCulture, out hours)) ||
+                hours is <= 0 or > 24 || decimal.Round(hours, 2) != hours)
+            {
+                ShowToast("Ngày phải theo dd/MM/yyyy; số giờ phải lớn hơn 0, tối đa 24 và có tối đa 2 chữ số thập phân.", true);
+                return;
+            }
 
-        var saved = await _apiClient.RecordAttendanceAsync(new ApiClient.RecordAttendanceModel(
-            employeeId, workDate, null, null, hours, "Present"));
-        if (saved is null)
-        {
-            ShowToast("Không ghi được giờ công. Vui lòng kiểm tra quyền và dữ liệu nhân sự.", true);
-            return;
-        }
+            var saved = await _apiClient.RecordAttendanceAsync(new ApiClient.RecordAttendanceModel(
+                employeeId, workDate, null, null, hours, "Present"));
+            if (saved is null)
+            {
+                ShowToast("Không ghi được giờ công. Vui lòng kiểm tra quyền và dữ liệu nhân sự.", true);
+                return;
+            }
 
-        ShowToast($"Đã ghi {hours:0.##} giờ công ngày {workDate:dd/MM/yyyy}. Tính lại kỳ lương nháp để cập nhật phiếu lương.");
-        await LoadAttendanceAsync();
+            ShowToast($"Đã ghi {hours:0.##} giờ công ngày {workDate:dd/MM/yyyy}. Tính lại kỳ lương nháp để cập nhật phiếu lương.");
+            await LoadAttendanceAsync();
+        });
     }
 
 
@@ -67,7 +70,11 @@ public partial class MainWindow
             DateOnly? fromDate = ViewAttendanceContainer.FromDate;
             DateOnly? toDate = ViewAttendanceContainer.ToDate;
 
-            var records = await _apiClient.GetAttendanceRecordsAsync(fromDate, toDate, businessSegment: _activeSegment);
+            var recordsTask = _apiClient.GetAttendanceRecordsAsync(fromDate, toDate, businessSegment: _activeSegment);
+            var summaryTask = _apiClient.GetAttendanceSummaryAsync(fromDate, toDate, businessSegment: _activeSegment);
+            await Task.WhenAll(recordsTask, summaryTask);
+
+            var records = await recordsTask;
             if (records != null)
             {
                 ViewAttendanceContainer.SetRecords(records.Items);
@@ -79,7 +86,7 @@ public partial class MainWindow
                 SetViewStatus("Không tải được dữ liệu chấm công. Vui lòng thử lại.", isError: true);
             }
 
-            var summary = await _apiClient.GetAttendanceSummaryAsync(fromDate, toDate, businessSegment: _activeSegment);
+            var summary = await summaryTask;
             if (summary != null)
             {
                 ViewAttendanceContainer.SetSummary(summary);

@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
 using InternalManagement.Desktop;
 using InternalManagement.Desktop.Behaviors;
@@ -35,6 +36,13 @@ public sealed class WpfCompositionTests
                 var coursesView = Assert.IsType<CourseManagementView>(window.FindName("ViewCoursesContainer"));
                 var coursesDataGrid = Assert.IsType<System.Windows.Controls.DataGrid>(coursesView.FindName("CoursesDataGrid"));
                 Assert.True(DataGridColumnWidthPersistence.GetIsEnabled(coursesDataGrid));
+                var openCourseClassesRaised = false;
+                coursesView.OpenCourseClassesRequested += (_, _) => openCourseClassesRaised = true;
+                coursesDataGrid.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
+                {
+                    RoutedEvent = Control.MouseDoubleClickEvent
+                });
+                Assert.True(openCourseClassesRaised);
                 VerifyColumnWidthPersistence();
                 var employeesView = Assert.IsType<EmployeesView>(window.FindName("ViewEmployeesContainer"));
                 Assert.NotNull(employeesView.ViewModel);

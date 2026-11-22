@@ -36,6 +36,7 @@ public partial class MainWindow : Window, IDisposable
     private string _activeSegment = TechnologySegment;
     private string? _sessionUsername;
     private bool _rememberSession;
+    private DateTime? _lastApiHealthyAtUtc;
     private bool _isSidebarCollapsed;
     private InternalDataViewMode _internalDataMode = InternalDataViewMode.Customers;
     private List<ApiClient.BusinessUnitProfitItem> _cachedBusinessUnits = new();
@@ -130,6 +131,7 @@ public partial class MainWindow : Window, IDisposable
         ViewCostBreakEvenContainer.RefreshRequested += RefreshCostBreakEven_Click;
         ViewCostBreakEvenContainer.FiltersChanged += CostBreakEvenFilters_Changed;
         ViewCoursesContainer.ActionRequested += DispatchFeatureViewAction;
+        ViewCoursesContainer.OpenCourseClassesRequested += CoursesDataGrid_MouseDoubleClick;
         ViewEmployeesContainer.BlacklistRequested += BlacklistEmployee_Click;
         ViewEmployeesContainer.CreateRequested += CreateEmployee_Click;
         ViewEmployeesContainer.DeleteRequested += DeleteEmployee_Click;
@@ -163,6 +165,7 @@ public partial class MainWindow : Window, IDisposable
         ViewPayrollContainer.RefreshPayrollRequested += RefreshPayroll_Click;
         ViewPayrollContainer.RefreshPayrollMonthlySummaryRequested += RefreshPayrollMonthlySummary_Click;
         ViewPayrollContainer.SubmitReviewRequested += SubmitReview_Click;
+        ViewPayrollContainer.SyncCoursePayrollRequested += SyncCoursePayroll_Click;
         ViewPayrollContainer.ViewPayslipDetailRequested += ViewPayslipDetail_Click;
         ViewPayrollContainer.PayrollAdjustmentEmployeesDoubleClickRequested += PayrollAdjustmentEmployees_MouseDoubleClick;
         ViewPayrollContainer.PayslipsDataGridDoubleClickRequested += PayslipsDataGrid_MouseDoubleClick;
@@ -208,6 +211,10 @@ public partial class MainWindow : Window, IDisposable
         var newTheme = ThemeService.Instance.ToggleTheme();
         UpdateThemeButton(newTheme);
         ThemeService.SetWindowDarkMode(this, ThemeService.Instance.IsDark);
+        if (ViewDashboardContainer?.Visibility == Visibility.Visible && _currentUser != null)
+        {
+            _ = LoadDashboardMetricsAsync();
+        }
         ShowToast(ThemeService.Instance.IsDark ? "Đã chuyển sang giao diện Tối." : "Đã chuyển sang giao diện Sáng.");
     }
 
@@ -235,13 +242,13 @@ public partial class MainWindow : Window, IDisposable
         {
             if (theme == AppTheme.Dark)
             {
-                ThemeToggleIcon.Text = "☀️";
+                ThemeToggleIcon.Text = "\uE706";
                 ThemeToggleText.Text = "Giao diện sáng";
                 ThemeToggleButton.ToolTip = "Chuyển sang giao diện Sáng (Phím tắt: F10)";
             }
             else
             {
-                ThemeToggleIcon.Text = "🌙";
+                ThemeToggleIcon.Text = "\uE708";
                 ThemeToggleText.Text = "Giao diện tối";
                 ThemeToggleButton.ToolTip = "Chuyển sang giao diện Tối (Phím tắt: F10)";
             }
@@ -251,10 +258,10 @@ public partial class MainWindow : Window, IDisposable
     {
         UpdateUsernameWatermark();
         UpdatePasswordWatermark();
-        await RefreshApiHealthAsync();
-        await RestoreRememberedSessionAsync();
         UpdateThemeButton(ThemeService.Instance.CurrentTheme);
         ThemeService.SetWindowDarkMode(this, ThemeService.Instance.IsDark);
+        RefreshQuickLoginAccounts();
+        await Task.WhenAll(RefreshApiHealthAsync(), RestoreRememberedSessionAsync());
     }
 
     private async Task RefreshApiHealthAsync()
@@ -304,6 +311,7 @@ public partial class MainWindow : Window, IDisposable
 
     private void SetApiHealthState(bool isHealthy, string? statusText = null)
     {
+        _lastApiHealthyAtUtc = isHealthy ? DateTime.UtcNow : null;
         if (ApiHealthIndicator == null || ApiHealthStatusText == null) return;
 
         ApiHealthIndicator.Fill = new SolidColorBrush(
@@ -393,13 +401,40 @@ public partial class MainWindow : Window, IDisposable
         HandleAuthenticationExpired();
     }
 
+    private void ResetSessionState()
+    {
+        _currentUser = null;
+        _loadedViews.Clear();
+        _viewLoadTasks.Clear();
+        foreach (var cts in _searchDebouncers.Values)
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
+        _searchDebouncers.Clear();
+        _cachedBusinessUnits.Clear();
+        _cachedCourses.Clear();
+        _allSalesOrders.Clear();
+        _allCscaClasses.Clear();
+        _allCscaFinanceClasses.Clear();
+        _cachedPayrollPeriods.Clear();
+        _cachedPayrollAdjustments.Clear();
+        _selectedCourseFilterId = null;
+        _selectedCourseFilterTitle = null;
+        ViewAttendanceContainer?.SetRecords(null);
+        ViewCompanyFinanceContainer?.SetOverview(null);
+        ViewSyncContainer?.SetRuns(null);
+        ViewSyncContainer?.SetDeadLetters(null);
+    }
+
     private void HandleAuthenticationExpired()
     {
         if (LoginContainer.Visibility == Visibility.Visible && AppShellContainer.Visibility != Visibility.Visible)
             return;
 
         ClearRememberedSession();
-        _currentUser = null;
+        ResetSessionState();
+        RefreshQuickLoginAccounts();
         AppShellContainer.Visibility = Visibility.Collapsed;
         LoginContainer.Visibility = Visibility.Visible;
         PasswordBox.Password = string.Empty;
@@ -531,7 +566,7 @@ public partial class MainWindow : Window, IDisposable
                    $"• Trạng thái máy chủ: {(isHealthy ? "Đang hoạt động (Trực tuyến)" : "Chưa kết nối / Đang kiểm tra")}\n" +
                    "• Giao thức bảo mật: JWT Bearer Token + AES-256 GCM\n" +
                    "• Phân hệ: EdTech, Fashion, HRM, Finance\n" +
-                   "• Phiên bản: v2.4.0 (Windows x64 Enterprise Edition)";
+                   "• Phiên bản: v2.7.0 (Windows x64 Enterprise Edition)";
         MessageBox.Show(info, "Thông tin hệ thống MOLY", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
@@ -639,6 +674,8 @@ public partial class MainWindow : Window, IDisposable
     public void Dispose()
     {
         ThemeService.Instance.ThemeChanged -= _themeChangedHandler;
+        _apiClient.SessionRefreshed -= ApiClient_SessionRefreshed;
+        _apiClient.AuthenticationExpired -= ApiClient_AuthenticationExpired;
         foreach (var cts in _searchDebouncers.Values)
         {
             cts.Cancel();

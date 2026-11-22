@@ -19,7 +19,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="EmployeesHeaderTitle" Text="Quản lý Nhân sự &amp; Hồ sơ CV" FontSize="13.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
-                    <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                    <Rectangle Width="1" Height="14" Fill="{DynamicResource BorderMediumBrush}" Margin="10,0" VerticalAlignment="Center" />
                     <TextBlock x:Name="EmployeesHeaderSubtitle" Text="Quản lý toàn diện nhân sự công tác, hồ sơ CV, thiếu hồ sơ, đã nghỉ việc &amp; Blacklist" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -62,14 +62,14 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE716;" FontSize="12" Foreground="#4F46E5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="TỔNG NHÂN SỰ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding TotalCount}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2" Background="#EEF2FF" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                <Border Grid.Column="2" Background="{DynamicResource SurfaceAccentBgBrush}" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
                                     <TextBlock Text="Toàn bộ" FontSize="9" FontWeight="SemiBold" Foreground="#4F46E5" />
                                 </Border>
                             </Grid>
@@ -83,14 +83,14 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource SurfaceSuccessBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE821;" FontSize="12" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="ĐANG LÀM VIỆC" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding ActiveCount}" FontSize="14" FontWeight="Bold" Foreground="#059669" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2" Background="#ECFDF5" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                <Border Grid.Column="2" Background="{DynamicResource SurfaceSuccessBgBrush}" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
                                     <TextBlock Text="Chính thức" FontSize="9" FontWeight="SemiBold" Foreground="#059669" />
                                 </Border>
                             </Grid>
@@ -104,14 +104,14 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7E8;" FontSize="12" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="ĐÃ NGHỈ VIỆC" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding ResignedCount}" FontSize="14" FontWeight="Bold" Foreground="#D97706" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2" Background="#FEF3C7" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                <Border Grid.Column="2" Background="{DynamicResource PillOrangeBgBrush}" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
                                     <TextBlock Text="Đã hoàn tất" FontSize="9" FontWeight="SemiBold" Foreground="#B45309" />
                                 </Border>
                             </Grid>
@@ -125,14 +125,14 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
-                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE711;" FontSize="12" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="0" Background="{DynamicResource SurfaceDangerBgBrush}" BorderBrush="{DynamicResource SurfaceDangerBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE711;" FontSize="12" Foreground="{DynamicResource SurfaceDangerTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="BLACKLIST" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                                     <TextBlock Text="{Binding BlacklistedCount}" FontSize="14" FontWeight="Bold" Foreground="#DC2626" Margin="0,1,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2" Background="#FEE2E2" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
+                                <Border Grid.Column="2" Background="{DynamicResource PillRedBgBrush}" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center">
                                     <TextBlock Text="Cấm tái tuyển" FontSize="9" FontWeight="SemiBold" Foreground="#B91C1C" />
                                 </Border>
                             </Grid>
@@ -215,7 +215,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Hồ sơ năng lực &amp; CV nhân sự" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
-                                <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="{DynamicResource BorderMediumBrush}" Margin="10,0" VerticalAlignment="Center" />
                                 <TextBlock Text="Xem xét chuyên môn, kỹ năng, kinh nghiệm và truy cập tệp CV nhân sự" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -264,7 +264,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceDangerBgBrush}" BorderBrush="{DynamicResource SurfaceDangerBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -316,7 +316,7 @@
             <TabItem FontWeight="SemiBold" Padding="12,6">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7E8;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="#64748B" />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7E8;" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
                         <TextBlock Text="Đã nghỉ việc" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                     </StackPanel>
                 </TabItem.Header>
@@ -334,7 +334,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Nhân sự đã nghỉ việc" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
-                                <Rectangle Width="1" Height="14" Fill="#CBD5E1" Margin="10,0" VerticalAlignment="Center" />
+                                <Rectangle Width="1" Height="14" Fill="{DynamicResource BorderMediumBrush}" Margin="10,0" VerticalAlignment="Center" />
                                 <TextBlock Text="Theo dõi hồ sơ nhân sự cũ, ngày nghỉ việc, lý do nghỉ &amp; khôi phục công tác" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -390,7 +390,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceDangerBgBrush}" BorderBrush="#FECDD3" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />

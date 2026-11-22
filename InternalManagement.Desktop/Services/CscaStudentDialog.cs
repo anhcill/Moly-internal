@@ -118,13 +118,13 @@ public static partial class CscaStudentDialog
         {
             Owner = owner,
             Title = customTitle ?? (isEditing ? $"Sửa thông tin học viên — {student?.StudentName}" : (string.IsNullOrWhiteSpace(currentClassCode) ? "Thêm học viên mới" : $"Thêm học viên vào lớp {currentClassCode}")),
-            Width = 680,
-            Height = 740,
-            MinWidth = 620,
-            MinHeight = 650,
-            MaxHeight = 820,
+            Width = 700,
+            Height = Math.Min(720, Math.Max(520, SystemParameters.WorkArea.Height - 36)),
+            MinWidth = 600,
+            MinHeight = 480,
+            MaxHeight = Math.Max(540, SystemParameters.WorkArea.Height - 24),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            ResizeMode = ResizeMode.NoResize,
+            ResizeMode = ResizeMode.CanResizeWithGrip,
             ShowInTaskbar = false
         };
         dialog.SetResourceReference(Window.BackgroundProperty, "LightBgBrush");
@@ -138,8 +138,8 @@ public static partial class CscaStudentDialog
         // ── 1. HEADER & CLASS TUITION SUMMARY ──
         var headerBorder = new Border
         {
-            Background = Brushes.White,
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
+            BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(16, 12, 16, 12),
@@ -155,13 +155,13 @@ public static partial class CscaStudentDialog
             Text = customTitle ?? (isEditing ? $"Sửa thông tin: {student?.StudentName}" : "Thêm học viên mới"),
             FontSize = 17,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42))
+            Foreground = ThemeService.GetBrush("TextDarkBrush", "#0F172A")
         });
         var classSubtitleText = new TextBlock
         {
             Text = string.IsNullOrWhiteSpace(currentClassCode) ? "Chọn lớp học bên dưới để ghi danh" : $"Lớp: {currentClassCode} — {currentClassName}",
             FontSize = 11.5,
-            Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+            Foreground = ThemeService.GetBrush("TextMutedBrush", "#64748B"),
             Margin = new Thickness(0, 2, 0, 0)
         };
         titlePanel.Children.Add(classSubtitleText);
@@ -170,7 +170,7 @@ public static partial class CscaStudentDialog
 
         var tuitionBadge = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(238, 242, 255)),
+            Background = ThemeService.GetBrush("SurfaceAccentBgBrush", "#EEF2FF"),
             BorderBrush = new SolidColorBrush(Color.FromRgb(199, 210, 254)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
@@ -215,8 +215,8 @@ public static partial class CscaStudentDialog
         {
             var classCard = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                Background = ThemeService.GetBrush("CardAltBgBrush", "#F8FAFC"),
+                BorderBrush = ThemeService.GetBrush("BorderMediumBrush", "#CBD5E1"),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(14, 10, 14, 10),
@@ -263,7 +263,7 @@ public static partial class CscaStudentDialog
         var existingCandidates = new List<ExistingStudentCandidate>();
         var autoFillSuccessBanner = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(236, 253, 245)),
+            Background = ThemeService.GetBrush("SurfaceSuccessBgBrush", "#ECFDF5"),
             BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
@@ -328,7 +328,7 @@ public static partial class CscaStudentDialog
         {
             var lookupCard = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(240, 249, 255)),
+                Background = ThemeService.GetBrush("SurfaceInfoBgBrush", "#F0F9FF"),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
@@ -364,7 +364,7 @@ public static partial class CscaStudentDialog
                 Height = 34,
                 Padding = new Thickness(10, 6, 10, 6),
                 FontSize = 12.5,
-                Background = Brushes.White,
+                Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
                 BorderThickness = new Thickness(1),
                 VerticalContentAlignment = VerticalAlignment.Center
@@ -379,10 +379,10 @@ public static partial class CscaStudentDialog
                 Width = 65,
                 Height = 34,
                 Margin = new Thickness(6, 0, 0, 0),
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
+                BorderBrush = ThemeService.GetBrush("BorderMediumBrush", "#CBD5E1"),
                 BorderThickness = new Thickness(1),
-                Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                Foreground = ThemeService.GetBrush("TextMutedBrush", "#64748B"),
                 FontSize = 11,
                 Cursor = Cursors.Hand
             };
@@ -395,7 +395,7 @@ public static partial class CscaStudentDialog
                 MaxHeight = 160,
                 Margin = new Thickness(0, 6, 0, 0),
                 Visibility = Visibility.Collapsed,
-                Background = Brushes.White,
+                Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
                 BorderThickness = new Thickness(1)
             };
@@ -459,8 +459,8 @@ public static partial class CscaStudentDialog
         // ── TUITION & DEBT CALCULATION BOX ──
         var financeCard = new Border
         {
-            Background = Brushes.White,
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
+            BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(14, 12, 14, 12),
@@ -473,7 +473,7 @@ public static partial class CscaStudentDialog
             Text = "THANH TOÁN HỌC PHÍ & TỰ ĐỘNG TÍNH CÔNG NỢ",
             FontSize = 11,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+            Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
             Margin = new Thickness(0, 0, 0, 10)
         };
         financeContent.Children.Add(financeTitle);
@@ -551,7 +551,7 @@ public static partial class CscaStudentDialog
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(14, 10, 14, 10),
             Margin = new Thickness(0, 0, 0, 10),
-            Background = new SolidColorBrush(Color.FromRgb(254, 243, 199)),
+            Background = ThemeService.GetBrush("SurfaceWarningBgBrush", "#FEF3C7"),
             BorderBrush = new SolidColorBrush(Color.FromRgb(253, 230, 138)),
             BorderThickness = new Thickness(1)
         };
@@ -625,13 +625,13 @@ public static partial class CscaStudentDialog
 
             if (debt <= 0)
             {
-                debtBanner.Background = new SolidColorBrush(Color.FromRgb(236, 253, 245));
+                debtBanner.Background = ThemeService.GetBrush("SurfaceSuccessBgBrush", "#ECFDF5");
                 debtBanner.BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208));
                 debtValueText.Foreground = new SolidColorBrush(Color.FromRgb(5, 150, 105));
             }
             else
             {
-                debtBanner.Background = new SolidColorBrush(Color.FromRgb(254, 243, 199));
+                debtBanner.Background = ThemeService.GetBrush("SurfaceWarningBgBrush", "#FEF3C7");
                 debtBanner.BorderBrush = new SolidColorBrush(Color.FromRgb(253, 230, 138));
                 debtValueText.Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9));
             }
@@ -711,10 +711,10 @@ public static partial class CscaStudentDialog
             Height = 36,
             Margin = new Thickness(0, 0, 10, 0),
             Cursor = Cursors.Hand,
-            Background = Brushes.White,
-            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+            Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
+            BorderBrush = ThemeService.GetBrush("BorderMediumBrush", "#CBD5E1"),
             BorderThickness = new Thickness(1),
-            Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+            Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
             FontWeight = FontWeights.Medium
         };
         cancelButton.Click += (_, _) => dialog.DialogResult = false;
@@ -807,8 +807,16 @@ public static partial class CscaStudentDialog
 
         buttonsPanel.Children.Add(cancelButton);
         buttonsPanel.Children.Add(saveButton);
-        Grid.SetRow(buttonsPanel, 2);
-        rootGrid.Children.Add(buttonsPanel);
+        var footerBorder = new Border
+        {
+            BorderThickness = new Thickness(0, 1, 0, 0),
+            Padding = new Thickness(0, 12, 0, 0),
+            Margin = new Thickness(0, 8, 0, 0),
+            Child = buttonsPanel
+        };
+        footerBorder.SetResourceReference(Border.BorderBrushProperty, "BorderLightBrush");
+        Grid.SetRow(footerBorder, 2);
+        rootGrid.Children.Add(footerBorder);
 
         // ── 5. ASYNC BACKGROUND DATA PREFETCH FOR AUTO-FILL ──
         if (!isEditing && apiClient != null)

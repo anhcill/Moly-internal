@@ -162,6 +162,8 @@ public partial class MainWindow
     private System.Windows.Controls.ComboBox SalesOrderStatusFilter => ViewFashionContainer.SalesOrderStatusFilter;
     private System.Windows.Controls.TextBlock SalesOrderSummaryText => ViewFashionContainer.SalesOrderSummaryText;
     private System.Windows.Controls.DataGrid SalesOrdersDataGrid => ViewFashionContainer.SalesOrdersDataGrid;
+    private System.Windows.Controls.StackPanel QuickLoginSection => LoginContainer.QuickLoginSection;
+    private System.Windows.Controls.ItemsControl QuickLoginItemsControl => LoginContainer.QuickLoginItemsControl;
     private System.Windows.Controls.TextBlock UsernameWatermark => LoginContainer.UsernameWatermark;
     private System.Windows.Controls.TextBox UsernameTextBox => LoginContainer.UsernameTextBox;
     private System.Windows.Controls.TextBlock PasswordWatermark => LoginContainer.PasswordWatermark;

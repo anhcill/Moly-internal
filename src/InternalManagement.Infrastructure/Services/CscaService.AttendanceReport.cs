@@ -22,8 +22,7 @@ public sealed partial class CscaService
             .ToListAsync(ct);
 
         var query = _db.CscaLessonAttendances.AsNoTracking()
-            .Where(attendance => attendance.LessonSession.ClassId == classId &&
-                attendance.LessonSession.ExternalSource == LmsIntegrationSourceSystems.CscaCourseLms);
+            .Where(attendance => attendance.LessonSession.ClassId == classId);
         if (fromDate.HasValue)
             query = query.Where(attendance => attendance.LessonSession.LessonDate >= fromDate.Value);
         if (toDate.HasValue)

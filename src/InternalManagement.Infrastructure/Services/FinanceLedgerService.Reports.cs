@@ -38,24 +38,33 @@ public sealed partial class FinanceLedgerService
         if (selectedBusinessUnitId.HasValue)
             query = query.Where(x => x.BusinessUnitId == selectedBusinessUnitId.Value);
 
-        var transactions = await query.ToListAsync(ct);
-        var byDay = transactions
-            .GroupBy(x => x.TransactionDate.Date)
-            .Select(group => new CashFlowDayDto(
-                group.Key,
-                group.Where(x => x.TransactionType == TransactionType.Income).Sum(x => x.Amount),
-                group.Where(x => x.TransactionType == TransactionType.Expense).Sum(x => x.Amount),
-                group.Where(x => x.TransactionType == TransactionType.Income).Sum(x => x.Amount)
-                    - group.Where(x => x.TransactionType == TransactionType.Expense).Sum(x => x.Amount)))
+        var aggregated = await query
+            .GroupBy(x => new { x.TransactionDate.Date, x.TransactionType })
+            .Select(g => new
+            {
+                g.Key.Date,
+                g.Key.TransactionType,
+                Total = g.Sum(x => x.Amount)
+            })
+            .ToListAsync(ct);
+
+        var byDay = aggregated
+            .GroupBy(x => x.Date)
+            .Select(group =>
+            {
+                var income = group.Where(x => x.TransactionType == TransactionType.Income).Sum(x => x.Total);
+                var expense = group.Where(x => x.TransactionType == TransactionType.Expense).Sum(x => x.Total);
+                return new CashFlowDayDto(group.Key, income, expense, income - expense);
+            })
             .OrderBy(x => x.Date)
             .ToList();
 
-        var totalIncome = transactions
+        var totalIncome = aggregated
             .Where(x => x.TransactionType == TransactionType.Income)
-            .Sum(x => x.Amount);
-        var totalExpense = transactions
+            .Sum(x => x.Total);
+        var totalExpense = aggregated
             .Where(x => x.TransactionType == TransactionType.Expense)
-            .Sum(x => x.Amount);
+            .Sum(x => x.Total);
 
         return Result<CashFlowReportDto>.Success(new CashFlowReportDto(
             range.From,
@@ -222,6 +231,20 @@ public sealed partial class FinanceLedgerService
 
         if (selectedBusinessUnitId.HasValue)
             snapshotsQuery = snapshotsQuery.Where(x => x.BusinessUnitId == selectedBusinessUnitId.Value);
+        if (!string.IsNullOrWhiteSpace(channel))
+        {
+            var normalizedChannel = channel.Trim().ToUpperInvariant();
+            snapshotsQuery = snapshotsQuery.Where(x => x.Channel != null && x.Channel.ToUpper() == normalizedChannel);
+        }
+        if (productVariantId.HasValue)
+            snapshotsQuery = snapshotsQuery.Where(x => x.Items.Any(i => i.ProductVariantId == productVariantId.Value));
+        if (productId.HasValue)
+            snapshotsQuery = snapshotsQuery.Where(x => x.Items.Any(i => i.ProductVariant != null && i.ProductVariant.ProductId == productId.Value));
+        if (!string.IsNullOrWhiteSpace(size))
+        {
+            var normalizedSize = size.Trim().ToUpperInvariant();
+            snapshotsQuery = snapshotsQuery.Where(x => x.Items.Any(i => i.ProductVariant != null && i.ProductVariant.Size != null && i.ProductVariant.Size.ToUpper() == normalizedSize));
+        }
 
         var snapshots = await snapshotsQuery.ToListAsync(ct);
         var variantIds = snapshots

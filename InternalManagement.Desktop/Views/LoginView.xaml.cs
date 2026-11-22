@@ -59,4 +59,10 @@ public partial class LoginView : UserControl
 
     private void VisiblePasswordTextBox_GotFocus(object sender, RoutedEventArgs e) =>
         ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(VisiblePasswordTextBox_GotFocus), sender, e));
+
+    private void QuickLoginAccount_Click(object sender, RoutedEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(QuickLoginAccount_Click), sender, e));
+
+    private void RemoveQuickAccount_Click(object sender, RoutedEventArgs e) =>
+        ActionRequested?.Invoke(this, new FeatureViewActionEventArgs(nameof(RemoveQuickAccount_Click), sender, e));
 }

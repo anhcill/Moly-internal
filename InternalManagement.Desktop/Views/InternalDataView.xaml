@@ -8,7 +8,7 @@
         </Grid.RowDefinitions>
 
         <!-- TOOLBAR -->
-        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="18,14" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
@@ -41,7 +41,7 @@
 
         <Grid Grid.Row="1">
             <!-- CUSTOMERS PANEL -->
-            <Border x:Name="InternalCustomersPanel" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border x:Name="InternalCustomersPanel" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <Grid>
                     <DataGrid x:Name="InternalCustomersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46">
                         <DataGrid.Columns>
@@ -59,7 +59,7 @@
             </Border>
 
             <!-- RESOURCES PANEL -->
-            <Border x:Name="InternalResourcesPanel" Visibility="Collapsed" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+            <Border x:Name="InternalResourcesPanel" Visibility="Collapsed" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                 <Grid>
                     <DataGrid x:Name="InternalResourcesDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="46" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                         <DataGrid.Columns>

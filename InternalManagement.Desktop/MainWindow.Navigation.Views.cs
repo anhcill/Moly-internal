@@ -47,6 +47,7 @@ public partial class MainWindow
         }
 
         HideAllViews();
+        MainContentScrollViewer?.ScrollToTop();
         QuickSyncButton.Content = sender == NavLms
             ? "↻ Đồng bộ khóa đã chọn"
             : "↻ Nhập khóa học từ Website";
@@ -93,9 +94,10 @@ public partial class MainWindow
 
             _ = LoadViewOnceAsync("courses_classes", "Đang tải dữ liệu Khóa học & Lớp học...", async () =>
             {
-                await LoadCoursesAsync();
-                await LoadCscaClassesAsync();
-                await LoadCscaOnlineAsync();
+                await Task.WhenAll(
+                    LoadCoursesAsync(),
+                    LoadCscaClassesAsync(),
+                    LoadCscaOnlineAsync());
             }, "Đồng bộ chương trình đào tạo, lớp học & công nợ");
         }
         else if (sender == NavInterview)
@@ -117,8 +119,9 @@ public partial class MainWindow
             SelectEmployeesFunction(sender);
             _ = LoadViewOnceAsync(SegmentViewKey("employees"), "Đang tải danh sách nhân sự...", async () =>
             {
-                await LoadDepartmentsFilterAsync();
-                await LoadEmployeesAsync();
+                await Task.WhenAll(
+                    LoadDepartmentsFilterAsync(),
+                    LoadEmployeesAsync());
             }, $"Tải phòng ban, hợp đồng và hồ sơ CV riêng của {ActiveSegmentName}");
         }
         else if (sender == NavTechAttendance || sender == NavFashionAttendance)

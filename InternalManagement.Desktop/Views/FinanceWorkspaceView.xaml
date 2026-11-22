@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="14,10" Margin="0,0,0,12"
-                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -23,12 +23,12 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Bảng tính tài chính" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
-                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="9" Padding="8,2" Margin="9,0,0,0">
+                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="8,2" Margin="9,0,0,0">
                             <TextBlock Text="Thực tế + Kịch bản" FontSize="10.5" FontWeight="SemiBold" Foreground="#1D4ED8" />
                         </Border>
                     </StackPanel>
                     <TextBlock Text="Số thực tế không bị thay đổi bởi tham số kịch bản. Dự báo chỉ dùng để mô phỏng dòng tiền tương lai." FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
-                    <TextBlock x:Name="ReportWarningsText" Foreground="#9A3412" FontSize="10.5" TextWrapping="Wrap" MaxWidth="1050" Margin="0,5,10,0" />
+                    <TextBlock x:Name="ReportWarningsText" Foreground="{DynamicResource SurfaceWarningTextBrush}" FontSize="10.5" TextWrapping="Wrap" MaxWidth="1050" Margin="0,5,10,0" />
                 </StackPanel>
                 <TextBlock x:Name="FreshnessText" Grid.Column="1" Text="Chưa tải dữ liệu" FontSize="10.5" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
             </Grid>
@@ -36,83 +36,81 @@
 
         <TabControl Grid.Row="1" x:Name="WorkspaceTabs" Background="Transparent" BorderThickness="0">
             <TabItem Header="Tổng quan &amp; Dự báo" FontWeight="SemiBold">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="0,10,0,0" MinWidth="960">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="300" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                <Grid Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="300" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                            <WrapPanel VerticalAlignment="Center">
-                                <TextBlock Text="Tháng bắt đầu" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <DatePicker x:Name="ForecastFromMonthPicker" Width="130" Height="31" VerticalContentAlignment="Center" />
-                                <TextBlock Text="Số tháng" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
-                                <ComboBox x:Name="ForecastHorizonCombo" Width="70" Height="31" VerticalContentAlignment="Center" />
-                                <TextBlock Text="Thu được (%)" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
-                                <TextBox x:Name="CollectionPercentBox" Width="70" Height="31" Text="85" VerticalContentAlignment="Center" />
-                                <TextBlock Text="Hệ số chi phí" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
-                                <TextBox x:Name="CostFactorBox" Width="70" Height="31" Text="1" VerticalContentAlignment="Center" />
-                                <TextBlock Text="Tiền đầu kỳ" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
-                                <TextBox x:Name="OpeningCashBox" Width="120" Height="31" Text="0" VerticalContentAlignment="Center" />
-                                <Button Content="Tải báo cáo" Click="Refresh_Click" Style="{StaticResource ModernPrimaryButton}" Height="31" Padding="12,0" Margin="12,0,5,0" />
-                                <Button Content="Xuất CSV" Click="ExportCsv_Click" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" />
+                    <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                        <WrapPanel VerticalAlignment="Center">
+                            <TextBlock Text="Tháng bắt đầu" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <DatePicker x:Name="ForecastFromMonthPicker" Width="130" Height="31" VerticalContentAlignment="Center" />
+                            <TextBlock Text="Số tháng" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
+                            <ComboBox x:Name="ForecastHorizonCombo" Width="70" Height="31" VerticalContentAlignment="Center" />
+                            <TextBlock Text="Thu được (%)" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
+                            <TextBox x:Name="CollectionPercentBox" Width="70" Height="31" Text="85" VerticalContentAlignment="Center" />
+                            <TextBlock Text="Hệ số chi phí" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
+                            <TextBox x:Name="CostFactorBox" Width="70" Height="31" Text="1" VerticalContentAlignment="Center" />
+                            <TextBlock Text="Tiền đầu kỳ" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,5,0" />
+                            <TextBox x:Name="OpeningCashBox" Width="120" Height="31" Text="0" VerticalContentAlignment="Center" />
+                            <Button Content="Tải báo cáo" Click="Refresh_Click" Style="{StaticResource ModernPrimaryButton}" Height="31" Padding="12,0" Margin="12,0,5,0" />
+                            <Button Content="Xuất CSV" Click="ExportCsv_Click" Style="{StaticResource OutlineButton}" Height="31" Padding="12,0" />
+                        </WrapPanel>
+                    </Border>
+
+                    <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,10">
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <StackPanel><TextBlock Text="SỐ DƯ THEO SỔ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="CurrentCashMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0"/></StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <StackPanel><TextBlock Text="CÔNG NỢ HỌC VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="StudentDebtMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" Margin="0,4,0,0"/></StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <StackPanel><TextBlock Text="PHẢI TRẢ GIÁO VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="TeacherPayableMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#EF4444" Margin="0,4,0,0"/></StackPanel>
+                        </Border>
+                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <StackPanel><TextBlock Text="SỐ DƯ CUỐI KỊCH BẢN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="ForecastClosingMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="12" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <WrapPanel Margin="0,0,0,6">
+                                <TextBlock Text="Dòng tiền theo tháng" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,0,18,0" />
+                                <TextBlock Text="■ Thu" Foreground="#10B981" FontSize="10.5" Margin="0,0,12,0" />
+                                <TextBlock Text="■ Chi" Foreground="#EF4444" FontSize="10.5" Margin="0,0,12,0" />
+                                <TextBlock Text="● Số dư đóng kỳ" Foreground="{DynamicResource PrimaryBrush}" FontSize="10.5" />
+                                <TextBlock Text="  TT: thực tế · DB: dự báo · nét đứt: kỳ có dự báo" Foreground="{DynamicResource TextMutedBrush}" FontSize="10" Margin="10,0,0,0" />
                             </WrapPanel>
-                        </Border>
+                            <Canvas x:Name="FinanceChartCanvas" Grid.Row="1" Background="{DynamicResource CardAltBgBrush}" SizeChanged="FinanceChartCanvas_SizeChanged" />
+                        </Grid>
+                    </Border>
 
-                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,10">
-                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="SỐ DƯ THEO SỔ" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="CurrentCashMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#2563EB" Margin="0,4,0,0"/></StackPanel>
-                            </Border>
-                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="CÔNG NỢ HỌC VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="StudentDebtMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#B45309" Margin="0,4,0,0"/></StackPanel>
-                            </Border>
-                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="PHẢI TRẢ GIÁO VIÊN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="TeacherPayableMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#DC2626" Margin="0,4,0,0"/></StackPanel>
-                            </Border>
-                            <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="12,9" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                                <StackPanel><TextBlock Text="SỐ DƯ CUỐI KỊCH BẢN" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/><TextBlock x:Name="ForecastClosingMetric" Text="—" FontSize="18" FontWeight="Bold" Foreground="#4F46E5" Margin="0,4,0,0"/></StackPanel>
-                            </Border>
-                        </UniformGrid>
-
-                        <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="12" Margin="0,0,0,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                            <Grid>
-                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                                <WrapPanel Margin="0,0,0,6">
-                                    <TextBlock Text="Dòng tiền theo tháng" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,0,18,0" />
-                                    <TextBlock Text="■ Thu" Foreground="#059669" FontSize="10.5" Margin="0,0,12,0" />
-                                    <TextBlock Text="■ Chi" Foreground="#DC2626" FontSize="10.5" Margin="0,0,12,0" />
-                                    <TextBlock Text="● Số dư đóng kỳ" Foreground="#4F46E5" FontSize="10.5" />
-                                    <TextBlock Text="  TT: thực tế · DB: dự báo · nét đứt: kỳ có dự báo" Foreground="#64748B" FontSize="10" Margin="10,0,0,0" />
-                                </WrapPanel>
-                                <Canvas x:Name="FinanceChartCanvas" Grid.Row="1" Background="#FAFCFF" SizeChanged="FinanceChartCanvas_SizeChanged" />
-                            </Grid>
-                        </Border>
-
-                        <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
-                            <DataGrid x:Name="MonthlyRowsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="MonthlyRowsGrid_MouseDoubleClick">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="95" />
-                                    <DataGridTextColumn Header="LOẠI" Binding="{Binding KindLabel}" Width="90" />
-                                    <DataGridTextColumn Header="ĐẦU KỲ" Binding="{Binding OpeningCash, StringFormat='{}{0:N0} đ'}" Width="125" />
-                                    <DataGridTextColumn Header="THU" Binding="{Binding TotalInflow, StringFormat='{}{0:N0} đ'}" Width="125" />
-                                    <DataGridTextColumn Header="CHI" Binding="{Binding TotalOutflow, StringFormat='{}{0:N0} đ'}" Width="125" />
-                                    <DataGridTextColumn Header="THU THỰC TẾ" Binding="{Binding ActualInflow, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="CHI THỰC TẾ" Binding="{Binding ActualOutflow, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="THU DỰ BÁO" Binding="{Binding ForecastInflow, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="CHI DỰ BÁO" Binding="{Binding ForecastOutflow, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="THU HỌC VIÊN" Binding="{Binding StudentCollections, StringFormat='{}{0:N0} đ'}" Width="135" />
-                                    <DataGridTextColumn Header="TRẢ GIÁO VIÊN" Binding="{Binding TeacherPayments, StringFormat='{}{0:N0} đ'}" Width="140" />
-                                    <DataGridTextColumn Header="KẾ HOẠCH THU" Binding="{Binding PlannedIncome, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="KẾ HOẠCH CHI" Binding="{Binding PlannedExpense, StringFormat='{}{0:N0} đ'}" Width="130" />
-                                    <DataGridTextColumn Header="CUỐI KỲ" Binding="{Binding ClosingCash, StringFormat='{}{0:N0} đ'}" Width="135" FontWeight="Bold" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Border>
-                    </Grid>
-                </ScrollViewer>
+                    <Border Grid.Row="3" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                        <DataGrid x:Name="MonthlyRowsGrid" MinHeight="320" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="42" ScrollViewer.HorizontalScrollBarVisibility="Auto" MouseDoubleClick="MonthlyRowsGrid_MouseDoubleClick">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="THÁNG" Binding="{Binding MonthLabel}" Width="95" />
+                                <DataGridTextColumn Header="LOẠI" Binding="{Binding KindLabel}" Width="90" />
+                                <DataGridTextColumn Header="ĐẦU KỲ" Binding="{Binding OpeningCash, StringFormat='{}{0:N0} đ'}" Width="125" />
+                                <DataGridTextColumn Header="THU" Binding="{Binding TotalInflow, StringFormat='{}{0:N0} đ'}" Width="125" />
+                                <DataGridTextColumn Header="CHI" Binding="{Binding TotalOutflow, StringFormat='{}{0:N0} đ'}" Width="125" />
+                                <DataGridTextColumn Header="THU THỰC TẾ" Binding="{Binding ActualInflow, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="CHI THỰC TẾ" Binding="{Binding ActualOutflow, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="THU DỰ BÁO" Binding="{Binding ForecastInflow, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="CHI DỰ BÁO" Binding="{Binding ForecastOutflow, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="THU HỌC VIÊN" Binding="{Binding StudentCollections, StringFormat='{}{0:N0} đ'}" Width="135" />
+                                <DataGridTextColumn Header="TRẢ GIÁO VIÊN" Binding="{Binding TeacherPayments, StringFormat='{}{0:N0} đ'}" Width="140" />
+                                <DataGridTextColumn Header="KẾ HOẠCH THU" Binding="{Binding PlannedIncome, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="KẾ HOẠCH CHI" Binding="{Binding PlannedExpense, StringFormat='{}{0:N0} đ'}" Width="130" />
+                                <DataGridTextColumn Header="CUỐI KỲ" Binding="{Binding ClosingCash, StringFormat='{}{0:N0} đ'}" Width="135" FontWeight="Bold" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Công nợ học viên" FontWeight="SemiBold">

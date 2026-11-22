@@ -136,6 +136,15 @@ public sealed partial class OrderCostingService
 
         var warehouse = await GetOrderWarehouseAsync(returnEntity.SalesOrder, companyId, businessUnitId, ct);
         var warehouseId = warehouse.Id;
+        var restockVariantIds = returnEntity.Items.Where(x => x.Restockable).Select(x => x.ProductVariantId).Distinct().ToList();
+        var balancesByVariant = restockVariantIds.Count == 0
+            ? new Dictionary<Guid, InventoryBalance>()
+            : await _db.InventoryBalances
+                .Where(x => x.CompanyId == companyId
+                    && x.BusinessUnitId == businessUnitId
+                    && x.WarehouseId == warehouseId
+                    && restockVariantIds.Contains(x.ProductVariantId))
+                .ToDictionaryAsync(x => x.ProductVariantId, ct);
 
         var restockedCost = 0m;
         foreach (var returnItem in returnEntity.Items)
@@ -156,9 +165,7 @@ public sealed partial class OrderCostingService
                 continue;
             }
 
-            var balance = await _db.InventoryBalances.FirstOrDefaultAsync(
-                x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.WarehouseId == warehouseId && x.ProductVariantId == returnItem.ProductVariantId, ct);
-            if (balance == null)
+            if (!balancesByVariant.TryGetValue(returnItem.ProductVariantId, out var balance))
             {
                 balance = new InventoryBalance
                 {
@@ -172,6 +179,7 @@ public sealed partial class OrderCostingService
                     LastUpdated = DateTime.UtcNow
                 };
                 _db.InventoryBalances.Add(balance);
+                balancesByVariant[returnItem.ProductVariantId] = balance;
             }
 
             balance.OnHandQuantity += returnItem.Quantity;

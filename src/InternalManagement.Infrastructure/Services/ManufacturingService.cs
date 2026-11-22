@@ -451,6 +451,20 @@ public sealed class ManufacturingService : IManufacturingService
         var allocations = new List<MaterialAllocation>();
         var simulatedMaterialRemaining = new Dictionary<Guid, decimal>();
         var simulatedLotRemaining = new Dictionary<Guid, decimal>();
+        var requestedMaterialIds = request.Materials.Select(x => x.MaterialId).Distinct().ToList();
+        var materialsById = requestedMaterialIds.Count == 0
+            ? new Dictionary<Guid, Material>()
+            : await _db.Materials
+                .Where(x => requestedMaterialIds.Contains(x.Id) && x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.IsActive)
+                .ToDictionaryAsync(x => x.Id, ct);
+        var allCandidateLots = requestedMaterialIds.Count == 0
+            ? new List<MaterialLot>()
+            : await _db.MaterialLots
+                .Where(x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && requestedMaterialIds.Contains(x.MaterialId) && x.QuantityRemaining > 0)
+                .OrderBy(x => x.ReceivedAt)
+                .ToListAsync(ct);
+        var lotsByMaterial = allCandidateLots.ToLookup(x => x.MaterialId);
+
         foreach (var consumption in request.Materials)
         {
             if (consumption.Quantity <= 0)
@@ -458,8 +472,7 @@ public sealed class ManufacturingService : IManufacturingService
                 return Result<ProductionOrderDto>.Failure("Lượng NVL thực tế phải lớn hơn 0.");
             }
 
-            var material = await _db.Materials.FirstOrDefaultAsync(x => x.Id == consumption.MaterialId && x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.IsActive, ct);
-            if (material == null)
+            if (!materialsById.TryGetValue(consumption.MaterialId, out var material))
             {
                 return Result<ProductionOrderDto>.Failure($"Tồn kho NVL không đủ cho {consumption.MaterialId}.");
             }
@@ -471,12 +484,9 @@ public sealed class ManufacturingService : IManufacturingService
                 return Result<ProductionOrderDto>.Failure($"Tồn kho NVL không đủ cho {material.Code}.");
             }
 
-            var lotsQuery = _db.MaterialLots.Where(x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.MaterialId == consumption.MaterialId && x.QuantityRemaining > 0);
-            if (consumption.MaterialLotId.HasValue)
-            {
-                lotsQuery = lotsQuery.Where(x => x.Id == consumption.MaterialLotId.Value);
-            }
-            var lots = await lotsQuery.OrderBy(x => x.ReceivedAt).ToListAsync(ct);
+            var lots = consumption.MaterialLotId.HasValue
+                ? lotsByMaterial[consumption.MaterialId].Where(x => x.Id == consumption.MaterialLotId.Value)
+                : lotsByMaterial[consumption.MaterialId];
             var remaining = consumption.Quantity;
             foreach (var lot in lots)
             {
@@ -632,10 +642,20 @@ public sealed class ManufacturingService : IManufacturingService
             }
         }
 
+        var outputVariantIds = order.Outputs.Select(x => x.ProductVariantId).Distinct().ToList();
+        var outputBalances = outputVariantIds.Count == 0
+            ? new Dictionary<Guid, InventoryBalance>()
+            : await _db.InventoryBalances
+                .Where(x => x.CompanyId == companyId
+                    && x.BusinessUnitId == businessUnitId
+                    && x.WarehouseId == warehouse.Id
+                    && outputVariantIds.Contains(x.ProductVariantId))
+                .ToDictionaryAsync(x => x.ProductVariantId, ct);
+
         foreach (var output in order.Outputs)
         {
             var actual = requestedOutputs[output.ProductVariantId];
-            var variant = await _db.ProductVariants.FirstAsync(x => x.Id == output.ProductVariantId, ct);
+            var variant = outputVariants[output.ProductVariantId];
             if (actual.GoodQuantity > 0)
             {
                 _db.InventoryMovements.Add(new InventoryMovement
@@ -653,10 +673,9 @@ public sealed class ManufacturingService : IManufacturingService
                     MovementDate = DateTime.UtcNow,
                     Notes = $"Nhập thành phẩm tốt từ {order.OrderNumber}"
                 });
-                var balance = await _db.InventoryBalances.FirstOrDefaultAsync(x => x.CompanyId == companyId && x.BusinessUnitId == businessUnitId && x.WarehouseId == warehouse.Id && x.ProductVariantId == variant.Id, ct);
-                if (balance == null)
+                if (!outputBalances.TryGetValue(variant.Id, out var balance))
                 {
-                    _db.InventoryBalances.Add(new InventoryBalance
+                    balance = new InventoryBalance
                     {
                         CompanyId = companyId,
                         BusinessUnitId = businessUnitId,
@@ -666,7 +685,9 @@ public sealed class ManufacturingService : IManufacturingService
                         OnHandQuantity = actual.GoodQuantity,
                         ReservedQuantity = 0,
                         LastUpdated = DateTime.UtcNow
-                    });
+                    };
+                    _db.InventoryBalances.Add(balance);
+                    outputBalances[variant.Id] = balance;
                 }
                 else
                 {

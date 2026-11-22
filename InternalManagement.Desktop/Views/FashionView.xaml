@@ -16,7 +16,7 @@
                      <!-- 4 KPI SUMMARY CARDS (Chỉ hiển thị ở tab Sản phẩm) -->
                      <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,12">
                          <!-- Card 1: Total Products -->
-                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                              <Grid>
                                  <Grid.RowDefinitions>
                                      <RowDefinition Height="Auto" />
@@ -28,12 +28,12 @@
                                      <ColumnDefinition Width="Auto" />
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG SẢN PHẨM" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                 <Border Grid.Row="0" Grid.Column="1" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                 <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                      <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE719;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionProductsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                     <Border Background="#EEF2FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#C7D2FE" BorderThickness="1">
+                                     <Border Background="{DynamicResource SurfaceAccentBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1">
                                          <TextBlock Text="Sản phẩm thời trang MOLY" FontSize="10" FontWeight="SemiBold" Foreground="#4F46E5" />
                                      </Border>
                                  </StackPanel>
@@ -41,7 +41,7 @@
                          </Border>
 
                          <!-- Card 2: Variants -->
-                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                              <Grid>
                                  <Grid.RowDefinitions>
                                      <RowDefinition Height="Auto" />
@@ -53,12 +53,12 @@
                                      <ColumnDefinition Width="Auto" />
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="SỐ BIẾN THỂ" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                 <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                 <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceSuccessBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                      <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8EC;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionVariantsCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                     <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                     <Border Background="{DynamicResource SurfaceSuccessBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1">
                                          <TextBlock Text="Kích cỡ &amp; màu sắc quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                      </Border>
                                  </StackPanel>
@@ -66,7 +66,7 @@
                          </Border>
 
                          <!-- Card 3: Total On Hand -->
-                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                              <Grid>
                                  <Grid.RowDefinitions>
                                      <RowDefinition Height="Auto" />
@@ -78,12 +78,12 @@
                                      <ColumnDefinition Width="Auto" />
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="TỔNG TỒN KHO" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                 <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                 <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                      <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7B8;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionTotalOnHand" Text="0" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                     <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                     <Border Background="{DynamicResource SurfaceInfoBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1">
                                          <TextBlock Text="Số lượng sản phẩm trong kho" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
                                      </Border>
                                  </StackPanel>
@@ -91,7 +91,7 @@
                          </Border>
 
                          <!-- Card 4: Suppliers -->
-                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                         <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                              <Grid>
                                  <Grid.RowDefinitions>
                                      <RowDefinition Height="Auto" />
@@ -103,12 +103,12 @@
                                      <ColumnDefinition Width="Auto" />
                                  </Grid.ColumnDefinitions>
                                  <TextBlock Grid.Row="0" Grid.Column="0" Text="NHÀ CUNG CẤP &amp; PHIẾU NHẬP" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                 <Border Grid.Row="0" Grid.Column="1" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                 <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                      <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE80A;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                  </Border>
                                  <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="MetricFashionSuppliersCount" Text="0" FontSize="20" FontWeight="Bold" Foreground="#D97706" Margin="0,3,0,3" />
                                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                     <Border Background="#FEF3C7" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
+                                     <Border Background="{DynamicResource PillOrangeBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="#FCD34D" BorderThickness="1">
                                          <TextBlock Text="Nhà cung ứng đối tác" FontSize="10" FontWeight="SemiBold" Foreground="#B45309" />
                                      </Border>
                                  </StackPanel>
@@ -329,7 +329,7 @@
                                     <TextBox x:Name="InventorySearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="InventorySearch_TextChanged" />
                                     <TextBlock Text="Tìm SKU hoặc sản phẩm..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" x:Name="InventorySearchPlaceholder" />
                                 </Grid>
-                                <TextBlock x:Name="InventorySelectedContextText" Text="Chọn một SKU để xem nhật ký giao dịch của SKU đó ở tab Nhật ký giao dịch." FontSize="11" Foreground="#64748B" Margin="0,5,0,0" />
+                                <TextBlock x:Name="InventorySelectedContextText" Text="Chọn một SKU để xem nhật ký giao dịch của SKU đó ở tab Nhật ký giao dịch." FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,5,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                                 <Button Click="RefreshInventory_Click" Style="{StaticResource OutlineButton}" Margin="0,0,8,0" Height="36"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Lại" VerticalAlignment="Center"/></StackPanel></Button>
@@ -417,7 +417,7 @@
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Sản xuất &amp; Giá thành thực tế" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
                                 <TextBlock Text="Định mức BOM, theo dõi lệnh sản xuất và tính toán giá vốn chính xác theo từng sản phẩm." FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0" />
-                                <TextBlock x:Name="ManufacturingStatusText" Text="Đang tải dữ liệu..." FontSize="11.5" Foreground="#64748B" Margin="0,5,0,0" />
+                                <TextBlock x:Name="ManufacturingStatusText" Text="Đang tải dữ liệu..." FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,5,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Click="RefreshManufacturing_Click" Style="{StaticResource ModernPrimaryButton}" Height="36" Padding="16,0"><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Tải Lại" VerticalAlignment="Center"/></StackPanel></Button>
@@ -429,7 +429,7 @@
                         <TabItem Header="Tổng quan" FontWeight="SemiBold">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,12,0,0">
                                 <StackPanel>
-                                    <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
+                                    <Border Background="{DynamicResource SurfaceAccentBgBrush}" BorderBrush="{DynamicResource SurfaceAccentBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
                                         <StackPanel>
                                             <TextBlock Text="Quy trình sản xuất khép kín &amp; Quản trị giá thành" FontSize="15" FontWeight="Bold" Foreground="#3730A3" />
                                             <TextBlock Text="1. Nhập và theo dõi nguyên vật liệu  ➔  2. Kiểm tra định mức BOM theo sản phẩm/size  ➔  3. Theo dõi tiến độ lệnh may  ➔  4. Dùng giá vốn thực tế mô phỏng giá bán và tạo đơn hàng." TextWrapping="Wrap" FontSize="12.5" Foreground="#4338CA" Margin="0,6,0,0" />
@@ -437,7 +437,7 @@
                                     </Border>
                                     <UniformGrid Columns="3" Margin="0,0,0,12">
                                         <!-- NVL metric -->
-                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -449,19 +449,19 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="NGUYÊN VẬT LIỆU" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE8D5;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingMaterialsCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#0284C7" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#EFF6FF" CornerRadius="6" Padding="6,1.5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                                    <Border Background="{DynamicResource SurfaceInfoBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1">
                                                         <TextBlock Text="Mã NVL đang quản lý" FontSize="10" FontWeight="SemiBold" Foreground="#0369A1" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
                                         <!-- BOM metric -->
-                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -485,7 +485,7 @@
                                             </Grid>
                                         </Border>
                                         <!-- Orders metric -->
-                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                        <Border Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="14,10" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -497,19 +497,19 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="LỆNH SẢN XUẤT" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                                <Border Grid.Row="0" Grid.Column="1" Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
+                                                <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SurfaceSuccessBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="6" Width="26" Height="26">
                                                     <TextBlock Text="✂️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
                                                 <TextBlock Grid.Row="1" Grid.ColumnSpan="2" x:Name="ManufacturingOrdersCountText" Text="—" FontSize="20" FontWeight="Bold" Foreground="#059669" Margin="0,3,0,3" />
                                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                                    <Border Background="#ECFDF5" CornerRadius="6" Padding="6,1.5" BorderBrush="#A7F3D0" BorderThickness="1">
+                                                    <Border Background="{DynamicResource SurfaceSuccessBgBrush}" CornerRadius="6" Padding="6,1.5" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1">
                                                         <TextBlock Text="Lệnh sản xuất đã lập" FontSize="10" FontWeight="SemiBold" Foreground="#059669" />
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
                                     </UniformGrid>
-                                    <Border Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="20,18" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+                                    <Border Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="20,18" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
                                         <StackPanel>
                                             <TextBlock Text="Thao tác nhanh" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" />
                                             <TextBlock Text="Chọn nghiệp vụ phù hợp để quản trị nguồn cung và giá thành đơn hàng." FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,16" />
@@ -600,9 +600,9 @@
                                                 <ComboBoxItem Content="Hoàn thành" />
                                                 <ComboBoxItem Content="Đã nhập kho" />
                                             </ComboBox>
-                                            <Grid Width="200" Height="36">
-                                                <TextBox x:Name="ProductionOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" TextChanged="ProductionOrderSearch_TextChanged" />
-                                                <TextBlock x:Name="ProductionOrderSearchPlaceholder" Text="Search..." IsHitTestVisible="False" Foreground="#94A3B8" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                            <Grid Width="220" Height="36">
+                                                <TextBox x:Name="ProductionOrderSearchBox" Height="36" Style="{StaticResource ModernTextBox}" Tag="Tìm mã lệnh, sản phẩm..." TextChanged="ProductionOrderSearch_TextChanged" />
+                                                <TextBlock x:Name="ProductionOrderSearchPlaceholder" Visibility="Collapsed" />
                                             </Grid>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -613,48 +613,48 @@
                                 </Border>
 
                                 <!-- KPI STATUS CHIPS ROW -->
-                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
                                     <Border Style="{StaticResource KpiChipOrange}">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Ellipse Width="7" Height="7" Fill="#D97706" Margin="0,0,7,0" VerticalAlignment="Center" />
-                                            <TextBlock Text="Đang may: " FontSize="12" Foreground="#92400E" VerticalAlignment="Center" />
-                                            <TextBlock x:Name="ChipSewingCountText" Text="240 bộ" FontSize="12" FontWeight="Bold" Foreground="#B45309" VerticalAlignment="Center" />
+                                            <TextBlock Text="Đang may: " FontSize="12" Foreground="{DynamicResource SurfaceWarningTextBrush}" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipSewingCountText" Text="—" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SurfaceWarningTextBrush}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource KpiChipGreen}">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Ellipse Width="7" Height="7" Fill="#16A34A" Margin="0,0,7,0" VerticalAlignment="Center" />
-                                            <TextBlock Text="Chờ xuất nguyên liệu: " FontSize="12" Foreground="#166534" VerticalAlignment="Center" />
-                                            <TextBlock x:Name="ChipWaitingMaterialCountText" Text="15 lô" FontSize="12" FontWeight="Bold" Foreground="#15803D" VerticalAlignment="Center" />
+                                            <TextBlock Text="Chờ xuất nguyên liệu: " FontSize="12" Foreground="{DynamicResource SurfaceSuccessTextBrush}" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipWaitingMaterialCountText" Text="—" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SurfaceSuccessTextBrush}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource KpiChipBlue}">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Ellipse Width="7" Height="7" Fill="#2563EB" Margin="0,0,7,0" VerticalAlignment="Center" />
-                                            <TextBlock Text="Đã chốt giá vốn: " FontSize="12" Foreground="#1E40AF" VerticalAlignment="Center" />
-                                            <TextBlock x:Name="ChipCostSettledPercentText" Text="98%" FontSize="12" FontWeight="Bold" Foreground="#1D4ED8" VerticalAlignment="Center" />
+                                            <TextBlock Text="Đã chốt giá vốn: " FontSize="12" Foreground="{DynamicResource SurfaceInfoTextBrush}" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ChipCostSettledPercentText" Text="—" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SurfaceInfoTextBrush}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
-                                </StackPanel>
+                                </WrapPanel>
 
                                 <!-- DATA TABLE -->
                                 <Border Grid.Row="2" Background="{DynamicResource CardBgBrush}" CornerRadius="10" Padding="8" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                                     <DataGrid x:Name="ProductionOrdersDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource TableLinesBrush}" Background="{DynamicResource TableBgBrush}" BorderThickness="0" MinRowHeight="44">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="MÃ LỆNH ⇅" Binding="{Binding OrderNumber}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
+                                            <DataGridTextColumn Header="MÃ LỆNH" Binding="{Binding OrderNumber}" Width="1.2*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBoldTextCellStyle}" />
                                             <DataGridTextColumn Header="MẪU ÁO DÀI" Binding="{Binding ProductName}" Width="2*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="SIZE/MÀU ⇅" Binding="{Binding SizeColorDisplay}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="SIZE / MÀU" Binding="{Binding SizeColorDisplay}" Width="1*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
                                             <DataGridTextColumn Header="SỐ LƯỢNG" Binding="{Binding PlannedQuantity, StringFormat='{}{0:N0} bộ'}" Width="0.9*" FontWeight="SemiBold" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="VẢI CHÍNH (LỤA HÀ ĐÔNG)" Binding="{Binding MainFabricDisplay}" Width="1.4*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
-                                            <DataGridTextColumn Header="GIÁ THÀNH THỰC TẾ (ACTUAL COST)" Binding="{Binding ActualUnitCost, StringFormat='{}{0:N0} đ'}" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
-                                            <DataGridTemplateColumn Header="ĐỘ LỆCH VARIANCE" Width="1.1*">
+                                            <DataGridTextColumn Header="VẢI CHÍNH" Binding="{Binding MainFabricDisplay}" Width="1.4*" ElementStyle="{StaticResource DataGridWrapTextCellStyle}" />
+                                            <DataGridTextColumn Header="GIÁ THÀNH THỰC TẾ" Binding="{Binding ActualUnitCost, StringFormat='{}{0:N0} đ'}" Width="1.5*" FontWeight="Bold" ElementStyle="{StaticResource DataGridWrapBlueTextCellStyle}" />
+                                            <DataGridTemplateColumn Header="ĐỘ LỆCH" Width="1.1*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding VarianceDisplay}" Foreground="{Binding VarianceFg}" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0" />
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
-                                            <DataGridTemplateColumn Header="TRẠNG THÁI ⇅" Width="1.2*">
+                                            <DataGridTemplateColumn Header="TRẠNG THÁI" Width="1.2*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <Border Background="{Binding StatusPillBg}" CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0">
