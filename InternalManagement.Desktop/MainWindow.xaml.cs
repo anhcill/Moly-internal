@@ -128,6 +128,8 @@ public partial class MainWindow : Window, IDisposable
         ViewFinanceWorkspaceContainer.SetApiClient(_apiClient);
         ViewFinanceWorkspaceContainer.RefreshRequested += RefreshFinanceWorkspace_Click;
         ViewFinanceWorkspaceContainer.FinancialDataChanged += FinanceWorkspaceDataChanged;
+        ViewCashAccountsAuditContainer.SetApiClient(_apiClient);
+        ViewCashAccountsAuditContainer.FinancialDataChanged += FinanceWorkspaceDataChanged;
         ViewCostBreakEvenContainer.RefreshRequested += RefreshCostBreakEven_Click;
         ViewCostBreakEvenContainer.FiltersChanged += CostBreakEvenFilters_Changed;
         ViewCoursesContainer.ActionRequested += DispatchFeatureViewAction;
@@ -344,22 +346,27 @@ public partial class MainWindow : Window, IDisposable
             if (!sessionIsUsable)
             {
                 ClearRememberedSession();
+                RefreshQuickLoginAccounts();
                 SetLoginBusy(false);
                 return;
             }
 
-            _currentUser = _apiClient.CurrentSession?.User ?? savedSession.Response.User;
+            var activeSession = _apiClient.CurrentSession ?? savedSession.Response;
+            _currentUser = activeSession.User ?? savedSession.Response.User;
+            _sessionStore.Save(savedSession.Username, activeSession);
             await EnterAppShellAsync();
         }
         catch (HttpRequestException)
         {
             ClearRememberedSession();
+            RefreshQuickLoginAccounts();
             SetLoginBusy(false);
             ShowLoginError("Không thể khôi phục phiên đăng nhập. Vui lòng đăng nhập lại khi mạng nội bộ sẵn sàng.");
         }
         catch (Exception)
         {
             ClearRememberedSession();
+            RefreshQuickLoginAccounts();
             SetLoginBusy(false);
         }
     }
@@ -566,7 +573,7 @@ public partial class MainWindow : Window, IDisposable
                    $"• Trạng thái máy chủ: {(isHealthy ? "Đang hoạt động (Trực tuyến)" : "Chưa kết nối / Đang kiểm tra")}\n" +
                    "• Giao thức bảo mật: JWT Bearer Token + AES-256 GCM\n" +
                    "• Phân hệ: EdTech, Fashion, HRM, Finance\n" +
-                   "• Phiên bản: v2.7.0 (Windows x64 Enterprise Edition)";
+                   "• Phiên bản: v2.7.1 (Windows x64 Enterprise Edition)";
         MessageBox.Show(info, "Thông tin hệ thống MOLY", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 

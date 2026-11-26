@@ -155,7 +155,9 @@ public static class PayrollPayslipDialog
         {
             Height = 94,
             ItemsSource = adjustmentRows,
-            BorderBrush = Brush("#E2E8F0"),
+            Background = ThemeService.GetBrush("InputBgBrush", "#FFFFFF"),
+            Foreground = ThemeService.GetBrush("TextDarkBrush", "#0F172A"),
+            BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
             BorderThickness = new Thickness(1),
             Padding = new Thickness(4)
         };
@@ -179,8 +181,8 @@ public static class PayrollPayslipDialog
         {
             var editBorder = new Border
             {
-                Background = Brush("#F8FAFC"),
-                BorderBrush = Brush("#E2E8F0"),
+                Background = ThemeService.GetBrush("CardAltBgBrush", "#F8FAFC"),
+                BorderBrush = ThemeService.GetBrush("BorderLightBrush", "#E2E8F0"),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(10),
@@ -192,7 +194,7 @@ public static class PayrollPayslipDialog
                 Text = "ĐIỀU CHỈNH THỦ CÔNG — SẼ ĐƯỢC GHI AUDIT VÀ TÍNH LẠI",
                 FontSize = 10,
                 FontWeight = FontWeights.Bold,
-                Foreground = Brush("#475569"),
+                Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
                 Margin = new Thickness(0, 0, 0, 7)
             });
             var inputHeader = new Grid { Margin = new Thickness(0, 0, 0, 3) };

@@ -257,39 +257,84 @@ public partial class CscaClassFinanceDetailWindow : Window
 
         var saveDialog = new SaveFileDialog
         {
-            Title = "Xuất danh sách học viên đóng tiền",
-            Filter = "Tệp CSV UTF-8 (*.csv)|*.csv",
-            FileName = $"TaiChinh_{_detail?.Code ?? "CSCA"}_{DateTime.Today:yyyyMMdd}.csv"
+            Title = "Xuất danh sách học phí lớp học",
+            Filter = "Báo cáo Excel chuẩn (*.xlsx)|*.xlsx|Tệp CSV UTF-8 (*.csv)|*.csv",
+            DefaultExt = ".xlsx",
+            AddExtension = true,
+            OverwritePrompt = true,
+            FileName = $"HocPhi_{_detail?.Code ?? "CSCA"}_{DateTime.Today:yyyyMMdd}.xlsx"
         };
 
         if (saveDialog.ShowDialog(this) != true) return;
 
         try
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("Mã HV,Họ và tên,Điện thoại,Email,Học phí gốc,Giảm giá,Lý do giảm giá,Cần thu,Đã đóng,Còn nợ,Ngày đóng/vào lớp,Trạng thái,Hẹn trả nợ,Ghi chú");
-            foreach (var s in items)
+            var isCsv = string.Equals(Path.GetExtension(saveDialog.FileName), ".csv", StringComparison.OrdinalIgnoreCase);
+            if (isCsv)
             {
+                var sb = new StringBuilder();
+                sb.AppendLine("Mã HV,Họ và tên,Điện thoại,Email,Học phí gốc,Giảm giá,Lý do giảm giá,Cần thu,Đã đóng,Còn nợ,Ngày đóng/vào lớp,Trạng thái,Hẹn trả nợ,Ghi chú");
+                foreach (var s in items)
+                {
+                    sb.AppendLine(string.Join(",",
+                        EscapeCsv(s.StudentCode ?? string.Empty),
+                        EscapeCsv(s.StudentName),
+                        EscapeCsv(s.PhoneNumber ?? string.Empty),
+                        EscapeCsv(s.Email ?? string.Empty),
+                        s.TuitionFee.ToString("F0", CultureInfo.InvariantCulture),
+                        s.DiscountAmount.ToString("F0", CultureInfo.InvariantCulture),
+                        EscapeCsv(s.DiscountNote ?? string.Empty),
+                        s.PayableAmount.ToString("F0", CultureInfo.InvariantCulture),
+                        s.PaidAmount.ToString("F0", CultureInfo.InvariantCulture),
+                        s.DebtAmount.ToString("F0", CultureInfo.InvariantCulture),
+                        EscapeCsv(s.JoinedAtFormatted),
+                        EscapeCsv(s.PaymentStatusLabel),
+                        EscapeCsv(s.DebtDueDate?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? string.Empty),
+                        EscapeCsv(s.Notes ?? string.Empty)
+                    ));
+                }
                 sb.AppendLine(string.Join(",",
-                    EscapeCsv(s.StudentCode ?? string.Empty),
-                    EscapeCsv(s.StudentName),
-                    EscapeCsv(s.PhoneNumber ?? string.Empty),
-                    EscapeCsv(s.Email ?? string.Empty),
-                    s.TuitionFee.ToString("F0", CultureInfo.InvariantCulture),
-                    s.DiscountAmount.ToString("F0", CultureInfo.InvariantCulture),
-                    EscapeCsv(s.DiscountNote ?? string.Empty),
-                    s.PayableAmount.ToString("F0", CultureInfo.InvariantCulture),
-                    s.PaidAmount.ToString("F0", CultureInfo.InvariantCulture),
-                    s.DebtAmount.ToString("F0", CultureInfo.InvariantCulture),
-                    EscapeCsv(s.JoinedAtFormatted),
-                    EscapeCsv(s.PaymentStatusLabel),
-                    EscapeCsv(s.DebtDueDate?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? string.Empty),
-                    EscapeCsv(s.Notes ?? string.Empty)
-                ));
+                    EscapeCsv("TỔNG CỘNG"), EscapeCsv($"{items.Count} học viên"), "\"\"", "\"\"",
+                    items.Sum(s => s.TuitionFee).ToString("F0", CultureInfo.InvariantCulture),
+                    items.Sum(s => s.DiscountAmount).ToString("F0", CultureInfo.InvariantCulture),
+                    "\"\"",
+                    items.Sum(s => s.PayableAmount).ToString("F0", CultureInfo.InvariantCulture),
+                    items.Sum(s => s.PaidAmount).ToString("F0", CultureInfo.InvariantCulture),
+                    items.Sum(s => s.DebtAmount).ToString("F0", CultureInfo.InvariantCulture),
+                    "\"\"", "\"\"", "\"\"", "\"\""));
+                File.WriteAllText(saveDialog.FileName, sb.ToString(), new UTF8Encoding(true));
+            }
+            else
+            {
+                var rows = items.Select(s => new ClassTuitionExportRow(
+                    s.StudentCode ?? string.Empty,
+                    s.StudentName,
+                    s.PhoneNumber ?? string.Empty,
+                    s.Email ?? string.Empty,
+                    s.TuitionFee,
+                    s.DiscountAmount,
+                    s.DiscountNote ?? string.Empty,
+                    s.PayableAmount,
+                    s.PaidAmount,
+                    s.DebtAmount,
+                    s.JoinedAtFormatted,
+                    s.PaymentStatusLabel,
+                    s.DebtDueDate?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? string.Empty,
+                    s.Notes ?? string.Empty)).ToList();
+                var bytes = FinanceExcelExporter.BuildClassTuitionWorkbook(
+                    _detail?.Code ?? "CSCA",
+                    _detail?.Name ?? string.Empty,
+                    _detail?.CourseTitle ?? string.Empty,
+                    rows);
+                File.WriteAllBytes(saveDialog.FileName, bytes);
             }
 
-            File.WriteAllText(saveDialog.FileName, sb.ToString(), new UTF8Encoding(true));
-            MessageBox.Show(this, $"Đã xuất thành công {items.Count} học viên ra file CSV.", "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (MessageBox.Show(this,
+                    $"Đã xuất thành công {items.Count} học viên:\n{saveDialog.FileName}\n\nMở tệp ngay?",
+                    "Xuất thành công", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveDialog.FileName) { UseShellExecute = true });
+            }
         }
         catch (Exception ex)
         {
@@ -300,6 +345,7 @@ public partial class CscaClassFinanceDetailWindow : Window
     private static string EscapeCsv(string value)
     {
         if (string.IsNullOrEmpty(value)) return "\"\"";
+        if (value[0] is '=' or '+' or '@' or '-') value = "'" + value;
         return $"\"{value.Replace("\"", "\"\"")}\"";
     }
 

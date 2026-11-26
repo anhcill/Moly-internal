@@ -19,6 +19,7 @@ internal static class DialogChrome
         Panel footerButtons)
     {
         dialog.SetResourceReference(Window.BackgroundProperty, "CardBgBrush");
+        dialog.SetResourceReference(Window.ForegroundProperty, "TextDarkBrush");
         ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
         var shell = new Grid();

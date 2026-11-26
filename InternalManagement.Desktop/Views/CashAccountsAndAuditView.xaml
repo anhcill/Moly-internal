@@ -1,0 +1,200 @@
+<UserControl x:Class="InternalManagement.Desktop.Views.CashAccountsAndAuditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- TOP CARD: QUỸ & TÀI KHOẢN NGÂN HÀNG -->
+        <Border Grid.Row="0" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="14,12" Margin="0,0,0,12"
+                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
+            <StackPanel>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <WrapPanel VerticalAlignment="Center">
+                        <TextBlock Text="Quỹ &amp; Tài khoản" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
+                        <Border x:Name="TotalBalanceBadge" Background="{DynamicResource SurfaceSuccessBgBrush}"
+                                BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1"
+                                CornerRadius="9" Padding="10,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TotalBalanceText" Text="Tổng số dư: 0 đ" FontSize="11.5" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SurfaceSuccessTextBrush}" />
+                        </Border>
+                    </WrapPanel>
+
+                    <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Button Content="+ Thêm quỹ / TK" Click="AddAccount_Click" Tag="FinanceWrite"
+                                Style="{StaticResource ModernPrimaryButton}" Height="32" Padding="12,0" Margin="0,0,6,0"
+                                ToolTip="Tạo mới quỹ tiền mặt hoặc tài khoản ngân hàng" />
+                        <Button Content="Điều chỉnh số dư" Click="AdjustAccount_Click" Tag="FinanceWrite"
+                                Style="{StaticResource OutlineButton}" Height="32" Padding="12,0" Margin="0,0,6,0"
+                                ToolTip="Cộng thêm hoặc trừ bớt số dư vào quỹ / tài khoản" />
+                        <Button Content="In / PDF" Click="PrintAudit_Click"
+                                Style="{StaticResource OutlineButton}" Height="32" Padding="11,0" Margin="0,0,6,0"
+                                ToolTip="In / Lưu PDF báo cáo số dư quỹ &amp; nhật ký kiểm toán chuẩn A4" />
+                        <Button Content="Xuất Excel" Click="ExportAuditExcel_Click"
+                                Style="{StaticResource OutlineButton}" Height="32" Padding="11,0" Margin="0,0,6,0"
+                                ToolTip="Xuất Excel số dư quỹ &amp; nhật ký kiểm toán (.xlsx)" />
+                        <Button Content="Tải lại" Click="Refresh_Click"
+                                Style="{StaticResource OutlineButton}" Height="32" Padding="11,0" />
+                    </WrapPanel>
+                </Grid>
+
+                <ItemsControl x:Name="CashAccountsList" Margin="0,0,-10,-10">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1" CornerRadius="10" Padding="13,10" Margin="0,0,10,10" MinWidth="220">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Background="{DynamicResource SurfaceInfoBgBrush}"
+                                                BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1"
+                                                CornerRadius="6" Padding="7,1.5" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Code}" FontSize="10.5" FontWeight="Bold"
+                                                       Foreground="{DynamicResource SurfaceInfoTextBrush}" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis" MaxWidth="190" ToolTip="{Binding Name}" />
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding BankSummary}" FontSize="11"
+                                               Foreground="{DynamicResource TextMutedBrush}" Margin="0,5,0,0"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="250" ToolTip="{Binding BankSummary}" />
+
+                                    <TextBlock Text="{Binding CurrentBalance, StringFormat='{}{0:N0} đ'}"
+                                               FontSize="17" FontWeight="Bold" Margin="0,6,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#10B981" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsNegative}" Value="True">
+                                                        <Setter Property="Foreground" Value="#EF4444" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock x:Name="EmptyAccountsText"
+                           Text="Chưa tạo tài khoản quỹ nào — bấm &quot;+ Thêm quỹ / TK&quot; để bắt đầu."
+                           FontSize="12" Foreground="{DynamicResource TextSubtleBrush}" Margin="2,4,0,2" Visibility="Collapsed" />
+            </StackPanel>
+        </Border>
+
+        <!-- BOTTOM CARD: NHẬT KÝ KIỂM TOÁN TÀI CHÍNH -->
+        <Border Grid.Row="1" Background="{DynamicResource CardBgBrush}" CornerRadius="12" Padding="14,12"
+                BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" Effect="{DynamicResource CardShadow}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="0,0,0,10" LastChildFill="False">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Nhật ký kiểm toán" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
+                        <TextBlock x:Name="AuditCountText" Text="" FontSize="11"
+                                   Foreground="{DynamicResource TextSubtleBrush}" VerticalAlignment="Center" Margin="10,1,0,0" />
+                    </StackPanel>
+
+                    <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <Grid Width="220" Height="32" Margin="0,0,8,0">
+                            <TextBox x:Name="AuditSearchBox" Style="{StaticResource ModernTextBox}" Height="32"
+                                     Padding="28,0,8,0" FontSize="12" VerticalContentAlignment="Center"
+                                     TextChanged="AuditSearchBox_TextChanged" KeyDown="AuditSearchBox_KeyDown" />
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;"
+                                       Foreground="{DynamicResource TextSubtleBrush}" FontSize="11"
+                                       Margin="9,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                            <TextBlock x:Name="AuditSearchPlaceholder" Text="Tìm người thao tác, nội dung..."
+                                       Foreground="{DynamicResource TextSubtleBrush}" FontSize="11.5"
+                                       Margin="28,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                        </Grid>
+
+                        <TextBlock Text="Từ ngày" FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <DatePicker x:Name="AuditFromDatePicker" Width="122" Height="32" Margin="0,0,8,0"
+                                    VerticalContentAlignment="Center" />
+
+                        <TextBlock Text="Đến ngày" FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <DatePicker x:Name="AuditToDatePicker" Width="122" Height="32" Margin="0,0,8,0"
+                                    VerticalContentAlignment="Center" />
+
+                        <Button Content="Lọc" Click="FilterAudit_Click" Style="{StaticResource ModernPrimaryButton}"
+                                Height="32" Padding="13,0" />
+                    </WrapPanel>
+                </DockPanel>
+
+                <Grid Grid.Row="1">
+                    <DataGrid x:Name="AuditTrailGrid" MinHeight="300" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" SelectionMode="Single" HeadersVisibility="Column"
+                              GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="40"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              MouseDoubleClick="AuditTrailGrid_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="THỜI GIAN"
+                                                Binding="{Binding LocalOccurredAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+                                                Width="138" ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                            <DataGridTextColumn Header="NGƯỜI THAO TÁC"
+                                                Binding="{Binding Actor}" Width="145" FontWeight="Bold"
+                                                ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                            <DataGridTextColumn Header="NGHIỆP VỤ"
+                                                Binding="{Binding ActionLabel}" Width="140"
+                                                ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                            <DataGridTemplateColumn Header="SỐ TIỀN" Width="135">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SignedAmountDisplay}" FontWeight="Bold"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#10B981" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsInflow}" Value="True">
+                                                            <Setter Property="Foreground" Value="#10B981" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsInflow}" Value="False">
+                                                            <Setter Property="Foreground" Value="#EF4444" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="NỘI DUNG"
+                                                Binding="{Binding Description}" Width="1.8*"
+                                                ElementStyle="{StaticResource DataGridTextCellStyle}" />
+                            <DataGridTextColumn Header="THAM CHIẾU"
+                                                Binding="{Binding ReferenceLabel}" Width="1.1*"
+                                                ElementStyle="{StaticResource DataGridMutedTextCellStyle}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock x:Name="AuditEmptyText" Text="Chưa có bản ghi kiểm toán nào phù hợp bộ lọc."
+                               FontSize="12.5" Foreground="{DynamicResource TextSubtleBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

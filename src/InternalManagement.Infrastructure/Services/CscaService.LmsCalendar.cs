@@ -6,6 +6,7 @@ using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Integration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace InternalManagement.Infrastructure.Services;
 
@@ -101,6 +102,54 @@ public sealed partial class CscaService
         LmsTeacherRosterSync.QueueAsync(
             _integrationDb, _currentUser, cls, changedEmployee, revokedAssignments, ct);
 
+    /// <summary>
+    /// Automatically expands Class.StartDate / Class.EndDate when a session is moved earlier
+    /// (đẩy buổi lên ngày trước) or later (dời lùi) outside the original term, and queues
+    /// class.upserted to LMS so the class term stays consistent with all sessions.
+    /// </summary>
+    private async Task ExpandClassDateRangeIfNeededAsync(CscaClass cls, DateOnly sessionDate, CancellationToken ct)
+    {
+        var sessionDateTime = sessionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var changed = false;
+        if (cls.StartDate.HasValue && sessionDate < DateOnly.FromDateTime(cls.StartDate.Value))
+        {
+            cls.StartDate = sessionDateTime;
+            changed = true;
+        }
+        if (cls.EndDate.HasValue && sessionDate > DateOnly.FromDateTime(cls.EndDate.Value))
+        {
+            cls.EndDate = sessionDateTime;
+            changed = true;
+        }
+        if (changed)
+        {
+            cls.UpdatedAt = DateTime.UtcNow;
+            cls.UpdatedBy = _currentUser.Username ?? "System";
+            await QueueClassForWebAsync(cls, ct);
+        }
+    }
+
     private Task<string?> QueueClassForWebAsync(CscaClass cls, CancellationToken ct) =>
         LmsTeacherRosterSync.QueueClassAsync(_integrationDb, _currentUser, cls, ct);
+
+    /// <summary>
+    /// Best-effort immediate dispatch of newly queued LMS calendar/session outbox events
+    /// so schedule/link/cancel/makeup changes reach CSCA Course LMS immediately on the first save
+    /// without waiting for the background polling worker.
+    /// </summary>
+    private async Task TryDispatchLmsCalendarOutboxAsync(CancellationToken ct)
+    {
+        if (_lmsOutboxDispatcher is null) return;
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(8));
+            await _lmsOutboxDispatcher.DispatchPendingAsync(batchSize: 10, timeoutCts.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex,
+                "Immediate LMS calendar outbox dispatch did not finish synchronously; the outbox item remains queued for retry.");
+        }
+    }
 }

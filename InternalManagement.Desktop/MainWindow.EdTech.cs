@@ -302,12 +302,12 @@ public partial class MainWindow
             {
                 item.SourceSystem,
                 item.EntityType,
-                item.StartedAt.ToString("dd/MM/yyyy HH:mm:ss"),
-                item.CompletedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-                item.RecordsRead.ToString(),
-                item.RecordsWritten.ToString(),
-                item.RecordsSkipped.ToString(),
-                item.RecordsFailed.ToString(),
+                ToVnExportTime(item.StartedAt).ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture),
+                item.CompletedAt.HasValue ? ToVnExportTime(item.CompletedAt.Value).ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) : string.Empty,
+                item.RecordsRead.ToString(CultureInfo.InvariantCulture),
+                item.RecordsWritten.ToString(CultureInfo.InvariantCulture),
+                item.RecordsSkipped.ToString(CultureInfo.InvariantCulture),
+                item.RecordsFailed.ToString(CultureInfo.InvariantCulture),
                 item.StatusLabel,
                 item.ErrorMessage ?? string.Empty
             }));
@@ -326,10 +326,10 @@ public partial class MainWindow
                 item.ProductName ?? string.Empty,
                 item.Color ?? string.Empty,
                 item.Size ?? string.Empty,
-                item.OnHandQuantity.ToString(),
-                item.ReservedQuantity.ToString(),
-                item.AvailableQuantity.ToString(),
-                item.LastUpdated.ToString("dd/MM/yyyy HH:mm:ss")
+                item.OnHandQuantity.ToString(CultureInfo.InvariantCulture),
+                item.ReservedQuantity.ToString(CultureInfo.InvariantCulture),
+                item.AvailableQuantity.ToString(CultureInfo.InvariantCulture),
+                ToVnExportTime(item.LastUpdated).ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)
             }));
     }
 
@@ -365,9 +365,14 @@ public partial class MainWindow
         }
     }
 
+    private static DateTime ToVnExportTime(DateTime value)
+        => value.Kind == DateTimeKind.Local ? value : DateTime.SpecifyKind(value, DateTimeKind.Utc).AddHours(7);
+
     private static string CsvEscape(string? value)
     {
         value ??= string.Empty;
+        if (value.Length > 0 && (value[0] is '=' or '+' or '@' || (value[0] == '-' && !decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out _))))
+            value = "'" + value;
         return value.Contains(',') || value.Contains('"') || value.Contains('\r') || value.Contains('\n')
             ? $"\"{value.Replace("\"", "\"\"")}\""
             : value;
@@ -548,8 +553,63 @@ public partial class MainWindow
         }
         else
         {
+            EnsureNonEmptyCscaModeForCurrentScope();
             ApplyCscaClassFilter();
             ApplyCscaFinanceFilter();
+        }
+    }
+
+    private void EnsureNonEmptyCscaModeForCurrentScope()
+    {
+        var scoped = _allCscaClasses.AsEnumerable();
+        if (_selectedCourseFilterId.HasValue)
+        {
+            var course = _cachedCourses.FirstOrDefault(c => c.Id == _selectedCourseFilterId.Value);
+            var title = course?.Title ?? _selectedCourseFilterTitle;
+            if (!string.IsNullOrEmpty(title))
+            {
+                scoped = scoped.Where(c => c.CourseId == _selectedCourseFilterId.Value ||
+                    string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        var list = scoped.ToList();
+        if (list.Count == 0) return;
+
+        var currentMode = CscaClassTypeFilterComboBox?.SelectedIndex ?? 1;
+        var currentHasRows = currentMode switch
+        {
+            1 => list.Any(IsLiveCscaClass),
+            2 => list.Any(IsRecordCscaClass),
+            3 => list.Any(IsTrialCscaClass),
+            _ => true
+        };
+        if (currentHasRows) return;
+
+        if (list.Any(IsLiveCscaClass)) SelectCscaClassMode(1);
+        else if (list.Any(IsTrialCscaClass)) SelectCscaClassMode(3);
+        else if (list.Any(IsRecordCscaClass)) SelectCscaClassMode(2);
+        else SelectCscaClassMode(0);
+    }
+
+    private void SelectCscaClassMode(int modeIndex)
+    {
+        _isCscaFilterSyncing = true;
+        try
+        {
+            if (CscaClassTypeFilterComboBox != null)
+            {
+                CscaClassTypeFilterComboBox.SelectedIndex = modeIndex;
+            }
+
+            if (CscaTabLiveButton != null) CscaTabLiveButton.IsChecked = modeIndex == 1;
+            if (CscaTabRecordButton != null) CscaTabRecordButton.IsChecked = modeIndex == 2;
+            if (CscaTabTrialButton != null) CscaTabTrialButton.IsChecked = modeIndex == 3;
+            if (CscaTabAllButton != null) CscaTabAllButton.IsChecked = modeIndex == 0;
+        }
+        finally
+        {
+            _isCscaFilterSyncing = false;
         }
     }
 
@@ -581,7 +641,30 @@ public partial class MainWindow
 
     private void CscaClassTypeFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!_isUiReady) return;
+        if (!_isUiReady || _isCscaFilterSyncing) return;
+        SelectCscaClassMode(CscaClassTypeFilterComboBox.SelectedIndex);
+        ApplyCscaClassFilter();
+    }
+
+    private void CscaClassModeTab_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!_isUiReady || _isCscaFilterSyncing) return;
+        var modeIndex = sender == CscaTabLiveButton ? 1
+            : sender == CscaTabRecordButton ? 2
+            : sender == CscaTabTrialButton ? 3
+            : 0;
+        _isCscaFilterSyncing = true;
+        try
+        {
+            if (CscaClassTypeFilterComboBox != null && CscaClassTypeFilterComboBox.SelectedIndex != modeIndex)
+            {
+                CscaClassTypeFilterComboBox.SelectedIndex = modeIndex;
+            }
+        }
+        finally
+        {
+            _isCscaFilterSyncing = false;
+        }
         ApplyCscaClassFilter();
     }
 
@@ -602,6 +685,10 @@ public partial class MainWindow
         finally
         {
             _isCscaFilterSyncing = false;
+        }
+        if (_selectedCourseFilterId.HasValue)
+        {
+            EnsureNonEmptyCscaModeForCurrentScope();
         }
         ApplyCscaClassFilter();
         ApplyCscaFinanceFilter();

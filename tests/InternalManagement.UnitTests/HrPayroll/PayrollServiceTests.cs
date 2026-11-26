@@ -316,6 +316,10 @@ public class PayrollServiceTests
         xml.Should().Contain("BẢNG LƯƠNG");
         xml.Should().Contain("EMP-001");
         xml.Should().Contain("TỔNG THỰC LĨNH");
+
+        using var doc = DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Open(new MemoryStream(result.Value.Content), false);
+        var schemaErrors = new DocumentFormat.OpenXml.Validation.OpenXmlValidator().Validate(doc).ToList();
+        schemaErrors.Should().BeEmpty();
     }
 
     [Fact]

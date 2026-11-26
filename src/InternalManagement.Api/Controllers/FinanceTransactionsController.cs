@@ -180,6 +180,21 @@ public sealed class FinanceTransactionsController : BaseApiController
             : BadRequest(ApiResponse<FinanceReferenceDto>.Fail(result.Errors.FirstOrDefault() ?? "Không thể tra cứu tham chiếu."));
     }
 
+    [HttpGet("audit-trail")]
+    [HasPermission(Permissions.FinanceTransactionsView)]
+    public async Task<IActionResult> GetAuditTrail(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string? search,
+        [FromQuery] int take = 200,
+        CancellationToken ct = default)
+    {
+        var result = await _financeService.GetAuditTrailAsync(from, to, search, take, ct);
+        return result.Succeeded
+            ? Ok(ApiResponse<IReadOnlyList<FinanceAuditEntryDto>>.Ok(result.Value!, "Lấy lịch sử thao tác tài chính thành công."))
+            : BadRequest(ApiResponse<IReadOnlyList<FinanceAuditEntryDto>>.Fail(result.Errors.FirstOrDefault() ?? "Không thể lấy lịch sử thao tác tài chính."));
+    }
+
     private static bool TryParseType(string? value, out TransactionType? type)
     {
         if (string.IsNullOrWhiteSpace(value))

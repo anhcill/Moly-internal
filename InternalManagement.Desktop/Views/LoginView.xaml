@@ -101,47 +101,11 @@
                                     <DropShadowEffect BlurRadius="22" ShadowDepth="0" Color="#38BDF8" Opacity="0.55" />
                                 </Border.Effect>
                                 <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Viewbox Width="34" Height="34" Stretch="Uniform">
-                                        <Canvas Width="36" Height="36">
-                                            <!-- Segment 1: Left Vertical Upward Stroke (Cyan to Sky Blue) -->
-                                            <Path Data="M 6,29 L 6,12 C 6,8 9.5,7 12,9 L 18,17 L 14,21 L 10,15 L 10,29 Z">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                                                        <GradientStop Color="#0284C7" Offset="0" />
-                                                        <GradientStop Color="#00F0FF" Offset="1" />
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                            <!-- Segment 2: Left Diagonal Fold / Shadow (Sky Blue to Dark Indigo) -->
-                                            <Path Data="M 12,9 L 18.5,19.5 L 15.5,23.5 L 9.5,13.5 Z">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                        <GradientStop Color="#2563EB" Offset="0" />
-                                                        <GradientStop Color="#1E1B4B" Offset="1" />
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                            <!-- Segment 3: Right Diagonal Fold / Glow (Indigo to Purple) -->
-                                            <Path Data="M 17.5,23.5 L 15,20 L 23.5,9 L 26,12.5 Z">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                                                        <GradientStop Color="#4338CA" Offset="0" />
-                                                        <GradientStop Color="#8B5CF6" Offset="1" />
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                            <!-- Segment 4: Right Vertical Downward Stroke (Purple to Hot Pink) -->
-                                            <Path Data="M 24,9 C 26.5,7 30,8 30,12 L 30,29 L 26,29 L 26,15 L 22,21 L 18,17 Z">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                        <GradientStop Color="#8B5CF6" Offset="0" />
-                                                        <GradientStop Color="#EC4899" Offset="0.65" />
-                                                        <GradientStop Color="#F43F5E" Offset="1" />
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                        </Canvas>
-                                    </Viewbox>
+                                    <Image Source="/Assets/app-icon.ico"
+                                           Width="38" Height="38"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                             <TextBlock Text="MOLY" FontSize="32" FontWeight="Bold" Foreground="White" Margin="16,0,0,0" VerticalAlignment="Center" />

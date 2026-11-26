@@ -133,18 +133,20 @@ public partial class MainWindow
         }
 
         var nextCode = await _apiClient.GetNextCscaClassCodeAsync() ?? string.Empty;
+        var defaultBillingType = CscaTabTrialButton?.IsChecked == true ? "trial" : "paid";
+        var defaultLearningMode = CscaTabRecordButton?.IsChecked == true ? "RECORDING_MIRROR" : "LIVE";
 
         if (!PromptDialog.TryShow(this, "Tạo lớp học mới", new[]
         {
             new PromptField("courseId", "Khóa học", InitialValue: defaultCourseId, Options: courses.Items
                 .Select(course => new PromptOption(course.Id.ToString(), course.Title))
                 .ToArray()),
-            new PromptField("billingType", "Hình thức học phí", InitialValue: "paid", Options: new[]
+            new PromptField("billingType", "Hình thức học phí", InitialValue: defaultBillingType, Options: new[]
             {
                 new PromptOption("paid", "Lớp chính thức (có học phí)"),
                 new PromptOption("trial", "Lớp học thử (miễn phí 0 đ)")
             }),
-            new PromptField("learningMode", "Hình thức học", InitialValue: "LIVE", Options: new[]
+            new PromptField("learningMode", "Hình thức học", InitialValue: defaultLearningMode, Options: new[]
             {
                 new PromptOption("LIVE", "Live — học trực tiếp theo lịch"),
                 new PromptOption("RECORDING_MIRROR", "Record kế thừa — xem nội dung lớp Live"),
@@ -233,6 +235,8 @@ public partial class MainWindow
             await _apiClient.CreateCscaClassAsync(code, name, values["batch"], string.Empty, tuitionFee, courseId,
                 isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId,
                 startDate: parsedStartDate, endDate: parsedEndDate);
+            var targetTabMode = (isTrial || tuitionFee == 0) ? 3 : classType == "RECORDING" ? 2 : 1;
+            SelectCscaClassMode(targetTabMode);
             await LoadCscaClassesAsync();
             await LoadCoursesAsync();
             var nextStep = classType == "RECORDING"
@@ -341,6 +345,11 @@ public partial class MainWindow
         {
             await _apiClient.UpdateCscaClassAsync(cls.Id, values["name"], values["batch"], cls.Schedule, tuitionFee, editStartDate, editEndDate, values["status"],
                 isTrial: isTrial, classType: classType, recordingContentMode: recordingContentMode, sourceClassId: sourceClassId);
+            var targetTabMode = (isTrial || tuitionFee == 0) ? 3 : classType == "RECORDING" ? 2 : 1;
+            if (CscaClassTypeFilterComboBox?.SelectedIndex != 0)
+            {
+                SelectCscaClassMode(targetTabMode);
+            }
             await LoadCscaClassesAsync();
             MessageBox.Show($"Cập nhật thông tin lớp {cls.Code} thành công!", "Thành Công", MessageBoxButton.OK, MessageBoxImage.Information);
         });

@@ -25,6 +25,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         RegisterGlobalExceptionHandlers();
+        RegisterWpfInputFixes();
         Services.ThemeService.Instance.Initialize();
 
         // Do not block the first window while the release feed is contacted.
@@ -32,6 +33,24 @@ public partial class App : Application
     }
 
     
+    private static void RegisterWpfInputFixes()
+    {
+        // Fix classic WPF DatePicker/Calendar bug where CalendarItem retains mouse capture after selecting a date,
+        // forcing users to click Save or other buttons twice.
+        EventManager.RegisterClassHandler(
+            typeof(System.Windows.Controls.Calendar),
+            UIElement.PreviewMouseUpEvent,
+            new System.Windows.Input.MouseButtonEventHandler((_, _) =>
+            {
+                if (System.Windows.Input.Mouse.Captured is System.Windows.Controls.Primitives.CalendarItem
+                    or System.Windows.Controls.Calendar)
+                {
+                    System.Windows.Input.Mouse.Capture(null);
+                }
+            }),
+            handledEventsToo: true);
+    }
+
     private void RegisterGlobalExceptionHandlers()
     {
         DispatcherUnhandledException += (_, args) =>

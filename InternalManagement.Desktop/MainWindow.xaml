@@ -15,6 +15,7 @@
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         FontFamily="{StaticResource MainFont}"
+        Foreground="{DynamicResource TextDarkBrush}"
         Background="{DynamicResource LightBgBrush}">
 
     <Grid>
@@ -33,7 +34,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ── LEFT SIDEBAR ── -->
-            <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="13,16,12,14" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+            <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource SidebarGradient}" TextElement.Foreground="#CBD5E1" Padding="13,16,12,14" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -307,16 +308,19 @@
                             <!-- ── TAB: FASHION & INVENTORY VIEW (NGÀY 14) ── -->
                             <views:FashionView x:Name="ViewFashionContainer" Visibility="Collapsed" />
 
-                            <!-- MỘT KHÔNG GIAN TÀI CHÍNH, CHIA THÀNH CÁC TAB CON -->
+                            <!-- MỘT KHÔNG GIAN TÀI CHÍNH, CHIA THÀNH 4 TAB RÕ RÀNG -->
                             <Grid x:Name="ViewFinanceHubContainer" Visibility="Collapsed">
                                 <TabControl x:Name="FinanceHubTabs" Background="Transparent" BorderThickness="0">
-                                    <TabItem Header="Tổng quan dòng tiền" FontWeight="SemiBold">
-                                        <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" />
-                                    </TabItem>
-                                    <TabItem Header="Vận hành &amp; công nợ" FontWeight="SemiBold">
+                                    <TabItem Header="Vận hành, Lãi lỗ &amp; Biểu đồ" FontWeight="SemiBold">
                                         <views:FinanceWorkspaceView x:Name="ViewFinanceWorkspaceContainer" />
                                     </TabItem>
-                                    <TabItem Header="Chi phí &amp; hòa vốn" FontWeight="SemiBold">
+                                    <TabItem Header="Quỹ &amp; Kiểm toán" FontWeight="SemiBold">
+                                        <views:CashAccountsAndAuditView x:Name="ViewCashAccountsAuditContainer" />
+                                    </TabItem>
+                                    <TabItem Header="Tổng hợp theo mảng" FontWeight="SemiBold">
+                                        <views:CompanyFinanceView x:Name="ViewCompanyFinanceContainer" />
+                                    </TabItem>
+                                    <TabItem Header="Hòa vốn lớp học" FontWeight="SemiBold">
                                         <views:CostBreakEvenView x:Name="ViewCostBreakEvenContainer" />
                                     </TabItem>
                                 </TabControl>

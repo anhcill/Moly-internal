@@ -10,6 +10,11 @@ public partial class MainWindow
         SetViewStatus("Đã tải bảng tài chính vận hành");
     }
 
+    private async Task LoadCashAccountsAndAuditAsync()
+    {
+        await ViewCashAccountsAuditContainer.LoadAsync(_apiClient);
+    }
+
     private void RefreshFinanceWorkspace_Click(object sender, RoutedEventArgs e)
         => _ = RunWithBusyAsync("Đang đối soát toàn bộ dữ liệu tài chính...", LoadFinanceHubAsync);
 
@@ -17,6 +22,7 @@ public partial class MainWindow
     {
         await LoadCompanyFinanceAsync();
         await LoadFinanceWorkspaceAsync();
+        await LoadCashAccountsAndAuditAsync();
         await LoadCostBreakEvenAsync();
     }
 
@@ -24,6 +30,10 @@ public partial class MainWindow
         => _ = RunWithBusyAsync("Đang đồng nhất các tab tài chính...", async () =>
         {
             await LoadCompanyFinanceAsync();
+            if (!ReferenceEquals(sender, ViewFinanceWorkspaceContainer))
+                await LoadFinanceWorkspaceAsync();
+            if (!ReferenceEquals(sender, ViewCashAccountsAuditContainer))
+                await LoadCashAccountsAndAuditAsync();
             await LoadCostBreakEvenAsync();
         });
 }

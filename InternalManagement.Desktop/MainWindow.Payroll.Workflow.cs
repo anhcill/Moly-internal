@@ -92,6 +92,12 @@ public partial class MainWindow
 
             File.WriteAllBytes(dialog.FileName, file.Content);
             ShowToast($"Đã xuất bảng lương ra {Path.GetFileName(dialog.FileName)}.");
+            if (MessageBox.Show(this,
+                    $"Đã xuất bảng lương Excel thành công:\n{dialog.FileName}\n\nMở tệp ngay?",
+                    "Xuất bảng lương thành công", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo(dialog.FileName) { UseShellExecute = true });
+            }
         }
         catch (Exception ex)
         {

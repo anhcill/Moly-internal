@@ -11,6 +11,7 @@
         MinHeight="540"
         WindowStartupLocation="Manual"
         Background="{DynamicResource LightBgBrush}"
+        Foreground="{DynamicResource TextDarkBrush}"
         FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>

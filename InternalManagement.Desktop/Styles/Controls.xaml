@@ -2,10 +2,10 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:behaviors="clr-namespace:InternalManagement.Desktop.Behaviors">
 
-    <!-- Global implicit TextBlock: prevents 152+ unstyled TextBlocks from turning black on dark surfaces -->
+    <!-- Global implicit TextBlock: set FontFamily only so TextElement.Foreground
+         inherits properly from Window, Sidebar, Primary Buttons, and Status Pills -->
     <Style TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
     </Style>
 
     <!-- Global implicit TextBox: themes unstyled TextBoxes across views and dialogs -->

@@ -79,6 +79,7 @@ internal static class LmsCalendarEventFactory
         ChangeReason = changeReason ?? session.CancelReason,
         session.SessionKind,
         ReplacementForSessionSourceId = session.ReplacementForSessionId?.ToString("N"),
+        ReplacementForLmsSessionId = session.ReplacementForSession?.ExternalSessionId,
         session.IsPayable,
         CurriculumAction = curriculumAction,
         ExtendCourse = extendCourse,

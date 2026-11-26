@@ -66,4 +66,11 @@ public interface IFinanceLedgerService
         string referenceType,
         Guid referenceId,
         CancellationToken ct);
+
+    Task<Result<IReadOnlyList<FinanceAuditEntryDto>>> GetAuditTrailAsync(
+        DateTime? from,
+        DateTime? to,
+        string? search,
+        int take = 200,
+        CancellationToken ct = default);
 }

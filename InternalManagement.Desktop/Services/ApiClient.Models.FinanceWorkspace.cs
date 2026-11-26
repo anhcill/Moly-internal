@@ -20,6 +20,16 @@ public sealed partial class ApiClient
         public DateTime AsOf { get; init; }
         public IReadOnlyList<string> Warnings { get; init; } = [];
         public bool CurrentCashIsReconciled { get; init; }
+
+        public decimal PeriodTotalInflow => Months.Sum(x => x.TotalInflow);
+        public decimal PeriodTotalOutflow => Months.Sum(x => x.TotalOutflow);
+        public decimal PeriodNetProfit => PeriodTotalInflow - PeriodTotalOutflow;
+        public decimal PeriodProfitMarginPercent => PeriodTotalInflow > 0
+            ? Math.Round(PeriodNetProfit / PeriodTotalInflow * 100m, 1)
+            : 0m;
+        public decimal TotalTeacherAdvancesOpen => TeacherCosts.Sum(x => x.RemainingAdvance);
+        public decimal TotalTeacherSettled => TeacherCosts.Sum(x => x.SettledAmount);
+        public decimal TotalTeacherEarned => TeacherCosts.Sum(x => x.EarnedAmount);
     }
 
     public sealed record FinanceMonthlyRowItem(
@@ -40,6 +50,9 @@ public sealed partial class ApiClient
         public decimal ActualOutflow { get; init; }
         public decimal ForecastInflow { get; init; }
         public decimal ForecastOutflow { get; init; }
+        public decimal NetProfit => TotalInflow - TotalOutflow;
+        public string NetProfitDisplay => NetProfit >= 0 ? $"+{NetProfit:N0} đ" : $"{NetProfit:N0} đ";
+        public bool IsProfitable => NetProfit >= 0;
     }
 
     public sealed record FinanceReceivableItem(

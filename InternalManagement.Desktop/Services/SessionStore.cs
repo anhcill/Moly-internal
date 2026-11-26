@@ -13,10 +13,17 @@ public sealed class SessionStore
     private const int MaxQuickAccounts = 3;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly string _storageDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "MOLY",
-        "InternalManagement");
+    private readonly string _storageDir;
+
+    public SessionStore(string? storageDir = null)
+    {
+        _storageDir = string.IsNullOrWhiteSpace(storageDir)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MOLY",
+                "InternalManagement")
+            : storageDir;
+    }
 
     private string SessionPath => Path.Combine(_storageDir, "session.dat");
     private string QuickAccountsPath => Path.Combine(_storageDir, "quick-accounts.dat");
@@ -41,6 +48,7 @@ public sealed class SessionStore
             return false;
         }
 
+        EnsureQuickAccountSeededFromSession(session);
         return true;
     }
 
@@ -56,7 +64,7 @@ public sealed class SessionStore
 
         try
         {
-            var accounts = LoadQuickAccounts()
+            var accounts = ReadQuickAccountsRaw()
                 .Where(a => !string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
@@ -91,9 +99,29 @@ public sealed class SessionStore
 
     public IReadOnlyList<QuickAccountEntry> LoadQuickAccounts()
     {
+        var accounts = ReadQuickAccountsRaw();
+        if (accounts.Count == 0)
+        {
+            // Auto-migrate legacy remembered session (e.g. upgraded from v2.6.x -> v2.7.x)
+            // so users who already logged in before Quick Login existed immediately get their card on logout.
+            var legacySession = ReadProtected<SavedSession>(SessionPath);
+            if (legacySession is not null
+                && !string.IsNullOrWhiteSpace(legacySession.Username)
+                && !string.IsNullOrWhiteSpace(legacySession.Response?.RefreshToken))
+            {
+                SaveQuickAccount(legacySession.Username, legacySession.Response);
+                accounts = ReadQuickAccountsRaw();
+            }
+        }
+
+        return accounts;
+    }
+
+    private List<QuickAccountEntry> ReadQuickAccountsRaw()
+    {
         var accounts = ReadProtected<List<QuickAccountEntry>>(QuickAccountsPath);
         if (accounts is null || accounts.Count == 0)
-            return Array.Empty<QuickAccountEntry>();
+            return new List<QuickAccountEntry>();
 
         return accounts
             .Where(a => !string.IsNullOrWhiteSpace(a.Username) && a.Response is not null)
@@ -102,11 +130,22 @@ public sealed class SessionStore
             .ToList();
     }
 
+    private void EnsureQuickAccountSeededFromSession(SavedSession session)
+    {
+        var existing = ReadQuickAccountsRaw();
+        var alreadyPresent = existing.Any(a =>
+            string.Equals(a.Username, session.Username, StringComparison.OrdinalIgnoreCase));
+        if (!alreadyPresent)
+        {
+            SaveQuickAccount(session.Username, session.Response);
+        }
+    }
+
     public void RemoveQuickAccount(string username)
     {
         if (string.IsNullOrWhiteSpace(username)) return;
 
-        var remaining = LoadQuickAccounts()
+        var remaining = ReadQuickAccountsRaw()
             .Where(a => !string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase))
             .ToList();
 

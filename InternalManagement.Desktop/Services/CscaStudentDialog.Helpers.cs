@@ -105,10 +105,10 @@ public static partial class CscaStudentDialog
         parent.Children.Add(new TextBlock
         {
             Text = labelText,
-            FontSize = 11,
+            FontSize = 11.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85)),
-            Margin = new Thickness(0, 0, 0, 4)
+            Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
+            Margin = new Thickness(0, 0, 0, 5)
         });
         parent.Children.Add(control);
     }
@@ -118,8 +118,10 @@ public static partial class CscaStudentDialog
         Text = text ?? string.Empty,
         Height = 36,
         Padding = new Thickness(10, 7, 10, 7),
-        Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
-        BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+        Style = Application.Current?.TryFindResource("ModernTextBox") as Style,
+        Background = ThemeService.GetBrush("InputBgBrush", "#FFFFFF"),
+        Foreground = ThemeService.GetBrush("InputTextBrush", "#0F172A"),
+        BorderBrush = ThemeService.GetBrush("InputBorderBrush", "#CBD5E1"),
         BorderThickness = new Thickness(1),
         FontSize = 13,
         VerticalContentAlignment = VerticalAlignment.Center
@@ -130,15 +132,13 @@ public static partial class CscaStudentDialog
         var btn = new Button
         {
             Content = text,
-            Padding = new Thickness(10, 4, 10, 4),
+            Padding = new Thickness(12, 0, 12, 0),
             Margin = new Thickness(0, 0, 8, 0),
-            Height = 28,
-            FontSize = 11,
+            Height = 30,
+            FontSize = 11.5,
+            FontWeight = FontWeights.SemiBold,
             Cursor = Cursors.Hand,
-            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
-            BorderThickness = new Thickness(1),
-            Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85))
+            Style = Application.Current?.TryFindResource("OutlineButton") as Style
         };
         btn.Click += (_, _) => onClick();
         return btn;

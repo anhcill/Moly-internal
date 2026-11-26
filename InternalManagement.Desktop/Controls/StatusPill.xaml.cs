@@ -100,7 +100,7 @@ public partial class StatusPill : UserControl
 
     private static string FormatFriendlyLabel(string raw) => raw.ToUpperInvariant() switch
     {
-        "ACTIVE" => "Đang hoạt động",
+        "ACTIVE" => "Hoạt động",
         "OPEN" => "Đang mở",
         "DRAFT" => "Nháp",
         "PUBLISHED" => "Đã xuất bản",

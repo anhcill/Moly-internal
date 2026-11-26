@@ -164,35 +164,55 @@ public partial class MainWindow
         ApplyCscaFinanceFilter();
     }
 
+    private static bool IsTrialCscaClass(Services.ApiClient.CscaClassItem c) => c.IsTrialEffective;
+
+    private static bool IsRecordCscaClass(Services.ApiClient.CscaClassItem c) =>
+        !c.IsTrialEffective && string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsLiveCscaClass(Services.ApiClient.CscaClassItem c) =>
+        !c.IsTrialEffective && !string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase);
+
     private void ApplyCscaClassFilter()
     {
-        var filtered = _allCscaClasses.AsEnumerable();
+        var courseScoped = _allCscaClasses.AsEnumerable();
         if (_selectedCourseFilterId.HasValue)
         {
             var course = _cachedCourses.FirstOrDefault(c => c.Id == _selectedCourseFilterId.Value);
             var title = course?.Title ?? _selectedCourseFilterTitle;
             if (!string.IsNullOrEmpty(title))
             {
-                filtered = filtered.Where(c => c.CourseId == _selectedCourseFilterId.Value || string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
+                courseScoped = courseScoped.Where(c => c.CourseId == _selectedCourseFilterId.Value || string.Equals(c.CourseTitle, title, StringComparison.OrdinalIgnoreCase));
             }
+            var scopedListForBanner = courseScoped.ToList();
+            courseScoped = scopedListForBanner;
             CscaCourseFilterBanner.Visibility = Visibility.Visible;
-            CscaCourseFilterText.Text = $"Đang lọc các lớp thuộc khóa học: {title} ({filtered.Count()} lớp)";
+            CscaCourseFilterText.Text = $"Đang lọc các lớp thuộc khóa học: {title} ({scopedListForBanner.Count} lớp)";
         }
         else
         {
             CscaCourseFilterBanner.Visibility = Visibility.Collapsed;
         }
 
-        if (CscaClassTypeFilterComboBox != null && CscaClassTypeFilterComboBox.SelectedIndex > 0)
+        var scopedList = courseScoped as List<Services.ApiClient.CscaClassItem> ?? courseScoped.ToList();
+
+        var liveCount = scopedList.Count(IsLiveCscaClass);
+        var trialCount = scopedList.Count(IsTrialCscaClass);
+        var recordCount = scopedList.Count(IsRecordCscaClass);
+        var allCount = scopedList.Count;
+
+        if (CscaLiveCountText != null) CscaLiveCountText.Text = liveCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (CscaTrialCountText != null) CscaTrialCountText.Text = trialCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (CscaRecordCountText != null) CscaRecordCountText.Text = recordCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (CscaAllCountText != null) CscaAllCountText.Text = allCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        var modeIndex = CscaClassTypeFilterComboBox?.SelectedIndex ?? 1;
+        IEnumerable<Services.ApiClient.CscaClassItem> filtered = modeIndex switch
         {
-            if (CscaClassTypeFilterComboBox.SelectedIndex == 1) // Lớp Live chính thức
-                filtered = filtered.Where(c => !c.IsTrial && c.TuitionFee > 0 &&
-                    !string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase));
-            else if (CscaClassTypeFilterComboBox.SelectedIndex == 2) // Lớp Record
-                filtered = filtered.Where(c => string.Equals(c.ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase));
-            else if (CscaClassTypeFilterComboBox.SelectedIndex == 3) // Lớp học thử
-                filtered = filtered.Where(c => c.IsTrial || c.TuitionFee == 0);
-        }
+            1 => scopedList.Where(IsLiveCscaClass),
+            2 => scopedList.Where(IsRecordCscaClass),
+            3 => scopedList.Where(IsTrialCscaClass),
+            _ => scopedList
+        };
 
         var itemsList = filtered.ToList();
         CscaClassesDataGrid.ItemsSource = itemsList;

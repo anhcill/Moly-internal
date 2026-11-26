@@ -12,6 +12,7 @@ public partial class CscaClassDetailWindow
 {
     private DateTime _calendarWeekStart;
     private bool _calendarInitialized;
+    private bool _isOpeningSessionDialog;
     private IReadOnlyList<ApiClient.CscaLessonSessionItem> _calendarSessions = [];
     private double _preferredCalendarVerticalOffset;
 
@@ -160,7 +161,7 @@ public partial class CscaClassDetailWindow
             };
             for (var hour = firstHour; hour <= lastHour; hour++)
             {
-                var line = new Border { Height = 1, Width = 150, Background = Brush("#E9EEF5") };
+                var line = new Border { Height = 1, Width = 150, Background = borderLight };
                 Canvas.SetTop(line, (hour - firstHour) * hourHeight);
                 canvas.Children.Add(line);
             }
@@ -172,24 +173,44 @@ public partial class CscaClassDetailWindow
                 if (dailySessions.Count == 0)
                 {
                     foreach (var schedule in schedules.Where(s => s.DayOfWeek == dayOfWeek &&
-                                 !HasMovedSessionForSchedule(s.Id, date)))
+                                 !HasMovedOrMaterializedSessionForSchedule(s.Id, date)))
                         AddCalendarEvent(canvas, schedule.StartTime, schedule.EndTime, schedule.TimeLabel,
                             _detail?.Name ?? "Buổi học", $"Lịch cố định · chưa tạo buổi · {schedule.LocationLabel}", schedule,
-                            "#EDE9FE", "#A5B4FC", firstHour, hourHeight);
+                            "SurfaceAccentBgBrush", "SurfaceAccentBorderBrush", "SurfaceAccentTextBrush", firstHour, hourHeight);
                 }
                 else
                     foreach (var session in dailySessions)
                     {
                         var row = LessonSessionRow.From(session);
+                        var isCancelled = string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+                        var isCompleted = string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase);
+                        var isRescheduled = string.Equals(session.Status, "Rescheduled", StringComparison.OrdinalIgnoreCase);
+                        var isMakeup = string.Equals(session.SessionKind, "Makeup", StringComparison.OrdinalIgnoreCase);
+                        var isSupplemental = string.Equals(session.SessionKind, "Supplemental", StringComparison.OrdinalIgnoreCase);
+
+                        var kindPrefix = isMakeup ? "Dạy bù · " : isSupplemental ? "Bổ sung · " : string.Empty;
+                        var subtitle = isCancelled
+                            ? $"Đã hủy{(string.IsNullOrWhiteSpace(session.CancelReason) ? string.Empty : $" ({session.CancelReason})")}"
+                            : $"{kindPrefix}{row.StatusLabel} · {row.LocationLabel}";
+
+                        var (bgKey, borderKey, fgKey) = isCancelled
+                            ? ("SurfaceDangerBgBrush", "SurfaceDangerBorderBrush", "SurfaceDangerTextBrush")
+                            : isCompleted
+                                ? ("SurfaceSuccessBgBrush", "SurfaceSuccessBorderBrush", "SurfaceSuccessTextBrush")
+                                : isRescheduled
+                                    ? ("SurfaceWarningBgBrush", "SurfaceWarningBorderBrush", "SurfaceWarningTextBrush")
+                                    : isMakeup
+                                        ? ("SurfaceAccentBgBrush", "SurfaceAccentBorderBrush", "SurfaceAccentTextBrush")
+                                        : ("SurfaceInfoBgBrush", "SurfaceInfoBorderBrush", "SurfaceInfoTextBrush");
+
                         AddCalendarEvent(canvas, session.StartTime, session.EndTime,
                             row.TimeLabel,
-                            _detail?.Name ?? "Buổi học", session.Status == "Cancelled" ? "Đã hủy" :
-                            $"{row.StatusLabel} · {row.LocationLabel}",
-                            session, session.Status == "Cancelled" ? "#F1F5F9" : "#DBEAFE",
-                            session.Status == "Cancelled" ? "#CBD5E1" : "#93C5FD", firstHour, hourHeight);
+                            _detail?.Name ?? "Buổi học",
+                            subtitle,
+                            session, bgKey, borderKey, fgKey, firstHour, hourHeight);
                     }
             }
-            var dayBorder = new Border { Child = canvas, BorderBrush = Brush("#E2E8F0"), BorderThickness = new Thickness(0, 0, 1, 0) };
+            var dayBorder = new Border { Child = canvas, BorderBrush = borderLight, BorderThickness = new Thickness(0, 0, 1, 0) };
             Grid.SetColumn(dayBorder, dayIndex + 1);
             ScheduleCalendarGrid.Children.Add(dayBorder);
         }
@@ -216,41 +237,58 @@ public partial class CscaClassDetailWindow
         ScrollCalendarToEvening();
     }
 
-    private bool HasMovedSessionForSchedule(Guid scheduleId, DateTime scheduledDate)
+    private bool HasMovedOrMaterializedSessionForSchedule(Guid scheduleId, DateTime scheduledDate)
     {
-        var weekStart = scheduledDate.Date.AddDays(-((int)scheduledDate.DayOfWeek + 6) % 7);
-        var weekEnd = weekStart.AddDays(7);
-        return _calendarSessions.Any(session =>
-            session.ScheduleId == scheduleId &&
+        var targetDate = DateOnly.FromDateTime(scheduledDate);
+        var scheduleSessions = _calendarSessions
+            .Where(session => session.ScheduleId == scheduleId)
+            .ToList();
+        if (scheduleSessions.Count == 0)
+            return false;
+
+        // If any session from this schedule was rescheduled (including moved to an earlier or later week),
+        // or if sessions for this schedule have already been materialized spanning this date,
+        // do NOT render a ghost weekly placeholder on the vacated slot.
+        var minMaterialized = scheduleSessions.Min(s => s.LessonDate);
+        var maxMaterialized = scheduleSessions.Max(s => s.LessonDate);
+        if (targetDate >= minMaterialized && targetDate <= maxMaterialized)
+            return true;
+
+        return scheduleSessions.Any(session =>
             string.Equals(session.Status, "Rescheduled", StringComparison.OrdinalIgnoreCase) &&
-            session.LessonDate != DateOnly.FromDateTime(scheduledDate) &&
-            session.LessonDate >= DateOnly.FromDateTime(weekStart) &&
-            session.LessonDate < DateOnly.FromDateTime(weekEnd));
+            Math.Abs(session.LessonDate.DayNumber - targetDate.DayNumber) <= 21);
     }
 
     private void AddCalendarEvent(Canvas canvas, TimeSpan start, TimeSpan end, string time,
-        string title, string subtitle, object item, string fill, string stroke, int firstHour, double hourHeight)
+        string title, string subtitle, object item, string fillResourceKey, string strokeResourceKey,
+        string accentTextResourceKey, int firstHour, double hourHeight)
     {
+        var fillBrush = ThemeService.GetBrush(fillResourceKey, "#EFF6FF");
+        var strokeBrush = ThemeService.GetBrush(strokeResourceKey, "#BFDBFE");
+        var accentText = ThemeService.GetBrush(accentTextResourceKey, "#1D4ED8");
+        var titleText = ThemeService.GetBrush("TextDarkBrush", "#0F172A");
+        var subText = ThemeService.GetBrush("TextMutedBrush", "#475569");
+
         var eventButton = new Button
         {
             Tag = item,
             Width = 138,
-            Height = Math.Max(34, (end - start).TotalHours * hourHeight - 4),
+            Height = Math.Max(38, (end - start).TotalHours * hourHeight - 4),
             Padding = new Thickness(8, 5, 5, 5),
             HorizontalContentAlignment = HorizontalAlignment.Left,
             VerticalContentAlignment = VerticalAlignment.Top,
-            Background = Brush(fill),
-            BorderBrush = Brush(stroke),
+            Background = fillBrush,
+            BorderBrush = strokeBrush,
             BorderThickness = new Thickness(1),
             Cursor = Cursors.Hand,
-            ToolTip = $"{time} · {subtitle}\nBấm để xem và chỉnh sửa.",
+            ToolTip = $"{time} · {subtitle}\nBấm để xem, sửa link hoặc đổi giờ/ngày buổi học.",
             Content = new StackPanel
             {
                 Children =
                 {
-                    new TextBlock { Text = time, FontSize = 12, FontWeight = FontWeights.Bold, Foreground = Brush("#1E3A8A") },
-                    new TextBlock { Text = title, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 11, Foreground = Brush("#1E40AF") },
-                    new TextBlock { Text = subtitle, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 10, Foreground = Brush("#475569") }
+                    new TextBlock { Text = time, FontSize = 12, FontWeight = FontWeights.Bold, Foreground = accentText },
+                    new TextBlock { Text = title, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 11, FontWeight = FontWeights.SemiBold, Foreground = titleText },
+                    new TextBlock { Text = subtitle, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = 10, Foreground = subText }
                 }
             }
         };
@@ -339,6 +377,7 @@ public partial class CscaClassDetailWindow
 
     private async void ScheduleCalendarEvent_Click(object sender, RoutedEventArgs e)
     {
+        if (_isOpeningSessionDialog) return;
         if (sender is Button { Tag: ScheduleRow schedule })
         {
             SchedulesDataGrid.SelectedItem = schedule;
@@ -346,14 +385,23 @@ public partial class CscaClassDetailWindow
         }
         else if (sender is Button { Tag: ApiClient.CscaLessonSessionItem session })
         {
-            var row = LessonSessionRow.From(session);
-            if (!PromptDialog.TryShow(this, $"Buổi học {row.LessonDate:dd/MM/yyyy}", await LessonSessionFieldsAsync(row), out var values)) return;
-            if (!TryLessonSessionValues(values, out var lessonDate, out var startTime, out var endTime, out var classroomId)) return;
-            var timeChanged = lessonDate != row.LessonDate || startTime != row.StartTime || endTime != row.EndTime;
-            var changeReason = Null(values["changeReason"]) ?? (timeChanged ? "Đổi lịch học" : null);
-            await SaveAsync(() => _apiClient.UpdateCscaLessonSessionAsync(_classId, row.Id, lessonDate,
-                startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"], changeReason),
-                "Đã lưu thay đổi buổi học.");
+            _isOpeningSessionDialog = true;
+            try
+            {
+                var row = LessonSessionRow.From(session);
+                var fields = await LessonSessionFieldsAsync(row);
+                if (!PromptDialog.TryShow(this, $"Buổi học {row.LessonDate:dd/MM/yyyy}", fields, out var values)) return;
+                if (!TryLessonSessionValues(values, out var lessonDate, out var startTime, out var endTime, out var classroomId)) return;
+                var timeChanged = lessonDate != row.LessonDate || startTime != row.StartTime || endTime != row.EndTime;
+                var changeReason = Null(values["changeReason"]) ?? (timeChanged ? "Đổi lịch học" : null);
+                await SaveAsync(() => _apiClient.UpdateCscaLessonSessionAsync(_classId, row.Id, lessonDate,
+                    startTime, endTime, classroomId, Null(values["meetingUrl"]), Null(values["notes"]), values["status"], changeReason),
+                    "Đã lưu thay đổi buổi học và đẩy đồng bộ sang Course.");
+            }
+            finally
+            {
+                _isOpeningSessionDialog = false;
+            }
         }
     }
 

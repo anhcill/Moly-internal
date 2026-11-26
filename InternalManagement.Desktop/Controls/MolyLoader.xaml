@@ -4,48 +4,53 @@
              Width="48" Height="48"
              IsHitTestVisible="False">
     <UserControl.Resources>
-        <!-- Exact geometric folded ribbon 'M' matching Assets/moly-glyph-standalone.png
-             Each of the 4 strokes is 34px -> total path length = 136px (~18.13 units at thickness 7.5).
-             StrokeDashArray="11 11" has exact period = 22 units -> 100% seamless continuous roll. -->
+        <!-- Soft splayed folded-ribbon 'M' matching the app icon silhouette:
+             smooth rounded arches, gentle outward legs, soft U-valley, and Round caps/joins.
+             Arc length ~96.4px (~11.34 dash units at thickness 8.5).
+             StrokeDashArray="6.5 6.5" (period = 13) yields a silky, seamless continuous glide. -->
         <PathGeometry x:Key="MolyMGeometry"
-                      Figures="M 12,46 L 12,12 L 28,42 L 44,12 L 44,46" />
+                      Figures="M 9,42 L 13.6,18.8 C 14.8,12.6 18.2,12.4 20.2,18.6 L 25.6,27.2 C 26.8,31.2 29.2,31.2 30.4,27.2 L 35.8,18.6 C 37.8,12.4 41.2,12.6 42.4,18.8 L 47,42" />
 
-        <LinearGradientBrush x:Key="MolyBrandRibbonBrush" StartPoint="0,0.2" EndPoint="1,0.8">
-            <GradientStop Color="#00B4FF" Offset="0" />
-            <GradientStop Color="#2B9BFF" Offset="0.35" />
-            <GradientStop Color="#2563EB" Offset="0.7" />
-            <GradientStop Color="#1E3A8A" Offset="1" />
+        <LinearGradientBrush x:Key="MolyBrandRibbonBrush" StartPoint="0,0.35" EndPoint="1,0.65">
+            <GradientStop Color="#00F0FF" Offset="0" />
+            <GradientStop Color="#00C4FF" Offset="0.32" />
+            <GradientStop Color="#0084FF" Offset="0.68" />
+            <GradientStop Color="#0052FF" Offset="1" />
         </LinearGradientBrush>
 
         <Storyboard x:Key="RollStoryboard" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetName="RollingMStroke"
                              Storyboard.TargetProperty="StrokeDashOffset"
-                             From="22" To="0"
-                             Duration="0:0:1.2" />
+                             From="13" To="0"
+                             Duration="0:0:1.25" />
         </Storyboard>
     </UserControl.Resources>
 
     <Viewbox Stretch="Uniform">
         <Grid Width="56" Height="56">
-            <!-- Subtle geometric 'M' track -->
+            <!-- Soft translucent ribbon 'M' base track -->
             <Path Data="{StaticResource MolyMGeometry}"
                   Stroke="{StaticResource MolyBrandRibbonBrush}"
-                  Opacity="0.18"
-                  StrokeThickness="7.5"
-                  StrokeStartLineCap="Flat"
-                  StrokeEndLineCap="Flat"
-                  StrokeLineJoin="Bevel" />
+                  Opacity="0.22"
+                  StrokeThickness="8.5"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round" />
 
-            <!-- Continuous rolling MOLY ribbon along the exact 'M' shape -->
+            <!-- Continuous silky rolling ribbon along the soft 'M' curve -->
             <Path x:Name="RollingMStroke"
                   Data="{StaticResource MolyMGeometry}"
                   Stroke="{StaticResource MolyBrandRibbonBrush}"
-                  StrokeThickness="7.5"
+                  StrokeThickness="8.5"
                   StrokeStartLineCap="Round"
                   StrokeEndLineCap="Round"
-                  StrokeLineJoin="Bevel"
-                  StrokeDashArray="11 11"
-                  StrokeDashOffset="22" />
+                  StrokeLineJoin="Round"
+                  StrokeDashArray="6.5 6.5"
+                  StrokeDashOffset="13">
+                <Path.Effect>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#00B4FF" Opacity="0.28" />
+                </Path.Effect>
+            </Path>
         </Grid>
     </Viewbox>
 </UserControl>

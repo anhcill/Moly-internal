@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FluentAssertions;
 using InternalManagement.Application.Features.CscaInterview.DTOs;
+using InternalManagement.Application.Features.Integration.Interfaces;
+using InternalManagement.Application.Features.Integration.Models;
 using InternalManagement.Domain.Entities.Integration;
 using InternalManagement.Domain.Enums;
 using InternalManagement.Infrastructure.Persistence;
@@ -221,6 +223,99 @@ public class CscaJitsiMeetingTests
             .Should().OnlyContain(item => item.MeetingUrl == explicitUrl);
     }
 
+    [Fact]
+    public async Task MoveSessionEarlier_BeforeClassStartDate_ShouldExpandTermAndDispatchOutboxImmediately()
+    {
+        await using var db = CreateInMemoryDb();
+        var dispatcher = new RecordingOutboxDispatcher();
+        var service = CreateService(db, withIntegration: true, dispatcher: dispatcher);
+        var createdClass = await service.CreateClassAsync(
+            new CreateCscaClassRequest(
+                "CSCA-PUSH-EARLY", "Lớp đẩy lịch sớm", "Đợt 1", string.Empty, 1_000_000m,
+                StartDate: new DateTime(2026, 11, 10, 0, 0, 0, DateTimeKind.Utc),
+                EndDate: new DateTime(2026, 12, 10, 0, 0, 0, DateTimeKind.Utc)),
+            CancellationToken.None);
+        createdClass.Succeeded.Should().BeTrue();
+        var classId = createdClass.Value!.Id;
+        var cls = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        db.LmsCourseLinks.Add(new LmsCourseLink
+        {
+            CompanyId = cls.CompanyId,
+            BusinessUnitId = cls.BusinessUnitId,
+            CourseId = cls.CourseId,
+            ExternalCourseId = "csca-push-early",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+
+        var session = await service.CreateLessonSessionAsync(classId,
+            new CreateCscaLessonSessionRequest(new DateOnly(2026, 11, 12), TimeSpan.FromHours(18), TimeSpan.FromHours(20)),
+            CancellationToken.None);
+        session.Succeeded.Should().BeTrue();
+        db.IntegrationOutboxes.RemoveRange(db.IntegrationOutboxes);
+        await db.SaveChangesAsync();
+        dispatcher.DispatchCount = 0;
+
+        var moved = await service.UpdateLessonSessionAsync(classId, session.Value!.Id,
+            new UpdateCscaLessonSessionRequest(
+                new DateOnly(2026, 11, 8), TimeSpan.FromHours(18), TimeSpan.FromHours(20),
+                MeetingUrl: "https://meet.google.com/abc-defg-hij",
+                ChangeReason: "Đẩy buổi học lên trước ngày khai giảng"),
+            CancellationToken.None);
+
+        moved.Succeeded.Should().BeTrue();
+        moved.Value!.Status.Should().Be("Rescheduled");
+        moved.Value.MeetingUrl.Should().Be("https://meet.google.com/abc-defg-hij");
+        var refreshedClass = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        DateOnly.FromDateTime(refreshedClass.StartDate!.Value).Should().Be(new DateOnly(2026, 11, 8));
+        var eventTypes = (await db.IntegrationOutboxes.ToListAsync())
+            .Select(item => JsonDocument.Parse(item.PayloadJson).RootElement.GetProperty("eventType").GetString())
+            .ToList();
+        eventTypes.Should().Contain("class.upserted");
+        eventTypes.Should().Contain("class.session.upserted");
+        dispatcher.DispatchCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CancelSession_KeepForMakeup_ShouldAllowFillCancelledMakeupSession()
+    {
+        await using var db = CreateInMemoryDb();
+        var service = CreateService(db, withIntegration: true);
+        var classId = await CreateClassAsync(service, "CSCA-MAKEUP-FILL");
+        var cls = await db.CscaClasses.SingleAsync(item => item.Id == classId);
+        db.LmsCourseLinks.Add(new LmsCourseLink
+        {
+            CompanyId = cls.CompanyId,
+            BusinessUnitId = cls.BusinessUnitId,
+            CourseId = cls.CourseId,
+            ExternalCourseId = "csca-makeup-fill",
+            Status = IntegrationStatus.Success
+        });
+        await db.SaveChangesAsync();
+
+        var original = await service.CreateLessonSessionAsync(classId,
+            new CreateCscaLessonSessionRequest(new DateOnly(2026, 11, 15), TimeSpan.FromHours(19), TimeSpan.FromHours(21)),
+            CancellationToken.None);
+        original.Succeeded.Should().BeTrue();
+
+        var cancelled = await service.CancelLessonSessionAsync(classId, original.Value!.Id,
+            new CancelCscaLessonSessionRequest("Hủy để dạy bù", ShiftCurriculum: false, ExtendCourse: false),
+            CancellationToken.None);
+        cancelled.Succeeded.Should().BeTrue();
+
+        var makeup = await service.CreateLessonSessionAsync(classId,
+            new CreateCscaLessonSessionRequest(
+                new DateOnly(2026, 11, 16), TimeSpan.FromHours(19), TimeSpan.FromHours(21),
+                SessionKind: "Makeup",
+                ReplacementForSessionId: original.Value.Id,
+                CurriculumAction: "FillCancelled"),
+            CancellationToken.None);
+
+        makeup.Succeeded.Should().BeTrue();
+        makeup.Value!.SessionKind.Should().Be("Makeup");
+        makeup.Value.ReplacementForSessionId.Should().Be(original.Value.Id);
+    }
+
     private static ApplicationDbContext CreateInMemoryDb()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -229,9 +324,24 @@ public class CscaJitsiMeetingTests
         return new ApplicationDbContext(options);
     }
 
-    private static CscaService CreateService(ApplicationDbContext db, bool withIntegration = false) =>
+    private static CscaService CreateService(
+        ApplicationDbContext db,
+        bool withIntegration = false,
+        ILmsOutboxDispatcher? dispatcher = null) =>
         new(db, new CurrentUserService(null!), NullLogger<CscaService>.Instance,
-            integrationDb: withIntegration ? db : null);
+            integrationDb: withIntegration ? db : null,
+            lmsOutboxDispatcher: dispatcher);
+
+    private sealed class RecordingOutboxDispatcher : ILmsOutboxDispatcher
+    {
+        public int DispatchCount { get; set; }
+
+        public Task<LmsOutboxDispatchResult> DispatchPendingAsync(int batchSize, CancellationToken ct)
+        {
+            DispatchCount++;
+            return Task.FromResult(new LmsOutboxDispatchResult(0, 0, 0, 0));
+        }
+    }
 
     private static async Task<Guid> CreateClassAsync(CscaService service, string code)
     {

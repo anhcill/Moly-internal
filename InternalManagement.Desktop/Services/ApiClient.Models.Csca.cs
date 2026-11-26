@@ -84,7 +84,8 @@ public sealed partial class ApiClient
         string? SourceClassName = null)
     {
         public decimal DebtAmount => Math.Max(0, ExpectedRevenue - TotalRevenue);
-        public string ClassTypeDisplay => IsTrial || TuitionFee == 0
+        public bool IsTrialEffective => IsTrial || TuitionFee == 0;
+        public string ClassTypeDisplay => IsTrialEffective
             ? "Học thử (Miễn phí)"
             : string.Equals(ClassType, "RECORDING", StringComparison.OrdinalIgnoreCase)
                 ? string.Equals(RecordingContentMode, "INDEPENDENT", StringComparison.OrdinalIgnoreCase)

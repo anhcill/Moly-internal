@@ -84,6 +84,7 @@ public sealed partial class CscaService
             return Result<CscaScheduleDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<CscaScheduleDto>.Success(ToScheduleDto(schedule));
     }
 
@@ -127,6 +128,7 @@ public sealed partial class CscaService
             return Result<CscaScheduleDto>.Failure(syncError);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<CscaScheduleDto>.Success(ToScheduleDto(schedule));
     }
 
@@ -148,6 +150,7 @@ public sealed partial class CscaService
         _db.CscaClassSchedules.Remove(schedule);
         await _db.SaveChangesAsync(ct);
         await RefreshClassScheduleStringAsync(classId, ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<bool>.Success(true);
     }
 
@@ -406,15 +409,15 @@ public sealed partial class CscaService
         var requestedMeetingUrl = string.IsNullOrWhiteSpace(request.MeetingUrl)
             ? sourceSchedule?.MeetingUrl
             : request.MeetingUrl;
-        var isOnlineSession = !request.ClassroomId.HasValue
-            && sourceSchedule?.ClassroomId is null
-            && string.IsNullOrWhiteSpace(sourceSchedule?.Room);
+        var isOnlineSession = !request.ClassroomId.HasValue;
         session.MeetingUrl = ResolveNewLessonMeetingUrl(
             requestedMeetingUrl, isOnlineSession, session.Id);
         _db.CscaLessonSessions.Add(session);
+        await ExpandClassDateRangeIfNeededAsync(cls, request.LessonDate, ct);
         await QueueSessionForWebAsync(cls, session, false, ct,
             curriculumAction: NormalizeCurriculumAction(request.CurriculumAction));
         await _db.SaveChangesAsync(ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
 
@@ -424,7 +427,8 @@ public sealed partial class CscaService
         if (!await IsClassInScopeAsync(classId, ct))
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy lớp học CSCA.");
 
-        var session = await _db.CscaLessonSessions.Include(item => item.Class).Include(item => item.Schedule).Include(item => item.Classroom)
+        var session = await _db.CscaLessonSessions.Include(item => item.Class).Include(item => item.Schedule)
+            .Include(item => item.Classroom).Include(item => item.ReplacementForSession)
             .FirstOrDefaultAsync(item => item.Id == sessionId && item.ClassId == classId, ct);
         if (session == null)
             return Result<CscaLessonSessionDto>.Failure("Không tìm thấy buổi học.");
@@ -469,20 +473,21 @@ public sealed partial class CscaService
         session.EndTime = request.EndTime;
         session.Status = timeChanged && string.Equals(request.Status, "Scheduled", StringComparison.OrdinalIgnoreCase)
             ? "Rescheduled" : request.Status.Trim();
-        var isOnlineSession = !request.ClassroomId.HasValue
-            && session.Schedule?.ClassroomId is null
-            && string.IsNullOrWhiteSpace(session.Schedule?.Room);
+        var isOnlineSession = !request.ClassroomId.HasValue;
         session.MeetingUrl = ResolveUpdatedLessonMeetingUrl(
             request.MeetingUrl, session.MeetingUrl, isOnlineSession, session.Id);
         session.Notes = request.Notes?.Trim();
         session.UpdatedAt = DateTime.UtcNow;
         session.UpdatedBy = _currentUser.Username ?? "System";
+        if (timeChanged)
+            await ExpandClassDateRangeIfNeededAsync(session.Class, request.LessonDate, ct);
         await QueueSessionForWebAsync(session.Class, session,
             string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase), ct, changeReason,
             timeChanged ? previousLessonDate : null,
             timeChanged ? previousStartTime : null,
             timeChanged ? previousEndTime : null);
         await _db.SaveChangesAsync(ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
 
@@ -532,6 +537,7 @@ public sealed partial class CscaService
             curriculumAction: shouldShiftCurriculum ? "ShiftForward" : "None",
             extendCourse: shouldShiftCurriculum && request.ExtendCourse);
         await _db.SaveChangesAsync(ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<CscaLessonSessionDto>.Success(ToLessonSessionDto(session));
     }
 
@@ -555,6 +561,7 @@ public sealed partial class CscaService
         await QueueSessionForWebAsync(session.Class, session, true, ct);
         _db.CscaLessonSessions.Remove(session);
         await _db.SaveChangesAsync(ct);
+        await TryDispatchLmsCalendarOutboxAsync(ct);
         return Result<bool>.Success(true);
     }
 
@@ -626,6 +633,7 @@ public sealed partial class CscaService
             foreach (var session in generated)
                 await QueueSessionForWebAsync(cls, session, false, ct);
             await _db.SaveChangesAsync(ct);
+            await TryDispatchLmsCalendarOutboxAsync(ct);
         }
         return Result<int>.Success(generated.Count);
     }

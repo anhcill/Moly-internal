@@ -585,8 +585,12 @@ public sealed class WebhookProcessor : IWebhookProcessor
                 throw new CscaLmsDependencyException("Buổi LMS gốc của buổi học bù chưa được hủy hoặc chưa đồng bộ.");
             session.ReplacementForSessionId = replacement.Id;
         }
-        session.MeetingUrl = TrimOptional(incoming.MeetingUrl, "lmsSession.meetingUrl", 1000);
-        session.Notes = BuildImportedSessionNote(incoming.Title);
+        var incomingMeetingUrl = TrimOptional(incoming.MeetingUrl, "lmsSession.meetingUrl", 1000);
+        if (!string.IsNullOrWhiteSpace(incomingMeetingUrl) || session.ClassroomId.HasValue)
+            session.MeetingUrl = incomingMeetingUrl;
+        var importedNote = BuildImportedSessionNote(incoming.Title);
+        if (!string.IsNullOrWhiteSpace(importedNote) && string.IsNullOrWhiteSpace(session.Notes))
+            session.Notes = importedNote;
         session.ExternalSource = source;
         session.ExternalSessionId = incoming.Id!.Trim();
         session.ExternalVersion = incoming.Version;

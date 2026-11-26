@@ -6,7 +6,7 @@
         Title="Danh mục phòng học CSCA"
         Icon="Assets/app-icon.ico"
         Width="980" Height="620" MinWidth="760" MinHeight="480"
-        WindowStartupLocation="CenterOwner" Background="{DynamicResource LightBgBrush}" FontFamily="Segoe UI"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource LightBgBrush}" Foreground="{DynamicResource TextDarkBrush}" FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
         <Style x:Key="ToolButton" TargetType="Button" BasedOn="{StaticResource OutlineButton}">

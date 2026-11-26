@@ -64,7 +64,9 @@ public partial class MainWindow
         SetNavigationAccess(NavTechResources, "Permissions.InternalResources.View");
         SetNavigationAccess(NavFashionResources, "Permissions.InternalResources.View");
         SetNavigationAccess(NavFinance, "Permissions.FinanceReports.View");
-        ViewFinanceWorkspaceContainer.SetCanManage(HasPermission(_currentUser, "Permissions.FinanceTransactions.Manage"));
+        var canManageFinance = HasPermission(_currentUser, "Permissions.FinanceTransactions.Manage");
+        ViewFinanceWorkspaceContainer.SetCanManage(canManageFinance);
+        ViewCashAccountsAuditContainer.SetCanManage(canManageFinance);
         SetNavigationAccess(NavFashion, "Permissions.Products.View", "Permissions.Inventory.View");
         SetPayrollSubNavigationAccess(
             new[] { NavFashionProducts, NavFashionVariants },

@@ -415,4 +415,155 @@ public sealed partial class FinanceLedgerService
             reportItems.Any(x => x.HasProvisionalCost)));
     }
 
+    public async Task<Result<IReadOnlyList<FinanceAuditEntryDto>>> GetAuditTrailAsync(
+        DateTime? from,
+        DateTime? to,
+        string? search,
+        int take = 200,
+        CancellationToken ct = default)
+    {
+        var companyId = await ResolveCompanyIdAsync(ct);
+        if (!companyId.HasValue)
+            return Result<IReadOnlyList<FinanceAuditEntryDto>>.Failure("Chưa xác định được công ty hiện tại.");
+
+        DateTime? fromUtc = from.HasValue ? NormalizeDate(from.Value) : null;
+        DateTime? toUtc = null;
+        if (to.HasValue)
+        {
+            var rawTo = to.Value;
+            if (rawTo.TimeOfDay == TimeSpan.Zero && rawTo.Date < DateTime.MaxValue.Date)
+                rawTo = rawTo.Date.AddDays(1).AddTicks(-1);
+            toUtc = NormalizeDate(rawTo);
+        }
+
+        if (fromUtc.HasValue && toUtc.HasValue && toUtc.Value < fromUtc.Value)
+            return Result<IReadOnlyList<FinanceAuditEntryDto>>.Failure("Khoảng thời gian không hợp lệ.");
+
+        var txQuery = _db.FinanceTransactions
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId.Value);
+        if (fromUtc.HasValue)
+            txQuery = txQuery.Where(x => x.TransactionDate >= fromUtc.Value);
+        if (toUtc.HasValue)
+            txQuery = txQuery.Where(x => x.TransactionDate <= toUtc.Value);
+
+        var advanceQuery = _db.TeacherAdvances
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId.Value && x.Status != "Cancelled");
+        if (fromUtc.HasValue)
+            advanceQuery = advanceQuery.Where(x => x.IssuedAt >= fromUtc.Value);
+        if (toUtc.HasValue)
+            advanceQuery = advanceQuery.Where(x => x.IssuedAt <= toUtc.Value);
+
+        var paymentQuery = _db.TeacherPayments
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId.Value);
+        if (fromUtc.HasValue)
+            paymentQuery = paymentQuery.Where(x => x.PaidAt >= fromUtc.Value);
+        if (toUtc.HasValue)
+            paymentQuery = paymentQuery.Where(x => x.PaidAt <= toUtc.Value);
+
+        var transactions = await txQuery.ToListAsync(ct);
+        var advances = await advanceQuery.ToListAsync(ct);
+        var payments = await paymentQuery.ToListAsync(ct);
+
+        var employeeIds = advances.Select(x => x.EmployeeId)
+            .Concat(payments.Select(x => x.EmployeeId))
+            .Distinct()
+            .ToList();
+
+        var employeeNames = employeeIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await _db.Employees
+                .AsNoTracking()
+                .Where(x => x.CompanyId == companyId.Value && employeeIds.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, x => x.FullName, ct);
+
+        var postedTeacherTxIds = payments
+            .Where(x => x.FinanceTransactionId.HasValue)
+            .Select(x => x.FinanceTransactionId!.Value)
+            .ToHashSet();
+
+        var entries = new List<FinanceAuditEntryDto>(transactions.Count + advances.Count + payments.Count);
+
+        foreach (var tx in transactions)
+        {
+            if (postedTeacherTxIds.Contains(tx.Id))
+                continue;
+            if (string.Equals(tx.ReferenceType, nameof(TeacherPayment), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(tx.ReferenceType, nameof(TeacherAdvance), StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var isIncome = tx.TransactionType == TransactionType.Income;
+            entries.Add(new FinanceAuditEntryDto(
+                tx.Id,
+                tx.TransactionDate,
+                FormatAuditActor(tx.CreatedBy),
+                isIncome ? "Income" : "Expense",
+                isIncome ? "Phiếu Thu" : "Phiếu Chi",
+                isIncome ? "Inflow" : "Outflow",
+                tx.Amount,
+                tx.Description,
+                string.IsNullOrWhiteSpace(tx.ReferenceType) ? "Sổ quỹ" : tx.ReferenceType.Trim()));
+        }
+
+        foreach (var adv in advances)
+        {
+            var employeeName = employeeNames.TryGetValue(adv.EmployeeId, out var name) && !string.IsNullOrWhiteSpace(name)
+                ? name
+                : "Tạm ứng GV";
+
+            entries.Add(new FinanceAuditEntryDto(
+                adv.Id,
+                adv.IssuedAt,
+                FormatAuditActor(adv.CreatedBy),
+                nameof(TeacherAdvance),
+                "Ứng lương GV",
+                "Outflow",
+                adv.Amount,
+                adv.Description,
+                employeeName));
+        }
+
+        foreach (var pay in payments)
+        {
+            var employeeName = employeeNames.TryGetValue(pay.EmployeeId, out var name) && !string.IsNullOrWhiteSpace(name)
+                ? name
+                : "Thanh toán GV";
+
+            entries.Add(new FinanceAuditEntryDto(
+                pay.Id,
+                pay.PaidAt,
+                FormatAuditActor(pay.CreatedBy),
+                nameof(TeacherPayment),
+                "Chuyển lương GV",
+                "Outflow",
+                pay.Amount,
+                pay.Description,
+                employeeName));
+        }
+
+        IEnumerable<FinanceAuditEntryDto> filtered = entries;
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var keyword = search.Trim();
+            filtered = filtered.Where(e =>
+                e.Actor.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                || e.ActionLabel.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                || e.Description.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                || e.ReferenceLabel.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var result = filtered
+            .OrderByDescending(e => e.OccurredAt)
+            .ThenByDescending(e => e.Id)
+            .Take(Math.Clamp(take, 1, 500))
+            .ToList();
+
+        return Result<IReadOnlyList<FinanceAuditEntryDto>>.Success(result);
+    }
+
+    private static string FormatAuditActor(string? createdBy) =>
+        string.IsNullOrWhiteSpace(createdBy) ? "Hệ thống" : createdBy.Trim();
+
 }

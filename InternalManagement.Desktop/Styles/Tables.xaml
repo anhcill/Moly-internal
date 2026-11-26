@@ -6,7 +6,6 @@
         <Style TargetType="DataGrid">
             <Setter Property="behaviors:DataGridColumnWidthPersistence.IsEnabled" Value="True" />
             <Setter Property="behaviors:ScrollBubbleBehavior.EnableBubble" Value="True" />
-            <Setter Property="behaviors:DataGridEmptyStateBehavior.IsEnabled" Value="True" />
             <Setter Property="MaxHeight" Value="620" />
             <Setter Property="CanUserResizeColumns" Value="True" />
             <Setter Property="MinColumnWidth" Value="90" />
@@ -69,6 +68,8 @@
         <Style x:Key="DataGridTextCellStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Margin" Value="0,0,6,0" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
                     <Setter Property="Foreground" Value="{DynamicResource TableSelectionTextBrush}" />

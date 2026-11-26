@@ -187,3 +187,14 @@ public sealed record FinanceReferenceDto(
     Guid ReferenceId,
     bool Exists,
     string ReferenceTitle);
+
+public sealed record FinanceAuditEntryDto(
+    Guid Id,
+    DateTime OccurredAt,
+    string Actor,
+    string ActionType,
+    string ActionLabel,
+    string Direction,
+    decimal Amount,
+    string Description,
+    string ReferenceLabel);

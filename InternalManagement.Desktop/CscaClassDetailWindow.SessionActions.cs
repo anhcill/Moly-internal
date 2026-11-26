@@ -40,15 +40,26 @@ public partial class CscaClassDetailWindow
         if (!PromptDialog.TryShow(this, "Hủy buổi học", new[]
         {
             new PromptField("sessionId", "Buổi cần hủy", options[0].Value, Options: options),
-            new PromptField("reason", "Lý do hủy", "Giáo viên bận")
+            new PromptField("reason", "Lý do hủy", "Giáo viên bận"),
+            new PromptField("curriculumMode", "Xử lý giáo trình & lịch khóa học", "shift", Options: new[]
+            {
+                new PromptOption("shift", "Dồn giáo trình sang buổi sau & kéo dài khóa (+1 buổi)"),
+                new PromptOption("makeup", "Giữ nguyên giáo trình (sẽ tạo buổi dạy bù thay thế)")
+            })
         }, out var values)) return;
         if (!Guid.TryParse(values["sessionId"], out var sessionId) || string.IsNullOrWhiteSpace(values["reason"]))
         {
             ShowInvalid("Hãy chọn buổi học và nhập lý do hủy.");
             return;
         }
-        await SaveAsync(() => _apiClient.CancelCscaLessonSessionAsync(_classId, sessionId, values["reason"].Trim()),
-            "Đã hủy buổi, loại khỏi lương và dồn giáo trình nếu đây là buổi thường.");
+        var shiftCurriculum = !string.Equals(values.GetValueOrDefault("curriculumMode"), "makeup", StringComparison.OrdinalIgnoreCase);
+        await SaveAsync(() => _apiClient.CancelCscaLessonSessionAsync(
+                _classId, sessionId, values["reason"].Trim(),
+                shiftCurriculum: shiftCurriculum,
+                extendCourse: shiftCurriculum),
+            shiftCurriculum
+                ? "Đã hủy buổi, loại khỏi lương, dồn giáo trình và đẩy đồng bộ sang Course."
+                : "Đã hủy buổi, loại khỏi lương (giữ giáo trình để tạo buổi dạy bù) và đẩy đồng bộ sang Course.");
     }
 
     private async void AddMakeupSession_Click(object sender, RoutedEventArgs e)
@@ -58,22 +69,30 @@ public partial class CscaClassDetailWindow
             .OrderByDescending(s => s.LessonDate)
             .ThenByDescending(s => s.StartTime)
             .ToList();
-        var replacementOptions = new[] { new PromptOption(string.Empty, "-- Không gắn buổi hủy cụ thể --") }
-            .Concat(cancelled.Select(s => new PromptOption(
-                s.Id.ToString(),
-                $"{s.LessonDate:dd/MM/yyyy} {s.StartTime:hh\\:mm}-{s.EndTime:hh\\:mm}")))
+        if (cancelled.Count == 0)
+        {
+            ShowInvalid("Lớp chưa có buổi học đã hủy nào để tạo buổi dạy bù. Nếu muốn thêm buổi mới độc lập, hãy bấm '+ Thêm buổi'.");
+            return;
+        }
+
+        var replacementOptions = cancelled.Select(s => new PromptOption(
+            s.Id.ToString(),
+            $"{s.LessonDate:dd/MM/yyyy} {s.StartTime:hh\\:mm}-{s.EndTime:hh\\:mm}{(string.IsNullOrWhiteSpace(s.CancelReason) ? string.Empty : $" ({s.CancelReason})")}"))
             .ToArray();
 
         var fields = new List<PromptField>
         {
-            new("replacementId", "Dạy bù cho buổi đã hủy", replacementOptions[0].Value, IsRequired: false, Options: replacementOptions)
+            new("replacementId", "Dạy bù cho buổi đã hủy", replacementOptions[0].Value, IsRequired: true, Options: replacementOptions)
         };
         fields.AddRange(await LessonSessionFieldsAsync());
 
         if (!PromptDialog.TryShow(this, "Tạo buổi dạy bù (Makeup)", fields.ToArray(), out var values)) return;
         if (!TryLessonSessionValues(values, out var lessonDate, out var startTime, out var endTime, out var classroomId)) return;
-        Guid? replacementForSessionId = Guid.TryParse(values.GetValueOrDefault("replacementId"), out var parsedId)
-            ? parsedId : null;
+        if (!Guid.TryParse(values.GetValueOrDefault("replacementId"), out var replacementForSessionId))
+        {
+            ShowInvalid("Vui lòng chọn buổi đã hủy cần dạy bù.");
+            return;
+        }
 
         await SaveAsync(() => _apiClient.CreateCscaLessonSessionAsync(
                 _classId,
@@ -86,8 +105,8 @@ public partial class CscaClassDetailWindow
                 status: "Scheduled",
                 sessionKind: "Makeup",
                 replacementForSessionId: replacementForSessionId,
-                curriculumAction: "ReuseCancelled"),
-            "Đã tạo buổi dạy bù (Makeup) thành công.");
+                curriculumAction: "FillCancelled"),
+            "Đã tạo buổi dạy bù (Makeup) và đẩy đồng bộ sang Course.");
     }
 
     private async void CompleteAndAttendSession_Click(object sender, RoutedEventArgs e)

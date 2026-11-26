@@ -119,6 +119,14 @@ public static class PromptDialog
                 {
                     datePicker.SelectedDate = initialDate;
                 }
+                datePicker.CalendarClosed += (_, _) =>
+                {
+                    if (System.Windows.Input.Mouse.Captured is System.Windows.Controls.Primitives.CalendarItem
+                        or System.Windows.Controls.Calendar)
+                    {
+                        System.Windows.Input.Mouse.Capture(null);
+                    }
+                };
                 control = datePicker;
             }
             else if (field.Kind == PromptFieldKind.Time)
@@ -259,8 +267,22 @@ public static class PromptDialog
             IsDefault = true,
             Style = Application.Current.TryFindResource("PrimaryGradientButton") as Style
         };
+        var isSubmitting = false;
+        saveButton.PreviewMouseLeftButtonDown += (_, _) =>
+        {
+            foreach (var ctrl in controls.Values)
+            {
+                if (ctrl is ComboBox cb && cb.IsDropDownOpen) cb.IsDropDownOpen = false;
+                else if (ctrl is DatePicker dp && dp.IsDropDownOpen) dp.IsDropDownOpen = false;
+            }
+            saveButton.Focus();
+        };
         saveButton.Click += (_, _) =>
         {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            saveButton.Focus();
+
             var result = new Dictionary<string, string>();
             foreach (var field in fields)
             {
@@ -268,7 +290,9 @@ public static class PromptDialog
 
                 if (IsFieldRequired(field, result) && string.IsNullOrWhiteSpace(value))
                 {
-                    MessageBox.Show($"Vui lòng nhập {field.Label.ToLowerInvariant()}.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    isSubmitting = false;
+                    MessageBox.Show(dialog, $"Vui lòng nhập {field.Label.ToLowerInvariant()}.", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    controls[field.Key].Focus();
                     return;
                 }
 

@@ -33,6 +33,14 @@ public partial class MainWindow
     private System.Windows.Controls.TextBlock CscaSearchPlaceholder => ViewCoursesContainer.CscaSearchPlaceholder;
     private System.Windows.Controls.ComboBox CscaCourseFilterComboBox => ViewCoursesContainer.CscaCourseFilterComboBox;
     private System.Windows.Controls.ComboBox CscaClassTypeFilterComboBox => ViewCoursesContainer.CscaClassTypeFilterComboBox;
+    private System.Windows.Controls.RadioButton CscaTabLiveButton => ViewCoursesContainer.CscaTabLiveButton;
+    private System.Windows.Controls.RadioButton CscaTabTrialButton => ViewCoursesContainer.CscaTabTrialButton;
+    private System.Windows.Controls.RadioButton CscaTabRecordButton => ViewCoursesContainer.CscaTabRecordButton;
+    private System.Windows.Controls.RadioButton CscaTabAllButton => ViewCoursesContainer.CscaTabAllButton;
+    private System.Windows.Controls.TextBlock CscaLiveCountText => ViewCoursesContainer.CscaLiveCountText;
+    private System.Windows.Controls.TextBlock CscaTrialCountText => ViewCoursesContainer.CscaTrialCountText;
+    private System.Windows.Controls.TextBlock CscaRecordCountText => ViewCoursesContainer.CscaRecordCountText;
+    private System.Windows.Controls.TextBlock CscaAllCountText => ViewCoursesContainer.CscaAllCountText;
     private System.Windows.Controls.ComboBox CscaFinanceCourseFilterComboBox => ViewCoursesContainer.CscaFinanceCourseFilterComboBox;
     private System.Windows.Controls.DataGrid CscaClassesDataGrid => ViewCoursesContainer.CscaClassesDataGrid;
     private System.Windows.Controls.DataGrid CscaFinanceDataGrid => ViewCoursesContainer.CscaFinanceDataGrid;

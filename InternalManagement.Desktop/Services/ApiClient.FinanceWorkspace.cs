@@ -87,4 +87,23 @@ public sealed partial class ApiClient
 
     public Task<bool> CancelFinancePlanAsync(Guid planId, CancellationToken ct = default)
         => FinanceWorkspacePostAsync($"api/v1/finance/workspace/planned-movements/{planId:D}/cancel", new { }, ct);
+
+    public Task<bool> CreateFinanceLedgerTransactionAsync(
+        string transactionType,
+        decimal amount,
+        DateTime transactionDateUtc,
+        string description,
+        string? referenceType = "Manual",
+        CancellationToken ct = default)
+        => FinanceWorkspacePostAsync("api/v1/finance/transactions", new
+        {
+            TransactionType = transactionType,
+            Amount = amount,
+            TransactionDate = transactionDateUtc,
+            CategoryId = (Guid?)null,
+            BusinessUnitId = (Guid?)null,
+            ReferenceType = referenceType,
+            ReferenceId = (Guid?)null,
+            Description = description
+        }, ct);
 }

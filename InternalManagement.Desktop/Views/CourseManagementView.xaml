@@ -2,6 +2,44 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:InternalManagement.Desktop.Controls">
+    <UserControl.Resources>
+        <Style x:Key="ClassModeSegmentRadioButton" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="11,6" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="PillBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PillBorder" Property="Background" Value="{DynamicResource TabItemHoverBgBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="PillBorder" Property="Background" Value="{DynamicResource CardBgBrush}" />
+                                <Setter TargetName="PillBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextDarkBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <TabControl x:Name="CourseModuleTabControl" SelectionChanged="CourseModuleTabControl_SelectionChanged">
 
@@ -81,15 +119,58 @@
                                 <Border Background="#4F46E5" CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
                                     <TextBlock Text="LỌC" FontSize="10" FontWeight="Bold" Foreground="White" />
                                 </Border>
-                                <TextBlock x:Name="CscaCourseFilterText" Text="Đang lọc các lớp thuộc khóa học: ..." FontWeight="SemiBold" Foreground="#3730A3" FontSize="12.5" />
+                                <TextBlock x:Name="CscaCourseFilterText" Text="Đang lọc các lớp thuộc khóa học: ..." FontWeight="SemiBold" Foreground="{DynamicResource SurfaceAccentTextBrush}" FontSize="12.5" />
                             </StackPanel>
                             <Button Grid.Column="1" Content="✕ Xem tất cả các lớp" Click="ClearCscaCourseFilter_Click" Style="{StaticResource OutlineButton}" Height="30" FontSize="11" Padding="10,2" />
                         </Grid>
                     </Border>
 
-                    <!-- Compact metrics leave more vertical room for the class list. -->
-                    <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Border Width="174" Height="42" Background="{DynamicResource CardBgBrush}" CornerRadius="9" Padding="10,6" Margin="0,0,8,0" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                    <!-- Segmented class-mode switcher (Live / Học thử / Record / Tất cả) + compact metrics -->
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                        <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="10" Padding="4" Margin="0,0,12,4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <RadioButton x:Name="CscaTabLiveButton" GroupName="CscaClassModeGroup" Style="{StaticResource ClassModeSegmentRadioButton}" IsChecked="True" Checked="CscaClassModeTab_Checked" ToolTip="Các lớp Live chính thức có học phí">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="7" Height="7" Fill="#10B981" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Lớp Live chính thức" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource SurfaceSuccessBgBrush}" BorderBrush="{DynamicResource SurfaceSuccessBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="6,1" Margin="6,0,0,0">
+                                            <TextBlock x:Name="CscaLiveCountText" Text="0" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource SurfaceSuccessTextBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="CscaTabTrialButton" GroupName="CscaClassModeGroup" Style="{StaticResource ClassModeSegmentRadioButton}" Checked="CscaClassModeTab_Checked" ToolTip="Các lớp Học thử miễn phí (0đ)">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="7" Height="7" Fill="#F59E0B" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Lớp Học thử (Miễn phí)" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource SurfaceWarningBgBrush}" BorderBrush="{DynamicResource SurfaceWarningBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="6,1" Margin="6,0,0,0">
+                                            <TextBlock x:Name="CscaTrialCountText" Text="0" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource SurfaceWarningTextBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="CscaTabRecordButton" GroupName="CscaClassModeGroup" Style="{StaticResource ClassModeSegmentRadioButton}" Checked="CscaClassModeTab_Checked" ToolTip="Các lớp Record (kế thừa hoặc video độc lập)">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="7" Height="7" Fill="#3B82F6" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Lớp Record" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource SurfaceInfoBgBrush}" BorderBrush="{DynamicResource SurfaceInfoBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="6,1" Margin="6,0,0,0">
+                                            <TextBlock x:Name="CscaRecordCountText" Text="0" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource SurfaceInfoTextBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="CscaTabAllButton" GroupName="CscaClassModeGroup" Style="{StaticResource ClassModeSegmentRadioButton}" Margin="0" Checked="CscaClassModeTab_Checked" ToolTip="Hiển thị tất cả dạng lớp">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Tất cả" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource PillSlateBgBrush}" CornerRadius="9" Padding="6,1" Margin="6,0,0,0">
+                                            <TextBlock x:Name="CscaAllCountText" Text="0" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource PillSlateTextBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </RadioButton>
+                            </WrapPanel>
+                        </Border>
+
+                        <Border Width="168" Height="42" Background="{DynamicResource CardBgBrush}" CornerRadius="9" Padding="10,6" Margin="0,0,8,4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="26" />
@@ -99,12 +180,12 @@
                                 <Border Width="24" Height="24" Background="{DynamicResource CardAltBgBrush}" CornerRadius="6" VerticalAlignment="Center">
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE7BE;" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="Tổng số lớp" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="7,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="Số lớp xem" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="7,0,8,0" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="2" x:Name="MetricCscaClassCount" Text="0" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextDarkBrush}" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
 
-                        <Border Width="184" Height="42" Background="{DynamicResource CardBgBrush}" CornerRadius="9" Padding="10,6" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
+                        <Border Width="178" Height="42" Background="{DynamicResource CardBgBrush}" CornerRadius="9" Padding="10,6" Margin="0,0,0,4" BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="26" />
@@ -126,16 +207,16 @@
                             <!-- VÙNG TÌM KIẾM & BỘ LỌC (BÊN TRÁI) -->
                             <WrapPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                                 <!-- Search Box -->
-                                <Grid Width="200" Height="36" Margin="0,2,8,2">
+                                <Grid Width="210" Height="36" Margin="0,2,8,2">
                                     <TextBox x:Name="CscaSearchBox" Style="{StaticResource ModernTextBox}" Height="36" Padding="32,0,10,0" VerticalContentAlignment="Center" FontSize="12.5" TextChanged="CscaSearch_TextChanged" />
                                     <TextBlock FontFamily="Segoe MDL2 Assets, Segoe UI" Text="&#xE721;" Foreground="#94A3B8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" />
                                     <TextBlock x:Name="CscaSearchPlaceholder" Text="Tìm mã lớp, tên lớp..." Foreground="#94A3B8" FontSize="12" Margin="32,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
                                 </Grid>
                                 <!-- Course Filter ComboBox -->
-                                <ComboBox x:Name="CscaCourseFilterComboBox" Width="175" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
-                                <ComboBox x:Name="CscaClassTypeFilterComboBox" Width="150" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" SelectionChanged="CscaClassTypeFilterComboBox_SelectionChanged">
-                                    <ComboBoxItem Content="Tất cả dạng lớp" IsSelected="True" />
-                                    <ComboBoxItem Content="Lớp Live chính thức" />
+                                <ComboBox x:Name="CscaCourseFilterComboBox" Width="195" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" DisplayMemberPath="Title" SelectedValuePath="Id" SelectionChanged="CscaCourseFilterComboBox_SelectionChanged" />
+                                <ComboBox x:Name="CscaClassTypeFilterComboBox" Visibility="Collapsed" Width="150" Height="36" Margin="0,2,8,2" VerticalContentAlignment="Center" SelectionChanged="CscaClassTypeFilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Tất cả dạng lớp" />
+                                    <ComboBoxItem Content="Lớp Live chính thức" IsSelected="True" />
                                     <ComboBoxItem Content="Lớp Record" />
                                     <ComboBoxItem Content="Lớp học thử (0đ)" />
                                 </ComboBox>
@@ -167,13 +248,13 @@
                                                         <Setter Property="BorderBrush" Value="{DynamicResource SurfaceSuccessBorderBrush}" />
                                                         <Setter Property="BorderThickness" Value="1" />
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                <Setter Property="Background" Value="{DynamicResource SurfaceWarningBgBrush}" />
-                                                                <Setter Property="BorderBrush" Value="{DynamicResource SurfaceWarningBorderBrush}" />
-                                                            </DataTrigger>
                                                             <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
                                                                 <Setter Property="Background" Value="{DynamicResource SurfaceInfoBgBrush}" />
                                                                 <Setter Property="BorderBrush" Value="{DynamicResource SurfaceInfoBorderBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsTrialEffective}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource SurfaceWarningBgBrush}" />
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource SurfaceWarningBorderBrush}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -183,11 +264,11 @@
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Foreground" Value="{DynamicResource SurfaceSuccessTextBrush}" />
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                    <Setter Property="Foreground" Value="{DynamicResource SurfaceWarningTextBrush}" />
-                                                                </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
                                                                     <Setter Property="Foreground" Value="{DynamicResource SurfaceInfoTextBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsTrialEffective}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SurfaceWarningTextBrush}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -312,20 +393,20 @@
                                 <DataGridTemplateColumn Header="LOẠI LỚP" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border CornerRadius="6" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Border CornerRadius="10" Padding="9,3" HorizontalAlignment="Left" VerticalAlignment="Center">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
-                                                        <Setter Property="Background" Value="#F0FDF4" />
-                                                        <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                                        <Setter Property="Background" Value="{DynamicResource SurfaceSuccessBgBrush}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceSuccessBorderBrush}" />
                                                         <Setter Property="BorderThickness" Value="1" />
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                <Setter Property="Background" Value="#FEF3C7" />
-                                                                <Setter Property="BorderBrush" Value="#FDE68A" />
-                                                            </DataTrigger>
                                                             <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
-                                                                <Setter Property="Background" Value="#EFF6FF" />
-                                                                <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                                                <Setter Property="Background" Value="{DynamicResource SurfaceInfoBgBrush}" />
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource SurfaceInfoBorderBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsTrialEffective}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource SurfaceWarningBgBrush}" />
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource SurfaceWarningBorderBrush}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -333,13 +414,13 @@
                                                 <TextBlock Text="{Binding ClassTypeDisplay}" FontWeight="SemiBold" FontSize="11">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Foreground" Value="#15803D" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource SurfaceSuccessTextBrush}" />
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsTrial}" Value="True">
-                                                                    <Setter Property="Foreground" Value="#B45309" />
-                                                                </DataTrigger>
                                                                 <DataTrigger Binding="{Binding ClassType}" Value="RECORDING">
-                                                                    <Setter Property="Foreground" Value="#1D4ED8" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SurfaceInfoTextBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsTrialEffective}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SurfaceWarningTextBrush}" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

@@ -286,6 +286,11 @@ public partial class MainWindow
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_rememberSession && !string.IsNullOrWhiteSpace(_sessionUsername) && _apiClient.CurrentSession is not null)
+        {
+            _sessionStore.SaveQuickAccount(_sessionUsername, _apiClient.CurrentSession);
+        }
+
         ClearRememberedSession();
         ResetSessionState();
         RefreshQuickLoginAccounts();

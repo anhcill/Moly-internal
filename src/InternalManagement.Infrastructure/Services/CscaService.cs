@@ -26,6 +26,7 @@ public sealed partial class CscaService : ICscaService
     private readonly IFinancePostingService? _financePostingService;
     private readonly ILmsAccessLifecycleService? _lmsAccessLifecycleService;
     private readonly IApplicationDbContext? _integrationDb;
+    private readonly ILmsOutboxDispatcher? _lmsOutboxDispatcher;
 
     public CscaService(
         ICscaDbContext db,
@@ -35,7 +36,8 @@ public sealed partial class CscaService : ICscaService
         IBusinessDocumentRegistry? documentRegistry = null,
         IFinancePostingService? financePostingService = null,
         ILmsAccessLifecycleService? lmsAccessLifecycleService = null,
-        IApplicationDbContext? integrationDb = null)
+        IApplicationDbContext? integrationDb = null,
+        ILmsOutboxDispatcher? lmsOutboxDispatcher = null)
     {
         _db = db;
         _currentUser = currentUser;
@@ -45,6 +47,7 @@ public sealed partial class CscaService : ICscaService
         _financePostingService = financePostingService;
         _lmsAccessLifecycleService = lmsAccessLifecycleService;
         _integrationDb = integrationDb;
+        _lmsOutboxDispatcher = lmsOutboxDispatcher;
     }
 
     private async Task<(Guid CompanyId, Guid? BusinessUnitId)> GetContextAsync(CancellationToken ct)

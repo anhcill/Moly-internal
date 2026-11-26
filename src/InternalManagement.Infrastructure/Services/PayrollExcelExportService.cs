@@ -171,7 +171,11 @@ public sealed class PayrollExcelExportService : IPayrollExportService
         const uint totalCurrencyStyle = 9;
         const uint dateStyle = 10;
         const uint textStyle = 11;
+        const uint intCenterStyle = 12;
+        const uint signatureTitleStyle = 13;
+        const uint signatureNoteStyle = 14;
 
+        var vnNow = DateTime.UtcNow.AddHours(7);
         var mainSheetView = new SheetView
         {
             WorkbookViewId = 0U,
@@ -192,24 +196,31 @@ public sealed class PayrollExcelExportService : IPayrollExportService
         var sheetViews = new SheetViews(mainSheetView);
         var columns = new Columns(
             Column(1, 1, 7), Column(2, 2, 15), Column(3, 3, 28), Column(4, 4, 22), Column(5, 5, 20),
-            Column(6, 6, 16), Column(7, 7, 18), Column(8, 10, 14), Column(11, 13, 19), Column(14, 14, 16), Column(15, 15, 16));
+            Column(6, 6, 16), Column(7, 7, 18), Column(8, 10, 14), Column(11, 13, 19), Column(14, 14, 16), Column(15, 15, 18));
         var sheetData = new SheetData();
 
         sheetData.Append(
-            Row(1, CellText("BẢNG LƯƠNG", titleStyle)),
+            Row(1, CellText("BẢNG LƯƠNG THANH TOÁN", titleStyle)),
             Row(2, CellText(companyName + " · " + businessUnitName, metadataStyle)),
-            Row(3, CellText($"Kỳ lương: {period.Name} · {period.StartDate:dd/MM/yyyy} - {period.EndDate:dd/MM/yyyy} · Xuất lúc: {DateTime.Now:dd/MM/yyyy HH:mm}", metadataStyle)));
+            Row(3, CellText($"Kỳ lương: {period.Name} · {period.StartDate:dd/MM/yyyy} - {period.EndDate:dd/MM/yyyy} · Xuất lúc: {vnNow:dd/MM/yyyy HH:mm} (GMT+7)", metadataStyle)));
 
         var firstDataRow = 7;
-        var lastDataRow = firstDataRow + rows.Count - 1;
+        var hasRows = rows.Count > 0;
+        var lastDataRow = hasRows ? firstDataRow + rows.Count - 1 : firstDataRow;
+        var baseColumn = "G";
         var grossColumn = "K";
         var deductionColumn = "L";
         var netColumn = "M";
+        var totalBase = rows.Sum(row => row.BaseSalary);
+        var totalGross = rows.Sum(row => row.Gross);
+        var totalDeductions = rows.Sum(row => row.Deductions);
+        var totalNet = rows.Sum(row => row.Net);
+
         sheetData.Append(Row(4,
-            CellText("SỐ PHIẾU", summaryLabelStyle), CellNumber(rows.Count, decimalStyle), CellEmpty(),
-            CellText("TỔNG GROSS", summaryLabelStyle), FormulaCurrency($"SUM({grossColumn}{firstDataRow}:{grossColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Gross), summaryCurrencyStyle), CellEmpty(),
-            CellText("TỔNG KHẤU TRỪ", summaryLabelStyle), FormulaCurrency($"SUM({deductionColumn}{firstDataRow}:{deductionColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Deductions), summaryCurrencyStyle), CellEmpty(),
-            CellText("TỔNG THỰC LĨNH", summaryLabelStyle), FormulaCurrency($"SUM({netColumn}{firstDataRow}:{netColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Net), summaryCurrencyStyle)));
+            CellText("SỐ PHIẾU", summaryLabelStyle), CellNumber(rows.Count, intCenterStyle), CellEmpty(),
+            CellText("TỔNG GROSS", summaryLabelStyle), hasRows ? FormulaCurrency($"SUM({grossColumn}{firstDataRow}:{grossColumn}{lastDataRow})", totalGross, summaryCurrencyStyle) : CellNumber(0, summaryCurrencyStyle), CellEmpty(),
+            CellText("TỔNG KHẤU TRỪ", summaryLabelStyle), hasRows ? FormulaCurrency($"SUM({deductionColumn}{firstDataRow}:{deductionColumn}{lastDataRow})", totalDeductions, summaryCurrencyStyle) : CellNumber(0, summaryCurrencyStyle), CellEmpty(),
+            CellText("TỔNG THỰC LĨNH", summaryLabelStyle), hasRows ? FormulaCurrency($"SUM({netColumn}{firstDataRow}:{netColumn}{lastDataRow})", totalNet, summaryCurrencyStyle) : CellNumber(0, summaryCurrencyStyle)));
 
         var headers = new[]
         {
@@ -220,8 +231,11 @@ public sealed class PayrollExcelExportService : IPayrollExportService
         for (var index = 0; index < rows.Count; index++)
         {
             var item = rows[index];
+            var publishedLocal = item.PublishedAt.HasValue
+                ? (item.PublishedAt.Value.Kind == DateTimeKind.Local ? item.PublishedAt.Value : DateTime.SpecifyKind(item.PublishedAt.Value, DateTimeKind.Utc).AddHours(7))
+                : (DateTime?)null;
             sheetData.Append(Row((uint)(firstDataRow + index),
-                CellNumber(index + 1, decimalStyle),
+                CellNumber(index + 1, intCenterStyle),
                 CellText(item.EmployeeCode, textStyle),
                 CellText(item.EmployeeName, textStyle),
                 CellText(item.DepartmentName, textStyle),
@@ -235,24 +249,49 @@ public sealed class PayrollExcelExportService : IPayrollExportService
                 CellNumber(item.Deductions, currencyStyle),
                 CellNumber(item.Net, currencyStyle),
                 CellText(item.Status, textStyle),
-                item.PublishedAt.HasValue ? CellDate(item.PublishedAt.Value, dateStyle) : CellText("Chưa phát hành", textStyle)));
+                publishedLocal.HasValue ? CellDate(publishedLocal.Value, dateStyle) : CellText("Chưa phát hành", textStyle)));
         }
 
-        var totalRow = Math.Max(firstDataRow, lastDataRow) + 1;
+        var totalRow = hasRows ? lastDataRow + 1 : firstDataRow;
         sheetData.Append(Row((uint)totalRow,
-            CellText("TỔNG CỘNG", totalLabelStyle), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(),
-            FormulaCurrency($"SUM({grossColumn}{firstDataRow}:{grossColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Gross), totalCurrencyStyle),
-            FormulaCurrency($"SUM({deductionColumn}{firstDataRow}:{deductionColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Deductions), totalCurrencyStyle),
-            FormulaCurrency($"SUM({netColumn}{firstDataRow}:{netColumn}{Math.Max(firstDataRow, lastDataRow)})", rows.Sum(row => row.Net), totalCurrencyStyle),
+            CellText("TỔNG CỘNG", totalLabelStyle), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(),
+            hasRows ? FormulaCurrency($"SUM({baseColumn}{firstDataRow}:{baseColumn}{lastDataRow})", totalBase, totalCurrencyStyle) : CellNumber(0, totalCurrencyStyle),
+            CellEmpty(), CellEmpty(), CellEmpty(),
+            hasRows ? FormulaCurrency($"SUM({grossColumn}{firstDataRow}:{grossColumn}{lastDataRow})", totalGross, totalCurrencyStyle) : CellNumber(0, totalCurrencyStyle),
+            hasRows ? FormulaCurrency($"SUM({deductionColumn}{firstDataRow}:{deductionColumn}{lastDataRow})", totalDeductions, totalCurrencyStyle) : CellNumber(0, totalCurrencyStyle),
+            hasRows ? FormulaCurrency($"SUM({netColumn}{firstDataRow}:{netColumn}{lastDataRow})", totalNet, totalCurrencyStyle) : CellNumber(0, totalCurrencyStyle),
             CellEmpty(), CellEmpty()));
 
-        var worksheet = new Worksheet(sheetViews, columns, sheetData);
+        var sigDateRow = (uint)(totalRow + 2);
+        var sigTitleRow = sigDateRow + 1;
+        var sigNoteRow = sigTitleRow + 1;
+        sheetData.Append(
+            Row(sigDateRow, CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(),
+                CellText($"Ngày {vnNow:dd} tháng {vnNow:MM} năm {vnNow:yyyy}", signatureNoteStyle), CellEmpty(), CellEmpty(), CellEmpty()),
+            Row(sigTitleRow, CellEmpty(), CellEmpty(), CellText("NGƯỜI LẬP BIỂU", signatureTitleStyle), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(),
+                CellText("KẾ TOÁN TRƯỞNG", signatureTitleStyle), CellEmpty(), CellEmpty(), CellEmpty(),
+                CellText("GIÁM ĐỐC DUYỆT", signatureTitleStyle), CellEmpty(), CellEmpty()),
+            Row(sigNoteRow, CellEmpty(), CellEmpty(), CellText("(Ký, ghi rõ họ tên)", signatureNoteStyle), CellEmpty(), CellEmpty(), CellEmpty(), CellEmpty(),
+                CellText("(Ký, ghi rõ họ tên)", signatureNoteStyle), CellEmpty(), CellEmpty(), CellEmpty(),
+                CellText("(Ký, đóng dấu)", signatureNoteStyle), CellEmpty(), CellEmpty()));
+
+        var sheetProperties = new SheetProperties(new PageSetupProperties { FitToPage = true });
+        var worksheet = new Worksheet(sheetProperties, sheetViews, columns, sheetData);
+        worksheet.Append(new AutoFilter { Reference = $"A6:O{Math.Max(6, hasRows ? lastDataRow : 6)}" });
         worksheet.Append(new MergeCells(
             new MergeCell { Reference = "A1:O1" },
             new MergeCell { Reference = "A2:O2" },
-            new MergeCell { Reference = "A3:O3" }));
-        worksheet.Append(new AutoFilter { Reference = $"A6:O{Math.Max(6, lastDataRow)}" });
-        worksheet.Append(new PageMargins { Left = 0.3D, Right = 0.3D, Top = 0.5D, Bottom = 0.5D, Header = 0.2D, Footer = 0.2D });
+            new MergeCell { Reference = "A3:O3" },
+            new MergeCell { Reference = $"A{totalRow}:F{totalRow}" },
+            new MergeCell { Reference = $"L{sigDateRow}:O{sigDateRow}" },
+            new MergeCell { Reference = $"C{sigTitleRow}:E{sigTitleRow}" },
+            new MergeCell { Reference = $"H{sigTitleRow}:J{sigTitleRow}" },
+            new MergeCell { Reference = $"M{sigTitleRow}:O{sigTitleRow}" },
+            new MergeCell { Reference = $"C{sigNoteRow}:E{sigNoteRow}" },
+            new MergeCell { Reference = $"H{sigNoteRow}:J{sigNoteRow}" },
+            new MergeCell { Reference = $"M{sigNoteRow}:O{sigNoteRow}" }));
+        worksheet.Append(new PageMargins { Left = 0.3D, Right = 0.3D, Top = 0.45D, Bottom = 0.45D, Header = 0.2D, Footer = 0.2D });
+        worksheet.Append(new PageSetup { Orientation = OrientationValues.Landscape, PaperSize = 9U, FitToWidth = 1U, FitToHeight = 0U });
         return worksheet;
     }
 
@@ -261,11 +300,11 @@ public sealed class PayrollExcelExportService : IPayrollExportService
         var fonts = new Fonts(
             new Font(new FontSize { Val = 11D }, new FontName { Val = "Aptos" }),
             new Font(new Bold(), new FontSize { Val = 16D }, new Color { Rgb = "FFFFFFFF" }, new FontName { Val = "Aptos Display" }),
-            new Font(new Color { Rgb = "FF475569" }, new FontSize { Val = 10D }, new FontName { Val = "Aptos" }),
-            new Font(new Bold(), new Color { Rgb = "FF1E3A8A" }, new FontSize { Val = 10D }, new FontName { Val = "Aptos" }),
-            new Font(new Bold(), new Color { Rgb = "FF065F46" }, new FontSize { Val = 12D }, new FontName { Val = "Aptos" }),
-            new Font(new Bold(), new Color { Rgb = "FFFFFFFF" }, new FontSize { Val = 10D }, new FontName { Val = "Aptos" }),
-            new Font(new Bold(), new Color { Rgb = "FF0F172A" }, new FontSize { Val = 10D }, new FontName { Val = "Aptos" }));
+            new Font(new FontSize { Val = 10D }, new Color { Rgb = "FF475569" }, new FontName { Val = "Aptos" }),
+            new Font(new Bold(), new FontSize { Val = 10D }, new Color { Rgb = "FF1E3A8A" }, new FontName { Val = "Aptos" }),
+            new Font(new Bold(), new FontSize { Val = 12D }, new Color { Rgb = "FF065F46" }, new FontName { Val = "Aptos" }),
+            new Font(new Bold(), new FontSize { Val = 10D }, new Color { Rgb = "FFFFFFFF" }, new FontName { Val = "Aptos" }),
+            new Font(new Bold(), new FontSize { Val = 10D }, new Color { Rgb = "FF0F172A" }, new FontName { Val = "Aptos" }));
         var fills = new Fills(
             new Fill(new PatternFill { PatternType = PatternValues.None }),
             new Fill(new PatternFill { PatternType = PatternValues.Gray125 }),
@@ -287,20 +326,24 @@ public sealed class PayrollExcelExportService : IPayrollExportService
         var numberFormats = new NumberingFormats(
             new NumberingFormat { NumberFormatId = 164U, FormatCode = "#,##0 \"đ\"" },
             new NumberingFormat { NumberFormatId = 165U, FormatCode = "0.00" },
-            new NumberingFormat { NumberFormatId = 166U, FormatCode = "dd/mm/yyyy hh:mm" });
+            new NumberingFormat { NumberFormatId = 166U, FormatCode = "dd/mm/yyyy hh:mm" },
+            new NumberingFormat { NumberFormatId = 167U, FormatCode = "#,##0" });
         var cellFormats = new CellFormats(
             CellFormat(0, 0, 0, HorizontalAlignmentValues.Left),
             CellFormat(1, 2, 0, HorizontalAlignmentValues.Center),
             CellFormat(2, 0, 0, HorizontalAlignmentValues.Left),
             CellFormat(3, 3, 1, HorizontalAlignmentValues.Left),
             CellFormat(4, 5, 1, HorizontalAlignmentValues.Right, 164U),
-            CellFormat(5, 6, 2, HorizontalAlignmentValues.Center),
+            CellFormat(5, 2, 2, HorizontalAlignmentValues.Center),
             CellFormat(0, 0, 1, HorizontalAlignmentValues.Right, 164U),
             CellFormat(0, 0, 1, HorizontalAlignmentValues.Right, 165U),
             CellFormat(6, 4, 1, HorizontalAlignmentValues.Left),
             CellFormat(4, 6, 1, HorizontalAlignmentValues.Right, 164U),
             CellFormat(0, 0, 1, HorizontalAlignmentValues.Center, 166U),
-            CellFormat(0, 0, 1, HorizontalAlignmentValues.Left));
+            CellFormat(0, 0, 1, HorizontalAlignmentValues.Left),
+            CellFormat(0, 0, 1, HorizontalAlignmentValues.Center, 167U),
+            CellFormat(6, 0, 0, HorizontalAlignmentValues.Center),
+            CellFormat(2, 0, 0, HorizontalAlignmentValues.Center));
         return new Stylesheet(numberFormats, fonts, fills, borders, cellFormats);
     }
 

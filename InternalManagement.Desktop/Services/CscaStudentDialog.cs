@@ -128,6 +128,7 @@ public static partial class CscaStudentDialog
             ShowInTaskbar = false
         };
         dialog.SetResourceReference(Window.BackgroundProperty, "LightBgBrush");
+        dialog.SetResourceReference(Window.ForegroundProperty, "TextDarkBrush");
         ThemeService.SetWindowDarkMode(dialog, ThemeService.Instance.IsDark);
 
         var rootGrid = new Grid { Margin = new Thickness(22, 16, 22, 16) };
@@ -171,26 +172,28 @@ public static partial class CscaStudentDialog
         var tuitionBadge = new Border
         {
             Background = ThemeService.GetBrush("SurfaceAccentBgBrush", "#EEF2FF"),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(199, 210, 254)),
+            BorderBrush = ThemeService.GetBrush("SurfaceAccentBorderBrush", "#C7D2FE"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(12, 6, 12, 6),
             VerticalAlignment = VerticalAlignment.Center
         };
-        var tuitionPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        var tuitionPanel = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         tuitionPanel.Children.Add(new TextBlock
         {
             Text = "Học phí lớp: ",
             FontSize = 11.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(67, 56, 202))
+            Foreground = ThemeService.GetBrush("SurfaceAccentTextBrush", "#4338CA"),
+            VerticalAlignment = VerticalAlignment.Center
         });
         var tuitionValueText = new TextBlock
         {
             Text = $"{currentTuitionFee:N0} đ",
-            FontSize = 13,
+            FontSize = 13.5,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(49, 46, 129))
+            Foreground = ThemeService.GetBrush("SurfaceAccentTextBrush", "#312E81"),
+            VerticalAlignment = VerticalAlignment.Center
         };
         tuitionPanel.Children.Add(tuitionValueText);
         tuitionBadge.Child = tuitionPanel;
@@ -264,7 +267,7 @@ public static partial class CscaStudentDialog
         var autoFillSuccessBanner = new Border
         {
             Background = ThemeService.GetBrush("SurfaceSuccessBgBrush", "#ECFDF5"),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208)),
+            BorderBrush = ThemeService.GetBrush("SurfaceSuccessBorderBrush", "#A7F3D0"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(12, 8, 12, 8),
@@ -275,15 +278,15 @@ public static partial class CscaStudentDialog
         {
             FontSize = 12,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(6, 95, 70))
+            Foreground = ThemeService.GetBrush("SurfaceSuccessTextBrush", "#065F46")
         };
         autoFillSuccessBanner.Child = autoFillSuccessText;
 
-                var effectiveStudent = student ?? prefillStudent;
+        var effectiveStudent = student ?? prefillStudent;
         var codeRow = CreateTwoColumnGrid();
         var codeBox = CreateTextBox(!string.IsNullOrWhiteSpace(effectiveStudent?.StudentCode) ? effectiveStudent.StudentCode : "(Tự động sinh: CSCA-001...)");
         codeBox.IsReadOnly = true;
-        codeBox.Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161));
+        codeBox.Foreground = ThemeService.GetBrush("SurfaceInfoTextBrush", "#0369A1");
         codeBox.FontWeight = FontWeights.Bold;
         AddFormField(codeRow.Left, "Mã học viên (Tự động sinh)", codeBox);
 
@@ -329,7 +332,7 @@ public static partial class CscaStudentDialog
             var lookupCard = new Border
             {
                 Background = ThemeService.GetBrush("SurfaceInfoBgBrush", "#F0F9FF"),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                BorderBrush = ThemeService.GetBrush("SurfaceInfoBorderBrush", "#BAE6FD"),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(14, 10, 14, 10),
@@ -342,14 +345,14 @@ public static partial class CscaStudentDialog
                 Text = "⚡ TÌM & TỰ ĐỘNG ĐIỀN TỪ HỌC VIÊN / KHÁCH HÀNG CŨ",
                 FontSize = 11.5,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161)),
+                Foreground = ThemeService.GetBrush("SurfaceInfoTextBrush", "#0369A1"),
                 Margin = new Thickness(0, 0, 0, 4)
             };
             var lookupSub = new TextBlock
             {
                 Text = "Nếu học viên đã từng học hoặc có trong hệ thống, hãy gõ tìm kiếm để tự điền form ngay.",
                 FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(14, 116, 144)),
+                Foreground = ThemeService.GetBrush("TextMutedBrush", "#0E7490"),
                 Margin = new Thickness(0, 0, 0, 8)
             };
             lookupContent.Children.Add(lookupHeader);
@@ -364,8 +367,10 @@ public static partial class CscaStudentDialog
                 Height = 34,
                 Padding = new Thickness(10, 6, 10, 6),
                 FontSize = 12.5,
-                Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                Style = Application.Current?.TryFindResource("ModernTextBox") as Style,
+                Background = ThemeService.GetBrush("InputBgBrush", "#FFFFFF"),
+                Foreground = ThemeService.GetBrush("InputTextBrush", "#0F172A"),
+                BorderBrush = ThemeService.GetBrush("SurfaceInfoBorderBrush", "#BAE6FD"),
                 BorderThickness = new Thickness(1),
                 VerticalContentAlignment = VerticalAlignment.Center
             };
@@ -376,13 +381,10 @@ public static partial class CscaStudentDialog
             var clearBtn = new Button
             {
                 Content = "Xóa tìm",
-                Width = 65,
+                Width = 72,
                 Height = 34,
                 Margin = new Thickness(6, 0, 0, 0),
-                Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
-                BorderBrush = ThemeService.GetBrush("BorderMediumBrush", "#CBD5E1"),
-                BorderThickness = new Thickness(1),
-                Foreground = ThemeService.GetBrush("TextMutedBrush", "#64748B"),
+                Style = Application.Current?.TryFindResource("OutlineButton") as Style,
                 FontSize = 11,
                 Cursor = Cursors.Hand
             };
@@ -396,7 +398,8 @@ public static partial class CscaStudentDialog
                 Margin = new Thickness(0, 6, 0, 0),
                 Visibility = Visibility.Collapsed,
                 Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(186, 230, 253)),
+                Foreground = ThemeService.GetBrush("TextDarkBrush", "#0F172A"),
+                BorderBrush = ThemeService.GetBrush("SurfaceInfoBorderBrush", "#BAE6FD"),
                 BorderThickness = new Thickness(1)
             };
             lookupContent.Children.Add(suggestionList);
@@ -552,7 +555,7 @@ public static partial class CscaStudentDialog
             Padding = new Thickness(14, 10, 14, 10),
             Margin = new Thickness(0, 0, 0, 10),
             Background = ThemeService.GetBrush("SurfaceWarningBgBrush", "#FEF3C7"),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(253, 230, 138)),
+            BorderBrush = ThemeService.GetBrush("SurfaceWarningBorderBrush", "#FDE68A"),
             BorderThickness = new Thickness(1)
         };
         var debtGrid = new Grid();
@@ -560,19 +563,21 @@ public static partial class CscaStudentDialog
         debtGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         var debtLabelPanel = new StackPanel();
-        debtLabelPanel.Children.Add(new TextBlock
+        var debtTitleText = new TextBlock
         {
             Text = "SỐ TIỀN CÒN LẠI PHẢI TRẢ (HỆ THỐNG TỰ TÍNH):",
             FontSize = 10.5,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(146, 64, 14))
-        });
+            Foreground = ThemeService.GetBrush("SurfaceWarningTextBrush", "#92400E")
+        };
+        debtLabelPanel.Children.Add(debtTitleText);
         var debtCalcFormulaText = new TextBlock
         {
             Text = $"Học phí {currentTuitionFee:N0} đ - Giảm {initialDiscount:N0} đ - Đã đóng {initialPaid:N0} đ",
-            FontSize = 11,
-            Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
-            Margin = new Thickness(0, 2, 0, 0)
+            FontSize = 11.5,
+            Foreground = ThemeService.GetBrush("SurfaceWarningTextBrush", "#B45309"),
+            Opacity = 0.92,
+            Margin = new Thickness(0, 3, 0, 0)
         };
         debtLabelPanel.Children.Add(debtCalcFormulaText);
         Grid.SetColumn(debtLabelPanel, 0);
@@ -581,9 +586,9 @@ public static partial class CscaStudentDialog
         var debtValueText = new TextBlock
         {
             Text = $"{Math.Max(0, currentTuitionFee - initialDiscount - initialPaid):N0} đ",
-            FontSize = 18,
+            FontSize = 19,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
+            Foreground = ThemeService.GetBrush("SurfaceWarningTextBrush", "#B45309"),
             VerticalAlignment = VerticalAlignment.Center
         };
         Grid.SetColumn(debtValueText, 1);
@@ -625,15 +630,21 @@ public static partial class CscaStudentDialog
 
             if (debt <= 0)
             {
+                var successText = ThemeService.GetBrush("SurfaceSuccessTextBrush", "#059669");
                 debtBanner.Background = ThemeService.GetBrush("SurfaceSuccessBgBrush", "#ECFDF5");
-                debtBanner.BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208));
-                debtValueText.Foreground = new SolidColorBrush(Color.FromRgb(5, 150, 105));
+                debtBanner.BorderBrush = ThemeService.GetBrush("SurfaceSuccessBorderBrush", "#A7F3D0");
+                debtTitleText.Foreground = successText;
+                debtCalcFormulaText.Foreground = successText;
+                debtValueText.Foreground = successText;
             }
             else
             {
+                var warningText = ThemeService.GetBrush("SurfaceWarningTextBrush", "#B45309");
                 debtBanner.Background = ThemeService.GetBrush("SurfaceWarningBgBrush", "#FEF3C7");
-                debtBanner.BorderBrush = new SolidColorBrush(Color.FromRgb(253, 230, 138));
-                debtValueText.Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9));
+                debtBanner.BorderBrush = ThemeService.GetBrush("SurfaceWarningBorderBrush", "#FDE68A");
+                debtTitleText.Foreground = warningText;
+                debtCalcFormulaText.Foreground = warningText;
+                debtValueText.Foreground = warningText;
             }
 
             if (!isUpdatingInternally)
@@ -707,29 +718,23 @@ public static partial class CscaStudentDialog
         var cancelButton = new Button
         {
             Content = "Hủy bỏ",
-            Width = 95,
+            Width = 96,
             Height = 36,
             Margin = new Thickness(0, 0, 10, 0),
             Cursor = Cursors.Hand,
-            Background = ThemeService.GetBrush("CardBgBrush", "#FFFFFF"),
-            BorderBrush = ThemeService.GetBrush("BorderMediumBrush", "#CBD5E1"),
-            BorderThickness = new Thickness(1),
-            Foreground = ThemeService.GetBrush("TextMutedBrush", "#475569"),
-            FontWeight = FontWeights.Medium
+            IsCancel = true,
+            Style = Application.Current?.TryFindResource("OutlineButton") as Style
         };
         cancelButton.Click += (_, _) => dialog.DialogResult = false;
 
         var saveButton = new Button
         {
             Content = isEditing ? "Lưu thay đổi" : "Thêm học viên",
-            Width = 140,
+            Width = 144,
             Height = 36,
             Cursor = Cursors.Hand,
-            Background = new SolidColorBrush(Color.FromRgb(79, 70, 229)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(79, 70, 229)),
-            BorderThickness = new Thickness(1),
-            Foreground = Brushes.White,
-            FontWeight = FontWeights.Bold
+            IsDefault = true,
+            Style = Application.Current?.TryFindResource("PrimaryGradientButton") as Style
         };
         saveButton.Click += (_, _) =>
         {
